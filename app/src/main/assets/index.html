@@ -137,30 +137,31 @@
             }
         }
 
-        /* Floating molecules */
+        /* Floating molecules - más visibles */
         .floating-symbols {
             position: fixed;
             top: 0;
             left: 0;
             width: 100vw;
             height: 100vh;
-            z-index: -3;
+            z-index: 1;
             pointer-events: none;
             overflow: hidden;
         }
 
         .symbol {
             position: absolute;
-            font-size: 1.5rem;
-            opacity: 0.1;
-            color: var(--primary-purple);
+            font-size: 2rem;
+            opacity: 0.3;
             animation: float 20s ease-in-out infinite;
+            filter: drop-shadow(0 0 10px currentColor);
         }
 
         .symbol:nth-child(1) {
             top: 10%; left: 15%;
             animation-delay: 0s;
             animation-duration: 25s;
+            color: var(--primary-purple);
         }
         .symbol:nth-child(2) {
             top: 70%; left: 80%;
@@ -196,19 +197,19 @@
         @keyframes float {
             0%, 100% {
                 transform: translateY(0px) rotate(0deg) scale(1);
-                opacity: 0.1;
+                opacity: 0.3;
             }
             25% {
-                transform: translateY(-20px) rotate(90deg) scale(1.2);
-                opacity: 0.2;
+                transform: translateY(-30px) rotate(90deg) scale(1.3);
+                opacity: 0.5;
             }
             50% {
-                transform: translateY(15px) rotate(180deg) scale(0.8);
-                opacity: 0.15;
+                transform: translateY(20px) rotate(180deg) scale(0.7);
+                opacity: 0.2;
             }
             75% {
-                transform: translateY(-10px) rotate(270deg) scale(1.1);
-                opacity: 0.25;
+                transform: translateY(-15px) rotate(270deg) scale(1.2);
+                opacity: 0.4;
             }
         }
 
@@ -221,7 +222,7 @@
             flex-direction: column;
             background: transparent;
             position: relative;
-            z-index: 1;
+            z-index: 10;
         }
 
         .header {
@@ -549,6 +550,7 @@
             border-top: 1px solid var(--border-color);
             padding: 1rem;
             backdrop-filter: blur(20px);
+            z-index: 1000;
         }
 
         .nav-container {
@@ -874,19 +876,19 @@
 <!-- Bottom Navigation -->
 <nav class="bottom-nav">
     <div class="nav-container">
-        <div class="nav-item active" onclick="switchView('calendar')">
+        <div class="nav-item active" onclick="switchView('calendar'); event.stopPropagation();">
             <div class="nav-icon">📅</div>
             <div class="nav-label">Calendario</div>
         </div>
-        <div class="nav-item" onclick="openModal('entryModal')">
+        <div class="nav-item" onclick="openModal('entryModal'); event.stopPropagation();">
             <div class="nav-icon">➕</div>
             <div class="nav-label">Añadir</div>
         </div>
-        <div class="nav-item" onclick="switchView('stats')">
+        <div class="nav-item" onclick="switchView('stats'); event.stopPropagation();">
             <div class="nav-icon">📊</div>
             <div class="nav-label">Stats</div>
         </div>
-        <div class="nav-item" onclick="switchView('resources')">
+        <div class="nav-item" onclick="switchView('resources'); event.stopPropagation();">
             <div class="nav-icon">🔗</div>
             <div class="nav-label">Recursos</div>
         </div>
@@ -1206,12 +1208,19 @@
     }
 
     function switchView(view) {
-        // Update nav items
+        // Update nav items - encontrar el item que fue clickeado
         document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
-        if (event && event.target) {
-            const navItem = event.target.closest('.nav-item');
-            if (navItem) navItem.classList.add('active');
-        }
+
+        // Buscar cual nav-item corresponde a esta vista
+        const navItems = document.querySelectorAll('.nav-item');
+        navItems.forEach(item => {
+            const label = item.querySelector('.nav-label').textContent.toLowerCase();
+            if ((view === 'calendar' && label === 'calendario') ||
+                (view === 'stats' && label === 'stats') ||
+                (view === 'resources' && label === 'recursos')) {
+                item.classList.add('active');
+            }
+        });
 
         // Hide all views
         document.querySelectorAll('.view').forEach(viewEl => viewEl.style.display = 'none');
@@ -1461,7 +1470,7 @@
         updateStats();
         initFormHandlers();
         initModalCloseHandlers();
-        generateColorPicker();  
+        generateColorPicker();
     }
 
     // Wait for DOM to be ready
