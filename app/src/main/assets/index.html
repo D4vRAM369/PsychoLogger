@@ -252,6 +252,25 @@
             border-radius: 50%;
         }
 
+        .substance-indicators {
+            position: absolute;
+            bottom: 2px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 2px;
+        }
+
+        .substance-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+        }
+
+        .substance-lsd { background: var(--primary-purple); }
+        .substance-psilocybin { background: var(--accent-cyan); }
+        .substance-mdma { background: var(--accent-orange); }
+
         .day-header {
             background: var(--primary-purple);
             color: white;
@@ -441,6 +460,42 @@
             margin-bottom: 0.5rem;
         }
 
+        .entry-item {
+            background: var(--darker-bg);
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .entry-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .entry-substance {
+            color: var(--primary-purple);
+            font-weight: 600;
+        }
+
+        .entry-time {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .entry-dose {
+            color: var(--accent-cyan);
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .entry-notes {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
         @media (max-width: 768px) {
             .main-content {
                 grid-template-columns: 1fr;
@@ -472,15 +527,7 @@
             <div class="sidebar">
                 <h3>Sustancias</h3>
                 <ul id="substance-list" class="substance-list">
-                    <li class="substance-item active" data-substance="lsd">
-                        LSD <span class="substance-count">3</span>
-                    </li>
-                    <li class="substance-item" data-substance="psilocybin">
-                        Psilocibina <span class="substance-count">2</span>
-                    </li>
-                    <li class="substance-item" data-substance="mdma">
-                        MDMA <span class="substance-count">1</span>
-                    </li>
+                    <!-- Se llenarán dinámicamente -->
                 </ul>
                 <button class="add-substance-btn" onclick="openModal('substanceModal')">
                     + Añadir Sustancia
@@ -489,7 +536,7 @@
 
             <div class="calendar-container">
                 <div class="calendar-header">
-                    <h2 id="current-month">Enero 2025 - LSD</h2>
+                    <h2 id="current-month">Enero 2025</h2>
                     <div class="calendar-nav">
                         <button class="nav-btn" onclick="previousMonth()">‹</button>
                         <button class="nav-btn" onclick="nextMonth()">›</button>
@@ -505,21 +552,8 @@
         <div id="stats-view" class="view" style="display: none;">
             <div class="calendar-container">
                 <h2>Estadísticas y Análisis</h2>
-                <div class="resources-grid">
-                    <div class="resource-card">
-                        <h4>Frecuencia de Uso</h4>
-                        <p>LSD: 3 veces este mes</p>
-                        <p>Última vez: hace 7 días</p>
-                    </div>
-                    <div class="resource-card">
-                        <h4>Patrones</h4>
-                        <p>Intervalo promedio: 12 días</p>
-                        <p>Dosis más común: 100μg</p>
-                    </div>
-                    <div class="resource-card">
-                        <h4>Tolerancia</h4>
-                        <p>Tiempo recomendado de espera: 5 días más</p>
-                    </div>
+                <div class="resources-grid" id="stats-content">
+                    <!-- Se llenarán dinámicamente -->
                 </div>
             </div>
         </div>
@@ -578,22 +612,20 @@
     <div class="modal-content">
         <button class="close-btn" onclick="closeModal('entryModal')">×</button>
         <h3>Nuevo Registro</h3>
-        <form>
+        <form id="entryForm">
             <div class="form-group">
                 <label>Sustancia</label>
-                <select>
-                    <option>LSD</option>
-                    <option>Psilocibina</option>
-                    <option>MDMA</option>
+                <select id="entrySubstance">
+                    <!-- Se llenarán dinámicamente -->
                 </select>
             </div>
             <div class="form-group">
                 <label>Dosis</label>
-                <input type="number" placeholder="100">
+                <input type="number" id="entryDose" placeholder="100" step="0.1">
             </div>
             <div class="form-group">
                 <label>Unidad</label>
-                <select>
+                <select id="entryUnit">
                     <option>μg (microgramos)</option>
                     <option>mg (miligramos)</option>
                     <option>g (gramos)</option>
@@ -607,11 +639,11 @@
             </div>
             <div class="form-group">
                 <label>Fecha y Hora</label>
-                <input type="datetime-local">
+                <input type="datetime-local" id="entryDateTime">
             </div>
             <div class="form-group">
                 <label>Notas</label>
-                <textarea placeholder="Set, setting, experiencia..."></textarea>
+                <textarea id="entryNotes" placeholder="Set, setting, experiencia..."></textarea>
             </div>
             <button type="submit" class="btn-primary">Guardar Registro</button>
         </form>
@@ -623,14 +655,14 @@
     <div class="modal-content">
         <button class="close-btn" onclick="closeModal('substanceModal')">×</button>
         <h3>Nueva Sustancia</h3>
-        <form>
+        <form id="substanceForm">
             <div class="form-group">
                 <label>Nombre de la Sustancia</label>
-                <input type="text" placeholder="ej: 2C-B, DMT, Ketamina...">
+                <input type="text" id="substanceName" placeholder="ej: 2C-B, DMT, Ketamina...">
             </div>
             <div class="form-group">
                 <label>Categoría</label>
-                <select>
+                <select id="substanceCategory">
                     <option>Psicodélico</option>
                     <option>Estimulante</option>
                     <option>Depresivo</option>
@@ -640,7 +672,7 @@
             </div>
             <div class="form-group">
                 <label>Unidad de medida principal</label>
-                <select>
+                <select id="substanceUnit">
                     <option>μg (microgramos)</option>
                     <option>mg (miligramos)</option>
                     <option>g (gramos)</option>
@@ -657,15 +689,9 @@
 <div id="dayModal" class="modal">
     <div class="modal-content">
         <button class="close-btn" onclick="closeModal('dayModal')">×</button>
-        <h3 id="dayModalTitle">15 de Enero, 2025</h3>
+        <h3 id="dayModalTitle">Día seleccionado</h3>
         <div id="dayEntries">
-            <div class="resource-card">
-                <h4>LSD - 18:30</h4>
-                <p><strong>Dosis:</strong> 100μg</p>
-                <p><strong>Set:</strong> Relajado, con expectativas positivas</p>
-                <p><strong>Setting:</strong> Casa, con música ambient</p>
-                <p><strong>Notas:</strong> Experiencia muy visual, insights sobre creatividad</p>
-            </div>
+            <!-- Se llenarán dinámicamente -->
         </div>
     </div>
 </div>
@@ -673,46 +699,96 @@
 <script>
     // State management
     let currentMonth = new Date();
-    let currentSubstance = 'lsd';
     let currentView = 'calendar';
 
-    // Sample data
-    const substanceData = {
-        lsd: {
-            name: 'LSD',
-            entries: {
-                '2025-01-15': [{time: '18:30', dose: '100μg', notes: 'Experiencia visual intensa'}],
-                '2025-01-03': [{time: '19:00', dose: '75μg', notes: 'Microdosis extendida'}],
-                '2024-12-22': [{time: '16:00', dose: '150μg', notes: 'Sesión de arte'}]
-            }
-        },
-        psilocybin: {
-            name: 'Psilocibina',
-            entries: {
-                '2025-01-10': [{time: '14:00', dose: '2.5g', notes: 'Conexión con la naturaleza'}],
-                '2024-12-28': [{time: '15:30', dose: '1.8g', notes: 'Introspección profunda'}]
-            }
-        },
-        mdma: {
-            name: 'MDMA',
-            entries: {
-                '2024-12-31': [{time: '22:00', dose: '120mg', notes: 'Celebración de año nuevo'}]
-            }
-        }
+    // Default substances
+    const defaultSubstances = {
+        lsd: { name: 'LSD', color: 'lsd', entries: {} },
+        psilocybin: { name: 'Psilocibina', color: 'psilocybin', entries: {} },
+        mdma: { name: 'MDMA', color: 'mdma', entries: {} }
     };
+
+    // Storage functions
+    function loadData() {
+        try {
+            const stored = localStorage.getItem('psycho-logger-data');
+            return stored ? JSON.parse(stored) : defaultSubstances;
+        } catch (e) {
+            console.error('Error loading data:', e);
+            return defaultSubstances;
+        }
+    }
+
+    function saveData(data) {
+        try {
+            localStorage.setItem('psycho-logger-data', JSON.stringify(data));
+        } catch (e) {
+            console.error('Error saving data:', e);
+        }
+    }
+
+    let substanceData = loadData();
+
+    // Generate substance list
+    function updateSubstanceList() {
+        const list = document.getElementById('substance-list');
+        const select = document.getElementById('entrySubstance');
+
+        if (!list || !select) return;
+
+        list.innerHTML = '';
+        select.innerHTML = '';
+
+        Object.keys(substanceData).forEach(key => {
+            const substance = substanceData[key];
+            const count = Object.keys(substance.entries || {}).length;
+
+            // Sidebar item
+            const listItem = document.createElement('li');
+            listItem.className = 'substance-item';
+            listItem.dataset.substance = key;
+            listItem.innerHTML = `
+                ${substance.name}
+                <span class="substance-count">${count}</span>
+            `;
+            listItem.onclick = () => selectSubstance(key);
+            list.appendChild(listItem);
+
+            // Select option
+            const option = document.createElement('option');
+            option.value = key;
+            option.textContent = substance.name;
+            select.appendChild(option);
+        });
+
+        // Select first substance by default
+        if (Object.keys(substanceData).length > 0) {
+            selectSubstance(Object.keys(substanceData)[0]);
+        }
+    }
+
+    function selectSubstance(substanceKey) {
+        document.querySelectorAll('.substance-item').forEach(item =>
+            item.classList.remove('active'));
+        const activeItem = document.querySelector(`[data-substance="${substanceKey}"]`);
+        if (activeItem) {
+            activeItem.classList.add('active');
+        }
+        generateCalendar();
+    }
 
     // Generate calendar
     function generateCalendar() {
         const grid = document.getElementById('calendar-grid');
         const monthYear = document.getElementById('current-month');
 
-        // Clear grid
+        if (!grid || !monthYear) return;
+
         grid.innerHTML = '';
 
-        // Update header
         const monthNames = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
                           'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
-        monthYear.textContent = `${monthNames[currentMonth.getMonth()]} ${currentMonth.getFullYear()} - ${substanceData[currentSubstance].name}`;
+        monthYear.textContent = `${monthNames[currentMonth.getMonth()]} ${currentMonth.getFullYear()}`;
 
         // Day headers
         const dayHeaders = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
@@ -723,13 +799,11 @@
             grid.appendChild(dayHeader);
         });
 
-        // Get first day of month and number of days
+        // Calendar days
         const firstDay = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
-        const lastDay = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0);
         const startDate = new Date(firstDay);
         startDate.setDate(startDate.getDate() - (firstDay.getDay() === 0 ? 6 : firstDay.getDay() - 1));
 
-        // Generate 42 days (6 weeks)
         for(let i = 0; i < 42; i++) {
             const date = new Date(startDate);
             date.setDate(startDate.getDate() + i);
@@ -739,17 +813,45 @@
             dayElement.textContent = date.getDate();
 
             const dateString = date.toISOString().split('T')[0];
-            const hasEntry = substanceData[currentSubstance].entries[dateString];
 
-            if(hasEntry) {
+            // Check for entries on this date
+            const dayEntries = [];
+            Object.keys(substanceData).forEach(substanceKey => {
+                const substance = substanceData[substanceKey];
+                if (substance.entries && substance.entries[dateString]) {
+                    substance.entries[dateString].forEach(entry => {
+                        dayEntries.push({
+                            ...entry,
+                            substance: substanceKey,
+                            substanceName: substance.name,
+                            color: substance.color
+                        });
+                    });
+                }
+            });
+
+            if (dayEntries.length > 0) {
                 dayElement.classList.add('has-entry');
+
+                // Add substance indicators
+                const indicators = document.createElement('div');
+                indicators.className = 'substance-indicators';
+
+                const uniqueSubstances = [...new Set(dayEntries.map(e => e.substance))];
+                uniqueSubstances.forEach(substanceKey => {
+                    const dot = document.createElement('div');
+                    dot.className = `substance-dot substance-${substanceKey}`;
+                    indicators.appendChild(dot);
+                });
+
+                dayElement.appendChild(indicators);
             }
 
             if(date.getMonth() !== currentMonth.getMonth()) {
                 dayElement.style.opacity = '0.3';
             }
 
-            dayElement.onclick = () => openDayModal(date, hasEntry);
+            dayElement.onclick = () => openDayModal(date, dayEntries);
             grid.appendChild(dayElement);
         }
     }
@@ -768,39 +870,57 @@
     function switchView(view) {
         // Update nav items
         document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
-        event.target.closest('.nav-item').classList.add('active');
+        if (event && event.target) {
+            const navItem = event.target.closest('.nav-item');
+            if (navItem) navItem.classList.add('active');
+        }
 
         // Hide all views
-        document.querySelectorAll('.view').forEach(view => view.style.display = 'none');
+        document.querySelectorAll('.view').forEach(viewEl => viewEl.style.display = 'none');
 
         // Show selected view
-        document.getElementById(view + '-view').style.display = 'block';
+        const viewElement = document.getElementById(view + '-view');
+        if (viewElement) {
+            viewElement.style.display = 'block';
+        }
+
+        if (view === 'stats') {
+            updateStats();
+        }
+
         currentView = view;
     }
 
-    // Substance selection
-    document.querySelectorAll('.substance-item').forEach(item => {
-        item.onclick = () => {
-            document.querySelectorAll('.substance-item').forEach(i => i.classList.remove('active'));
-            item.classList.add('active');
-            currentSubstance = item.dataset.substance;
-            generateCalendar();
-        };
-    });
-
     // Modal functions
     function openModal(modalId) {
-        document.getElementById(modalId).classList.add('active');
+        if (modalId === 'entryModal') {
+            // Set current date/time
+            const now = new Date();
+            now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+            const dateTimeInput = document.getElementById('entryDateTime');
+            if (dateTimeInput) {
+                dateTimeInput.value = now.toISOString().slice(0, 16);
+            }
+        }
+        const modal = document.getElementById(modalId);
+        if (modal) {
+            modal.classList.add('active');
+        }
     }
 
     function closeModal(modalId) {
-        document.getElementById(modalId).classList.remove('active');
+        const modal = document.getElementById(modalId);
+        if (modal) {
+            modal.classList.remove('active');
+        }
     }
 
     function openDayModal(date, entries) {
         const modal = document.getElementById('dayModal');
         const title = document.getElementById('dayModalTitle');
         const content = document.getElementById('dayEntries');
+
+        if (!modal || !title || !content) return;
 
         title.textContent = date.toLocaleDateString('es-ES', {
             weekday: 'long',
@@ -809,12 +929,15 @@
             day: 'numeric'
         });
 
-        if(entries) {
+        if(entries && entries.length > 0) {
             content.innerHTML = entries.map(entry => `
-                <div class="resource-card">
-                    <h4>${substanceData[currentSubstance].name} - ${entry.time}</h4>
-                    <p><strong>Dosis:</strong> ${entry.dose}</p>
-                    <p><strong>Notas:</strong> ${entry.notes}</p>
+                <div class="entry-item">
+                    <div class="entry-header">
+                        <span class="entry-substance">${entry.substanceName}</span>
+                        <span class="entry-time">${entry.time}</span>
+                    </div>
+                    <div class="entry-dose"><strong>Dosis:</strong> ${entry.dose} ${entry.unit}</div>
+                    ${entry.notes ? `<div class="entry-notes">${entry.notes}</div>` : ''}
                 </div>
             `).join('');
         } else {
@@ -824,17 +947,185 @@
         modal.classList.add('active');
     }
 
-    // Close modals when clicking outside
-    document.querySelectorAll('.modal').forEach(modal => {
-        modal.onclick = (e) => {
-            if(e.target === modal) {
-                modal.classList.remove('active');
+    // Form handlers
+    function initFormHandlers() {
+        const entryForm = document.getElementById('entryForm');
+        if (entryForm) {
+            entryForm.onsubmit = function(e) {
+                e.preventDefault();
+
+                const substance = document.getElementById('entrySubstance').value;
+                const dose = document.getElementById('entryDose').value;
+                const unit = document.getElementById('entryUnit').value;
+                const dateTimeValue = document.getElementById('entryDateTime').value;
+                const notes = document.getElementById('entryNotes').value;
+
+                if (!substance || !dose || !dateTimeValue) {
+                    alert('Por favor completa todos los campos obligatorios');
+                    return;
+                }
+
+                const dateTime = new Date(dateTimeValue);
+                const dateString = dateTime.toISOString().split('T')[0];
+                const timeString = dateTime.toTimeString().slice(0, 5);
+
+                // Initialize entries array if doesn't exist
+                if (!substanceData[substance].entries) {
+                    substanceData[substance].entries = {};
+                }
+                if (!substanceData[substance].entries[dateString]) {
+                    substanceData[substance].entries[dateString] = [];
+                }
+
+                // Add new entry
+                substanceData[substance].entries[dateString].push({
+                    time: timeString,
+                    dose: dose,
+                    unit: unit,
+                    notes: notes
+                });
+
+                // Save to localStorage
+                saveData(substanceData);
+
+                // Update UI
+                updateSubstanceList();
+                generateCalendar();
+                updateStats();
+
+                // Clear form and close modal
+                entryForm.reset();
+                closeModal('entryModal');
+            };
+        }
+
+        const substanceForm = document.getElementById('substanceForm');
+        if (substanceForm) {
+            substanceForm.onsubmit = function(e) {
+                e.preventDefault();
+
+                const name = document.getElementById('substanceName').value;
+                const category = document.getElementById('substanceCategory').value;
+                const unit = document.getElementById('substanceUnit').value;
+
+                if (!name) {
+                    alert('Por favor ingresa el nombre de la sustancia');
+                    return;
+                }
+
+                // Generate key from name
+                const key = name.toLowerCase().replace(/[^a-z0-9]/g, '');
+
+                // Check if already exists
+                if (substanceData[key]) {
+                    alert('Esta sustancia ya existe');
+                    return;
+                }
+
+                // Add new substance
+                substanceData[key] = {
+                    name: name,
+                    category: category,
+                    unit: unit,
+                    color: key, // Use key as color class
+                    entries: {}
+                };
+
+                // Save to localStorage
+                saveData(substanceData);
+
+                // Update UI
+                updateSubstanceList();
+                generateCalendar();
+
+                // Clear form and close modal
+                substanceForm.reset();
+                closeModal('substanceModal');
+            };
+        }
+    }
+
+    // Stats update function
+    function updateStats() {
+        const statsContent = document.getElementById('stats-content');
+        if (!statsContent) return;
+
+        // Calculate stats
+        const totalEntries = Object.values(substanceData).reduce((total, substance) =>
+            total + Object.keys(substance.entries || {}).length, 0);
+
+        const mostUsed = Object.entries(substanceData).reduce((max, [key, substance]) => {
+            const count = Object.keys(substance.entries || {}).length;
+            return count > max.count ? { name: substance.name, count } : max;
+        }, { name: 'Ninguna', count: 0 });
+
+        // Get recent usage
+        const recentEntries = [];
+        Object.entries(substanceData).forEach(([key, substance]) => {
+            if (substance.entries) {
+                Object.entries(substance.entries).forEach(([date, entries]) => {
+                    entries.forEach(entry => {
+                        recentEntries.push({
+                            date: new Date(date),
+                            substance: substance.name,
+                            ...entry
+                        });
+                    });
+                });
             }
-        };
-    });
+        });
+
+        recentEntries.sort((a, b) => b.date - a.date);
+        const lastEntry = recentEntries[0];
+        const daysSinceLastUse = lastEntry ?
+            Math.floor((new Date() - lastEntry.date) / (1000 * 60 * 60 * 24)) : 0;
+
+        statsContent.innerHTML = `
+            <div class="resource-card">
+                <h4>Frecuencia de Uso</h4>
+                <p><strong>Total de registros:</strong> ${totalEntries}</p>
+                <p><strong>Sustancia más usada:</strong> ${mostUsed.name} (${mostUsed.count} veces)</p>
+                <p><strong>Última vez:</strong> ${lastEntry ? `hace ${daysSinceLastUse} días` : 'Sin registros'}</p>
+            </div>
+            <div class="resource-card">
+                <h4>Patrones</h4>
+                <p><strong>Promedio mensual:</strong> ${(totalEntries / 3).toFixed(1)} usos</p>
+                <p><strong>Sustancias registradas:</strong> ${Object.keys(substanceData).length}</p>
+            </div>
+            <div class="resource-card">
+                <h4>Recomendaciones</h4>
+                <p><strong>Espaciado recomendado:</strong> 7-14 días entre usos</p>
+                <p><strong>Recuerda:</strong> La moderación es clave para un uso responsable</p>
+            </div>
+        `;
+    }
+
+    // Close modals when clicking outside
+    function initModalCloseHandlers() {
+        document.querySelectorAll('.modal').forEach(modal => {
+            modal.onclick = (e) => {
+                if(e.target === modal) {
+                    modal.classList.remove('active');
+                }
+            };
+        });
+    }
 
     // Initialize app
-    generateCalendar();
+    function initApp() {
+        updateSubstanceList();
+        generateCalendar();
+        updateStats();
+        initFormHandlers();
+        initModalCloseHandlers();
+    }
+
+    // Wait for DOM to be ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initApp);
+    } else {
+        initApp();
+    }
 </script>
 </body>
 </html>
