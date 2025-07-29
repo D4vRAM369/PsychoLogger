@@ -1,31 +1,18 @@
 package com.d4vram.psychologger
 
+import android.annotation.SuppressLint
 import android.os.Bundle
+import android.webkit.WebView
+import android.webkit.WebViewClient
+import android.webkit.WebChromeClient
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.runtime.getValue
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.currentBackStackEntryAsState
-import androidx.navigation.compose.rememberNavController
-// Aliasamos bottomNavItems para evitar la ambigüedad
-import com.d4vram.psychologger.ui.navigation.bottomNavItems as bottomNavList
-import com.d4vram.psychologger.ui.navigation.Screen
-import com.d4vram.psychologger.ui.screens.CalendarScreen
-import com.d4vram.psychologger.ui.screens.ResourcesScreen
-import com.d4vram.psychologger.ui.screens.StatsScreen
+import androidx.compose.ui.viewinterop.AndroidView
 import com.d4vram.psychologger.ui.theme.PsychoLoggerTheme
 
 class MainActivity : ComponentActivity() {
@@ -35,57 +22,45 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             PsychoLoggerTheme {
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
-                ) {
-                    val navController = rememberNavController()
-
-                    Scaffold(
-                        containerColor = MaterialTheme.colorScheme.background,
-                        contentColor = MaterialTheme.colorScheme.onBackground,
-                        bottomBar = {
-                            NavigationBar(
-                                containerColor = MaterialTheme.colorScheme.surface,
-                                contentColor = MaterialTheme.colorScheme.onSurface
-                            ) {
-                                val backStack by navController.currentBackStackEntryAsState()
-                                val currentRoute = backStack?.destination?.route
-
-                                // Recorremos bottomNavList (antes bottomNavItems)
-                                bottomNavList.forEach { screen ->
-                                    NavigationBarItem(
-                                        icon = { Icon(screen.icon, contentDescription = null) },
-                                        label = { Text(stringResource(screen.label)) },
-                                        selected = currentRoute == screen.route,
-                                        onClick = {
-                                            if (currentRoute != screen.route) {
-                                                navController.navigate(screen.route) {
-                                                    popUpTo(navController.graph.startDestinationId) {
-                                                        saveState = true
-                                                    }
-                                                    launchSingleTop = true
-                                                    restoreState = true
-                                                }
-                                            }
-                                        }
-                                    )
-                                }
-                            }
-                        }
-                    ) { innerPadding ->
-                        NavHost(
-                            navController = navController,
-                            startDestination = Screen.Calendar.route,
-                            modifier = Modifier.padding(innerPadding)
-                        ) {
-                            composable(Screen.Calendar.route)   { CalendarScreen()  }
-                            composable(Screen.Stats.route)      { StatsScreen()     }
-                            composable(Screen.Resources.route)  { ResourcesScreen() }
-                        }
-                    }
-                }
+                WebViewScreen()
             }
         }
     }
+}
+
+@SuppressLint("SetJavaScriptEnabled")
+@Composable
+fun WebViewScreen() {
+    AndroidView(
+        modifier = Modifier
+            .fillMaxSize()
+            .statusBarsPadding(),
+        factory = { context ->
+            WebView(context).apply {
+                // Configuración del WebView
+                webViewClient = WebViewClient()
+                webChromeClient = WebChromeClient()
+
+                settings.apply {
+                    javaScriptEnabled = true
+                    domStorageEnabled = true
+                    allowFileAccess = true
+                    allowContentAccess = true
+                    loadWithOverviewMode = true
+                    useWideViewPort = true
+                    setSupportZoom(true)
+                    builtInZoomControls = true
+                    displayZoomControls = false
+
+                    // Para mejor rendimiento
+                    cacheMode = android.webkit.WebSettings.LOAD_DEFAULT
+                    allowFileAccessFromFileURLs = true
+                    allowUniversalAccessFromFileURLs = true
+                }
+
+                // Cargar tu HTML desde assets
+                loadUrl("file:///android_asset/index.html")
+            }
+        }
+    )
 }

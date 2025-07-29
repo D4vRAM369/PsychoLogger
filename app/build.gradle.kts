@@ -54,6 +54,9 @@ android {
 }
 
 dependencies {
+    // WebView support - NUEVA DEPENDENCIA AGREGADA
+    implementation("androidx.webkit:webkit:1.8.0")
+
     // Compose core
     implementation("androidx.compose.ui:ui:1.5.1")
     implementation("androidx.compose.ui:ui-tooling-preview:1.5.1")
@@ -87,15 +90,13 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
 
     // Icons filled
-
     implementation("androidx.compose.material:material-icons-extended:1.5.1")
 
     // JitPack repos
     implementation("com.github.prolificinteractive:material-calendarview:2.0.1") {
         exclude(group = "com.android.support", module = "support-compat")
     }
-    implementation("com.github.PhilJay:MPAndroidChart:3.1.0")
-    {
+    implementation("com.github.PhilJay:MPAndroidChart:3.1.0") {
         exclude(group = "com.android.support")
     }
 
@@ -116,4 +117,3 @@ dependencies {
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
 }
-
