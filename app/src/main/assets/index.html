@@ -376,6 +376,8 @@
         .substance-item.active {
             background: linear-gradient(135deg, var(--primary-purple), var(--secondary-pink));
             border-color: var(--accent-cyan);
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(139, 92, 246, 0.3);
         }
 
         .substance-count {
@@ -1060,6 +1062,7 @@
     let currentMonth = new Date();
     let currentView = 'calendar';
     let selectedColor = '#8B5CF6'; // Default color
+    let selectedSubstance = null; // Nueva variable para filtrar por sustancia
 
     // Available colors for substances
     const availableColors = [
@@ -1132,10 +1135,11 @@
             select.appendChild(option);
         });
 
-        // Select first substance by default
-        if (Object.keys(substanceData).length > 0) {
-            selectSubstance(Object.keys(substanceData)[0]);
-        }
+        // Select first substance by default - pero sin filtrar
+        // Comentamos esto para que inicie sin filtro
+        // if (Object.keys(substanceData).length > 0) {
+        //     selectSubstance(Object.keys(substanceData)[0]);
+        // }
     }
 
     // Generate color picker
@@ -1170,12 +1174,21 @@
     }
 
     function selectSubstance(substanceKey) {
+        // Actualizar estado de selección
+        selectedSubstance = selectedSubstance === substanceKey ? null : substanceKey;
+
+        // Actualizar UI de la sidebar
         document.querySelectorAll('.substance-item').forEach(item =>
             item.classList.remove('active'));
-        const activeItem = document.querySelector(`[data-substance="${substanceKey}"]`);
-        if (activeItem) {
-            activeItem.classList.add('active');
+
+        if (selectedSubstance) {
+            const activeItem = document.querySelector(`[data-substance="${selectedSubstance}"]`);
+            if (activeItem) {
+                activeItem.classList.add('active');
+            }
         }
+
+        // Regenerar calendario con filtro aplicado
         generateCalendar();
     }
 
@@ -1190,7 +1203,13 @@
 
         const monthNames = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
                           'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
-        monthYear.textContent = `${monthNames[currentMonth.getMonth()]} ${currentMonth.getFullYear()}`;
+
+        // Actualizar título según filtro
+        let title = `${monthNames[currentMonth.getMonth()]} ${currentMonth.getFullYear()}`;
+        if (selectedSubstance) {
+            title += ` - ${substanceData[selectedSubstance].name}`;
+        }
+        monthYear.textContent = title;
 
         // Day headers
         const dayHeaders = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
@@ -1216,38 +1235,65 @@
 
             const dateString = date.toISOString().split('T')[0];
 
-            // Check for entries on this date
-            const dayEntries = [];
-            Object.keys(substanceData).forEach(substanceKey => {
-                const substance = substanceData[substanceKey];
+            // Check for entries on this date - aplicar filtro por sustancia
+            let dayEntries = [];
+
+            if (selectedSubstance) {
+                // Solo mostrar entradas de la sustancia seleccionada
+                const substance = substanceData[selectedSubstance];
                 if (substance.entries && substance.entries[dateString]) {
                     substance.entries[dateString].forEach(entry => {
                         dayEntries.push({
                             ...entry,
-                            substance: substanceKey,
+                            substance: selectedSubstance,
                             substanceName: substance.name,
                             color: substance.color
                         });
                     });
                 }
-            });
+            } else {
+                // Mostrar todas las entradas (comportamiento original)
+                Object.keys(substanceData).forEach(substanceKey => {
+                    const substance = substanceData[substanceKey];
+                    if (substance.entries && substance.entries[dateString]) {
+                        substance.entries[dateString].forEach(entry => {
+                            dayEntries.push({
+                                ...entry,
+                                substance: substanceKey,
+                                substanceName: substance.name,
+                                color: substance.color
+                            });
+                        });
+                    }
+                });
+            }
 
             if (dayEntries.length > 0) {
                 dayElement.classList.add('has-entry');
 
-                // Add substance indicators
-                const indicators = document.createElement('div');
-                indicators.className = 'substance-indicators';
+                if (selectedSubstance) {
+                    // Si hay filtro, usar solo el color de la sustancia seleccionada
+                    dayElement.style.background = `linear-gradient(135deg, ${substanceData[selectedSubstance].color}, ${adjustColorBrightness(substanceData[selectedSubstance].color, -20)})`;
+                } else {
+                    // Comportamiento original: gradient púrpura/rosa
+                    dayElement.style.background = 'linear-gradient(135deg, var(--primary-purple), var(--secondary-pink))';
+                }
 
-                const uniqueSubstances = [...new Set(dayEntries.map(e => e.substance))];
-                uniqueSubstances.forEach(substanceKey => {
-                    const dot = document.createElement('div');
-                    dot.className = 'substance-dot';
-                    dot.style.backgroundColor = substanceData[substanceKey].color;
-                    indicators.appendChild(dot);
-                });
+                // Add substance indicators (solo si no hay filtro activo)
+                if (!selectedSubstance) {
+                    const indicators = document.createElement('div');
+                    indicators.className = 'substance-indicators';
 
-                dayElement.appendChild(indicators);
+                    const uniqueSubstances = [...new Set(dayEntries.map(e => e.substance))];
+                    uniqueSubstances.forEach(substanceKey => {
+                        const dot = document.createElement('div');
+                        dot.className = 'substance-dot';
+                        dot.style.backgroundColor = substanceData[substanceKey].color;
+                        indicators.appendChild(dot);
+                    });
+
+                    dayElement.appendChild(indicators);
+                }
             }
 
             if(date.getMonth() !== currentMonth.getMonth()) {
@@ -1257,6 +1303,18 @@
             dayElement.onclick = () => openDayModal(date, dayEntries);
             grid.appendChild(dayElement);
         }
+    }
+
+    // Función auxiliar para ajustar brillo del color
+    function adjustColorBrightness(hex, percent) {
+        const num = parseInt(hex.replace('#', ''), 16);
+        const amt = Math.round(2.55 * percent);
+        const R = (num >> 16) + amt;
+        const G = (num >> 8 & 0x00FF) + amt;
+        const B = (num & 0x0000FF) + amt;
+        return '#' + (0x1000000 + (R < 255 ? R < 1 ? 0 : R : 255) * 0x10000 +
+            (G < 255 ? G < 1 ? 0 : G : 255) * 0x100 +
+            (B < 255 ? B < 1 ? 0 : B : 255)).toString(16).slice(1);
     }
 
     // Navigation functions
