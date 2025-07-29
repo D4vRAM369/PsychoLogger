@@ -30,6 +30,7 @@
             color: var(--text-light);
             min-height: 100vh;
             overflow-x: hidden;
+            position: relative;
         }
 
         /* Animated background */
@@ -37,10 +38,10 @@
             position: fixed;
             top: 0;
             left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-            opacity: 0.1;
+            width: 100vw;
+            height: 100vh;
+            z-index: -2;
+            opacity: 0.15;
             background:
                 radial-gradient(circle at 20% 80%, var(--primary-purple) 0%, transparent 50%),
                 radial-gradient(circle at 80% 20%, var(--secondary-pink) 0%, transparent 50%),
@@ -48,9 +49,30 @@
             animation: psychedelicMove 20s ease-in-out infinite;
         }
 
+        .psychedelic-bg::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--dark-bg);
+            z-index: -1;
+        }
+
         @keyframes psychedelicMove {
-            0%, 100% { transform: scale(1) rotate(0deg); }
-            50% { transform: scale(1.1) rotate(180deg); }
+            0%, 100% {
+                transform: scale(1) rotate(0deg);
+                opacity: 0.15;
+            }
+            33% {
+                transform: scale(1.2) rotate(120deg);
+                opacity: 0.25;
+            }
+            66% {
+                transform: scale(0.8) rotate(240deg);
+                opacity: 0.1;
+            }
         }
 
         .container {
@@ -267,9 +289,64 @@
             border-radius: 50%;
         }
 
-        .substance-lsd { background: var(--primary-purple); }
-        .substance-psilocybin { background: var(--accent-cyan); }
-        .substance-mdma { background: var(--accent-orange); }
+        /* Color picker styles */
+        .color-picker-container {
+            margin: 1rem 0;
+        }
+
+        .color-options {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .color-option {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 3px solid transparent;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .color-option:hover {
+            transform: scale(1.1);
+            border-color: var(--text-light);
+        }
+
+        .color-option.selected {
+            border-color: var(--accent-cyan);
+            transform: scale(1.2);
+        }
+
+        .color-option.selected::after {
+            content: '✓';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-weight: bold;
+            text-shadow: 0 0 3px rgba(0,0,0,0.8);
+        }
+
+        /* Predefined substance colors */
+        .substance-color-1 { background: #8B5CF6; }
+        .substance-color-2 { background: #06B6D4; }
+        .substance-color-3 { background: #F97316; }
+        .substance-color-4 { background: #EF4444; }
+        .substance-color-5 { background: #10B981; }
+        .substance-color-6 { background: #F59E0B; }
+        .substance-color-7 { background: #EC4899; }
+        .substance-color-8 { background: #8B5CF6; }
+        .substance-color-9 { background: #6366F1; }
+        .substance-color-10 { background: #84CC16; }
+        .substance-color-11 { background: #F43F5E; }
+        .substance-color-12 { background: #06B6D4; }
+
+        /* Dynamic color classes will be added via JavaScript */
 
         .day-header {
             background: var(--primary-purple);
@@ -661,6 +738,14 @@
                 <input type="text" id="substanceName" placeholder="ej: 2C-B, DMT, Ketamina...">
             </div>
             <div class="form-group">
+                <label>Color de identificación</label>
+                <div class="color-picker-container">
+                    <div class="color-options" id="colorOptions">
+                        <!-- Se llenarán dinámicamente -->
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
                 <label>Categoría</label>
                 <select id="substanceCategory">
                     <option>Psicodélico</option>
@@ -700,12 +785,20 @@
     // State management
     let currentMonth = new Date();
     let currentView = 'calendar';
+    let selectedColor = '#8B5CF6'; // Default color
 
-    // Default substances
+    // Available colors for substances
+    const availableColors = [
+        '#8B5CF6', '#06B6D4', '#F97316', '#EF4444',
+        '#10B981', '#F59E0B', '#EC4899', '#6366F1',
+        '#84CC16', '#F43F5E', '#A855F7', '#14B8A6'
+    ];
+
+    // Default substances with colors
     const defaultSubstances = {
-        lsd: { name: 'LSD', color: 'lsd', entries: {} },
-        psilocybin: { name: 'Psilocibina', color: 'psilocybin', entries: {} },
-        mdma: { name: 'MDMA', color: 'mdma', entries: {} }
+        lsd: { name: 'LSD', color: '#8B5CF6', entries: {} },
+        psilocybin: { name: 'Psilocibina', color: '#06B6D4', entries: {} },
+        mdma: { name: 'MDMA', color: '#F97316', entries: {} }
     };
 
     // Storage functions
@@ -743,12 +836,16 @@
             const substance = substanceData[key];
             const count = Object.keys(substance.entries || {}).length;
 
-            // Sidebar item
+            // Sidebar item with colored indicator
             const listItem = document.createElement('li');
             listItem.className = 'substance-item';
             listItem.dataset.substance = key;
+            listItem.style.setProperty('--substance-color', substance.color);
             listItem.innerHTML = `
-                ${substance.name}
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <div style="width: 12px; height: 12px; border-radius: 50%; background: ${substance.color};"></div>
+                    ${substance.name}
+                </div>
                 <span class="substance-count">${count}</span>
             `;
             listItem.onclick = () => selectSubstance(key);
@@ -765,6 +862,37 @@
         if (Object.keys(substanceData).length > 0) {
             selectSubstance(Object.keys(substanceData)[0]);
         }
+    }
+
+    // Generate color picker
+    function generateColorPicker() {
+        const colorOptions = document.getElementById('colorOptions');
+        if (!colorOptions) return;
+
+        colorOptions.innerHTML = '';
+
+        availableColors.forEach((color, index) => {
+            const colorOption = document.createElement('div');
+            colorOption.className = 'color-option';
+            colorOption.style.backgroundColor = color;
+            colorOption.dataset.color = color;
+
+            if (color === selectedColor) {
+                colorOption.classList.add('selected');
+            }
+
+            colorOption.onclick = () => {
+                // Remove previous selection
+                document.querySelectorAll('.color-option').forEach(opt =>
+                    opt.classList.remove('selected'));
+
+                // Add selection to clicked option
+                colorOption.classList.add('selected');
+                selectedColor = color;
+            };
+
+            colorOptions.appendChild(colorOption);
+        });
     }
 
     function selectSubstance(substanceKey) {
@@ -840,7 +968,8 @@
                 const uniqueSubstances = [...new Set(dayEntries.map(e => e.substance))];
                 uniqueSubstances.forEach(substanceKey => {
                     const dot = document.createElement('div');
-                    dot.className = `substance-dot substance-${substanceKey}`;
+                    dot.className = 'substance-dot';
+                    dot.style.backgroundColor = substanceData[substanceKey].color;
                     indicators.appendChild(dot);
                 });
 
@@ -901,7 +1030,12 @@
             if (dateTimeInput) {
                 dateTimeInput.value = now.toISOString().slice(0, 16);
             }
+        } else if (modalId === 'substanceModal') {
+            // Reset color selection and generate color picker
+            selectedColor = availableColors[0];
+            generateColorPicker();
         }
+
         const modal = document.getElementById(modalId);
         if (modal) {
             modal.classList.add('active');
@@ -1022,12 +1156,12 @@
                     return;
                 }
 
-                // Add new substance
+                // Add new substance with selected color
                 substanceData[key] = {
                     name: name,
                     category: category,
                     unit: unit,
-                    color: key, // Use key as color class
+                    color: selectedColor,
                     entries: {}
                 };
 
@@ -1118,6 +1252,7 @@
         updateStats();
         initFormHandlers();
         initModalCloseHandlers();
+        generateColorPicker();
     }
 
     // Wait for DOM to be ready
