@@ -137,14 +137,14 @@
             }
         }
 
-        /* Floating molecules - más visibles */
+        /* Floating molecules - más visibles y responsive */
         .floating-symbols {
             position: fixed;
             top: 0;
             left: 0;
             width: 100vw;
             height: 100vh;
-            z-index: 1;
+            z-index: 5;
             pointer-events: none;
             overflow: hidden;
         }
@@ -152,43 +152,43 @@
         .symbol {
             position: absolute;
             font-size: 2rem;
-            opacity: 0.3;
+            opacity: 0.25;
             animation: float 20s ease-in-out infinite;
-            filter: drop-shadow(0 0 10px currentColor);
+            filter: drop-shadow(0 0 8px currentColor);
         }
 
         .symbol:nth-child(1) {
-            top: 10%; left: 15%;
+            top: 15%; left: 10%;
             animation-delay: 0s;
             animation-duration: 25s;
             color: var(--primary-purple);
         }
         .symbol:nth-child(2) {
-            top: 70%; left: 80%;
+            top: 65%; left: 85%;
             animation-delay: 5s;
             animation-duration: 30s;
             color: var(--secondary-pink);
         }
         .symbol:nth-child(3) {
-            top: 30%; left: 70%;
+            top: 35%; left: 75%;
             animation-delay: 10s;
             animation-duration: 35s;
             color: var(--accent-cyan);
         }
         .symbol:nth-child(4) {
-            top: 80%; left: 20%;
+            top: 75%; left: 15%;
             animation-delay: 15s;
             animation-duration: 28s;
             color: var(--accent-orange);
         }
         .symbol:nth-child(5) {
-            top: 50%; left: 10%;
+            top: 45%; left: 5%;
             animation-delay: 8s;
             animation-duration: 32s;
             color: var(--primary-purple);
         }
         .symbol:nth-child(6) {
-            top: 20%; left: 50%;
+            top: 25%; left: 55%;
             animation-delay: 12s;
             animation-duration: 27s;
             color: var(--secondary-pink);
@@ -197,19 +197,48 @@
         @keyframes float {
             0%, 100% {
                 transform: translateY(0px) rotate(0deg) scale(1);
-                opacity: 0.3;
+                opacity: 0.25;
             }
             25% {
-                transform: translateY(-30px) rotate(90deg) scale(1.3);
-                opacity: 0.5;
+                transform: translateY(-25px) rotate(90deg) scale(1.2);
+                opacity: 0.4;
             }
             50% {
-                transform: translateY(20px) rotate(180deg) scale(0.7);
-                opacity: 0.2;
+                transform: translateY(15px) rotate(180deg) scale(0.8);
+                opacity: 0.15;
             }
             75% {
-                transform: translateY(-15px) rotate(270deg) scale(1.2);
-                opacity: 0.4;
+                transform: translateY(-10px) rotate(270deg) scale(1.1);
+                opacity: 0.35;
+            }
+        }
+
+        /* Animated progress bar like original */
+        .psychedelic-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            z-index: 1001;
+            background: linear-gradient(90deg,
+                var(--primary-purple) 0%,
+                var(--secondary-pink) 25%,
+                var(--accent-cyan) 50%,
+                var(--accent-orange) 75%,
+                var(--primary-purple) 100%);
+            background-size: 200% 100%;
+            animation: psychedelicProgress 8s ease-in-out infinite;
+        }
+
+        @keyframes psychedelicProgress {
+            0%, 100% {
+                background-position: 0% 50%;
+                opacity: 0.8;
+            }
+            50% {
+                background-position: 100% 50%;
+                opacity: 1;
             }
         }
 
@@ -222,7 +251,8 @@
             flex-direction: column;
             background: transparent;
             position: relative;
-            z-index: 10;
+            z-index: 3;
+            padding-top: 1.5rem;
         }
 
         .header {
@@ -781,10 +811,43 @@
             .calendar-container {
                 padding: 1rem;
             }
+
+            /* Emojis más pequeños en móvil */
+            .symbol {
+                font-size: 1.2rem;
+                opacity: 0.2;
+                filter: drop-shadow(0 0 5px currentColor);
+            }
+
+            .floating-symbols {
+                z-index: 2;
+            }
+
+            /* Ajustar posiciones para móvil */
+            .symbol:nth-child(1) { top: 20%; left: 8%; }
+            .symbol:nth-child(2) { top: 70%; left: 88%; }
+            .symbol:nth-child(3) { top: 40%; left: 82%; }
+            .symbol:nth-child(4) { top: 80%; left: 12%; }
+            .symbol:nth-child(5) { top: 50%; left: 3%; }
+            .symbol:nth-child(6) { top: 30%; left: 60%; }
+
+            @keyframes float {
+                0%, 100% {
+                    transform: translateY(0px) rotate(0deg) scale(1);
+                    opacity: 0.2;
+                }
+                50% {
+                    transform: translateY(-15px) rotate(180deg) scale(1.1);
+                    opacity: 0.3;
+                }
+            }
         }
     </style>
 </head>
 <body>
+<!-- Animated progress bar -->
+<div class="psychedelic-bar"></div>
+
 <div class="psychedelic-bg"></div>
 
 <!-- Floating mystical symbols -->
