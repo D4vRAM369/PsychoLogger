@@ -28,18 +28,22 @@ import com.d4vram.psychologger.ui.theme.PsychoLoggerTheme
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // Para que tu contenido Compose ocupe toda la pantalla,
+        // incluyendo debajo de status bar y nav bar
         enableEdgeToEdge()
 
         setContent {
-            val navController = rememberNavController()
-
             PsychoLoggerTheme {
+                val navController = rememberNavController()
+
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
                     bottomBar = {
+                        // Barra inferior en Compose, usando Material3
                         NavigationBar {
                             val navBackStack by navController.currentBackStackEntryAsState()
                             val currentRoute = navBackStack?.destination?.route
+
                             bottomNavItems.forEach { screen ->
                                 NavigationBarItem(
                                     icon =    { Icon(screen.icon, contentDescription = null) },
@@ -48,7 +52,7 @@ class MainActivity : ComponentActivity() {
                                     onClick = {
                                         if (currentRoute != screen.route) {
                                             navController.navigate(screen.route) {
-                                                // Evitamos duplicados en la pila de navegación
+                                                // evita duplicar pantallas en la pila
                                                 popUpTo(navController.graph.startDestinationId) {
                                                     saveState = true
                                                 }
@@ -62,20 +66,15 @@ class MainActivity : ComponentActivity() {
                         }
                     }
                 ) { innerPadding ->
+                    // Host de navegación Compose
                     NavHost(
                         navController = navController,
                         startDestination = Screen.Calendar.route,
                         modifier = Modifier.padding(innerPadding)
                     ) {
-                        composable(Screen.Calendar.route) {
-                            CalendarScreen()
-                        }
-                        composable(Screen.Stats.route) {
-                            StatsScreen()
-                        }
-                        composable(Screen.Resources.route) {
-                            ResourcesScreen()
-                        }
+                        composable(Screen.Calendar.route)  { CalendarScreen() }
+                        composable(Screen.Stats.route)     { StatsScreen() }
+                        composable(Screen.Resources.route) { ResourcesScreen() }
                     }
                 }
             }

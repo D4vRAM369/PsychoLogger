@@ -1,5 +1,39 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
 
-    <style name="Theme.PsychoLogger" parent="android:Theme.Material.Light.NoActionBar" />
+    <!-- Tema base de tu app, hereda de MaterialComponents -->
+    <style name="Theme.PsychoLogger" parent="Theme.MaterialComponents.Light.NoActionBar">
+        <!-- Usa tu morado primario -->
+        <item name="colorPrimary">@color/primary_purple</item>
+        <!-- Texto claro sobre morado -->
+        <item name="colorOnPrimary">@color/text_light</item>
+
+        <!-- Segundo acento (rosa) -->
+        <item name="colorSecondary">@color/secondary_pink</item>
+        <!-- Texto claro sobre rosa -->
+        <item name="colorOnSecondary">@color/text_light</item>
+
+        <!-- Fondo de ventana -->
+        <item name="android:windowBackground">@color/dark_bg</item>
+
+        <!-- Status bar y navigation bar en tonos oscuros -->
+        <item name="android:statusBarColor">@color/darker_bg</item>
+        <item name="android:navigationBarColor">@color/dark_bg</item>
+    </style>
+
+    <!-- Variante Light (si la usas) -->
+    <style name="Theme.PsychoLogger.Light" parent="Theme.PsychoLogger">
+        <!-- Aquí podrías cambiar background a blanco, texto a oscuro, etc. -->
+    </style>
+
+    <!-- Variante Dark: hereda del padre DayNight para soportar modos -->
+    <style name="Theme.PsychoLogger.Dark" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <!-- Overrides específicos para dark -->
+        <item name="android:windowBackground">@color/darker_bg</item>
+        <item name="colorPrimary">@color/primary_purple</item>
+        <item name="colorOnPrimary">@color/text_light</item>
+        <item name="colorSecondary">@color/secondary_pink</item>
+        <item name="colorOnSecondary">@color/text_light</item>
+    </style>
+
 </resources>
