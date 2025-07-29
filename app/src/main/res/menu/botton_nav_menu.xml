@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/calendarFragment"
+        android:icon="@drawable/ic_calendar"
+        android:title="Calendario"/>
+    <item
+        android:id="@+id/statsFragment"
+        android:icon="@drawable/ic_stats"
+        android:title="Estadísticas"/>
+    <item
+        android:id="@+id/resourcesFragment"
+        android:icon="@drawable/ic_resources"
+        android:title="Recursos"/>
+</menu>

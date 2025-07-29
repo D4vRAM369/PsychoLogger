@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/nav_graph.xml">
+    app:startDestination="@id/calendarFragment">
+
+    <fragment
+        android:id="@+id/calendarFragment"
+        android:name="com.d4vram.psychologger.ui.CalendarFragment"
+        android:label="Calendario" />
+
+    <fragment
+        android:id="@+id/statsFragment"
+        android:name="com.d4vram.psychologger.ui.StatsFragment"
+        android:label="Estadísticas" />
+
+    <fragment
+        android:id="@+id/resourcesFragment"
+        android:name="com.d4vram.psychologger.ui.ResourcesFragment"
+        android:label="Recursos" />
+
+</navigation>

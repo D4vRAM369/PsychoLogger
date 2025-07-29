@@ -1,0 +1,22 @@
+<resources>
+    <string name="app_name">Bitácora Psiconáutica</string>
+    <string name="tab_calendar">Calendario</string>
+    <string name="tab_stats">Estadísticas</string>
+    <string name="tab_resources">Recursos</string>
+    <string name="add_entry">Añadir</string>
+    <string name="add_substance">Añadir Sustancia</string>
+    <string name="dose_units">Unidades de Dosis</string>
+</resources>
+
+<string-array name="dose_units">
+        <item>μg (microgramos)</item>
+        <item>mg (miligramos)</item>
+        <item>g (gramos)</item>
+        <item>Pastilla</item>
+        <item>Tripi</item>
+        <item>Medio tripi</item>
+        <item>Cuarto de tripi</item>
+        <item>Raya</item>
+        <item>Tirito</item>
+    </string-array>
+</resources>

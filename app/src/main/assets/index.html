@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bitácora Psiconáutica</title>
+    <style>
+        :root {
+            --primary-purple: #8B5CF6;
+            --secondary-pink: #EC4899;
+            --accent-cyan: #06B6D4;
+            --accent-orange: #F97316;
+            --dark-bg: #0F0F23;
+            --darker-bg: #080813;
+            --card-bg: #1A1A2E;
+            --text-light: #E5E7EB;
+            --text-muted: #9CA3AF;
+            --border-color: rgba(139, 92, 246, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, var(--dark-bg) 0%, var(--darker-bg) 100%);
+            color: var(--text-light);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Animated background */
+        .psychedelic-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.1;
+            background:
+                radial-gradient(circle at 20% 80%, var(--primary-purple) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, var(--secondary-pink) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, var(--accent-cyan) 0%, transparent 50%);
+            animation: psychedelicMove 20s ease-in-out infinite;
+        }
+
+        @keyframes psychedelicMove {
+            0%, 100% { transform: scale(1) rotate(0deg); }
+            50% { transform: scale(1.1) rotate(180deg); }
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding: 2rem 0;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary-purple), var(--secondary-pink), var(--accent-cyan));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+            animation: colorShift 3s ease-in-out infinite;
+        }
+
+        @keyframes colorShift {
+            0%, 100% { filter: hue-rotate(0deg); }
+            50% { filter: hue-rotate(90deg); }
+        }
+
+        .header p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        .main-content {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 2rem;
+            margin-bottom: 5rem;
+        }
+
+        .sidebar {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+            height: fit-content;
+            backdrop-filter: blur(10px);
+        }
+
+        .sidebar h3 {
+            margin-bottom: 1rem;
+            color: var(--primary-purple);
+            font-size: 1.2rem;
+        }
+
+        .substance-list {
+            list-style: none;
+        }
+
+        .substance-item {
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            background: rgba(139, 92, 246, 0.1);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid transparent;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .substance-item:hover {
+            background: rgba(139, 92, 246, 0.2);
+            border-color: var(--primary-purple);
+            transform: translateX(5px);
+        }
+
+        .substance-item.active {
+            background: linear-gradient(135deg, var(--primary-purple), var(--secondary-pink));
+            border-color: var(--accent-cyan);
+        }
+
+        .substance-count {
+            background: var(--accent-cyan);
+            color: var(--dark-bg);
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .add-substance-btn {
+            width: 100%;
+            padding: 0.75rem;
+            background: linear-gradient(135deg, var(--accent-orange), var(--secondary-pink));
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 1rem;
+        }
+
+        .add-substance-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(249, 115, 22, 0.3);
+        }
+
+        .calendar-container {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 2rem;
+            border: 1px solid var(--border-color);
+            backdrop-filter: blur(10px);
+        }
+
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .calendar-nav {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .nav-btn {
+            background: var(--primary-purple);
+            border: none;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .nav-btn:hover {
+            background: var(--secondary-pink);
+            transform: scale(1.1);
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 1px;
+            background: var(--border-color);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .calendar-day {
+            aspect-ratio: 1;
+            background: var(--darker-bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            font-weight: 500;
+        }
+
+        .calendar-day:hover {
+            background: rgba(139, 92, 246, 0.2);
+        }
+
+        .calendar-day.has-entry {
+            background: linear-gradient(135deg, var(--primary-purple), var(--secondary-pink));
+            color: white;
+        }
+
+        .calendar-day.has-entry::after {
+            content: '';
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            width: 8px;
+            height: 8px;
+            background: var(--accent-cyan);
+            border-radius: 50%;
+        }
+
+        .day-header {
+            background: var(--primary-purple);
+            color: white;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--card-bg);
+            border-top: 1px solid var(--border-color);
+            padding: 1rem;
+            backdrop-filter: blur(20px);
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            padding: 0.5rem;
+            border-radius: 12px;
+            min-width: 80px;
+        }
+
+        .nav-item:hover {
+            background: rgba(139, 92, 246, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .nav-item.active {
+            background: linear-gradient(135deg, var(--primary-purple), var(--secondary-pink));
+            color: white;
+        }
+
+        .nav-icon {
+            width: 24px;
+            height: 24px;
+            margin-bottom: 0.25rem;
+        }
+
+        .nav-label {
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 2rem;
+            max-width: 500px;
+            width: 90%;
+            border: 1px solid var(--border-color);
+            position: relative;
+            animation: modalSlideIn 0.3s ease;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .close-btn:hover {
+            color: var(--text-light);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--primary-purple);
+            font-weight: 600;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.75rem;
+            background: var(--darker-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            color: var(--text-light);
+            font-size: 1rem;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary-purple);
+            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-purple), var(--secondary-pink));
+            border: none;
+            color: white;
+            padding: 0.75rem 2rem;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(139, 92, 246, 0.3);
+        }
+
+        .resources-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .resource-card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .resource-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary-purple);
+            box-shadow: 0 20px 40px rgba(139, 92, 246, 0.1);
+        }
+
+        .resource-card h4 {
+            color: var(--accent-cyan);
+            margin-bottom: 0.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .calendar-container {
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="psychedelic-bg"></div>
+
+<div class="container">
+    <header class="header">
+        <h1>Bitácora Psiconáutica</h1>
+        <p>Tu compañero de viaje para un consumo consciente y responsable</p>
+    </header>
+
+    <main id="main-content" class="main-content">
+        <!-- Calendar View (Default) -->
+        <div id="calendar-view" class="view active">
+            <div class="sidebar">
+                <h3>Sustancias</h3>
+                <ul id="substance-list" class="substance-list">
+                    <li class="substance-item active" data-substance="lsd">
+                        LSD <span class="substance-count">3</span>
+                    </li>
+                    <li class="substance-item" data-substance="psilocybin">
+                        Psilocibina <span class="substance-count">2</span>
+                    </li>
+                    <li class="substance-item" data-substance="mdma">
+                        MDMA <span class="substance-count">1</span>
+                    </li>
+                </ul>
+                <button class="add-substance-btn" onclick="openModal('substanceModal')">
+                    + Añadir Sustancia
+                </button>
+            </div>
+
+            <div class="calendar-container">
+                <div class="calendar-header">
+                    <h2 id="current-month">Enero 2025 - LSD</h2>
+                    <div class="calendar-nav">
+                        <button class="nav-btn" onclick="previousMonth()">‹</button>
+                        <button class="nav-btn" onclick="nextMonth()">›</button>
+                    </div>
+                </div>
+                <div class="calendar-grid" id="calendar-grid">
+                    <!-- Calendar will be generated by JavaScript -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats View -->
+        <div id="stats-view" class="view" style="display: none;">
+            <div class="calendar-container">
+                <h2>Estadísticas y Análisis</h2>
+                <div class="resources-grid">
+                    <div class="resource-card">
+                        <h4>Frecuencia de Uso</h4>
+                        <p>LSD: 3 veces este mes</p>
+                        <p>Última vez: hace 7 días</p>
+                    </div>
+                    <div class="resource-card">
+                        <h4>Patrones</h4>
+                        <p>Intervalo promedio: 12 días</p>
+                        <p>Dosis más común: 100μg</p>
+                    </div>
+                    <div class="resource-card">
+                        <h4>Tolerancia</h4>
+                        <p>Tiempo recomendado de espera: 5 días más</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Resources View -->
+        <div id="resources-view" class="view" style="display: none;">
+            <div class="calendar-container">
+                <h2>Recursos y Harm Reduction</h2>
+                <div class="resources-grid">
+                    <a href="https://erowid.org" target="_blank" class="resource-card">
+                        <h4>Erowid</h4>
+                        <p>Base de datos completa sobre sustancias psicoactivas, experiencias y efectos</p>
+                    </a>
+                    <a href="https://tripsit.me" target="_blank" class="resource-card">
+                        <h4>TripSit</h4>
+                        <p>Información sobre interacciones, dosificación y asistencia en tiempo real</p>
+                    </a>
+                    <a href="https://www.drugsforum.com" target="_blank" class="resource-card">
+                        <h4>Drugs Forum</h4>
+                        <p>Comunidad para discutir experiencias y prácticas de reducción de riesgos</p>
+                    </a>
+                    <a href="https://psychonautwiki.org" target="_blank" class="resource-card">
+                        <h4>PsychonautWiki</h4>
+                        <p>Enciclopedia científica de sustancias psicoactivas y sus efectos</p>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- Bottom Navigation -->
+<nav class="bottom-nav">
+    <div class="nav-container">
+        <div class="nav-item active" onclick="switchView('calendar')">
+            <div class="nav-icon">📅</div>
+            <div class="nav-label">Calendario</div>
+        </div>
+        <div class="nav-item" onclick="openModal('entryModal')">
+            <div class="nav-icon">➕</div>
+            <div class="nav-label">Añadir</div>
+        </div>
+        <div class="nav-item" onclick="switchView('stats')">
+            <div class="nav-icon">📊</div>
+            <div class="nav-label">Stats</div>
+        </div>
+        <div class="nav-item" onclick="switchView('resources')">
+            <div class="nav-icon">🔗</div>
+            <div class="nav-label">Recursos</div>
+        </div>
+    </div>
+</nav>
+
+<!-- Add Entry Modal -->
+<div id="entryModal" class="modal">
+    <div class="modal-content">
+        <button class="close-btn" onclick="closeModal('entryModal')">×</button>
+        <h3>Nuevo Registro</h3>
+        <form>
+            <div class="form-group">
+                <label>Sustancia</label>
+                <select>
+                    <option>LSD</option>
+                    <option>Psilocibina</option>
+                    <option>MDMA</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Dosis</label>
+                <input type="number" placeholder="100">
+            </div>
+            <div class="form-group">
+                <label>Unidad</label>
+                <select>
+                    <option>μg (microgramos)</option>
+                    <option>mg (miligramos)</option>
+                    <option>g (gramos)</option>
+                    <option>Pastilla</option>
+                    <option>Tripi</option>
+                    <option>Medio tripi</option>
+                    <option>Cuarto de tripi</option>
+                    <option>Raya</option>
+                    <option>Tirito</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Fecha y Hora</label>
+                <input type="datetime-local">
+            </div>
+            <div class="form-group">
+                <label>Notas</label>
+                <textarea placeholder="Set, setting, experiencia..."></textarea>
+            </div>
+            <button type="submit" class="btn-primary">Guardar Registro</button>
+        </form>
+    </div>
+</div>
+
+<!-- Add Substance Modal -->
+<div id="substanceModal" class="modal">
+    <div class="modal-content">
+        <button class="close-btn" onclick="closeModal('substanceModal')">×</button>
+        <h3>Nueva Sustancia</h3>
+        <form>
+            <div class="form-group">
+                <label>Nombre de la Sustancia</label>
+                <input type="text" placeholder="ej: 2C-B, DMT, Ketamina...">
+            </div>
+            <div class="form-group">
+                <label>Categoría</label>
+                <select>
+                    <option>Psicodélico</option>
+                    <option>Estimulante</option>
+                    <option>Depresivo</option>
+                    <option>Disociativo</option>
+                    <option>Enteógeno</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Unidad de medida principal</label>
+                <select>
+                    <option>μg (microgramos)</option>
+                    <option>mg (miligramos)</option>
+                    <option>g (gramos)</option>
+                    <option>Pastilla</option>
+                    <option>Tripi</option>
+                </select>
+            </div>
+            <button type="submit" class="btn-primary">Añadir Sustancia</button>
+        </form>
+    </div>
+</div>
+
+<!-- Day Entry Modal -->
+<div id="dayModal" class="modal">
+    <div class="modal-content">
+        <button class="close-btn" onclick="closeModal('dayModal')">×</button>
+        <h3 id="dayModalTitle">15 de Enero, 2025</h3>
+        <div id="dayEntries">
+            <div class="resource-card">
+                <h4>LSD - 18:30</h4>
+                <p><strong>Dosis:</strong> 100μg</p>
+                <p><strong>Set:</strong> Relajado, con expectativas positivas</p>
+                <p><strong>Setting:</strong> Casa, con música ambient</p>
+                <p><strong>Notas:</strong> Experiencia muy visual, insights sobre creatividad</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // State management
+    let currentMonth = new Date();
+    let currentSubstance = 'lsd';
+    let currentView = 'calendar';
+
+    // Sample data
+    const substanceData = {
+        lsd: {
+            name: 'LSD',
+            entries: {
+                '2025-01-15': [{time: '18:30', dose: '100μg', notes: 'Experiencia visual intensa'}],
+                '2025-01-03': [{time: '19:00', dose: '75μg', notes: 'Microdosis extendida'}],
+                '2024-12-22': [{time: '16:00', dose: '150μg', notes: 'Sesión de arte'}]
+            }
+        },
+        psilocybin: {
+            name: 'Psilocibina',
+            entries: {
+                '2025-01-10': [{time: '14:00', dose: '2.5g', notes: 'Conexión con la naturaleza'}],
+                '2024-12-28': [{time: '15:30', dose: '1.8g', notes: 'Introspección profunda'}]
+            }
+        },
+        mdma: {
+            name: 'MDMA',
+            entries: {
+                '2024-12-31': [{time: '22:00', dose: '120mg', notes: 'Celebración de año nuevo'}]
+            }
+        }
+    };
+
+    // Generate calendar
+    function generateCalendar() {
+        const grid = document.getElementById('calendar-grid');
+        const monthYear = document.getElementById('current-month');
+
+        // Clear grid
+        grid.innerHTML = '';
+
+        // Update header
+        const monthNames = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+                          'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+        monthYear.textContent = `${monthNames[currentMonth.getMonth()]} ${currentMonth.getFullYear()} - ${substanceData[currentSubstance].name}`;
+
+        // Day headers
+        const dayHeaders = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
+        dayHeaders.forEach(day => {
+            const dayHeader = document.createElement('div');
+            dayHeader.className = 'calendar-day day-header';
+            dayHeader.textContent = day;
+            grid.appendChild(dayHeader);
+        });
+
+        // Get first day of month and number of days
+        const firstDay = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
+        const lastDay = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0);
+        const startDate = new Date(firstDay);
+        startDate.setDate(startDate.getDate() - (firstDay.getDay() === 0 ? 6 : firstDay.getDay() - 1));
+
+        // Generate 42 days (6 weeks)
+        for(let i = 0; i < 42; i++) {
+            const date = new Date(startDate);
+            date.setDate(startDate.getDate() + i);
+
+            const dayElement = document.createElement('div');
+            dayElement.className = 'calendar-day';
+            dayElement.textContent = date.getDate();
+
+            const dateString = date.toISOString().split('T')[0];
+            const hasEntry = substanceData[currentSubstance].entries[dateString];
+
+            if(hasEntry) {
+                dayElement.classList.add('has-entry');
+            }
+
+            if(date.getMonth() !== currentMonth.getMonth()) {
+                dayElement.style.opacity = '0.3';
+            }
+
+            dayElement.onclick = () => openDayModal(date, hasEntry);
+            grid.appendChild(dayElement);
+        }
+    }
+
+    // Navigation functions
+    function previousMonth() {
+        currentMonth.setMonth(currentMonth.getMonth() - 1);
+        generateCalendar();
+    }
+
+    function nextMonth() {
+        currentMonth.setMonth(currentMonth.getMonth() + 1);
+        generateCalendar();
+    }
+
+    function switchView(view) {
+        // Update nav items
+        document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+        event.target.closest('.nav-item').classList.add('active');
+
+        // Hide all views
+        document.querySelectorAll('.view').forEach(view => view.style.display = 'none');
+
+        // Show selected view
+        document.getElementById(view + '-view').style.display = 'block';
+        currentView = view;
+    }
+
+    // Substance selection
+    document.querySelectorAll('.substance-item').forEach(item => {
+        item.onclick = () => {
+            document.querySelectorAll('.substance-item').forEach(i => i.classList.remove('active'));
+            item.classList.add('active');
+            currentSubstance = item.dataset.substance;
+            generateCalendar();
+        };
+    });
+
+    // Modal functions
+    function openModal(modalId) {
+        document.getElementById(modalId).classList.add('active');
+    }
+
+    function closeModal(modalId) {
+        document.getElementById(modalId).classList.remove('active');
+    }
+
+    function openDayModal(date, entries) {
+        const modal = document.getElementById('dayModal');
+        const title = document.getElementById('dayModalTitle');
+        const content = document.getElementById('dayEntries');
+
+        title.textContent = date.toLocaleDateString('es-ES', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+
+        if(entries) {
+            content.innerHTML = entries.map(entry => `
+                <div class="resource-card">
+                    <h4>${substanceData[currentSubstance].name} - ${entry.time}</h4>
+                    <p><strong>Dosis:</strong> ${entry.dose}</p>
+                    <p><strong>Notas:</strong> ${entry.notes}</p>
+                </div>
+            `).join('');
+        } else {
+            content.innerHTML = '<p style="text-align: center; color: var(--text-muted);">No hay registros para este día</p>';
+        }
+
+        modal.classList.add('active');
+    }
+
+    // Close modals when clicking outside
+    document.querySelectorAll('.modal').forEach(modal => {
+        modal.onclick = (e) => {
+            if(e.target === modal) {
+                modal.classList.remove('active');
+            }
+        };
+    });
+
+    // Initialize app
+    generateCalendar();
+</script>
+</body>
+</html>
