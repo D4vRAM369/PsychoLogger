@@ -14,8 +14,3 @@ sealed class Screen(val route: String, @StringRes val label: Int, val icon: Imag
     object Resources: Screen("resources",R.string.tab_resources,Icons.Filled.Public)
 }
 
-val bottomNavItems = listOf(
-    Screen.Calendar,
-    Screen.Stats,
-    Screen.Resources
-)
