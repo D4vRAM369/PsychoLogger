@@ -24,25 +24,12 @@
             box-sizing: border-box;
         }
 
-        html {
-            background: var(--dark-bg) !important;
+        html, body {
+            background: var(--dark-bg);
             min-height: 100vh;
-        }
-
-        body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: linear-gradient(135deg, var(--dark-bg) 0%, var(--darker-bg) 100%) !important;
             color: var(--text-light);
-            min-height: 100vh;
             overflow-x: hidden;
-            position: relative;
-            margin: 0;
-            padding: 0;
-        }
-
-        /* Force dark background on WebView */
-        *, *::before, *::after {
-            box-sizing: border-box;
         }
 
         body::before {
@@ -56,229 +43,29 @@
             z-index: -10;
         }
 
-        /* Animated psychedelic background - más triposo */
-        .psychedelic-bg {
+        .animated-bg {
             position: fixed;
             top: 0;
             left: 0;
             width: 100vw;
             height: 100vh;
             z-index: -5;
-            opacity: 0.3;
+            opacity: 0.15;
             background:
-                radial-gradient(circle at 25% 75%, var(--primary-purple) 0%, transparent 35%),
-                radial-gradient(circle at 75% 25%, var(--secondary-pink) 0%, transparent 35%),
-                radial-gradient(circle at 50% 50%, var(--accent-cyan) 0%, transparent 35%),
-                radial-gradient(circle at 80% 80%, var(--accent-orange) 0%, transparent 30%),
-                radial-gradient(circle at 20% 20%, var(--secondary-pink) 0%, transparent 30%),
-                radial-gradient(circle at 60% 10%, var(--primary-purple) 0%, transparent 25%);
-            animation: psychedelicMove 25s ease-in-out infinite;
+                radial-gradient(circle at 25% 75%, var(--primary-purple) 0%, transparent 40%),
+                radial-gradient(circle at 75% 25%, var(--secondary-pink) 0%, transparent 40%),
+                radial-gradient(circle at 50% 50%, var(--accent-cyan) 0%, transparent 40%);
+            animation: backgroundMove 20s ease-in-out infinite;
         }
 
-        .psychedelic-bg::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background:
-                conic-gradient(from 0deg at 30% 70%, transparent 0deg, rgba(139, 92, 246, 0.2) 60deg, transparent 120deg),
-                conic-gradient(from 180deg at 70% 30%, transparent 0deg, rgba(6, 182, 212, 0.2) 60deg, transparent 120deg),
-                conic-gradient(from 90deg at 10% 90%, transparent 0deg, rgba(236, 72, 153, 0.15) 45deg, transparent 90deg);
-            animation: psychedelicRotate 30s linear infinite;
-        }
-
-        .psychedelic-bg::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background:
-                radial-gradient(ellipse at 60% 40%, rgba(139, 92, 246, 0.15) 0%, transparent 50%),
-                radial-gradient(ellipse at 40% 60%, rgba(236, 72, 153, 0.15) 0%, transparent 50%),
-                radial-gradient(ellipse at 80% 20%, rgba(6, 182, 212, 0.1) 0%, transparent 40%);
-            animation: psychedelicPulse 20s ease-in-out infinite;
-        }
-
-        @keyframes psychedelicMove {
+        @keyframes backgroundMove {
             0%, 100% {
-                transform: scale(1) rotate(0deg) translateX(0px) translateY(0px);
-                opacity: 0.3;
-            }
-            20% {
-                transform: scale(1.4) rotate(72deg) translateX(30px) translateY(-25px);
-                opacity: 0.4;
-            }
-            40% {
-                transform: scale(0.7) rotate(144deg) translateX(-25px) translateY(30px);
-                opacity: 0.2;
-            }
-            60% {
-                transform: scale(1.2) rotate(216deg) translateX(-30px) translateY(-15px);
-                opacity: 0.35;
-            }
-            80% {
-                transform: scale(0.9) rotate(288deg) translateX(20px) translateY(25px);
-                opacity: 0.25;
-            }
-        }
-
-        @keyframes psychedelicRotate {
-            0% { transform: rotate(0deg) scale(1); }
-            25% { transform: rotate(90deg) scale(1.3); }
-            50% { transform: rotate(180deg) scale(0.8); }
-            75% { transform: rotate(270deg) scale(1.1); }
-            100% { transform: rotate(360deg) scale(1); }
-        }
-
-        @keyframes psychedelicPulse {
-            0%, 100% {
-                transform: scale(1) skew(0deg);
+                transform: scale(1) rotate(0deg);
                 opacity: 0.15;
             }
-            33% {
-                transform: scale(1.6) skew(5deg);
-                opacity: 0.25;
-            }
-            66% {
-                transform: scale(0.6) skew(-3deg);
-                opacity: 0.1;
-            }
-        }
-
-        /* Floating molecules - más visibles pero sutiles */
-        .floating-symbols {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            z-index: 1;
-            pointer-events: none;
-            overflow: hidden;
-        }
-
-        .symbol {
-            position: absolute;
-            font-size: 1.2rem;
-            opacity: 0.3;
-            animation: float 20s ease-in-out infinite;
-            filter: drop-shadow(0 0 5px currentColor);
-        }
-
-        .symbol:nth-child(1) {
-            top: 8%; left: 12%;
-            animation-delay: 0s;
-            animation-duration: 28s;
-            color: var(--primary-purple);
-        }
-        .symbol:nth-child(2) {
-            top: 72%; left: 88%;
-            animation-delay: 4s;
-            animation-duration: 32s;
-            color: var(--secondary-pink);
-        }
-        .symbol:nth-child(3) {
-            top: 25%; left: 78%;
-            animation-delay: 8s;
-            animation-duration: 35s;
-            color: var(--accent-cyan);
-        }
-        .symbol:nth-child(4) {
-            top: 85%; left: 15%;
-            animation-delay: 12s;
-            animation-duration: 29s;
-            color: var(--accent-orange);
-        }
-        .symbol:nth-child(5) {
-            top: 45%; left: 5%;
-            animation-delay: 6s;
-            animation-duration: 33s;
-            color: var(--primary-purple);
-        }
-        .symbol:nth-child(6) {
-            top: 18%; left: 65%;
-            animation-delay: 10s;
-            animation-duration: 31s;
-            color: var(--secondary-pink);
-        }
-        .symbol:nth-child(7) {
-            top: 55%; left: 92%;
-            animation-delay: 14s;
-            animation-duration: 26s;
-            color: var(--accent-cyan);
-        }
-        .symbol:nth-child(8) {
-            top: 92%; left: 45%;
-            animation-delay: 2s;
-            animation-duration: 34s;
-            color: var(--accent-orange);
-        }
-        .symbol:nth-child(9) {
-            top: 35%; left: 25%;
-            animation-delay: 16s;
-            animation-duration: 30s;
-            color: var(--primary-purple);
-        }
-        .symbol:nth-child(10) {
-            top: 65%; left: 60%;
-            animation-delay: 18s;
-            animation-duration: 27s;
-            color: var(--secondary-pink);
-        }
-
-        @keyframes float {
-            0%, 100% {
-                transform: translateY(0px) rotate(0deg) scale(1);
-                opacity: 0.3;
-            }
-            20% {
-                transform: translateY(-20px) rotate(72deg) scale(1.4);
-                opacity: 0.5;
-            }
-            40% {
-                transform: translateY(15px) rotate(144deg) scale(0.8);
-                opacity: 0.2;
-            }
-            60% {
-                transform: translateY(-12px) rotate(216deg) scale(1.2);
-                opacity: 0.4;
-            }
-            80% {
-                transform: translateY(18px) rotate(288deg) scale(0.9);
-                opacity: 0.35;
-            }
-        }
-
-        /* Animated progress bar like original */
-        .psychedelic-bar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 4px;
-            z-index: 1001;
-            background: linear-gradient(90deg,
-                var(--primary-purple) 0%,
-                var(--secondary-pink) 25%,
-                var(--accent-cyan) 50%,
-                var(--accent-orange) 75%,
-                var(--primary-purple) 100%);
-            background-size: 200% 100%;
-            animation: psychedelicProgress 8s ease-in-out infinite;
-        }
-
-        @keyframes psychedelicProgress {
-            0%, 100% {
-                background-position: 0% 50%;
-                opacity: 0.8;
-            }
             50% {
-                background-position: 100% 50%;
-                opacity: 1;
+                transform: scale(1.1) rotate(180deg);
+                opacity: 0.25;
             }
         }
 
@@ -289,7 +76,6 @@
             min-height: 100vh;
             display: flex;
             flex-direction: column;
-            background: transparent;
             position: relative;
             z-index: 5;
             padding-top: 1.5rem;
@@ -299,7 +85,6 @@
             text-align: center;
             margin-bottom: 2rem;
             padding: 2rem 0;
-            position: relative;
         }
 
         .header-content {
@@ -312,31 +97,29 @@
 
         .mystical-symbol {
             font-size: 3rem;
-            opacity: 0.7;
+            opacity: 0.8;
             animation: symbolGlow 4s ease-in-out infinite alternate;
             user-select: none;
         }
 
         .mystical-symbol.left {
             color: var(--accent-cyan);
-            animation-delay: 0s;
         }
 
         .mystical-symbol.right {
             color: var(--secondary-pink);
-            animation-delay: 2s;
         }
 
         @keyframes symbolGlow {
             0% {
-                opacity: 0.7;
-                transform: scale(1) rotate(0deg);
-                text-shadow: 0 0 10px currentColor;
+                opacity: 0.8;
+                transform: scale(1);
+                filter: drop-shadow(0 0 10px currentColor);
             }
             100% {
                 opacity: 1;
-                transform: scale(1.1) rotate(360deg);
-                text-shadow: 0 0 20px currentColor, 0 0 30px currentColor;
+                transform: scale(1.1);
+                filter: drop-shadow(0 0 20px currentColor);
             }
         }
 
@@ -547,65 +330,6 @@
             border-radius: 50%;
         }
 
-        /* Color picker styles */
-        .color-picker-container {
-            margin: 1rem 0;
-        }
-
-        .color-options {
-            display: grid;
-            grid-template-columns: repeat(6, 1fr);
-            gap: 0.5rem;
-            margin-top: 0.5rem;
-        }
-
-        .color-option {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            border: 3px solid transparent;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            position: relative;
-        }
-
-        .color-option:hover {
-            transform: scale(1.1);
-            border-color: var(--text-light);
-        }
-
-        .color-option.selected {
-            border-color: var(--accent-cyan);
-            transform: scale(1.2);
-        }
-
-        .color-option.selected::after {
-            content: '✓';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            color: white;
-            font-weight: bold;
-            text-shadow: 0 0 3px rgba(0,0,0,0.8);
-        }
-
-        /* Predefined substance colors */
-        .substance-color-1 { background: #8B5CF6; }
-        .substance-color-2 { background: #06B6D4; }
-        .substance-color-3 { background: #F97316; }
-        .substance-color-4 { background: #EF4444; }
-        .substance-color-5 { background: #10B981; }
-        .substance-color-6 { background: #F59E0B; }
-        .substance-color-7 { background: #EC4899; }
-        .substance-color-8 { background: #8B5CF6; }
-        .substance-color-9 { background: #6366F1; }
-        .substance-color-10 { background: #84CC16; }
-        .substance-color-11 { background: #F43F5E; }
-        .substance-color-12 { background: #06B6D4; }
-
-        /* Dynamic color classes will be added via JavaScript */
-
         .day-header {
             background: var(--primary-purple);
             color: white;
@@ -641,7 +365,7 @@
             transition: all 0.3s ease;
             padding: 0.5rem;
             border-radius: 12px;
-            min-width: 80px;
+            min-width: 70px;
         }
 
         .nav-item:hover {
@@ -661,7 +385,7 @@
         }
 
         .nav-label {
-            font-size: 0.8rem;
+            font-size: 0.7rem;
             font-weight: 500;
         }
 
@@ -689,6 +413,8 @@
             padding: 2rem;
             max-width: 500px;
             width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
             border: 1px solid var(--border-color);
             position: relative;
             animation: modalSlideIn 0.3s ease;
@@ -761,11 +487,31 @@
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
+            width: 100%;
+            margin-bottom: 0.5rem;
         }
 
         .btn-primary:hover {
             transform: translateY(-2px);
             box-shadow: 0 10px 25px rgba(139, 92, 246, 0.3);
+        }
+
+        .btn-secondary {
+            background: var(--accent-cyan);
+            border: none;
+            color: white;
+            padding: 0.75rem 2rem;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-bottom: 0.5rem;
+        }
+
+        .btn-secondary:hover {
+            background: var(--accent-orange);
+            transform: translateY(-2px);
         }
 
         .resources-grid {
@@ -783,6 +529,7 @@
             transition: all 0.3s ease;
             text-decoration: none;
             color: inherit;
+            cursor: pointer;
         }
 
         .resource-card:hover {
@@ -832,6 +579,190 @@
             font-size: 0.9rem;
         }
 
+        .color-picker-container {
+            margin: 1rem 0;
+        }
+
+        .color-options {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .color-option {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 3px solid transparent;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .color-option:hover {
+            transform: scale(1.1);
+            border-color: var(--text-light);
+        }
+
+        .color-option.selected {
+            border-color: var(--accent-cyan);
+            transform: scale(1.2);
+        }
+
+        .color-option.selected::after {
+            content: '✓';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-weight: bold;
+            text-shadow: 0 0 3px rgba(0,0,0,0.8);
+        }
+
+        .profile-section {
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            background: var(--darker-bg);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+        }
+
+        .profile-section h4 {
+            color: var(--accent-cyan);
+            margin-bottom: 1rem;
+        }
+
+        .char-counter {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            text-align: right;
+            margin-top: 0.5rem;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .file-label {
+            display: inline-block;
+            padding: 0.75rem 1.5rem;
+            background: var(--accent-orange);
+            color: white;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            width: 100%;
+            margin-bottom: 0.5rem;
+        }
+
+        .file-label:hover {
+            background: var(--secondary-pink);
+            transform: translateY(-2px);
+        }
+
+        .profile-card {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 2rem;
+            text-align: center;
+            border: 1px solid var(--border-color);
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        .profile-avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-purple), var(--secondary-pink));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            margin: 0 auto 1rem;
+        }
+
+        .social-share-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .social-share-btn {
+            padding: 0.75rem;
+            border-radius: 12px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .twitter-btn {
+            background: #1DA1F2;
+            color: white;
+        }
+
+        .whatsapp-btn {
+            background: #25D366;
+            color: white;
+        }
+
+        .telegram-btn {
+            background: #0088cc;
+            color: white;
+        }
+
+        .reddit-btn {
+            background: #FF4500;
+            color: white;
+        }
+
+        .favorite-substance {
+            background: var(--darker-bg);
+            padding: 0.75rem;
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            border: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .remove-btn {
+            background: var(--secondary-pink);
+            border: none;
+            color: white;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+
+        .quote-item {
+            background: var(--darker-bg);
+            padding: 1rem;
+            border-radius: 12px;
+            margin-bottom: 1rem;
+            border-left: 4px solid var(--accent-cyan);
+            position: relative;
+        }
+
+        .quote-text {
+            font-style: italic;
+            margin-bottom: 0.5rem;
+        }
+
+        .quote-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.5rem;
+        }
+
         @media (max-width: 768px) {
             .main-content {
                 grid-template-columns: 1fr;
@@ -854,61 +785,18 @@
                 padding: 1rem;
             }
 
-            /* Emojis visibles pero sutiles en móvil */
-            .symbol {
-                font-size: 1rem;
-                opacity: 0.25;
-                filter: drop-shadow(0 0 3px currentColor);
+            .nav-label {
+                font-size: 0.6rem;
             }
 
-            .floating-symbols {
-                z-index: 2;
-            }
-
-            /* Reposicionar algunos para móvil */
-            .symbol:nth-child(1) { top: 12%; left: 8%; }
-            .symbol:nth-child(2) { top: 78%; left: 92%; }
-            .symbol:nth-child(3) { top: 28%; left: 85%; }
-            .symbol:nth-child(4) { top: 88%; left: 12%; }
-            .symbol:nth-child(5) { top: 48%; left: 3%; }
-            .symbol:nth-child(6) { top: 22%; left: 65%; }
-            .symbol:nth-child(7) { top: 58%; left: 95%; }
-            .symbol:nth-child(8) { top: 95%; left: 48%; }
-            .symbol:nth-child(9) { top: 38%; left: 28%; }
-            .symbol:nth-child(10) { top: 68%; left: 62%; }
-
-            @keyframes float {
-                0%, 100% {
-                    transform: translateY(0px) rotate(0deg) scale(1);
-                    opacity: 0.25;
-                }
-                50% {
-                    transform: translateY(-15px) rotate(180deg) scale(1.3);
-                    opacity: 0.4;
-                }
+            .nav-item {
+                min-width: 60px;
             }
         }
     </style>
 </head>
 <body>
-<!-- Animated progress bar -->
-<div class="psychedelic-bar"></div>
-
-<div class="psychedelic-bg"></div>
-
-<!-- Floating mystical symbols - más variedad -->
-<div class="floating-symbols">
-    <div class="symbol">🍄</div>
-    <div class="symbol">⚛️</div>
-    <div class="symbol">🔬</div>
-    <div class="symbol">👁️</div>
-    <div class="symbol">🌀</div>
-    <div class="symbol">✨</div>
-    <div class="symbol">🧬</div>
-    <div class="symbol">💊</div>
-    <div class="symbol">🌙</div>
-    <div class="symbol">⭐</div>
-</div>
+<div class="animated-bg"></div>
 
 <div class="container">
     <header class="header">
@@ -964,22 +852,71 @@
             <div class="calendar-container">
                 <h2>Recursos y Harm Reduction</h2>
                 <div class="resources-grid">
-                    <a href="https://erowid.org" target="_blank" class="resource-card">
+                    <div class="resource-card" onclick="openExternalURL('https://erowid.org')">
                         <h4>Erowid</h4>
                         <p>Base de datos completa sobre sustancias psicoactivas, experiencias y efectos</p>
-                    </a>
-                    <a href="https://tripsit.me" target="_blank" class="resource-card">
+                    </div>
+                    <div class="resource-card" onclick="openExternalURL('https://tripsit.me')">
                         <h4>TripSit</h4>
                         <p>Información sobre interacciones, dosificación y asistencia en tiempo real</p>
-                    </a>
-                    <a href="https://www.drugsforum.com" target="_blank" class="resource-card">
-                        <h4>Drugs Forum</h4>
-                        <p>Comunidad para discutir experiencias y prácticas de reducción de riesgos</p>
-                    </a>
-                    <a href="https://psychonautwiki.org" target="_blank" class="resource-card">
+                    </div>
+                    <div class="resource-card" onclick="openExternalURL('https://maps.org')">
+                        <h4>MAPS</h4>
+                        <p>Organización sin ánimo de lucro que investiga los potenciales usos médicos, legales y culturales de los psicodélicos</p>
+                    </div>
+                    <div class="resource-card" onclick="openExternalURL('https://psychonautwiki.org')">
                         <h4>PsychonautWiki</h4>
                         <p>Enciclopedia científica de sustancias psicoactivas y sus efectos</p>
-                    </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Data View -->
+        <div id="data-view" class="view" style="display: none;">
+            <div class="calendar-container">
+                <h2>Gestión de Datos</h2>
+                <div class="resources-grid">
+                    <div class="resource-card">
+                        <h4>Exportar Datos</h4>
+                        <p>Descargar todos tus datos en formato CSV</p>
+                        <button class="btn-primary" onclick="exportToCSV()">Exportar CSV</button>
+                    </div>
+                    <div class="resource-card">
+                        <h4>Importar Datos</h4>
+                        <p>Cargar datos desde un archivo CSV</p>
+                        <input type="file" id="csvFileInput" class="file-input" accept=".csv" onchange="importFromCSV(this)">
+                        <label for="csvFileInput" class="file-label">Seleccionar CSV</label>
+                    </div>
+                    <div class="resource-card">
+                        <h4>Limpiar Datos</h4>
+                        <p>Eliminar todos los datos almacenados</p>
+                        <button class="btn-secondary" onclick="clearAllData()">Limpiar Todo</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Profile View -->
+        <div id="profile-view" class="view" style="display: none;">
+            <div class="calendar-container">
+                <h2>Mi Perfil Psiconáutico</h2>
+
+                <div class="profile-section">
+                    <h4>Información Personal</h4>
+                    <div class="form-group">
+                        <label>Nickname</label>
+                        <input type="text" id="userNickname" placeholder="Tu nombre de psiconáuta...">
+                    </div>
+                    <button class="btn-primary" onclick="saveProfile()">Guardar Perfil</button>
+                </div>
+
+                <div class="profile-section">
+                    <h4>Gestionar Perfil</h4>
+                    <button class="btn-primary" onclick="openModal('favoritesModal')">Mis Sustancias Favoritas</button>
+                    <button class="btn-primary" onclick="openModal('socialModal')">Redes Sociales</button>
+                    <button class="btn-primary" onclick="openModal('quotesModal')">Frases Destacadas</button>
+                    <button class="btn-secondary" onclick="openModal('shareProfileModal')">Compartir Perfil</button>
                 </div>
             </div>
         </div>
@@ -989,24 +926,32 @@
 <!-- Bottom Navigation -->
 <nav class="bottom-nav">
     <div class="nav-container">
-        <div class="nav-item active" onclick="switchView('calendar'); event.stopPropagation();">
+        <div class="nav-item active" onclick="switchView('calendar')">
             <div class="nav-icon">📅</div>
             <div class="nav-label">Calendario</div>
         </div>
-        <div class="nav-item" onclick="openModal('entryModal'); event.stopPropagation();">
+        <div class="nav-item" onclick="openModal('entryModal')">
             <div class="nav-icon">➕</div>
             <div class="nav-label">Añadir</div>
         </div>
-        <div class="nav-item" onclick="switchView('stats'); event.stopPropagation();">
+        <div class="nav-item" onclick="switchView('stats')">
             <div class="nav-icon">📊</div>
             <div class="nav-label">Stats</div>
         </div>
-        <div class="nav-item" onclick="switchView('resources'); event.stopPropagation();">
+        <div class="nav-item" onclick="switchView('resources')">
             <div class="nav-icon">🔗</div>
             <div class="nav-label">Recursos</div>
         </div>
-    </div>
+        <div class="nav-item" onclick="switchView('data')">
+            <div class="nav-icon">💾</div>
+            <div class="nav-label">Datos</div>
+        </div>
+        <div class="nav-item" onclick="switchView('profile')">
+            <div class="nav-icon">👤</div>
+            <div class="nav-label">Perfil</div>
+        </div>
 </nav>
+</div>
 
 <!-- Add Entry Modal -->
 <div id="entryModal" class="modal">
@@ -1027,15 +972,12 @@
             <div class="form-group">
                 <label>Unidad</label>
                 <select id="entryUnit">
-                    <option>μg (microgramos)</option>
-                    <option>mg (miligramos)</option>
-                    <option>g (gramos)</option>
-                    <option>Pastilla</option>
-                    <option>Tripi</option>
-                    <option>Medio tripi</option>
-                    <option>Cuarto de tripi</option>
-                    <option>Raya</option>
-                    <option>Tirito</option>
+                    <option value="mg">mg</option>
+                    <option value="g">g</option>
+                    <option value="ml">ml</option>
+                    <option value="ug">μg</option>
+                    <option value="pills">pastillas</option>
+                    <option value="drops">gotas</option>
                 </select>
             </div>
             <div class="form-group">
@@ -1044,7 +986,7 @@
             </div>
             <div class="form-group">
                 <label>Notas</label>
-                <textarea id="entryNotes" placeholder="Set, setting, experiencia..."></textarea>
+                <textarea id="entryNotes" placeholder="Describe tu experiencia, estado de ánimo, entorno..." rows="4"></textarea>
             </div>
             <button type="submit" class="btn-primary">Guardar Registro</button>
         </form>
@@ -1055,599 +997,890 @@
 <div id="substanceModal" class="modal">
     <div class="modal-content">
         <button class="close-btn" onclick="closeModal('substanceModal')">×</button>
-        <h3>Nueva Sustancia</h3>
+        <h3>Añadir Nueva Sustancia</h3>
         <form id="substanceForm">
             <div class="form-group">
-                <label>Nombre de la Sustancia</label>
-                <input type="text" id="substanceName" placeholder="ej: 2C-B, DMT, Ketamina...">
+                <label>Nombre</label>
+                <input type="text" id="substanceName" placeholder="LSD, MDMA, Psilocibina..." required>
             </div>
-            <div class="form-group">
-                <label>Color de identificación</label>
-                <div class="color-picker-container">
-                    <div class="color-options" id="colorOptions">
-                        <!-- Se llenarán dinámicamente -->
-                    </div>
+            <div class="color-picker-container">
+                <label>Color Identificativo</label>
+                <div class="color-options">
+                    <div class="color-option" data-color="#8B5CF6" style="background: #8B5CF6"></div>
+                    <div class="color-option" data-color="#EC4899" style="background: #EC4899"></div>
+                    <div class="color-option" data-color="#06B6D4" style="background: #06B6D4"></div>
+                    <div class="color-option" data-color="#F97316" style="background: #F97316"></div>
+                    <div class="color-option" data-color="#10B981" style="background: #10B981"></div>
+                    <div class="color-option" data-color="#F59E0B" style="background: #F59E0B"></div>
+                    <div class="color-option" data-color="#EF4444" style="background: #EF4444"></div>
+                    <div class="color-option" data-color="#8B5A2B" style="background: #8B5A2B"></div>
+                    <div class="color-option" data-color="#6366F1" style="background: #6366F1"></div>
+                    <div class="color-option" data-color="#84CC16" style="background: #84CC16"></div>
+                    <div class="color-option" data-color="#F472B6" style="background: #F472B6"></div>
+                    <div class="color-option" data-color="#14B8A6" style="background: #14B8A6"></div>
                 </div>
-            </div>
-            <div class="form-group">
-                <label>Categoría</label>
-                <select id="substanceCategory">
-                    <option>Psicodélico</option>
-                    <option>Estimulante</option>
-                    <option>Depresivo</option>
-                    <option>Disociativo</option>
-                    <option>Enteógeno</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label>Unidad de medida principal</label>
-                <select id="substanceUnit">
-                    <option>μg (microgramos)</option>
-                    <option>mg (miligramos)</option>
-                    <option>g (gramos)</option>
-                    <option>Pastilla</option>
-                    <option>Tripi</option>
-                </select>
             </div>
             <button type="submit" class="btn-primary">Añadir Sustancia</button>
         </form>
     </div>
 </div>
 
-<!-- Day Entry Modal -->
-<div id="dayModal" class="modal">
+<!-- Favorites Modal -->
+<div id="favoritesModal" class="modal">
     <div class="modal-content">
-        <button class="close-btn" onclick="closeModal('dayModal')">×</button>
-        <h3 id="dayModalTitle">Día seleccionado</h3>
-        <div id="dayEntries">
+        <button class="close-btn" onclick="closeModal('favoritesModal')">×</button>
+        <h3>Mis Sustancias Favoritas</h3>
+        <div class="form-group">
+            <label>Añadir a Favoritos</label>
+            <select id="favoriteSubstanceSelect">
+                <option value="">Selecciona una sustancia...</option>
+            </select>
+            <button class="btn-primary" onclick="addToFavorites()">Añadir a Favoritos</button>
+        </div>
+        <div id="favoritesList">
             <!-- Se llenarán dinámicamente -->
         </div>
     </div>
 </div>
 
+<!-- Social Modal -->
+<div id="socialModal" class="modal">
+    <div class="modal-content">
+        <button class="close-btn" onclick="closeModal('socialModal')">×</button>
+        <h3>Mis Redes Sociales</h3>
+        <div class="form-group">
+            <label>Twitter/X</label>
+            <input type="text" id="socialTwitter" placeholder="@usuario">
+        </div>
+        <div class="form-group">
+            <label>Instagram</label>
+            <input type="text" id="socialInstagram" placeholder="@usuario">
+        </div>
+        <div class="form-group">
+            <label>Reddit</label>
+            <input type="text" id="socialReddit" placeholder="u/usuario">
+        </div>
+        <div class="form-group">
+            <label>Telegram</label>
+            <input type="text" id="socialTelegram" placeholder="@usuario">
+        </div>
+        <div class="form-group">
+            <label>Discord</label>
+            <input type="text" id="socialDiscord" placeholder="usuario#1234">
+        </div>
+        <button class="btn-primary" onclick="saveSocialLinks()">Guardar Enlaces</button>
+    </div>
+</div>
+
+<!-- Quotes Modal -->
+<div id="quotesModal" class="modal">
+    <div class="modal-content">
+        <button class="close-btn" onclick="closeModal('quotesModal')">×</button>
+        <h3>Frases Destacadas</h3>
+        <div class="form-group">
+            <label>Nueva Frase</label>
+            <textarea id="newQuote" placeholder="Escribe una frase destacada de tus experiencias..." maxlength="160"></textarea>
+            <div class="char-counter">
+                <span id="charCount">0</span>/160
+            </div>
+            <button class="btn-primary" onclick="addQuote()">Añadir Frase</button>
+        </div>
+        <div id="quotesList">
+            <!-- Se llenarán dinámicamente -->
+        </div>
+    </div>
+</div>
+
+<!-- Share Profile Modal -->
+<div id="shareProfileModal" class="modal">
+    <div class="modal-content">
+        <button class="close-btn" onclick="closeModal('shareProfileModal')">×</button>
+        <h3>Compartir Perfil</h3>
+        <div class="profile-card" id="profileCard">
+            <div class="profile-avatar">🧙‍♂️</div>
+            <h4 id="profileCardName">Psiconáuta Anónimo</h4>
+            <p>Explorador de la conciencia</p>
+            <div id="profileCardStats">
+                <p><strong>Sustancias probadas:</strong> <span id="substanceCount">0</span></p>
+                <p><strong>Registros totales:</strong> <span id="entryCount">0</span></p>
+            </div>
+        </div>
+        <div class="social-share-grid">
+            <button class="social-share-btn twitter-btn" onclick="shareToTwitter()">Twitter</button>
+            <button class="social-share-btn whatsapp-btn" onclick="shareToWhatsApp()">WhatsApp</button>
+            <button class="social-share-btn telegram-btn" onclick="shareToTelegram()">Telegram</button>
+            <button class="social-share-btn reddit-btn" onclick="shareToReddit()">Reddit</button>
+        </div>
+    </div>
+</div>
+
 <script>
-    // State management
-    let currentMonth = new Date();
-    let currentView = 'calendar';
-    let selectedColor = '#8B5CF6'; // Default color
-    let selectedSubstance = null; // Nueva variable para filtrar por sustancia
+    // Global variables
+    let currentDate = new Date();
+    let substances = JSON.parse(localStorage.getItem('substances')) || getDefaultSubstances();
+    let entries = JSON.parse(localStorage.getItem('entries') || '[]');
+    let userProfile = JSON.parse(localStorage.getItem('userProfile') || '{}');
+    let selectedSubstanceColor = '#8B5CF6';
 
-    // Available colors for substances
-    const availableColors = [
-        '#8B5CF6', '#06B6D4', '#F97316', '#EF4444',
-        '#10B981', '#F59E0B', '#EC4899', '#6366F1',
-        '#84CC16', '#F43F5E', '#A855F7', '#14B8A6'
-    ];
-
-    // Default substances with colors
-    const defaultSubstances = {
-        lsd: { name: 'LSD', color: '#8B5CF6', entries: {} },
-        psilocybin: { name: 'Psilocibina', color: '#06B6D4', entries: {} },
-        mdma: { name: 'MDMA', color: '#F97316', entries: {} }
-    };
-
-    // Storage functions
-    function loadData() {
-        try {
-            const stored = localStorage.getItem('psycho-logger-data');
-            return stored ? JSON.parse(stored) : defaultSubstances;
-        } catch (e) {
-            console.error('Error loading data:', e);
-            return defaultSubstances;
-        }
-    }
-
-    function saveData(data) {
-        try {
-            localStorage.setItem('psycho-logger-data', JSON.stringify(data));
-        } catch (e) {
-            console.error('Error saving data:', e);
-        }
-    }
-
-    let substanceData = loadData();
-
-    // Generate substance list
-    function updateSubstanceList() {
-        const list = document.getElementById('substance-list');
-        const select = document.getElementById('entrySubstance');
-
-        if (!list || !select) return;
-
-        list.innerHTML = '';
-        select.innerHTML = '';
-
-        Object.keys(substanceData).forEach(key => {
-            const substance = substanceData[key];
-            const count = Object.keys(substance.entries || {}).length;
-
-            // Sidebar item with colored indicator
-            const listItem = document.createElement('li');
-            listItem.className = 'substance-item';
-            listItem.dataset.substance = key;
-            listItem.style.setProperty('--substance-color', substance.color);
-            listItem.innerHTML = `
-                <div style="display: flex; align-items: center; gap: 0.5rem;">
-                    <div style="width: 12px; height: 12px; border-radius: 50%; background: ${substance.color};"></div>
-                    ${substance.name}
-                </div>
-                <span class="substance-count">${count}</span>
-            `;
-            listItem.onclick = () => selectSubstance(key);
-            list.appendChild(listItem);
-
-            // Select option
-            const option = document.createElement('option');
-            option.value = key;
-            option.textContent = substance.name;
-            select.appendChild(option);
-        });
-
-        // Select first substance by default - pero sin filtrar
-        // Comentamos esto para que inicie sin filtro
-        // if (Object.keys(substanceData).length > 0) {
-        //     selectSubstance(Object.keys(substanceData)[0]);
-        // }
-    }
-
-    // Generate color picker
-    function generateColorPicker() {
-        const colorOptions = document.getElementById('colorOptions');
-        if (!colorOptions) return;
-
-        colorOptions.innerHTML = '';
-
-        availableColors.forEach((color, index) => {
-            const colorOption = document.createElement('div');
-            colorOption.className = 'color-option';
-            colorOption.style.backgroundColor = color;
-            colorOption.dataset.color = color;
-
-            if (color === selectedColor) {
-                colorOption.classList.add('selected');
+    // Default substances
+    function getDefaultSubstances() {
+        return [
+            {
+                id: 1,
+                name: 'LSD',
+                color: '#8B5CF6',
+                createdAt: new Date().toISOString()
+            },
+            {
+                id: 2,
+                name: 'Ketamina',
+                color: '#06B6D4',
+                createdAt: new Date().toISOString()
+            },
+            {
+                id: 3,
+                name: 'Opio',
+                color: '#8B5A2B',
+                createdAt: new Date().toISOString()
             }
-
-            colorOption.onclick = () => {
-                // Remove previous selection
-                document.querySelectorAll('.color-option').forEach(opt =>
-                    opt.classList.remove('selected'));
-
-                // Add selection to clicked option
-                colorOption.classList.add('selected');
-                selectedColor = color;
-            };
-
-            colorOptions.appendChild(colorOption);
-        });
+        ];
     }
 
-    function selectSubstance(substanceKey) {
-        // Actualizar estado de selección
-        selectedSubstance = selectedSubstance === substanceKey ? null : substanceKey;
+    // Initialize app
+    document.addEventListener('DOMContentLoaded', function() {
+        initializeApp();
+        setupEventListeners();
+    });
 
-        // Actualizar UI de la sidebar
-        document.querySelectorAll('.substance-item').forEach(item =>
-            item.classList.remove('active'));
-
-        if (selectedSubstance) {
-            const activeItem = document.querySelector(`[data-substance="${selectedSubstance}"]`);
-            if (activeItem) {
-                activeItem.classList.add('active');
-            }
+    function initializeApp() {
+        // Save default substances if first time
+        if (!localStorage.getItem('substances')) {
+            localStorage.setItem('substances', JSON.stringify(substances));
         }
 
-        // Regenerar calendario con filtro aplicado
         generateCalendar();
+        renderSubstanceList();
+        renderStats();
+        loadUserProfile();
+        updateProfileCard();
+
+        // Set current datetime for entry form
+        const now = new Date();
+        const localDateTime = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+        document.getElementById('entryDateTime').value = localDateTime;
     }
 
-    // Generate calendar
-    function generateCalendar() {
-        const grid = document.getElementById('calendar-grid');
-        const monthYear = document.getElementById('current-month');
-
-        if (!grid || !monthYear) return;
-
-        grid.innerHTML = '';
-
-        const monthNames = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-                          'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
-
-        // Actualizar título según filtro
-        let title = `${monthNames[currentMonth.getMonth()]} ${currentMonth.getFullYear()}`;
-        if (selectedSubstance) {
-            title += ` - ${substanceData[selectedSubstance].name}`;
-        }
-        monthYear.textContent = title;
-
-        // Day headers
-        const dayHeaders = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
-        dayHeaders.forEach(day => {
-            const dayHeader = document.createElement('div');
-            dayHeader.className = 'calendar-day day-header';
-            dayHeader.textContent = day;
-            grid.appendChild(dayHeader);
+    function setupEventListeners() {
+        // Entry form
+        document.getElementById('entryForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            addEntry();
         });
 
-        // Calendar days
-        const firstDay = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
-        const startDate = new Date(firstDay);
-        startDate.setDate(startDate.getDate() - (firstDay.getDay() === 0 ? 6 : firstDay.getDay() - 1));
+        // Substance form
+        document.getElementById('substanceForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            addSubstance();
+        });
 
-        for(let i = 0; i < 42; i++) {
-            const date = new Date(startDate);
-            date.setDate(startDate.getDate() + i);
+        // Color picker
+        document.querySelectorAll('.color-option').forEach(option => {
+            option.addEventListener('click', function() {
+                document.querySelectorAll('.color-option').forEach(opt => opt.classList.remove('selected'));
+                this.classList.add('selected');
+                selectedSubstanceColor = this.dataset.color;
+            });
+        });
 
-            const dayElement = document.createElement('div');
-            dayElement.className = 'calendar-day';
-            dayElement.textContent = date.getDate();
-
-            const dateString = date.toISOString().split('T')[0];
-
-            // Check for entries on this date - aplicar filtro por sustancia
-            let dayEntries = [];
-
-            if (selectedSubstance) {
-                // Solo mostrar entradas de la sustancia seleccionada
-                const substance = substanceData[selectedSubstance];
-                if (substance.entries && substance.entries[dateString]) {
-                    substance.entries[dateString].forEach(entry => {
-                        dayEntries.push({
-                            ...entry,
-                            substance: selectedSubstance,
-                            substanceName: substance.name,
-                            color: substance.color
-                        });
-                    });
-                }
-            } else {
-                // Mostrar todas las entradas (comportamiento original)
-                Object.keys(substanceData).forEach(substanceKey => {
-                    const substance = substanceData[substanceKey];
-                    if (substance.entries && substance.entries[dateString]) {
-                        substance.entries[dateString].forEach(entry => {
-                            dayEntries.push({
-                                ...entry,
-                                substance: substanceKey,
-                                substanceName: substance.name,
-                                color: substance.color
-                            });
-                        });
-                    }
-                });
-            }
-
-            if (dayEntries.length > 0) {
-                dayElement.classList.add('has-entry');
-
-                if (selectedSubstance) {
-                    // Si hay filtro, usar solo el color de la sustancia seleccionada
-                    dayElement.style.background = `linear-gradient(135deg, ${substanceData[selectedSubstance].color}, ${adjustColorBrightness(substanceData[selectedSubstance].color, -20)})`;
-                } else {
-                    // Comportamiento original: gradient púrpura/rosa
-                    dayElement.style.background = 'linear-gradient(135deg, var(--primary-purple), var(--secondary-pink))';
-                }
-
-                // Add substance indicators (solo si no hay filtro activo)
-                if (!selectedSubstance) {
-                    const indicators = document.createElement('div');
-                    indicators.className = 'substance-indicators';
-
-                    const uniqueSubstances = [...new Set(dayEntries.map(e => e.substance))];
-                    uniqueSubstances.forEach(substanceKey => {
-                        const dot = document.createElement('div');
-                        dot.className = 'substance-dot';
-                        dot.style.backgroundColor = substanceData[substanceKey].color;
-                        indicators.appendChild(dot);
-                    });
-
-                    dayElement.appendChild(indicators);
-                }
-            }
-
-            if(date.getMonth() !== currentMonth.getMonth()) {
-                dayElement.style.opacity = '0.3';
-            }
-
-            dayElement.onclick = () => openDayModal(date, dayEntries);
-            grid.appendChild(dayElement);
+        // Quote character counter
+        const quoteTextarea = document.getElementById('newQuote');
+        if (quoteTextarea) {
+            quoteTextarea.addEventListener('input', function() {
+                document.getElementById('charCount').textContent = this.value.length;
+            });
         }
-    }
-
-    // Función auxiliar para ajustar brillo del color
-    function adjustColorBrightness(hex, percent) {
-        const num = parseInt(hex.replace('#', ''), 16);
-        const amt = Math.round(2.55 * percent);
-        const R = (num >> 16) + amt;
-        const G = (num >> 8 & 0x00FF) + amt;
-        const B = (num & 0x0000FF) + amt;
-        return '#' + (0x1000000 + (R < 255 ? R < 1 ? 0 : R : 255) * 0x10000 +
-            (G < 255 ? G < 1 ? 0 : G : 255) * 0x100 +
-            (B < 255 ? B < 1 ? 0 : B : 255)).toString(16).slice(1);
     }
 
     // Navigation functions
-    function previousMonth() {
-        currentMonth.setMonth(currentMonth.getMonth() - 1);
-        generateCalendar();
-    }
-
-    function nextMonth() {
-        currentMonth.setMonth(currentMonth.getMonth() + 1);
-        generateCalendar();
-    }
-
-    function switchView(view) {
-        // Update nav items - encontrar el item que fue clickeado
-        document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
-
-        // Buscar cual nav-item corresponde a esta vista
-        const navItems = document.querySelectorAll('.nav-item');
-        navItems.forEach(item => {
-            const label = item.querySelector('.nav-label').textContent.toLowerCase();
-            if ((view === 'calendar' && label === 'calendario') ||
-                (view === 'stats' && label === 'stats') ||
-                (view === 'resources' && label === 'recursos')) {
-                item.classList.add('active');
-            }
+    function switchView(viewName) {
+        // Hide all views
+        document.querySelectorAll('.view').forEach(view => {
+            view.style.display = 'none';
         });
 
-        // Hide all views
-        document.querySelectorAll('.view').forEach(viewEl => viewEl.style.display = 'none');
-
         // Show selected view
-        const viewElement = document.getElementById(view + '-view');
-        if (viewElement) {
-            viewElement.style.display = 'block';
-        }
+        document.getElementById(viewName + '-view').style.display = 'grid';
 
-        if (view === 'stats') {
-            updateStats();
-        }
+        // Update navigation
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.classList.remove('active');
+        });
+        event.target.closest('.nav-item').classList.add('active');
 
-        currentView = view;
+        // Regenerate content for specific views
+        if (viewName === 'stats') {
+            renderStats();
+        }
     }
 
     // Modal functions
     function openModal(modalId) {
-        if (modalId === 'entryModal') {
-            // Set current date/time
-            const now = new Date();
-            now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-            const dateTimeInput = document.getElementById('entryDateTime');
-            if (dateTimeInput) {
-                dateTimeInput.value = now.toISOString().slice(0, 16);
-            }
-        } else if (modalId === 'substanceModal') {
-            // Reset color selection and generate color picker
-            selectedColor = availableColors[0];
-            generateColorPicker();
-        }
-
         const modal = document.getElementById(modalId);
-        if (modal) {
-            modal.classList.add('active');
+        modal.classList.add('active');
+
+        // Populate dropdowns when opening modals
+        if (modalId === 'entryModal') {
+            populateSubstanceDropdown();
+        } else if (modalId === 'favoritesModal') {
+            populateFavoriteDropdown();
+            renderFavorites();
+        } else if (modalId === 'quotesModal') {
+            renderQuotes();
+        } else if (modalId === 'socialModal') {
+            loadSocialLinks();
+        } else if (modalId === 'shareProfileModal') {
+            updateProfileCard();
         }
     }
 
     function closeModal(modalId) {
-        const modal = document.getElementById(modalId);
-        if (modal) {
-            modal.classList.remove('active');
+        document.getElementById(modalId).classList.remove('active');
+    }
+
+    // Calendar functions
+    function generateCalendar() {
+        const grid = document.getElementById('calendar-grid');
+        const monthName = currentDate.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' });
+        document.getElementById('current-month').textContent = monthName.charAt(0).toUpperCase() + monthName.slice(1);
+
+        // Clear grid
+        grid.innerHTML = '';
+
+        // Add day headers
+        const dayHeaders = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+        dayHeaders.forEach(day => {
+            const dayElement = document.createElement('div');
+            dayElement.className = 'calendar-day day-header';
+            dayElement.textContent = day;
+            grid.appendChild(dayElement);
+        });
+
+        // Get first day of month and number of days
+        const firstDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+        const lastDay = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
+        const startDate = new Date(firstDay);
+        startDate.setDate(startDate.getDate() - firstDay.getDay());
+
+        // Generate calendar days
+        for (let i = 0; i < 42; i++) {
+            const day = new Date(startDate);
+            day.setDate(startDate.getDate() + i);
+
+            const dayElement = document.createElement('div');
+            dayElement.className = 'calendar-day';
+            dayElement.textContent = day.getDate();
+
+            // Check if day has entries
+            const dayEntries = entries.filter(entry => {
+                const entryDate = new Date(entry.date);
+                return entryDate.toDateString() === day.toDateString();
+            });
+
+            if (dayEntries.length > 0) {
+                dayElement.classList.add('has-entry');
+
+                // Add substance indicators
+                const indicators = document.createElement('div');
+                indicators.className = 'substance-indicators';
+
+                const uniqueSubstances = [...new Set(dayEntries.map(entry => entry.substance))];
+                uniqueSubstances.slice(0, 3).forEach(substanceName => {
+                    const substance = substances.find(s => s.name === substanceName);
+                    const dot = document.createElement('div');
+                    dot.className = 'substance-dot';
+                    dot.style.backgroundColor = substance ? substance.color : '#8B5CF6';
+                    indicators.appendChild(dot);
+                });
+
+                dayElement.appendChild(indicators);
+            }
+
+            // Add click event
+            dayElement.addEventListener('click', () => showDayEntries(day));
+
+            grid.appendChild(dayElement);
         }
     }
 
-    function openDayModal(date, entries) {
-        const modal = document.getElementById('dayModal');
-        const title = document.getElementById('dayModalTitle');
-        const content = document.getElementById('dayEntries');
+    function previousMonth() {
+        currentDate.setMonth(currentDate.getMonth() - 1);
+        generateCalendar();
+    }
 
-        if (!modal || !title || !content) return;
+    function nextMonth() {
+        currentDate.setMonth(currentDate.getMonth() + 1);
+        generateCalendar();
+    }
 
-        title.textContent = date.toLocaleDateString('es-ES', {
-            weekday: 'long',
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric'
+    function showDayEntries(date) {
+        const dayEntries = entries.filter(entry => {
+            const entryDate = new Date(entry.date);
+            return entryDate.toDateString() === date.toDateString();
         });
 
-        if(entries && entries.length > 0) {
-            content.innerHTML = entries.map(entry => `
+        if (dayEntries.length === 0) {
+            alert('No hay registros para este día');
+            return;
+        }
+
+        let content = `<h3>Registros del ${date.toLocaleDateString('es-ES')}</h3>`;
+        dayEntries.forEach(entry => {
+            const time = new Date(entry.date).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+            content += `
                 <div class="entry-item">
                     <div class="entry-header">
-                        <span class="entry-substance">${entry.substanceName}</span>
-                        <span class="entry-time">${entry.time}</span>
+                        <span class="entry-substance">${entry.substance}</span>
+                        <span class="entry-time">${time}</span>
                     </div>
-                    <div class="entry-dose"><strong>Dosis:</strong> ${entry.dose} ${entry.unit}</div>
+                    <div class="entry-dose">${entry.dose} ${entry.unit}</div>
                     ${entry.notes ? `<div class="entry-notes">${entry.notes}</div>` : ''}
                 </div>
-            `).join('');
-        } else {
-            content.innerHTML = '<p style="text-align: center; color: var(--text-muted);">No hay registros para este día</p>';
-        }
-
-        modal.classList.add('active');
-    }
-
-    // Form handlers
-    function initFormHandlers() {
-        const entryForm = document.getElementById('entryForm');
-        if (entryForm) {
-            entryForm.onsubmit = function(e) {
-                e.preventDefault();
-
-                const substance = document.getElementById('entrySubstance').value;
-                const dose = document.getElementById('entryDose').value;
-                const unit = document.getElementById('entryUnit').value;
-                const dateTimeValue = document.getElementById('entryDateTime').value;
-                const notes = document.getElementById('entryNotes').value;
-
-                if (!substance || !dose || !dateTimeValue) {
-                    alert('Por favor completa todos los campos obligatorios');
-                    return;
-                }
-
-                const dateTime = new Date(dateTimeValue);
-                const dateString = dateTime.toISOString().split('T')[0];
-                const timeString = dateTime.toTimeString().slice(0, 5);
-
-                // Initialize entries array if doesn't exist
-                if (!substanceData[substance].entries) {
-                    substanceData[substance].entries = {};
-                }
-                if (!substanceData[substance].entries[dateString]) {
-                    substanceData[substance].entries[dateString] = [];
-                }
-
-                // Add new entry
-                substanceData[substance].entries[dateString].push({
-                    time: timeString,
-                    dose: dose,
-                    unit: unit,
-                    notes: notes
-                });
-
-                // Save to localStorage
-                saveData(substanceData);
-
-                // Update UI
-                updateSubstanceList();
-                generateCalendar();
-                updateStats();
-
-                // Clear form and close modal
-                entryForm.reset();
-                closeModal('entryModal');
-            };
-        }
-
-        const substanceForm = document.getElementById('substanceForm');
-        if (substanceForm) {
-            substanceForm.onsubmit = function(e) {
-                e.preventDefault();
-
-                const name = document.getElementById('substanceName').value;
-                const category = document.getElementById('substanceCategory').value;
-                const unit = document.getElementById('substanceUnit').value;
-
-                if (!name) {
-                    alert('Por favor ingresa el nombre de la sustancia');
-                    return;
-                }
-
-                // Generate key from name
-                const key = name.toLowerCase().replace(/[^a-z0-9]/g, '');
-
-                // Check if already exists
-                if (substanceData[key]) {
-                    alert('Esta sustancia ya existe');
-                    return;
-                }
-
-                // Add new substance with selected color
-                substanceData[key] = {
-                    name: name,
-                    category: category,
-                    unit: unit,
-                    color: selectedColor,
-                    entries: {}
-                };
-
-                // Save to localStorage
-                saveData(substanceData);
-
-                // Update UI
-                updateSubstanceList();
-                generateCalendar();
-
-                // Clear form and close modal
-                substanceForm.reset();
-                closeModal('substanceModal');
-            };
-        }
-    }
-
-    // Stats update function
-    function updateStats() {
-        const statsContent = document.getElementById('stats-content');
-        if (!statsContent) return;
-
-        // Calculate stats
-        const totalEntries = Object.values(substanceData).reduce((total, substance) =>
-            total + Object.keys(substance.entries || {}).length, 0);
-
-        const mostUsed = Object.entries(substanceData).reduce((max, [key, substance]) => {
-            const count = Object.keys(substance.entries || {}).length;
-            return count > max.count ? { name: substance.name, count } : max;
-        }, { name: 'Ninguna', count: 0 });
-
-        // Get recent usage
-        const recentEntries = [];
-        Object.entries(substanceData).forEach(([key, substance]) => {
-            if (substance.entries) {
-                Object.entries(substance.entries).forEach(([date, entries]) => {
-                    entries.forEach(entry => {
-                        recentEntries.push({
-                            date: new Date(date),
-                            substance: substance.name,
-                            ...entry
-                        });
-                    });
-                });
-            }
+            `;
         });
 
-        recentEntries.sort((a, b) => b.date - a.date);
-        const lastEntry = recentEntries[0];
-        const daysSinceLastUse = lastEntry ?
-            Math.floor((new Date() - lastEntry.date) / (1000 * 60 * 60 * 24)) : 0;
+        // Create temporary modal
+        const modal = document.createElement('div');
+        modal.className = 'modal active';
+        modal.innerHTML = `
+            <div class="modal-content">
+                <button class="close-btn" onclick="this.closest('.modal').remove()">×</button>
+                ${content}
+            </div>
+        `;
+        document.body.appendChild(modal);
+    }
 
-        statsContent.innerHTML = `
+    // Substance functions
+    function addSubstance() {
+        const name = document.getElementById('substanceName').value.trim();
+
+        if (!name) {
+            alert('Por favor, introduce un nombre para la sustancia');
+            return;
+        }
+
+        if (substances.find(s => s.name.toLowerCase() === name.toLowerCase())) {
+            alert('Esta sustancia ya existe');
+            return;
+        }
+
+        const substance = {
+            id: Date.now(),
+            name: name,
+            color: selectedSubstanceColor,
+            createdAt: new Date().toISOString()
+        };
+
+        substances.push(substance);
+        localStorage.setItem('substances', JSON.stringify(substances));
+
+        renderSubstanceList();
+        closeModal('substanceModal');
+        document.getElementById('substanceForm').reset();
+
+        // Reset color selection
+        document.querySelectorAll('.color-option').forEach(opt => opt.classList.remove('selected'));
+        selectedSubstanceColor = '#8B5CF6';
+    }
+
+    function renderSubstanceList() {
+        const list = document.getElementById('substance-list');
+        list.innerHTML = '';
+
+        substances.forEach(substance => {
+            const count = entries.filter(entry => entry.substance === substance.name).length;
+
+            const item = document.createElement('li');
+            item.className = 'substance-item';
+            item.innerHTML = `
+                <span>${substance.name}</span>
+                <span class="substance-count">${count}</span>
+            `;
+            item.style.borderLeft = `4px solid ${substance.color}`;
+            list.appendChild(item);
+        });
+    }
+
+    function populateSubstanceDropdown() {
+        const select = document.getElementById('entrySubstance');
+        select.innerHTML = '<option value="">Selecciona una sustancia...</option>';
+
+        substances.forEach(substance => {
+            const option = document.createElement('option');
+            option.value = substance.name;
+            option.textContent = substance.name;
+            select.appendChild(option);
+        });
+    }
+
+    // Entry functions
+    function addEntry() {
+        const substance = document.getElementById('entrySubstance').value;
+        const dose = parseFloat(document.getElementById('entryDose').value);
+        const unit = document.getElementById('entryUnit').value;
+        const dateTime = document.getElementById('entryDateTime').value;
+        const notes = document.getElementById('entryNotes').value.trim();
+
+        if (!substance || !dose || !dateTime) {
+            alert('Por favor, completa todos los campos obligatorios');
+            return;
+        }
+
+        const entry = {
+            id: Date.now(),
+            substance: substance,
+            dose: dose,
+            unit: unit,
+            date: dateTime,
+            notes: notes,
+            createdAt: new Date().toISOString()
+        };
+
+        entries.push(entry);
+        localStorage.setItem('entries', JSON.stringify(entries));
+
+        generateCalendar();
+        renderSubstanceList();
+        closeModal('entryModal');
+        document.getElementById('entryForm').reset();
+
+        // Reset datetime to current
+        const now = new Date();
+        const localDateTime = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+        document.getElementById('entryDateTime').value = localDateTime;
+    }
+
+    // Stats functions
+    function renderStats() {
+        const statsContainer = document.getElementById('stats-content');
+
+        if (entries.length === 0) {
+            statsContainer.innerHTML = '<div class="resource-card"><h4>No hay datos</h4><p>Añade algunos registros para ver estadísticas</p></div>';
+            return;
+        }
+
+        const totalEntries = entries.length;
+        const uniqueSubstances = [...new Set(entries.map(entry => entry.substance))];
+        const averagePerMonth = (totalEntries / 12).toFixed(1);
+
+        // Most used substance
+        const substanceCount = {};
+        entries.forEach(entry => {
+            substanceCount[entry.substance] = (substanceCount[entry.substance] || 0) + 1;
+        });
+        const mostUsed = Object.keys(substanceCount).reduce((a, b) => substanceCount[a] > substanceCount[b] ? a : b);
+
+        // Recent activity
+        const lastWeek = new Date();
+        lastWeek.setDate(lastWeek.getDate() - 7);
+        const recentEntries = entries.filter(entry => new Date(entry.date) > lastWeek).length;
+
+        statsContainer.innerHTML = `
             <div class="resource-card">
-                <h4>Frecuencia de Uso</h4>
-                <p><strong>Total de registros:</strong> ${totalEntries}</p>
-                <p><strong>Sustancia más usada:</strong> ${mostUsed.name} (${mostUsed.count} veces)</p>
-                <p><strong>Última vez:</strong> ${lastEntry ? `hace ${daysSinceLastUse} días` : 'Sin registros'}</p>
+                <h4>Registros Totales</h4>
+                <p style="font-size: 2rem; color: var(--accent-cyan); font-weight: bold;">${totalEntries}</p>
             </div>
             <div class="resource-card">
-                <h4>Patrones</h4>
-                <p><strong>Promedio mensual:</strong> ${(totalEntries / 3).toFixed(1)} usos</p>
-                <p><strong>Sustancias registradas:</strong> ${Object.keys(substanceData).length}</p>
+                <h4>Sustancias Únicas</h4>
+                <p style="font-size: 2rem; color: var(--secondary-pink); font-weight: bold;">${uniqueSubstances.length}</p>
             </div>
             <div class="resource-card">
-                <h4>Recomendaciones</h4>
-                <p><strong>Espaciado recomendado:</strong> 7-14 días entre usos</p>
-                <p><strong>Recuerda:</strong> La moderación es clave para un uso responsable</p>
+                <h4>Más Utilizada</h4>
+                <p style="font-size: 1.5rem; color: var(--primary-purple); font-weight: bold;">${mostUsed}</p>
+                <p>${substanceCount[mostUsed]} veces</p>
+            </div>
+            <div class="resource-card">
+                <h4>Actividad Reciente</h4>
+                <p style="font-size: 2rem; color: var(--accent-orange); font-weight: bold;">${recentEntries}</p>
+                <p>Últimos 7 días</p>
+            </div>
+            <div class="resource-card">
+                <h4>Promedio Mensual</h4>
+                <p style="font-size: 2rem; color: var(--accent-cyan); font-weight: bold;">${averagePerMonth}</p>
+                <p>Registros por mes</p>
             </div>
         `;
     }
 
-    // Close modals when clicking outside
-    function initModalCloseHandlers() {
-        document.querySelectorAll('.modal').forEach(modal => {
-            modal.onclick = (e) => {
-                if(e.target === modal) {
-                    modal.classList.remove('active');
-                }
-            };
+    // Profile functions
+    function saveProfile() {
+        const nickname = document.getElementById('userNickname').value.trim();
+
+        userProfile.nickname = nickname || 'Psiconáuta Anónimo';
+        localStorage.setItem('userProfile', JSON.stringify(userProfile));
+
+        updateProfileCard();
+        alert('Perfil guardado correctamente');
+    }
+
+    function loadUserProfile() {
+        if (userProfile.nickname) {
+            document.getElementById('userNickname').value = userProfile.nickname;
+        }
+    }
+
+    function updateProfileCard() {
+        const nickname = userProfile.nickname || 'Psiconáuta Anónimo';
+        document.getElementById('profileCardName').textContent = nickname;
+        document.getElementById('substanceCount').textContent = substances.length;
+        document.getElementById('entryCount').textContent = entries.length;
+    }
+
+    // Favorites functions
+    function populateFavoriteDropdown() {
+        const select = document.getElementById('favoriteSubstanceSelect');
+        select.innerHTML = '<option value="">Selecciona una sustancia...</option>';
+
+        substances.forEach(substance => {
+            const option = document.createElement('option');
+            option.value = substance.name;
+            option.textContent = substance.name;
+            select.appendChild(option);
         });
     }
 
-    // Initialize app
-    function initApp() {
-        updateSubstanceList();
-        generateCalendar();
-        updateStats();
-        initFormHandlers();
-        initModalCloseHandlers();
-        generateColorPicker();
+    function addToFavorites() {
+        const substanceName = document.getElementById('favoriteSubstanceSelect').value;
+
+        if (!substanceName) {
+            alert('Selecciona una sustancia');
+            return;
+        }
+
+        if (!userProfile.favorites) {
+            userProfile.favorites = [];
+        }
+
+        if (userProfile.favorites.includes(substanceName)) {
+            alert('Esta sustancia ya está en favoritos');
+            return;
+        }
+
+        userProfile.favorites.push(substanceName);
+        localStorage.setItem('userProfile', JSON.stringify(userProfile));
+        renderFavorites();
+        document.getElementById('favoriteSubstanceSelect').value = '';
     }
 
-    // Wait for DOM to be ready
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initApp);
-    } else {
-        initApp();
+    function renderFavorites() {
+        const container = document.getElementById('favoritesList');
+
+        if (!userProfile.favorites || userProfile.favorites.length === 0) {
+            container.innerHTML = '<p>No tienes sustancias favoritas aún</p>';
+            return;
+        }
+
+        container.innerHTML = '';
+        userProfile.favorites.forEach(favorite => {
+            const item = document.createElement('div');
+            item.className = 'favorite-substance';
+            item.innerHTML = `
+                <span>${favorite}</span>
+                <button class="remove-btn" onclick="removeFromFavorites('${favorite}')">×</button>
+            `;
+            container.appendChild(item);
+        });
     }
+
+    function removeFromFavorites(substanceName) {
+        userProfile.favorites = userProfile.favorites.filter(fav => fav !== substanceName);
+        localStorage.setItem('userProfile', JSON.stringify(userProfile));
+        renderFavorites();
+    }
+
+    // Social functions
+    function saveSocialLinks() {
+        userProfile.social = {
+            twitter: document.getElementById('socialTwitter').value.trim(),
+            instagram: document.getElementById('socialInstagram').value.trim(),
+            reddit: document.getElementById('socialReddit').value.trim(),
+            discord: document.getElementById('socialDiscord').value.trim()
+        };
+
+        localStorage.setItem('userProfile', JSON.stringify(userProfile));
+        alert('Enlaces sociales guardados');
+    }
+
+    function loadSocialLinks() {
+        if (userProfile.social) {
+            document.getElementById('socialTwitter').value = userProfile.social.twitter || '';
+            document.getElementById('socialInstagram').value = userProfile.social.instagram || '';
+            document.getElementById('socialReddit').value = userProfile.social.reddit || '';
+            document.getElementById('socialDiscord').value = userProfile.social.discord || '';
+        }
+    }
+
+    // Quotes functions
+    function addQuote() {
+        const quoteText = document.getElementById('newQuote').value.trim();
+
+        if (!quoteText) {
+            alert('Escribe una frase');
+            return;
+        }
+
+        if (quoteText.length > 160) {
+            alert('La frase no puede tener más de 160 caracteres');
+            return;
+        }
+
+        if (!userProfile.quotes) {
+            userProfile.quotes = [];
+        }
+
+        const quote = {
+            id: Date.now(),
+            text: quoteText,
+            date: new Date().toISOString()
+        };
+
+        userProfile.quotes.push(quote);
+        localStorage.setItem('userProfile', JSON.stringify(userProfile));
+        renderQuotes();
+        document.getElementById('newQuote').value = '';
+        document.getElementById('charCount').textContent = '0';
+    }
+
+    function renderQuotes() {
+        const container = document.getElementById('quotesList');
+
+        if (!userProfile.quotes || userProfile.quotes.length === 0) {
+            container.innerHTML = '<p>No tienes frases destacadas aún</p>';
+            return;
+        }
+
+        container.innerHTML = '';
+        userProfile.quotes.forEach(quote => {
+            const item = document.createElement('div');
+            item.className = 'quote-item';
+            item.innerHTML = `
+                <div class="quote-text">"${quote.text}"</div>
+                <div class="quote-actions">
+                    <button class="remove-btn" onclick="removeQuote(${quote.id})">×</button>
+                </div>
+            `;
+            container.appendChild(item);
+        });
+    }
+
+    function removeQuote(quoteId) {
+        userProfile.quotes = userProfile.quotes.filter(quote => quote.id !== quoteId);
+        localStorage.setItem('userProfile', JSON.stringify(userProfile));
+        renderQuotes();
+    }
+
+    // Share functions
+    function shareToTwitter() {
+        const text = `🧙‍♂️ ${userProfile.nickname || 'Psiconáuta Anónimo'} - Explorador de la conciencia\n💊 ${substances.length} sustancias exploradas\n📊 ${entries.length} experiencias documentadas\n\n#Psiconáutica #ConsciousUse`;
+        const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`;
+        window.open(url, '_blank');
+    }
+
+    function shareToWhatsApp() {
+        const text = `🧙‍♂️ ${userProfile.nickname || 'Psiconáuta Anónimo'} - Explorador de la conciencia\n💊 ${substances.length} sustancias exploradas\n📊 ${entries.length} experiencias documentadas`;
+        const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
+        window.open(url, '_blank');
+    }
+
+    function shareToTelegram() {
+        const text = `🧙‍♂️ ${userProfile.nickname || 'Psiconáuta Anónimo'} - Explorador de la conciencia\n💊 ${substances.length} sustancias exploradas\n📊 ${entries.length} experiencias documentadas`;
+        const url = `https://t.me/share/url?text=${encodeURIComponent(text)}`;
+        window.open(url, '_blank');
+    }
+
+    function shareToReddit() {
+        const title = `Mi perfil psiconáutico: ${userProfile.nickname || 'Psiconáuta Anónimo'}`;
+        const text = `Explorador de la conciencia con ${substances.length} sustancias exploradas y ${entries.length} experiencias documentadas`;
+        const url = `https://reddit.com/submit?title=${encodeURIComponent(title)}&text=${encodeURIComponent(text)}`;
+        window.open(url, '_blank');
+    }
+
+    // Data management functions
+    function exportToCSV() {
+        // Export substances
+        let csvContent = "data:text/csv;charset=utf-8,";
+
+        // Substances CSV
+        csvContent += "SUSTANCIAS\n";
+        csvContent += "ID,Nombre,Color,Fecha_Creacion\n";
+        substances.forEach(substance => {
+            csvContent += `${substance.id},"${substance.name}","${substance.color}","${substance.createdAt}"\n`;
+        });
+
+        csvContent += "\nREGISTROS\n";
+        csvContent += "ID,Sustancia,Dosis,Unidad,Fecha_Hora,Notas,Fecha_Creacion\n";
+        entries.forEach(entry => {
+            csvContent += `${entry.id},"${entry.substance}",${entry.dose},"${entry.unit}","${entry.date}","${entry.notes || ''}","${entry.createdAt}"\n`;
+        });
+
+        // Download file
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", `bitacora_psiconáutica_${new Date().toISOString().split('T')[0]}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        alert('Datos exportados correctamente');
+    }
+
+    function importFromCSV(input) {
+        const file = input.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const csv = e.target.result;
+                const lines = csv.split('\n');
+
+                let currentSection = '';
+                let substancesImported = 0;
+                let entriesImported = 0;
+
+                for (let i = 0; i < lines.length; i++) {
+                    const line = lines[i].trim();
+
+                    if (line === 'SUSTANCIAS') {
+                        currentSection = 'substances';
+                        i++; // Skip header
+                        continue;
+                    } else if (line === 'REGISTROS') {
+                        currentSection = 'entries';
+                        i++; // Skip header
+                        continue;
+                    }
+
+                    if (!line) continue;
+
+                    const columns = parseCSVLine(line);
+
+                    if (currentSection === 'substances' && columns.length >= 4) {
+                        const substance = {
+                            id: parseInt(columns[0]) || Date.now() + Math.random(),
+                            name: columns[1].replace(/"/g, ''),
+                            color: columns[2].replace(/"/g, ''),
+                            createdAt: columns[3].replace(/"/g, '')
+                        };
+
+                        // Check if substance already exists
+                        if (!substances.find(s => s.name.toLowerCase() === substance.name.toLowerCase())) {
+                            substances.push(substance);
+                            substancesImported++;
+                        }
+                    } else if (currentSection === 'entries' && columns.length >= 7) {
+                        const entry = {
+                            id: parseInt(columns[0]) || Date.now() + Math.random(),
+                            substance: columns[1].replace(/"/g, ''),
+                            dose: parseFloat(columns[2]),
+                            unit: columns[3].replace(/"/g, ''),
+                            date: columns[4].replace(/"/g, ''),
+                            notes: columns[5].replace(/"/g, ''),
+                            createdAt: columns[6].replace(/"/g, '')
+                        };
+
+                        entries.push(entry);
+                        entriesImported++;
+                    }
+                }
+
+                // Save to localStorage
+                localStorage.setItem('substances', JSON.stringify(substances));
+                localStorage.setItem('entries', JSON.stringify(entries));
+
+                // Refresh UI
+                renderSubstanceList();
+                generateCalendar();
+                renderStats();
+
+                alert(`Importación completada:\n${substancesImported} sustancias\n${entriesImported} registros`);
+
+            } catch (error) {
+                alert('Error al importar el archivo CSV. Verifica el formato.');
+                console.error('Import error:', error);
+            }
+        };
+
+        reader.readAsText(file);
+        input.value = ''; // Reset file input
+    }
+
+    function parseCSVLine(line) {
+        const result = [];
+        let current = '';
+        let inQuotes = false;
+
+        for (let i = 0; i < line.length; i++) {
+            const char = line[i];
+
+            if (char === '"') {
+                inQuotes = !inQuotes;
+            } else if (char === ',' && !inQuotes) {
+                result.push(current);
+                current = '';
+            } else {
+                current += char;
+            }
+        }
+
+        result.push(current);
+        return result;
+    }
+
+    function clearAllData() {
+        if (confirm('¿Estás seguro de que quieres eliminar todos los datos? Esta acción no se puede deshacer.')) {
+            localStorage.removeItem('substances');
+            localStorage.removeItem('entries');
+            localStorage.removeItem('userProfile');
+
+            substances = [];
+            entries = [];
+            userProfile = {};
+
+            renderSubstanceList();
+            generateCalendar();
+            renderStats();
+            loadUserProfile();
+            updateProfileCard();
+
+            alert('Todos los datos han sido eliminados');
+        }
+    }
+
+    // External URL function
+    function openExternalURL(url) {
+        window.open(url, '_blank');
+    }
+
+    // Close modals when clicking outside
+    document.addEventListener('click', function(e) {
+        if (e.target.classList.contains('modal')) {
+            e.target.classList.remove('active');
+        }
+    });
+
+    // Initialize color picker
+    document.addEventListener('DOMContentLoaded', function() {
+        // Set default color selection
+        setTimeout(() => {
+            const firstColorOption = document.querySelector('.color-option');
+            if (firstColorOption) {
+                firstColorOption.classList.add('selected');
+            }
+        }, 100);
+    });
 </script>
+
 </body>
 </html>
