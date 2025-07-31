@@ -18,7 +18,12 @@
             --border-color: rgba(139, 92, 246, 0.3);
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         html, body {
             background: var(--dark-bg);
             min-height: 100vh;
@@ -26,189 +31,831 @@
             color: var(--text-light);
             overflow-x: hidden;
         }
+
         body::before {
             content: '';
-            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
             background: linear-gradient(135deg, var(--dark-bg) 0%, var(--darker-bg) 100%);
             z-index: -10;
         }
-        .psychedelic-bg {
-            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            z-index: -5; opacity: 0.3;
+
+        .animated-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -5;
+            opacity: 0.15;
             background:
-                radial-gradient(circle at 25% 75%, var(--primary-purple) 0%, transparent 35%),
-                radial-gradient(circle at 75% 25%, var(--secondary-pink) 0%, transparent 35%),
-                radial-gradient(circle at 50% 50%, var(--accent-cyan) 0%, transparent 35%),
-                radial-gradient(circle at 80% 80%, var(--accent-orange) 0%, transparent 30%),
-                radial-gradient(circle at 20% 20%, var(--secondary-pink) 0%, transparent 30%),
-                radial-gradient(circle at 60% 10%, var(--primary-purple) 0%, transparent 25%);
-            animation: psychedelicMove 25s ease-in-out infinite;
+                radial-gradient(circle at 25% 75%, var(--primary-purple) 0%, transparent 40%),
+                radial-gradient(circle at 75% 25%, var(--secondary-pink) 0%, transparent 40%),
+                radial-gradient(circle at 50% 50%, var(--accent-cyan) 0%, transparent 40%);
+            animation: backgroundMove 20s ease-in-out infinite;
         }
-        @keyframes psychedelicMove {
-            0%,100%{transform:scale(1)rotate(0deg)translateX(0)translateY(0);opacity:.3;}
-            20%{transform:scale(1.4)rotate(72deg)translateX(30px)translateY(-25px);opacity:.4;}
-            40%{transform:scale(.7)rotate(144deg)translateX(-25px)translateY(30px);opacity:.2;}
-            60%{transform:scale(1.2)rotate(216deg)translateX(-30px)translateY(-15px);opacity:.35;}
-            80%{transform:scale(.9)rotate(288deg)translateX(20px)translateY(25px);opacity:.25;}
+
+        @keyframes backgroundMove {
+            0%, 100% {
+                transform: scale(1) rotate(0deg);
+                opacity: 0.15;
+            }
+            50% {
+                transform: scale(1.1) rotate(180deg);
+                opacity: 0.25;
+            }
         }
+
         .container {
-            max-width: 1200px; margin: 0 auto; padding: 1rem; min-height: 100vh;
-            display: flex; flex-direction: column; background: transparent; position: relative; z-index: 5;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            z-index: 5;
             padding-top: 1.5rem;
         }
+
         .header {
-            text-align: center; margin-bottom: 2rem; padding: 2rem 0; position: relative;
+            text-align: center;
+            margin-bottom: 2rem;
+            padding: 2rem 0;
         }
+
         .header-content {
-            display: flex; align-items: center; justify-content: center; gap: 2rem; flex-wrap: wrap;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 2rem;
+            flex-wrap: wrap;
         }
+
         .mystical-symbol {
-            font-size: 3rem; opacity: 0.7; animation: symbolGlow 4s ease-in-out infinite alternate; user-select: none;
+            font-size: 3rem;
+            opacity: 0.8;
+            animation: symbolGlow 4s ease-in-out infinite alternate;
+            user-select: none;
         }
-        .mystical-symbol.left { color: var(--accent-cyan); animation: symbolRotate 8s linear infinite; }
-        .mystical-symbol.right { color: var(--secondary-pink); animation: symbolRotateReverse 8s linear infinite; }
+
+        .mystical-symbol.left {
+            color: var(--accent-cyan);
+        }
+
+        .mystical-symbol.right {
+            color: var(--secondary-pink);
+        }
+
         @keyframes symbolGlow {
-            0% { opacity: 0.7; transform: scale(1) rotate(0deg); text-shadow: 0 0 10px currentColor;}
-            100% { opacity: 1; transform: scale(1.1) rotate(360deg); text-shadow: 0 0 20px currentColor, 0 0 30px currentColor;}
+            0% {
+                opacity: 0.8;
+                transform: scale(1);
+                filter: drop-shadow(0 0 10px currentColor);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1.1);
+                filter: drop-shadow(0 0 20px currentColor);
+            }
         }
-        @keyframes symbolRotate { 0%{transform:rotate(0)scale(1);}50%{transform:rotate(180deg)scale(1.1);}100%{transform:rotate(360deg)scale(1);} }
-        @keyframes symbolRotateReverse { 0%{transform:rotate(0)scale(1);}50%{transform:rotate(-180deg)scale(1.1);}100%{transform:rotate(-360deg)scale(1);} }
-        .header-title { display: flex; flex-direction: column; align-items: center; }
+
+        .header-title {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
         .header h1 {
-            font-size: 2.5rem; font-weight: 800;
+            font-size: 2.5rem;
+            font-weight: 800;
             background: linear-gradient(135deg, var(--primary-purple), var(--secondary-pink), var(--accent-cyan));
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-            background-clip: text; margin-bottom: 0.5rem;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
             animation: colorShift 3s ease-in-out infinite;
         }
-        @keyframes colorShift { 0%,100%{filter:hue-rotate(0deg);}50%{filter:hue-rotate(90deg);} }
-        .header p { color: var(--text-muted); font-size: 1.1rem; }
+
+        @keyframes colorShift {
+            0%, 100% { filter: hue-rotate(0deg); }
+            50% { filter: hue-rotate(90deg); }
+        }
+
+        .header p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
         .main-content {
-            flex: 1; display: grid; grid-template-columns: 300px 1fr; gap: 2rem; margin-bottom: 5rem;
+            flex: 1;
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 2rem;
+            margin-bottom: 5rem;
         }
-        .sidebar { background: var(--card-bg); border-radius: 20px; padding: 1.5rem; border: 1px solid var(--border-color); height: fit-content; backdrop-filter: blur(10px);}
-        .sidebar h3 { margin-bottom: 1rem; color: var(--primary-purple); font-size: 1.2rem;}
-        .substance-list { list-style: none; }
+
+        .sidebar {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+            height: fit-content;
+            backdrop-filter: blur(10px);
+        }
+
+        .sidebar h3 {
+            margin-bottom: 1rem;
+            color: var(--primary-purple);
+            font-size: 1.2rem;
+        }
+
+        .substance-list {
+            list-style: none;
+        }
+
         .substance-item {
-            padding: 0.75rem; margin-bottom: 0.5rem;
-            background: rgba(139, 92, 246, 0.1); border-radius: 12px; cursor: pointer;
-            transition: all 0.3s ease; border: 1px solid transparent;
-            display: flex; justify-content: space-between; align-items: center; position: relative;
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            background: rgba(139, 92, 246, 0.1);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid transparent;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
         }
-        .substance-item:hover { background: rgba(139,92,246,0.2); border-color: var(--primary-purple); transform: translateX(5px);}
+
+        .substance-item:hover {
+            background: rgba(139, 92, 246, 0.2);
+            border-color: var(--primary-purple);
+            transform: translateX(5px);
+        }
+
         .substance-item.active {
             background: linear-gradient(135deg, var(--primary-purple), var(--secondary-pink));
-            border-color: var(--accent-cyan); transform: scale(1.05);
+            border-color: var(--accent-cyan);
+            transform: scale(1.05);
             box-shadow: 0 5px 15px rgba(139, 92, 246, 0.3);
         }
-        .substance-count {
-            background: var(--accent-cyan); color: var(--dark-bg); border-radius: 50%; width: 24px; height: 24px;
-            display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: bold;
+
+        .substance-info {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            flex: 1;
         }
-        .substance-delete {
-            background: var(--secondary-pink); border: none; color: white; width: 22px; height: 22px; border-radius: 50%;
-            cursor: pointer; font-size: 1rem; opacity: 0; transition: opacity 0.3s;
-            margin-left: 7px; display: flex; align-items: center; justify-content: center;
-        }
-        .substance-item:hover .substance-delete { opacity: 1; }
-        .add-substance-btn { width: 100%; padding: 0.75rem; background: linear-gradient(135deg, var(--accent-orange), var(--secondary-pink)); border: none; border-radius: 12px; color: white; font-weight: 600; cursor: pointer; transition: all 0.3s ease; margin-top: 1rem;}
-        .add-substance-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(249, 115, 22, 0.3);}
-        .calendar-container { background: var(--card-bg); border-radius: 20px; padding: 2rem; border: 1px solid var(--border-color); backdrop-filter: blur(10px);}
-        .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;}
-        .calendar-nav { display: flex; gap: 1rem; align-items: center;}
-        .nav-btn { background: var(--primary-purple); border: none; color: white; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center;}
-        .nav-btn:hover { background: var(--secondary-pink); transform: scale(1.1);}
-        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; background: var(--border-color); border-radius: 12px; overflow: hidden;}
-        .calendar-day { aspect-ratio: 1; background: var(--darker-bg); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s ease; position: relative; font-weight: 500;}
-        .calendar-day:hover { background: rgba(139, 92, 246, 0.2);}
-        .calendar-day.has-entry { background: linear-gradient(135deg, var(--primary-purple), var(--secondary-pink)); color: white;}
-        .calendar-day.has-entry::after { content: ''; position: absolute; top: 5px; right: 5px; width: 8px; height: 8px; background: var(--accent-cyan); border-radius: 50%;}
-        .substance-indicators { position: absolute; bottom: 2px; left: 50%; transform: translateX(-50%); display: flex; gap: 2px;}
-        .substance-dot { width: 6px; height: 6px; border-radius: 50%;}
-        .color-picker-container { margin: 1rem 0;}
-        .color-options { display: grid; grid-template-columns: repeat(6, 1fr); gap: 0.5rem; margin-top: 0.5rem;}
-        .color-option { width: 40px; height: 40px; border-radius: 50%; border: 3px solid transparent; cursor: pointer; transition: all 0.3s ease; position: relative;}
-        .color-option:hover { transform: scale(1.1); border-color: var(--text-light);}
-        .color-option.selected { border-color: var(--accent-cyan); transform: scale(1.2);}
-        .color-option.selected::after { content: '✓'; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: white; font-weight: bold; text-shadow: 0 0 3px rgba(0,0,0,0.8);}
-        .day-header { background: var(--primary-purple); color: white; font-weight: 600; font-size: 0.9rem;}
-        .bottom-nav {
-            position: fixed; bottom: 0; left: 0; right: 0;
-            background: var(--card-bg); border-top: 1px solid var(--border-color);
-            padding: 0.5rem 0; /* Menos padding vertical para evitar 2 filas */
-            z-index: 1000; backdrop-filter: blur(20px);
-        }
-        .nav-container {
-            max-width: 1200px; margin: 0 auto;
-            display: flex; flex-direction: row;
-            justify-content: center; align-items: center; /* Horizontal, centrado */
+
+        .substance-actions {
+            display: flex;
+            align-items: center;
             gap: 0.5rem;
         }
+
+        .substance-count {
+            background: var(--accent-cyan);
+            color: var(--dark-bg);
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .delete-substance-btn {
+            background: var(--secondary-pink);
+            border: none;
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            opacity: 0.7;
+        }
+
+        .delete-substance-btn:hover {
+            opacity: 1;
+            background: #dc2626;
+            transform: scale(1.1);
+        }
+
+        .add-substance-btn {
+            width: 100%;
+            padding: 0.75rem;
+            background: linear-gradient(135deg, var(--accent-orange), var(--secondary-pink));
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 1rem;
+        }
+
+        .add-substance-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(249, 115, 22, 0.3);
+        }
+
+        .calendar-container {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 2rem;
+            border: 1px solid var(--border-color);
+            backdrop-filter: blur(10px);
+        }
+
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .calendar-nav {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .nav-btn {
+            background: var(--primary-purple);
+            border: none;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .nav-btn:hover {
+            background: var(--secondary-pink);
+            transform: scale(1.1);
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 1px;
+            background: var(--border-color);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .calendar-day {
+            aspect-ratio: 1;
+            background: var(--darker-bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            font-weight: 500;
+        }
+
+        .calendar-day:hover {
+            background: rgba(139, 92, 246, 0.2);
+        }
+
+        .calendar-day.has-entry {
+            background: linear-gradient(135deg, var(--primary-purple), var(--secondary-pink));
+            color: white;
+        }
+
+        .calendar-day.has-entry::after {
+            content: '';
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            width: 8px;
+            height: 8px;
+            background: var(--accent-cyan);
+            border-radius: 50%;
+        }
+
+        .substance-indicators {
+            position: absolute;
+            bottom: 2px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 2px;
+        }
+
+        .substance-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+        }
+
+        .day-header {
+            background: var(--primary-purple);
+            color: white;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--card-bg);
+            border-top: 1px solid var(--border-color);
+            padding: 1rem;
+            backdrop-filter: blur(20px);
+            z-index: 1000;
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+        }
+
         .nav-item {
-            display: flex; flex-direction: column; align-items: center;
-            cursor: pointer; transition: all 0.3s ease;
-            padding: 0.5rem 1rem; border-radius: 12px; min-width: 80px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            padding: 0.5rem;
+            border-radius: 12px;
+            min-width: 70px;
         }
-        .nav-item:hover { background: rgba(139, 92, 246, 0.1); transform: translateY(-2px);}
-        .nav-item.active { background: linear-gradient(135deg, var(--primary-purple), var(--secondary-pink)); color: white;}
-        .nav-icon { width: 24px; height: 24px; margin-bottom: 0.1rem;}
-        .nav-label { font-size: 0.8rem; font-weight: 500;}
+
+        .nav-item:hover {
+            background: rgba(139, 92, 246, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .nav-item.active {
+            background: linear-gradient(135deg, var(--primary-purple), var(--secondary-pink));
+            color: white;
+        }
+
+        .nav-icon {
+            width: 24px;
+            height: 24px;
+            margin-bottom: 0.25rem;
+        }
+
+        .nav-label {
+            font-size: 0.7rem;
+            font-weight: 500;
+        }
+
+        /* Modal fixes for Android */
         .modal {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.8); z-index: 1000; backdrop-filter: blur(5px);
-            justify-content: center; align-items: center;
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 9999;
+            backdrop-filter: blur(5px);
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
         }
-        .modal.active { display: flex; }
+
+        .modal.active {
+            display: block;
+        }
+
         .modal-content {
-            background: var(--card-bg); border-radius: 20px; padding: 2rem;
-            max-width: 500px; width: 90vw; max-height: 90vh; overflow-y: auto;
-            border: 1px solid var(--border-color); position: relative; animation: modalSlideIn 0.3s ease;
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 2rem;
+            max-width: 500px;
+            width: calc(100% - 2rem);
+            margin: 2rem auto;
+            min-height: auto;
+            border: 1px solid var(--border-color);
+            position: relative;
+            animation: modalSlideIn 0.3s ease;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
         }
+
+        /* Ensure modal content is centered on small screens */
+        @media (max-height: 800px) {
+            .modal-content {
+                margin: 1rem auto;
+            }
+        }
+
         @keyframes modalSlideIn {
-            from { opacity: 0; transform: translateY(-50px);}
-            to { opacity: 1; transform: translateY(0);}
+            from {
+                opacity: 0;
+                transform: translateY(-20px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
         }
-        .close-btn { position: absolute; top: 1rem; right: 1rem; background: none; border: none; color: var(--text-muted); font-size: 1.5rem; cursor: pointer; transition: color 0.3s ease;}
-        .close-btn:hover { color: var(--text-light);}
-        .form-group { margin-bottom: 1.5rem;}
-        .form-group label { display: block; margin-bottom: 0.5rem; color: var(--primary-purple); font-weight: 600;}
-        .form-group input, .form-group select, .form-group textarea {
-            width: 100%; padding: 0.75rem; background: var(--darker-bg); border: 1px solid var(--border-color); border-radius: 12px; color: var(--text-light); font-size: 1rem;
+
+        .close-btn {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: color 0.3s ease;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
         }
-        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
-            outline: none; border-color: var(--primary-purple); box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+
+        .close-btn:hover {
+            color: var(--text-light);
+            background: rgba(139, 92, 246, 0.1);
         }
-        .btn-primary { background: linear-gradient(135deg, var(--primary-purple), var(--secondary-pink)); border: none; color: white; padding: 0.75rem 2rem; border-radius: 12px; font-weight: 600; cursor: pointer; transition: all 0.3s ease;}
-        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(139, 92, 246, 0.3);}
-        .btn-secondary { background: var(--accent-cyan); color: white; border: none; border-radius: 12px; padding: 0.7rem 2rem; font-weight: 600; margin-top: 0.7rem; cursor: pointer;}
-        .resources-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin-top: 2rem;}
-        .resource-card { background: var(--card-bg); border-radius: 16px; padding: 1.5rem; border: 1px solid var(--border-color); transition: all 0.3s ease; text-decoration: none; color: inherit; cursor: pointer;}
-        .resource-card:hover { transform: translateY(-5px); border-color: var(--primary-purple); box-shadow: 0 20px 40px rgba(139, 92, 246, 0.1);}
-        .resource-card h4 { color: var(--accent-cyan); margin-bottom: 0.5rem;}
-        .entry-item { background: var(--darker-bg); border-radius: 12px; padding: 1rem; margin-bottom: 1rem; border: 1px solid var(--border-color);}
-        .entry-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;}
-        .entry-substance { color: var(--primary-purple); font-weight: 600;}
-        .entry-time { color: var(--text-muted); font-size: 0.9rem;}
-        .entry-dose { color: var(--accent-cyan); font-weight: 500; margin-bottom: 0.5rem;}
-        .entry-notes { color: var(--text-muted); font-size: 0.9rem;}
-                @media (max-width: 950px) {
-            .main-content { grid-template-columns: 1fr; gap: 1rem;}
-            .nav-container { flex-wrap: nowrap; overflow-x: auto; }
-            .nav-item { min-width: 75px; padding: 0.5rem 0.5rem;}
+
+        .form-group {
+            margin-bottom: 1.5rem;
         }
-        @media (max-width: 600px) {
-            .container { padding: 0.3rem; }
-            .calendar-container, .sidebar { padding: 1rem; border-radius: 12px; }
-            .header h1 { font-size: 1.3rem; }
-            .resources-grid { grid-template-columns: 1fr; }
-            .bottom-nav { padding: 0.2rem 0; }
-            .nav-item { min-width: 60px; padding: 0.5rem 0.2rem;}
-            .modal-content { padding: 1rem; }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--primary-purple);
+            font-weight: 600;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.75rem;
+            background: var(--darker-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            color: var(--text-light);
+            font-size: 1rem;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary-purple);
+            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-purple), var(--secondary-pink));
+            border: none;
+            color: white;
+            padding: 0.75rem 2rem;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-bottom: 0.5rem;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(139, 92, 246, 0.3);
+        }
+
+        .btn-secondary {
+            background: var(--accent-cyan);
+            border: none;
+            color: white;
+            padding: 0.75rem 2rem;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-bottom: 0.5rem;
+        }
+
+        .btn-secondary:hover {
+            background: var(--accent-orange);
+            transform: translateY(-2px);
+        }
+
+        .resources-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .resource-card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+            text-decoration: none;
+            color: inherit;
+            cursor: pointer;
+        }
+
+        .resource-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary-purple);
+            box-shadow: 0 20px 40px rgba(139, 92, 246, 0.1);
+        }
+
+        .resource-card h4 {
+            color: var(--accent-cyan);
+            margin-bottom: 0.5rem;
+        }
+
+        .entry-item {
+            background: var(--darker-bg);
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .entry-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .entry-substance {
+            color: var(--primary-purple);
+            font-weight: 600;
+        }
+
+        .entry-time {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .entry-dose {
+            color: var(--accent-cyan);
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .entry-notes {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .color-picker-container {
+            margin: 1rem 0;
+        }
+
+        .color-options {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .color-option {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 3px solid transparent;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .color-option:hover {
+            transform: scale(1.1);
+            border-color: var(--text-light);
+        }
+
+        .color-option.selected {
+            border-color: var(--accent-cyan);
+            transform: scale(1.2);
+        }
+
+        .color-option.selected::after {
+            content: '✓';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-weight: bold;
+            text-shadow: 0 0 3px rgba(0,0,0,0.8);
+        }
+
+        .profile-section {
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            background: var(--darker-bg);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+        }
+
+        .profile-section h4 {
+            color: var(--accent-cyan);
+            margin-bottom: 1rem;
+        }
+
+        .char-counter {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            text-align: right;
+            margin-top: 0.5rem;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .file-label {
+            display: inline-block;
+            padding: 0.75rem 1.5rem;
+            background: var(--accent-orange);
+            color: white;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            width: 100%;
+            margin-bottom: 0.5rem;
+        }
+
+        .file-label:hover {
+            background: var(--secondary-pink);
+            transform: translateY(-2px);
+        }
+
+        .profile-card {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 2rem;
+            text-align: center;
+            border: 1px solid var(--border-color);
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        .profile-avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-purple), var(--secondary-pink));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            margin: 0 auto 1rem;
+        }
+
+        .social-share-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .social-share-btn {
+            padding: 0.75rem;
+            border-radius: 12px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .twitter-btn {
+            background: #1DA1F2;
+            color: white;
+        }
+
+        .whatsapp-btn {
+            background: #25D366;
+            color: white;
+        }
+
+        .telegram-btn {
+            background: #0088cc;
+            color: white;
+        }
+
+        .reddit-btn {
+            background: #FF4500;
+            color: white;
+        }
+
+        .favorite-substance {
+            background: var(--darker-bg);
+            padding: 0.75rem;
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            border: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .remove-btn {
+            background: var(--secondary-pink);
+            border: none;
+            color: white;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+
+        .quote-item {
+            background: var(--darker-bg);
+            padding: 1rem;
+            border-radius: 12px;
+            margin-bottom: 1rem;
+            border-left: 4px solid var(--accent-cyan);
+            position: relative;
+        }
+
+        .quote-text {
+            font-style: italic;
+            margin-bottom: 0.5rem;
+        }
+
+        .quote-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .header-content {
+                gap: 1rem;
+            }
+
+            .mystical-symbol {
+                font-size: 2rem;
+            }
+
+            .calendar-container {
+                padding: 1rem;
+            }
+
+            .nav-label {
+                font-size: 0.6rem;
+            }
+
+            .nav-item {
+                min-width: 60px;
+            }
+
+            .modal-content {
+                margin: 1rem;
+                width: calc(100% - 2rem);
+                padding: 1.5rem;
+            }
         }
     </style>
 </head>
 <body>
-<div class="psychedelic-bg"></div>
+<div class="animated-bg"></div>
+
 <div class="container">
     <header class="header">
         <div class="header-content">
@@ -220,13 +867,20 @@
             <div class="mystical-symbol right">🗝️</div>
         </div>
     </header>
+
     <main id="main-content" class="main-content">
+        <!-- Calendar View (Default) -->
         <div id="calendar-view" class="view active">
             <div class="sidebar">
                 <h3>Sustancias</h3>
-                <ul id="substance-list" class="substance-list"></ul>
-                <button class="add-substance-btn" onclick="openModal('substanceModal')">+ Añadir Sustancia</button>
+                <ul id="substance-list" class="substance-list">
+                    <!-- Se llenarán dinámicamente -->
+                </ul>
+                <button class="add-substance-btn" onclick="openModal('substanceModal')">
+                    + Añadir Sustancia
+                </button>
             </div>
+
             <div class="calendar-container">
                 <div class="calendar-header">
                     <h2 id="current-month">Enero 2025</h2>
@@ -235,16 +889,24 @@
                         <button class="nav-btn" onclick="nextMonth()">›</button>
                     </div>
                 </div>
-                <div class="calendar-grid" id="calendar-grid"></div>
+                <div class="calendar-grid" id="calendar-grid">
+                    <!-- Calendar will be generated by JavaScript -->
+                </div>
             </div>
         </div>
-        <div id="stats-view" class="view" style="display:none;">
+
+        <!-- Stats View -->
+        <div id="stats-view" class="view" style="display: none;">
             <div class="calendar-container">
                 <h2>Estadísticas y Análisis</h2>
-                <div class="resources-grid" id="stats-content"></div>
+                <div class="resources-grid" id="stats-content">
+                    <!-- Se llenarán dinámicamente -->
+                </div>
             </div>
         </div>
-        <div id="resources-view" class="view" style="display:none;">
+
+        <!-- Resources View -->
+        <div id="resources-view" class="view" style="display: none;">
             <div class="calendar-container">
                 <h2>Recursos y Harm Reduction</h2>
                 <div class="resources-grid">
@@ -267,19 +929,21 @@
                 </div>
             </div>
         </div>
-        <div id="data-view" class="view" style="display:none;">
+
+        <!-- Data View -->
+        <div id="data-view" class="view" style="display: none;">
             <div class="calendar-container">
                 <h2>Gestión de Datos</h2>
                 <div class="resources-grid">
                     <div class="resource-card">
-                        <h4>Exportar Datos (CSV)</h4>
+                        <h4>Exportar Datos</h4>
                         <p>Descargar todos tus datos en formato CSV</p>
                         <button class="btn-primary" onclick="exportToCSV()">Exportar CSV</button>
                     </div>
                     <div class="resource-card">
-                        <h4>Importar Datos (CSV)</h4>
+                        <h4>Importar Datos</h4>
                         <p>Cargar datos desde un archivo CSV</p>
-                        <input type="file" id="csvFileInput" class="file-input" accept=".csv" onchange="importFromCSV(this)">
+                        <input type="file" id="csvFileInput" class="file-input" accept=".csv, text/csv" onchange="importFromCSV(this)" multiple="false">
                         <label for="csvFileInput" class="file-label">Seleccionar CSV</label>
                     </div>
                     <div class="resource-card">
@@ -287,72 +951,67 @@
                         <p>Eliminar todos los datos almacenados</p>
                         <button class="btn-secondary" onclick="clearAllData()">Limpiar Todo</button>
                     </div>
-                    <div class="resource-card">
-                        <h4>Último autobackup</h4>
-                        <p id="last-backup-info"></p>
-                    </div>
                 </div>
             </div>
         </div>
-        <div id="profile-view" class="view" style="display:none;">
+
+        <!-- Profile View -->
+        <div id="profile-view" class="view" style="display: none;">
             <div class="calendar-container">
                 <h2>Mi Perfil Psiconáutico</h2>
-                <div class="form-group">
-                    <label>Nickname</label>
-                    <input type="text" id="userNickname" placeholder="Tu nombre de psiconáuta...">
+
+                <div class="profile-section">
+                    <h4>Información Personal</h4>
+                    <div class="form-group">
+                        <label>Nickname</label>
+                        <input type="text" id="userNickname" placeholder="Tu nombre de psiconáuta...">
+                    </div>
+                    <button class="btn-primary" onclick="saveProfile()">Guardar Perfil</button>
                 </div>
-                <div class="form-group">
-                    <label>Telegram</label>
-                    <input type="text" id="userTelegram" placeholder="@tuusuario">
+
+                <div class="profile-section">
+                    <h4>Gestionar Perfil</h4>
+                    <button class="btn-primary" onclick="openModal('favoritesModal')">Mis Sustancias Favoritas</button>
+                    <button class="btn-primary" onclick="openModal('socialModal')">Redes Sociales</button>
+                    <button class="btn-primary" onclick="openModal('quotesModal')">Frases Destacadas</button>
+                    <button class="btn-secondary" onclick="openModal('shareProfileModal')">Compartir Perfil</button>
                 </div>
-                <div class="form-group">
-                    <label>Instagram</label>
-                    <input type="text" id="userInstagram" placeholder="@tuusuario">
-                </div>
-                <div class="form-group">
-                    <label>Reddit</label>
-                    <input type="text" id="userReddit" placeholder="u/tuusuario">
-                </div>
-                <div class="form-group">
-                    <label>Discord</label>
-                    <input type="text" id="userDiscord" placeholder="nombre#1234">
-                </div>
-                <button class="btn-primary" onclick="saveProfile()">Guardar Perfil</button>
-                <button class="btn-secondary" onclick="shareProfile()">Compartir Perfil</button>
-                <div id="profile-share" style="margin-top:1.5rem;"></div>
             </div>
         </div>
     </main>
 </div>
+
+<!-- Bottom Navigation -->
 <nav class="bottom-nav">
     <div class="nav-container">
-        <div class="nav-item active" onclick="switchView('calendar'); event.stopPropagation();">
+        <div class="nav-item active" onclick="switchView('calendar')">
             <div class="nav-icon">📅</div>
             <div class="nav-label">Calendario</div>
         </div>
-        <div class="nav-item" onclick="openModal('entryModal'); event.stopPropagation();">
+        <div class="nav-item" onclick="openModal('entryModal')">
             <div class="nav-icon">➕</div>
             <div class="nav-label">Añadir</div>
         </div>
-        <div class="nav-item" onclick="switchView('data'); event.stopPropagation();">
-            <div class="nav-icon">💾</div>
-            <div class="nav-label">Datos</div>
-        </div>
-        <div class="nav-item" onclick="switchView('stats'); event.stopPropagation();">
+        <div class="nav-item" onclick="switchView('stats')">
             <div class="nav-icon">📊</div>
             <div class="nav-label">Stats</div>
         </div>
-        <div class="nav-item" onclick="switchView('resources'); event.stopPropagation();">
+        <div class="nav-item" onclick="switchView('resources')">
             <div class="nav-icon">🔗</div>
             <div class="nav-label">Recursos</div>
         </div>
-        <div class="nav-item" onclick="switchView('profile'); event.stopPropagation();">
+        <div class="nav-item" onclick="switchView('data')">
+            <div class="nav-icon">💾</div>
+            <div class="nav-label">Datos</div>
+        </div>
+        <div class="nav-item" onclick="switchView('profile')">
             <div class="nav-icon">👤</div>
             <div class="nav-label">Perfil</div>
         </div>
     </div>
 </nav>
-<!-- Modals -->
+
+<!-- Add Entry Modal -->
 <div id="entryModal" class="modal">
     <div class="modal-content">
         <button class="close-btn" onclick="closeModal('entryModal')">×</button>
@@ -360,7 +1019,9 @@
         <form id="entryForm">
             <div class="form-group">
                 <label>Sustancia</label>
-                <select id="entrySubstance"></select>
+                <select id="entrySubstance">
+                    <!-- Se llenarán dinámicamente -->
+                </select>
             </div>
             <div class="form-group">
                 <label>Dosis</label>
@@ -369,15 +1030,18 @@
             <div class="form-group">
                 <label>Unidad</label>
                 <select id="entryUnit">
-                    <option>μg (microgramos)</option>
-                    <option>mg (miligramos)</option>
-                    <option>g (gramos)</option>
-                    <option>Pastilla</option>
-                    <option>Tripi</option>
-                    <option>Medio tripi</option>
-                    <option>Cuarto de tripi</option>
-                    <option>Raya</option>
-                    <option>Tirito</option>
+                    <option value="mg">mg</option>
+                    <option value="g">g</option>
+                    <option value="ml">ml</option>
+                    <option value="ug">μg</option>
+                    <option value="pills">tripi</option>
+                    <option value="pills">1/2 tripi</option>
+                    <option value="pills">1/3 tripi</option>
+                    <option value="pills">1/4 tripi</option>
+                    <option value="pills">pastilla</option>
+                    <option value="ug">raya</option>
+                    <option value="pills">tirito</option>
+                    <option value="drops">gotas</option>
                 </select>
             </div>
             <div class="form-group">
@@ -386,486 +1050,1104 @@
             </div>
             <div class="form-group">
                 <label>Notas</label>
-                <textarea id="entryNotes" placeholder="Set, setting, experiencia..."></textarea>
+                <textarea id="entryNotes" placeholder="Describe tu experiencia, estado de ánimo, entorno..." rows="4"></textarea>
             </div>
             <button type="submit" class="btn-primary">Guardar Registro</button>
         </form>
     </div>
 </div>
+
+<!-- Add Substance Modal -->
 <div id="substanceModal" class="modal">
     <div class="modal-content">
         <button class="close-btn" onclick="closeModal('substanceModal')">×</button>
-        <h3>Nueva Sustancia</h3>
+        <h3>Añadir Nueva Sustancia</h3>
         <form id="substanceForm">
             <div class="form-group">
-                <label>Nombre de la Sustancia</label>
-                <input type="text" id="substanceName" placeholder="ej: 2C-B, DMT, Ketamina...">
+                <label>Nombre</label>
+                <input type="text" id="substanceName" placeholder="LSD, MDMA, Psilocibina..." required>
             </div>
-            <div class="form-group">
-                <label>Color de identificación</label>
-                <div class="color-picker-container">
-                    <div class="color-options" id="colorOptions"></div>
+            <div class="color-picker-container">
+                <label>Color Identificativo</label>
+                <div class="color-options">
+                    <div class="color-option" data-color="#8B5CF6" style="background: #8B5CF6"></div>
+                    <div class="color-option" data-color="#EC4899" style="background: #EC4899"></div>
+                    <div class="color-option" data-color="#06B6D4" style="background: #06B6D4"></div>
+                    <div class="color-option" data-color="#F97316" style="background: #F97316"></div>
+                    <div class="color-option" data-color="#10B981" style="background: #10B981"></div>
+                    <div class="color-option" data-color="#F59E0B" style="background: #F59E0B"></div>
+                    <div class="color-option" data-color="#EF4444" style="background: #EF4444"></div>
+                    <div class="color-option" data-color="#8B5A2B" style="background: #8B5A2B"></div>
+                    <div class="color-option" data-color="#6366F1" style="background: #6366F1"></div>
+                    <div class="color-option" data-color="#84CC16" style="background: #84CC16"></div>
+                    <div class="color-option" data-color="#F472B6" style="background: #F472B6"></div>
+                    <div class="color-option" data-color="#14B8A6" style="background: #14B8A6"></div>
                 </div>
-            </div>
-            <div class="form-group">
-                <label>Categoría</label>
-                <select id="substanceCategory">
-                    <option>Psicodélico</option>
-                    <option>Estimulante</option>
-                    <option>Depresivo</option>
-                    <option>Disociativo</option>
-                    <option>Enteógeno</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label>Unidad de medida principal</label>
-                <select id="substanceUnit">
-                    <option>μg (microgramos)</option>
-                    <option>mg (miligramos)</option>
-                    <option>g (gramos)</option>
-                    <option>Pastilla</option>
-                    <option>Tripi</option>
-                </select>
             </div>
             <button type="submit" class="btn-primary">Añadir Sustancia</button>
         </form>
     </div>
 </div>
-<div id="dayModal" class="modal">
+
+<!-- Favorites Modal -->
+<div id="favoritesModal" class="modal">
     <div class="modal-content">
-        <button class="close-btn" onclick="closeModal('dayModal')">×</button>
-        <h3 id="dayModalTitle">Día seleccionado</h3>
-        <div id="dayEntries"></div>
+        <button class="close-btn" onclick="closeModal('favoritesModal')">×</button>
+        <h3>Mis Sustancias Favoritas</h3>
+        <div class="form-group">
+            <label>Añadir a Favoritos</label>
+            <select id="favoriteSubstanceSelect">
+                <option value="">Selecciona una sustancia...</option>
+            </select>
+            <button class="btn-primary" onclick="addToFavorites()">Añadir a Favoritos</button>
+        </div>
+        <div id="favoritesList">
+            <!-- Se llenarán dinámicamente -->
+        </div>
     </div>
 </div>
+
+<!-- Social Modal -->
+<div id="socialModal" class="modal">
+    <div class="modal-content">
+        <button class="close-btn" onclick="closeModal('socialModal')">×</button>
+        <h3>Mis Redes Sociales</h3>
+        <div class="form-group">
+            <label>Twitter/X</label>
+            <input type="text" id="socialTwitter" placeholder="@usuario">
+        </div>
+        <div class="form-group">
+            <label>Instagram</label>
+            <input type="text" id="socialInstagram" placeholder="@usuario">
+        </div>
+        <div class="form-group">
+            <label>Reddit</label>
+            <input type="text" id="socialReddit" placeholder="u/usuario">
+        </div>
+        <div class="form-group">
+            <label>Telegram</label>
+            <input type="text" id="socialTelegram" placeholder="@usuario">
+        </div>
+        <div class="form-group">
+            <label>Discord</label>
+            <input type="text" id="socialDiscord" placeholder="usuario#1234">
+        </div>
+        <button class="btn-primary" onclick="saveSocialLinks()">Guardar Enlaces</button>
+    </div>
+</div>
+
+<!-- Quotes Modal -->
+<div id="quotesModal" class="modal">
+    <div class="modal-content">
+        <button class="close-btn" onclick="closeModal('quotesModal')">×</button>
+        <h3>Frases Destacadas</h3>
+        <div class="form-group">
+            <label>Nueva Frase</label>
+            <textarea id="newQuote" placeholder="Escribe una frase destacada de tus experiencias..." maxlength="160"></textarea>
+            <div class="char-counter">
+                <span id="charCount">0</span>/160
+            </div>
+            <button class="btn-primary" onclick="addQuote()">Añadir Frase</button>
+        </div>
+        <div id="quotesList">
+            <!-- Se llenarán dinámicamente -->
+        </div>
+    </div>
+</div>
+
+<!-- Share Profile Modal -->
+<div id="shareProfileModal" class="modal">
+    <div class="modal-content">
+        <button class="close-btn" onclick="closeModal('shareProfileModal')">×</button>
+        <h3>Compartir Perfil</h3>
+        <div class="profile-card" id="profileCard">
+            <div class="profile-avatar">🧙‍♂️</div>
+            <h4 id="profileCardName">Psiconáuta Anónimo</h4>
+            <p>Explorador de la conciencia</p>
+            <div id="profileCardStats">
+                <p><strong>Sustancias probadas:</strong> <span id="substanceCount">0</span></p>
+                <p><strong>Registros totales:</strong> <span id="entryCount">0</span></p>
+            </div>
+        </div>
+        <div class="social-share-grid">
+            <button class="social-share-btn twitter-btn" onclick="shareToTwitter()">Twitter</button>
+            <button class="social-share-btn whatsapp-btn" onclick="shareToWhatsApp()">WhatsApp</button>
+            <button class="social-share-btn telegram-btn" onclick="shareToTelegram()">Telegram</button>
+            <button class="social-share-btn reddit-btn" onclick="shareToReddit()">Reddit</button>
+        </div>
+    </div>
+</div>
+
 <script>
-    let currentMonth = new Date();
-    let currentView = 'calendar';
-    let selectedColor = '#8B5CF6';
-    let selectedSubstance = null;
-    const availableColors = [
-        '#8B5CF6', '#06B6D4', '#F97316', '#EF4444', '#10B981', '#F59E0B', '#EC4899', '#6366F1', '#84CC16', '#F43F5E', '#A855F7', '#14B8A6'
-    ];
-    const defaultSubstances = {
-        lsd: { name: 'LSD', color: '#8B5CF6', entries: {} },
-        ketamina: { name: 'Ketamina', color: '#06B6D4', entries: {} },
-        mdma: { name: 'MDMA', color: '#F97316', entries: {} }
-    };
-    function loadData() {
-        try {
-            const stored = localStorage.getItem('psycho-logger-data');
-            return stored ? JSON.parse(stored) : JSON.parse(JSON.stringify(defaultSubstances));
-        } catch (e) { return JSON.parse(JSON.stringify(defaultSubstances)); }
+    // Global variables
+    let currentDate = new Date();
+    let substances = JSON.parse(localStorage.getItem('substances')) || getDefaultSubstances();
+    let entries = JSON.parse(localStorage.getItem('entries') || '[]');
+    let userProfile = JSON.parse(localStorage.getItem('userProfile') || '{}');
+    let selectedSubstanceColor = '#8B5CF6';
+    let selectedSubstanceFilter = null; // Nueva variable para filtro
+
+    // Default substances
+    function getDefaultSubstances() {
+        return [
+            {
+                id: 1,
+                name: 'LSD',
+                color: '#8B5CF6',
+                createdAt: new Date().toISOString()
+            },
+            {
+                id: 2,
+                name: 'Ketamina',
+                color: '#06B6D4',
+                createdAt: new Date().toISOString()
+            },
+            {
+                id: 3,
+                name: 'Opio',
+                color: '#8B5A2B',
+                createdAt: new Date().toISOString()
+            }
+        ];
     }
-    function saveData(data) {
-        localStorage.setItem('psycho-logger-data', JSON.stringify(data));
-    }
-    let substanceData = loadData();
-    function updateSubstanceList() {
-        const list = document.getElementById('substance-list');
-        const select = document.getElementById('entrySubstance');
-        if (!list || !select) return;
-        list.innerHTML = ''; select.innerHTML = '';
-        Object.keys(substanceData).forEach(key => {
-            const substance = substanceData[key];
-            const count = Object.values(substance.entries || {}).reduce((a,b)=>a+b.length,0);
-            const listItem = document.createElement('li');
-            listItem.className = 'substance-item';
-            listItem.dataset.substance = key;
-            listItem.innerHTML = `
-                <div style="display:flex;align-items:center;gap:0.5rem;">
-                    <div style="width:12px;height:12px;border-radius:50%;background:${substance.color};"></div>
-                    ${substance.name}
-                </div>
-                <span class="substance-count">${count}</span>
-                <button class="substance-delete" title="Eliminar" onclick="deleteSubstance('${key}',event)">🗑️</button>
-            `;
-            listItem.onclick = e => { if (!e.target.classList.contains('substance-delete')) selectSubstance(key); };
-            list.appendChild(listItem);
-            const option = document.createElement('option');
-            option.value = key; option.textContent = substance.name;
-            select.appendChild(option);
-        });
-    }
-    window.deleteSubstance = function(key, ev){
-        ev.stopPropagation();
-        if(confirm("¿Eliminar la sustancia y todos sus registros?")) {
-            delete substanceData[key];
-            saveData(substanceData);
-            updateSubstanceList();
-            generateCalendar();
-            updateStats();
+
+    // Initialize app
+    document.addEventListener('DOMContentLoaded', function() {
+        initializeApp();
+        setupEventListeners();
+    });
+
+    function initializeApp() {
+        // Save default substances if first time
+        if (!localStorage.getItem('substances')) {
+            localStorage.setItem('substances', JSON.stringify(substances));
         }
-    };
-    function generateColorPicker() {
-        const colorOptions = document.getElementById('colorOptions');
-        if (!colorOptions) return;
-        colorOptions.innerHTML = '';
-        availableColors.forEach(color => {
-            const colorOption = document.createElement('div');
-            colorOption.className = 'color-option';
-            colorOption.style.backgroundColor = color;
-            colorOption.dataset.color = color;
-            if (color === selectedColor) colorOption.classList.add('selected');
-            colorOption.onclick = () => {
-                document.querySelectorAll('.color-option').forEach(opt => opt.classList.remove('selected'));
-                colorOption.classList.add('selected');
-                selectedColor = color;
-            };
-            colorOptions.appendChild(colorOption);
-        });
-    }
-    function selectSubstance(substanceKey) {
-        selectedSubstance = selectedSubstance === substanceKey ? null : substanceKey;
-        document.querySelectorAll('.substance-item').forEach(item => item.classList.remove('active'));
-        if (selectedSubstance) {
-            const activeItem = document.querySelector(`[data-substance="${selectedSubstance}"]`);
-            if (activeItem) activeItem.classList.add('active');
-        }
+
         generateCalendar();
+        renderSubstanceList();
+        renderStats();
+        loadUserProfile();
+        updateProfileCard();
+
+        // Set current datetime for entry form
+        const now = new Date();
+        const localDateTime = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+        document.getElementById('entryDateTime').value = localDateTime;
     }
-    function generateCalendar() {
-        const grid = document.getElementById('calendar-grid');
-        const monthYear = document.getElementById('current-month');
-        if (!grid || !monthYear) return;
-        grid.innerHTML = '';
-        const monthNames = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-        let title = `${monthNames[currentMonth.getMonth()]} ${currentMonth.getFullYear()}`;
-        if (selectedSubstance) title += ` - ${substanceData[selectedSubstance].name}`;
-        monthYear.textContent = title;
-        const dayHeaders = ['L','M','X','J','V','S','D'];
-        dayHeaders.forEach(day => {
-            const dayHeader = document.createElement('div');
-            dayHeader.className = 'calendar-day day-header';
-            dayHeader.textContent = day;
-            grid.appendChild(dayHeader);
+
+    function setupEventListeners() {
+        // Entry form
+        document.getElementById('entryForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            addEntry();
         });
-        const firstDay = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
-        const startDate = new Date(firstDay);
-        startDate.setDate(startDate.getDate() - (firstDay.getDay() === 0 ? 6 : firstDay.getDay() - 1));
-        for(let i=0;i<42;i++){
-            const date = new Date(startDate); date.setDate(startDate.getDate()+i);
-            const dayElement = document.createElement('div');
-            dayElement.className = 'calendar-day';
-            dayElement.textContent = date.getDate();
-            const dateString = date.toISOString().split('T')[0];
-            let dayEntries = [];
-            if (selectedSubstance) {
-                const substance = substanceData[selectedSubstance];
-                if (substance.entries && substance.entries[dateString])
-                    substance.entries[dateString].forEach(entry => dayEntries.push({
-                        ...entry, substance:selectedSubstance, substanceName:substance.name, color:substance.color
-                    }));
-            } else {
-                Object.keys(substanceData).forEach(substanceKey => {
-                    const substance = substanceData[substanceKey];
-                    if (substance.entries && substance.entries[dateString])
-                        substance.entries[dateString].forEach(entry => dayEntries.push({
-                            ...entry, substance:substanceKey, substanceName:substance.name, color:substance.color
-                        }));
-                });
-            }
-            if (dayEntries.length > 0) {
-                dayElement.classList.add('has-entry');
-                if (selectedSubstance) {
-                    dayElement.style.background = `linear-gradient(135deg, ${substanceData[selectedSubstance].color}, ${adjustColorBrightness(substanceData[selectedSubstance].color, -20)})`;
-                } else {
-                    dayElement.style.background = 'linear-gradient(135deg, var(--primary-purple), var(--secondary-pink))';
-                }
-                if (!selectedSubstance) {
-                    const indicators = document.createElement('div');
-                    indicators.className = 'substance-indicators';
-                    const uniqueSubstances = [...new Set(dayEntries.map(e=>e.substance))];
-                    uniqueSubstances.forEach(substanceKey => {
-                        const dot = document.createElement('div');
-                        dot.className = 'substance-dot';
-                        dot.style.backgroundColor = substanceData[substanceKey].color;
-                        indicators.appendChild(dot);
-                    });
-                    dayElement.appendChild(indicators);
-                }
-            }
-            if(date.getMonth() !== currentMonth.getMonth()) dayElement.style.opacity = '0.3';
-            dayElement.onclick = () => openDayModal(date, dayEntries);
-            grid.appendChild(dayElement);
+
+        // Substance form
+        document.getElementById('substanceForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            addSubstance();
+        });
+
+        // Color picker
+        document.querySelectorAll('.color-option').forEach(option => {
+            option.addEventListener('click', function() {
+                document.querySelectorAll('.color-option').forEach(opt => opt.classList.remove('selected'));
+                this.classList.add('selected');
+                selectedSubstanceColor = this.dataset.color;
+            });
+        });
+
+        // Quote character counter
+        const quoteTextarea = document.getElementById('newQuote');
+        if (quoteTextarea) {
+            quoteTextarea.addEventListener('input', function() {
+                document.getElementById('charCount').textContent = this.value.length;
+            });
         }
     }
-    function adjustColorBrightness(hex, percent) {
-        const num = parseInt(hex.replace('#',''),16);
-        let r = (num >> 16) + percent;
-        let g = ((num >> 8) & 0x00FF) + percent;
-        let b = (num & 0x0000FF) + percent;
-        r = Math.max(Math.min(255,r),0); g = Math.max(Math.min(255,g),0); b = Math.max(Math.min(255,b),0);
-        return "#" + (g | (r << 8) | (b << 16)).toString(16).padStart(6,0);
-    }
-    function previousMonth() { currentMonth.setMonth(currentMonth.getMonth() - 1); generateCalendar();}
-    function nextMonth() { currentMonth.setMonth(currentMonth.getMonth() + 1); generateCalendar();}
-    function switchView(view) {
-        document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+
+    // Navigation functions
+    function switchView(viewName) {
+        // Hide all views
+        document.querySelectorAll('.view').forEach(view => {
+            view.style.display = 'none';
+        });
+
+        // Show selected view
+        document.getElementById(viewName + '-view').style.display = 'grid';
+
+        // Update navigation
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.classList.remove('active');
+        });
+
+        // Find the clicked nav item and make it active
         const navItems = document.querySelectorAll('.nav-item');
         navItems.forEach(item => {
             const label = item.querySelector('.nav-label').textContent.toLowerCase();
-            if ((view === 'calendar' && label === 'calendario') ||
-                (view === 'stats' && label === 'stats') ||
-                (view === 'resources' && label === 'recursos')) item.classList.add('active');
+            if ((viewName === 'calendar' && label === 'calendario') ||
+                (viewName === 'stats' && label === 'stats') ||
+                (viewName === 'resources' && label === 'recursos') ||
+                (viewName === 'data' && label === 'datos') ||
+                (viewName === 'profile' && label === 'perfil')) {
+                item.classList.add('active');
+            }
         });
-        document.querySelectorAll('.view').forEach(viewEl => viewEl.style.display = 'none');
-        const viewElement = document.getElementById(view + '-view');
-        if (viewElement) viewElement.style.display = 'block';
-        if (view === 'stats') updateStats();
-        currentView = view;
-    }
-    function openModal(modalId) {
-        if (modalId === 'entryModal') {
-            const now = new Date();
-            now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-            const dateTimeInput = document.getElementById('entryDateTime');
-            if (dateTimeInput) dateTimeInput.value = now.toISOString().slice(0, 16);
-        } else if (modalId === 'substanceModal') {
-            selectedColor = availableColors[0];
-            generateColorPicker();
+
+        // Regenerate content for specific views
+        if (viewName === 'stats') {
+            renderStats();
         }
-        const modal = document.getElementById(modalId);
-        if (modal) modal.classList.add('active');
     }
+
+    // Modal functions
+    function openModal(modalId) {
+        const modal = document.getElementById(modalId);
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden'; // Prevent background scrolling
+
+        // Populate dropdowns when opening modals
+        if (modalId === 'entryModal') {
+            populateSubstanceDropdown();
+        } else if (modalId === 'favoritesModal') {
+            populateFavoriteDropdown();
+            renderFavorites();
+        } else if (modalId === 'quotesModal') {
+            renderQuotes();
+        } else if (modalId === 'socialModal') {
+            loadSocialLinks();
+        } else if (modalId === 'shareProfileModal') {
+            updateProfileCard();
+        }
+    }
+
     function closeModal(modalId) {
-        const modal = document.getElementById(modalId);
-        if (modal) modal.classList.remove('active');
+        document.getElementById(modalId).classList.remove('active');
+        document.body.style.overflow = ''; // Restore background scrolling
     }
-    function openDayModal(date, entries) {
-        const modal = document.getElementById('dayModal');
-        const title = document.getElementById('dayModalTitle');
-        const content = document.getElementById('dayEntries');
-        if (!modal || !title || !content) return;
-        title.textContent = date.toLocaleDateString('es-ES', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
-        if(entries && entries.length > 0) {
-            content.innerHTML = entries.map(entry => `
+
+    // Calendar functions
+    function generateCalendar() {
+        const grid = document.getElementById('calendar-grid');
+        const monthName = currentDate.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' });
+        document.getElementById('current-month').textContent = monthName.charAt(0).toUpperCase() + monthName.slice(1);
+
+        // Clear grid
+        grid.innerHTML = '';
+
+        // Add day headers
+        const dayHeaders = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+        dayHeaders.forEach(day => {
+            const dayElement = document.createElement('div');
+            dayElement.className = 'calendar-day day-header';
+            dayElement.textContent = day;
+            grid.appendChild(dayElement);
+        });
+
+        // Get first day of month and number of days
+        const firstDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+        const lastDay = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
+        const startDate = new Date(firstDay);
+        startDate.setDate(startDate.getDate() - firstDay.getDay());
+
+        // Generate calendar days
+        for (let i = 0; i < 42; i++) {
+            const day = new Date(startDate);
+            day.setDate(startDate.getDate() + i);
+
+            const dayElement = document.createElement('div');
+            dayElement.className = 'calendar-day';
+            dayElement.textContent = day.getDate();
+
+            // Check if day has entries (filtered by selected substance)
+            let dayEntries = entries.filter(entry => {
+                const entryDate = new Date(entry.date);
+                return entryDate.toDateString() === day.toDateString();
+            });
+
+            // Apply substance filter if selected
+            if (selectedSubstanceFilter) {
+                dayEntries = dayEntries.filter(entry => entry.substance === selectedSubstanceFilter);
+            }
+
+            if (dayEntries.length > 0) {
+                dayElement.classList.add('has-entry');
+
+                // Add substance indicators
+                const indicators = document.createElement('div');
+                indicators.className = 'substance-indicators';
+
+                const uniqueSubstances = [...new Set(dayEntries.map(entry => entry.substance))];
+                uniqueSubstances.slice(0, 3).forEach(substanceName => {
+                    const substance = substances.find(s => s.name === substanceName);
+                    const dot = document.createElement('div');
+                    dot.className = 'substance-dot';
+                    dot.style.backgroundColor = substance ? substance.color : '#8B5CF6';
+                    indicators.appendChild(dot);
+                });
+
+                dayElement.appendChild(indicators);
+            }
+
+            // Add click event
+            dayElement.addEventListener('click', () => showDayEntries(day));
+
+            grid.appendChild(dayElement);
+        }
+    }
+
+    function previousMonth() {
+        currentDate.setMonth(currentDate.getMonth() - 1);
+        generateCalendar();
+    }
+
+    function nextMonth() {
+        currentDate.setMonth(currentDate.getMonth() + 1);
+        generateCalendar();
+    }
+
+    function showDayEntries(date) {
+        let dayEntries = entries.filter(entry => {
+            const entryDate = new Date(entry.date);
+            return entryDate.toDateString() === date.toDateString();
+        });
+
+        // Apply substance filter if selected
+        if (selectedSubstanceFilter) {
+            dayEntries = dayEntries.filter(entry => entry.substance === selectedSubstanceFilter);
+        }
+
+        if (dayEntries.length === 0) {
+            alert('No hay registros para este día' + (selectedSubstanceFilter ? ` de ${selectedSubstanceFilter}` : ''));
+            return;
+        }
+
+        let content = `<h3>Registros del ${date.toLocaleDateString('es-ES')}</h3>`;
+        if (selectedSubstanceFilter) {
+            content += `<p style="color: var(--accent-cyan); margin-bottom: 1rem;">Filtrado por: ${selectedSubstanceFilter}</p>`;
+        }
+
+        dayEntries.forEach(entry => {
+            const time = new Date(entry.date).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+            content += `
                 <div class="entry-item">
                     <div class="entry-header">
-                        <span class="entry-substance">${entry.substanceName}</span>
-                        <span class="entry-time">${entry.time}</span>
+                        <span class="entry-substance">${entry.substance}</span>
+                        <span class="entry-time">${time}</span>
                     </div>
-                    <div class="entry-dose"><strong>Dosis:</strong> ${entry.dose} ${entry.unit}</div>
+                    <div class="entry-dose">${entry.dose} ${entry.unit}</div>
                     ${entry.notes ? `<div class="entry-notes">${entry.notes}</div>` : ''}
                 </div>
-            `).join('');
-        } else {
-            content.innerHTML = '<p style="text-align: center; color: var(--text-muted);">No hay registros para este día</p>';
-        }
-        modal.classList.add('active');
-    }
-    function initFormHandlers() {
-        const entryForm = document.getElementById('entryForm');
-        if (entryForm) {
-            entryForm.onsubmit = function(e) {
-                e.preventDefault();
-                const substance = document.getElementById('entrySubstance').value;
-                const dose = document.getElementById('entryDose').value;
-                const unit = document.getElementById('entryUnit').value;
-                const dateTimeValue = document.getElementById('entryDateTime').value;
-                const notes = document.getElementById('entryNotes').value;
-                if (!substance || !dose || !dateTimeValue) { alert('Por favor completa todos los campos obligatorios'); return;}
-                const dateTime = new Date(dateTimeValue);
-                const dateString = dateTime.toISOString().split('T')[0];
-                const timeString = dateTime.toTimeString().slice(0, 5);
-                if (!substanceData[substance].entries) substanceData[substance].entries = {};
-                if (!substanceData[substance].entries[dateString]) substanceData[substance].entries[dateString] = [];
-                substanceData[substance].entries[dateString].push({
-                    time: timeString, dose: dose, unit: unit, notes: notes
-                });
-                saveData(substanceData);
-                updateSubstanceList(); generateCalendar(); updateStats();
-                entryForm.reset(); closeModal('entryModal');
-            };
-        }
-        const substanceForm = document.getElementById('substanceForm');
-        if (substanceForm) {
-            substanceForm.onsubmit = function(e) {
-                e.preventDefault();
-                const name = document.getElementById('substanceName').value;
-                const category = document.getElementById('substanceCategory').value;
-                const unit = document.getElementById('substanceUnit').value;
-                if (!name) { alert('Por favor ingresa el nombre de la sustancia'); return;}
-                const key = name.toLowerCase().replace(/[^a-z0-9]/g,'');
-                if (substanceData[key]) { alert('Esta sustancia ya existe'); return;}
-                substanceData[key] = {
-                    name: name, category: category, unit: unit, color: selectedColor, entries: {}
-                };
-                saveData(substanceData);
-                updateSubstanceList(); generateCalendar();
-                substanceForm.reset(); closeModal('substanceModal');
-            };
-        }
-    }
-    function updateStats() {
-        const statsContent = document.getElementById('stats-content');
-        if (!statsContent) return;
-        const totalEntries = Object.values(substanceData).reduce((total,substance)=>
-            total+Object.values(substance.entries||{}).reduce((a,b)=>a+b.length,0),0);
-        const mostUsed = Object.entries(substanceData).reduce((max,[k,substance])=>{
-            const count = Object.values(substance.entries||{}).reduce((a,b)=>a+b.length,0);
-            return count > max.count ? {name:substance.name,count} : max;
-        },{name:'Ninguna',count:0});
-        const recentEntries = [];
-        Object.entries(substanceData).forEach(([key,substance])=>{
-            if(substance.entries) Object.entries(substance.entries).forEach(([date,entries])=>{
-                entries.forEach(entry=>recentEntries.push({date:new Date(date),substance:substance.name,...entry}));
-            });
+            `;
         });
-        recentEntries.sort((a,b)=>b.date-a.date);
-        const lastEntry = recentEntries[0];
-        const daysSinceLastUse = lastEntry ? Math.floor((new Date()-lastEntry.date)/(1000*60*60*24)) : 0;
-        statsContent.innerHTML = `
+
+        // Create temporary modal
+        const modal = document.createElement('div');
+        modal.className = 'modal active';
+        modal.innerHTML = `
+            <div class="modal-content">
+                <button class="close-btn" onclick="this.closest('.modal').remove(); document.body.style.overflow = '';">×</button>
+                ${content}
+            </div>
+        `;
+        document.body.appendChild(modal);
+        document.body.style.overflow = 'hidden';
+    }
+
+    // Substance functions
+    function addSubstance() {
+        const name = document.getElementById('substanceName').value.trim();
+
+        if (!name) {
+            alert('Por favor, introduce un nombre para la sustancia');
+            return;
+        }
+
+        if (substances.find(s => s.name.toLowerCase() === name.toLowerCase())) {
+            alert('Esta sustancia ya existe');
+            return;
+        }
+
+        const substance = {
+            id: Date.now(),
+            name: name,
+            color: selectedSubstanceColor,
+            createdAt: new Date().toISOString()
+        };
+
+        substances.push(substance);
+        localStorage.setItem('substances', JSON.stringify(substances));
+
+        renderSubstanceList();
+        closeModal('substanceModal');
+        document.getElementById('substanceForm').reset();
+
+        // Reset color selection
+        document.querySelectorAll('.color-option').forEach(opt => opt.classList.remove('selected'));
+        selectedSubstanceColor = '#8B5CF6';
+    }
+
+    function renderSubstanceList() {
+        const list = document.getElementById('substance-list');
+        list.innerHTML = '';
+
+        // Add "All substances" option first
+        const allItem = document.createElement('li');
+        allItem.className = 'substance-item';
+        if (!selectedSubstanceFilter) {
+            allItem.classList.add('active');
+        }
+        allItem.innerHTML = `
+            <div class="substance-info">
+                <span>📋 Todas las sustancias</span>
+            </div>
+            <div class="substance-actions">
+                <span class="substance-count">${entries.length}</span>
+            </div>
+        `;
+        allItem.querySelector('.substance-info').addEventListener('click', () => {
+            filterBySubstance(null);
+        });
+        list.appendChild(allItem);
+
+        substances.forEach(substance => {
+            const count = entries.filter(entry => entry.substance === substance.name).length;
+
+            const item = document.createElement('li');
+            item.className = 'substance-item';
+
+            // Add active class if this substance is selected
+            if (selectedSubstanceFilter === substance.name) {
+                item.classList.add('active');
+            }
+
+            item.innerHTML = `
+                <div class="substance-info">
+                    <span>${substance.name}</span>
+                </div>
+                <div class="substance-actions">
+                    <span class="substance-count">${count}</span>
+                    <button class="delete-substance-btn" onclick="deleteSubstance(${substance.id})" title="Eliminar sustancia">×</button>
+                </div>
+            `;
+            item.style.borderLeft = `4px solid ${substance.color}`;
+
+            // Add click event for filtering (exclude the delete button)
+            item.querySelector('.substance-info').addEventListener('click', () => {
+                filterBySubstance(substance.name);
+            });
+
+            list.appendChild(item);
+        });
+    }
+
+    function filterBySubstance(substanceName) {
+        selectedSubstanceFilter = substanceName;
+        renderSubstanceList();
+        generateCalendar();
+    }
+
+    function deleteSubstance(substanceId) {
+        const substance = substances.find(s => s.id === substanceId);
+        if (!substance) return;
+
+        const hasEntries = entries.some(entry => entry.substance === substance.name);
+
+        let confirmMessage = `¿Estás seguro de que quieres eliminar "${substance.name}"?`;
+        if (hasEntries) {
+            confirmMessage += '\n\n⚠️ Esta sustancia tiene registros asociados. Si la eliminas, también se eliminarán todos sus registros.';
+        }
+
+        if (confirm(confirmMessage)) {
+            // Remove substance
+            substances = substances.filter(s => s.id !== substanceId);
+
+            // Remove related entries if any
+            if (hasEntries) {
+                entries = entries.filter(entry => entry.substance !== substance.name);
+                localStorage.setItem('entries', JSON.stringify(entries));
+            }
+
+            // Clear filter if we're filtering by this substance
+            if (selectedSubstanceFilter === substance.name) {
+                selectedSubstanceFilter = null;
+            }
+
+            localStorage.setItem('substances', JSON.stringify(substances));
+
+            renderSubstanceList();
+            generateCalendar();
+            renderStats();
+
+            alert(`"${substance.name}" ha sido eliminada${hasEntries ? ' junto con sus registros' : ''}.`);
+        }
+    }
+
+    function populateSubstanceDropdown() {
+        const select = document.getElementById('entrySubstance');
+        select.innerHTML = '<option value="">Selecciona una sustancia...</option>';
+
+        substances.forEach(substance => {
+            const option = document.createElement('option');
+            option.value = substance.name;
+            option.textContent = substance.name;
+            select.appendChild(option);
+        });
+    }
+
+    // Entry functions
+    function addEntry() {
+        const substance = document.getElementById('entrySubstance').value;
+        const dose = parseFloat(document.getElementById('entryDose').value);
+        const unit = document.getElementById('entryUnit').value;
+        const dateTime = document.getElementById('entryDateTime').value;
+        const notes = document.getElementById('entryNotes').value.trim();
+
+        if (!substance || !dose || !dateTime) {
+            alert('Por favor, completa todos los campos obligatorios');
+            return;
+        }
+
+        const entry = {
+            id: Date.now(),
+            substance: substance,
+            dose: dose,
+            unit: unit,
+            date: dateTime,
+            notes: notes,
+            createdAt: new Date().toISOString()
+        };
+
+        entries.push(entry);
+        localStorage.setItem('entries', JSON.stringify(entries));
+
+        generateCalendar();
+        renderSubstanceList();
+        closeModal('entryModal');
+        document.getElementById('entryForm').reset();
+
+        // Reset datetime to current
+        const now = new Date();
+        const localDateTime = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+        document.getElementById('entryDateTime').value = localDateTime;
+    }
+
+    // Stats functions
+    function renderStats() {
+        const statsContainer = document.getElementById('stats-content');
+
+        if (entries.length === 0) {
+            statsContainer.innerHTML = '<div class="resource-card"><h4>No hay datos</h4><p>Añade algunos registros para ver estadísticas</p></div>';
+            return;
+        }
+
+        const totalEntries = entries.length;
+        const uniqueSubstances = [...new Set(entries.map(entry => entry.substance))];
+        const averagePerMonth = (totalEntries / 12).toFixed(1);
+
+        // Most used substance
+        const substanceCount = {};
+        entries.forEach(entry => {
+            substanceCount[entry.substance] = (substanceCount[entry.substance] || 0) + 1;
+        });
+        const mostUsed = Object.keys(substanceCount).reduce((a, b) => substanceCount[a] > substanceCount[b] ? a : b);
+
+        // Recent activity
+        const lastWeek = new Date();
+        lastWeek.setDate(lastWeek.getDate() - 7);
+        const recentEntries = entries.filter(entry => new Date(entry.date) > lastWeek).length;
+
+        statsContainer.innerHTML = `
             <div class="resource-card">
-                <h4>Frecuencia de Uso</h4>
-                <p><strong>Total de registros:</strong> ${totalEntries}</p>
-                <p><strong>Sustancia más usada:</strong> ${mostUsed.name} (${mostUsed.count} veces)</p>
-                <p><strong>Última vez:</strong> ${lastEntry ? `hace ${daysSinceLastUse} días` : 'Sin registros'}</p>
+                <h4>Registros Totales</h4>
+                <p style="font-size: 2rem; color: var(--accent-cyan); font-weight: bold;">${totalEntries}</p>
             </div>
             <div class="resource-card">
-                <h4>Patrones</h4>
-                <p><strong>Promedio mensual:</strong> ${(totalEntries/3).toFixed(1)} usos</p>
-                <p><strong>Sustancias registradas:</strong> ${Object.keys(substanceData).length}</p>
+                <h4>Sustancias Únicas</h4>
+                <p style="font-size: 2rem; color: var(--secondary-pink); font-weight: bold;">${uniqueSubstances.length}</p>
             </div>
             <div class="resource-card">
-                <h4>Recomendaciones</h4>
-                <p><strong>Espaciado recomendado:</strong> 7-14 días entre usos</p>
-                <p><strong>Recuerda:</strong> La moderación es clave para un uso responsable</p>
+                <h4>Más Utilizada</h4>
+                <p style="font-size: 1.5rem; color: var(--primary-purple); font-weight: bold;">${mostUsed}</p>
+                <p>${substanceCount[mostUsed]} veces</p>
+            </div>
+            <div class="resource-card">
+                <h4>Actividad Reciente</h4>
+                <p style="font-size: 2rem; color: var(--accent-orange); font-weight: bold;">${recentEntries}</p>
+                <p>Últimos 7 días</p>
+            </div>
+            <div class="resource-card">
+                <h4>Promedio Mensual</h4>
+                <p style="font-size: 2rem; color: var(--accent-cyan); font-weight: bold;">${averagePerMonth}</p>
+                <p>Registros por mes</p>
             </div>
         `;
     }
 
-    // --- Exportar a CSV ---
-function exportToCSV() {
-    let csv = "Sustancia,Fecha,Hora,Dosis,Unidad,Notas\n";
-    Object.entries(substanceData).forEach(([key,sub])=>{
-        Object.entries(sub.entries||{}).forEach(([date,entries])=>{
-            entries.forEach(entry=>{
-                csv += `"${sub.name}","${date}","${entry.time}","${entry.dose}","${entry.unit}","${entry.notes?.replace(/"/g,'""')||''}"\n`;
-            });
-        });
-    });
-    const blob = new Blob([csv],{type:"text/csv"});
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = "bitacora_psiconautica.csv";
-    document.body.appendChild(a); a.click(); a.remove();
-    URL.revokeObjectURL(url);
-}
+    // Profile functions
+    function saveProfile() {
+        const nickname = document.getElementById('userNickname').value.trim();
 
-// --- Importar desde CSV ---
-function importFromCSV(input) {
-    if (!input.files.length) return;
-    const file = input.files[0];
-    const reader = new FileReader();
-    reader.onload = function(e){
-        const lines = e.target.result.split("\n").slice(1).filter(Boolean);
-        lines.forEach(line=>{
-            const [sustancia,fecha,hora,dosis,unidad,notas] = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(s=>s.replace(/^"|"$/g,""));
-            let key = sustancia.toLowerCase().replace(/[^a-z0-9]/g,'');
-            if (!substanceData[key]) substanceData[key] = { name:sustancia, color:availableColors[Math.floor(Math.random()*availableColors.length)], entries:{} };
-            if (!substanceData[key].entries[fecha]) substanceData[key].entries[fecha] = [];
-            substanceData[key].entries[fecha].push({ time:hora, dose:dosis, unit:unidad, notes:notas });
-        });
-        saveData(substanceData);
-        updateSubstanceList(); generateCalendar(); updateStats();
-        alert("Datos importados correctamente.");
-    };
-    reader.readAsText(file);
-}
+        userProfile.nickname = nickname || 'Psiconáuta Anónimo';
+        localStorage.setItem('userProfile', JSON.stringify(userProfile));
 
-// --- Limpiar datos ---
-function clearAllData() {
-    if (confirm("¿Seguro que quieres eliminar todos los datos? ¡No se puede deshacer!")) {
-        localStorage.clear();
-        substanceData = JSON.parse(JSON.stringify(defaultSubstances));
-        saveData(substanceData);
-        updateSubstanceList(); generateCalendar(); updateStats();
-        alert("Todos los datos han sido eliminados.");
+        updateProfileCard();
+        alert('Perfil guardado correctamente');
     }
-}
 
-// --- Perfil ---
-const profileFields = ["userNickname","userTelegram","userInstagram","userReddit","userDiscord"];
-function saveProfile(){
-    profileFields.forEach(id=>{
-        localStorage.setItem(id, document.getElementById(id).value.trim());
-    });
-    alert("Perfil guardado");
-}
-function loadProfile(){
-    profileFields.forEach(id=>{
-        if(document.getElementById(id))
-            document.getElementById(id).value = localStorage.getItem(id)||"";
-    });
-}
-function shareProfile(){
-    let txt = `💫 Perfil Psiconáutico 💫\n`;
-    profileFields.forEach(id=>{
-        let val = localStorage.getItem(id)||"";
-        if(val) txt += `${id.replace("user","")}: ${val}\n`;
-    });
-    let shareBox = document.getElementById('profile-share');
-    shareBox.innerHTML = `<textarea style="width:100%;min-height:90px;">${txt}</textarea>
-    <button class="btn-primary" onclick="navigator.clipboard.writeText(document.querySelector('#profile-share textarea').value)">Copiar</button>`;
-}
-
-// --- Autobackup local cada 24h ---
-function doAutoBackup() {
-    let lastBackup = localStorage.getItem('auto-backup-timestamp');
-    let now = Date.now();
-    if(!lastBackup || now-parseInt(lastBackup)>24*60*60*1000) {
-        // Guardar backup
-        let backupName = "backup_psiconautica_" + new Date().toISOString().replace(/[:.]/g,'_').slice(0,19) + ".json";
-        let data = JSON.stringify({substanceData, profile:{}});
-        profileFields.forEach(id=>{ data.profile = data.profile||{}; data.profile[id]=localStorage.getItem(id)||""; });
-        const blob = new Blob([data], {type: "application/json"});
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url; a.download = backupName;
-        document.body.appendChild(a); a.click(); a.remove();
-        URL.revokeObjectURL(url);
-        localStorage.setItem('auto-backup-timestamp', String(now));
-        updateLastBackupInfo();
-    }
-}
-function updateLastBackupInfo(){
-    const el = document.getElementById('last-backup-info');
-    if(!el) return;
-    let t = localStorage.getItem('auto-backup-timestamp');
-    if(t) el.textContent = "Último backup: " + new Date(parseInt(t)).toLocaleString();
-    else el.textContent = "Aún no se ha realizado ningún backup automático.";
-}
-
-// -- Hookear al inicializar la app --
-function initApp() {
-    updateSubstanceList(); generateCalendar(); updateStats();
-    initFormHandlers(); initModalCloseHandlers(); generateColorPicker();
-    loadProfile(); updateLastBackupInfo(); doAutoBackup();
-    setInterval(doAutoBackup, 10*60*1000); // chequea cada 10 min
-}
-
-    function initModalCloseHandlers() {
-        document.querySelectorAll('.modal').forEach(modal => {
-            modal.onclick = (e) => { if(e.target === modal) modal.classList.remove('active'); };
-        });
-    }
-    function openExternalURL(url) {
-        // En Android WebView usa intent:// y fallback a _blank para navegador normal
-        if (window.AndroidWebView && window.AndroidWebView.openExternalUrl) {
-            window.AndroidWebView.openExternalUrl(url);
-        } else if (window.navigator && window.navigator.userAgent && /Android/i.test(window.navigator.userAgent)) {
-            window.open(url, '_system');
-        } else {
-            window.open(url, '_blank');
+    function loadUserProfile() {
+        if (userProfile.nickname) {
+            document.getElementById('userNickname').value = userProfile.nickname;
         }
     }
-    function initApp() {
-        updateSubstanceList(); generateCalendar(); updateStats();
-        initFormHandlers(); initModalCloseHandlers(); generateColorPicker();
+
+    function updateProfileCard() {
+        const nickname = userProfile.nickname || 'Psiconáuta Anónimo';
+        document.getElementById('profileCardName').textContent = nickname;
+        document.getElementById('substanceCount').textContent = substances.length;
+        document.getElementById('entryCount').textContent = entries.length;
     }
-    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initApp);
-    else initApp();
+
+    // Favorites functions
+    function populateFavoriteDropdown() {
+        const select = document.getElementById('favoriteSubstanceSelect');
+        select.innerHTML = '<option value="">Selecciona una sustancia...</option>';
+
+        substances.forEach(substance => {
+            const option = document.createElement('option');
+            option.value = substance.name;
+            option.textContent = substance.name;
+            select.appendChild(option);
+        });
+    }
+
+    function addToFavorites() {
+        const substanceName = document.getElementById('favoriteSubstanceSelect').value;
+
+        if (!substanceName) {
+            alert('Selecciona una sustancia');
+            return;
+        }
+
+        if (!userProfile.favorites) {
+            userProfile.favorites = [];
+        }
+
+        if (userProfile.favorites.includes(substanceName)) {
+            alert('Esta sustancia ya está en favoritos');
+            return;
+        }
+
+        userProfile.favorites.push(substanceName);
+        localStorage.setItem('userProfile', JSON.stringify(userProfile));
+        renderFavorites();
+        document.getElementById('favoriteSubstanceSelect').value = '';
+    }
+
+    function renderFavorites() {
+        const container = document.getElementById('favoritesList');
+
+        if (!userProfile.favorites || userProfile.favorites.length === 0) {
+            container.innerHTML = '<p>No tienes sustancias favoritas aún</p>';
+            return;
+        }
+
+        container.innerHTML = '';
+        userProfile.favorites.forEach(favorite => {
+            const item = document.createElement('div');
+            item.className = 'favorite-substance';
+            item.innerHTML = `
+                <span>${favorite}</span>
+                <button class="remove-btn" onclick="removeFromFavorites('${favorite}')">×</button>
+            `;
+            container.appendChild(item);
+        });
+    }
+
+    function removeFromFavorites(substanceName) {
+        userProfile.favorites = userProfile.favorites.filter(fav => fav !== substanceName);
+        localStorage.setItem('userProfile', JSON.stringify(userProfile));
+        renderFavorites();
+    }
+
+    // Social functions
+    function saveSocialLinks() {
+        userProfile.social = {
+            twitter: document.getElementById('socialTwitter').value.trim(),
+            instagram: document.getElementById('socialInstagram').value.trim(),
+            reddit: document.getElementById('socialReddit').value.trim(),
+            telegram: document.getElementById('socialTelegram').value.trim(),
+            discord: document.getElementById('socialDiscord').value.trim()
+        };
+
+        localStorage.setItem('userProfile', JSON.stringify(userProfile));
+        alert('Enlaces sociales guardados');
+    }
+
+    function loadSocialLinks() {
+        if (userProfile.social) {
+            document.getElementById('socialTwitter').value = userProfile.social.twitter || '';
+            document.getElementById('socialInstagram').value = userProfile.social.instagram || '';
+            document.getElementById('socialReddit').value = userProfile.social.reddit || '';
+            document.getElementById('socialTelegram').value = userProfile.social.telegram || '';
+            document.getElementById('socialDiscord').value = userProfile.social.discord || '';
+        }
+    }
+
+    // Quotes functions
+    function addQuote() {
+        const quoteText = document.getElementById('newQuote').value.trim();
+
+        if (!quoteText) {
+            alert('Escribe una frase');
+            return;
+        }
+
+        if (quoteText.length > 160) {
+            alert('La frase no puede tener más de 160 caracteres');
+            return;
+        }
+
+        if (!userProfile.quotes) {
+            userProfile.quotes = [];
+        }
+
+        const quote = {
+            id: Date.now(),
+            text: quoteText,
+            date: new Date().toISOString()
+        };
+
+        userProfile.quotes.push(quote);
+        localStorage.setItem('userProfile', JSON.stringify(userProfile));
+        renderQuotes();
+        document.getElementById('newQuote').value = '';
+        document.getElementById('charCount').textContent = '0';
+    }
+
+    function renderQuotes() {
+        const container = document.getElementById('quotesList');
+
+        if (!userProfile.quotes || userProfile.quotes.length === 0) {
+            container.innerHTML = '<p>No tienes frases destacadas aún</p>';
+            return;
+        }
+
+        container.innerHTML = '';
+        userProfile.quotes.forEach(quote => {
+            const item = document.createElement('div');
+            item.className = 'quote-item';
+            item.innerHTML = `
+                <div class="quote-text">"${quote.text}"</div>
+                <div class="quote-actions">
+                    <button class="remove-btn" onclick="removeQuote(${quote.id})">×</button>
+                </div>
+            `;
+            container.appendChild(item);
+        });
+    }
+
+    function removeQuote(quoteId) {
+        userProfile.quotes = userProfile.quotes.filter(quote => quote.id !== quoteId);
+        localStorage.setItem('userProfile', JSON.stringify(userProfile));
+        renderQuotes();
+    }
+
+    // Share functions
+    function shareToTwitter() {
+        const text = `🧙‍♂️ ${userProfile.nickname || 'Psiconáuta Anónimo'} - Explorador de la conciencia\n💊 ${substances.length} sustancias exploradas\n📊 ${entries.length} experiencias documentadas\n\n#Psiconáutica #ConsciousUse`;
+        const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`;
+        openExternalURL(url);
+    }
+
+    function shareToWhatsApp() {
+        const text = `🧙‍♂️ ${userProfile.nickname || 'Psiconáuta Anónimo'} - Explorador de la conciencia\n💊 ${substances.length} sustancias exploradas\n📊 ${entries.length} experiencias documentadas`;
+        const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
+        openExternalURL(url);
+    }
+
+    function shareToTelegram() {
+        const text = `🧙‍♂️ ${userProfile.nickname || 'Psiconáuta Anónimo'} - Explorador de la conciencia\n💊 ${substances.length} sustancias exploradas\n📊 ${entries.length} experiencias documentadas`;
+        const url = `https://t.me/share/url?text=${encodeURIComponent(text)}`;
+        openExternalURL(url);
+    }
+
+    function shareToReddit() {
+        const title = `Mi perfil psiconáutico: ${userProfile.nickname || 'Psiconáuta Anónimo'}`;
+        const text = `Explorador de la conciencia con ${substances.length} sustancias exploradas y ${entries.length} experiencias documentadas`;
+        const url = `https://reddit.com/submit?title=${encodeURIComponent(title)}&text=${encodeURIComponent(text)}`;
+        openExternalURL(url);
+    }
+
+    function exportToCSV() {
+    try {
+        // Crear contenido CSV
+        let csvContent = "SUSTANCIAS\n";
+        csvContent += "ID,Nombre,Color,Fecha_Creacion\n";
+        substances.forEach(substance => {
+            csvContent += `${substance.id},"${substance.name}","${substance.color}","${substance.createdAt}"\n`;
+        });
+
+        csvContent += "\nREGISTROS\n";
+        csvContent += "ID,Sustancia,Dosis,Unidad,Fecha_Hora,Notas,Fecha_Creacion\n";
+        entries.forEach(entry => {
+            csvContent += `${entry.id},"${entry.substance}",${entry.dose},"${entry.unit}","${entry.date}","${entry.notes || ''}","${entry.createdAt}"\n`;
+        });
+
+        // Nombre del archivo con fecha
+        const filename = `bitacora_psiconáutica_${new Date().toISOString().split('T')[0]}.csv`;
+
+        // Método para Android WebView usando data URL
+        const dataUrl = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csvContent);
+
+        // Crear elemento temporal para descarga
+        const tempLink = document.createElement('a');
+        tempLink.href = dataUrl;
+        tempLink.download = filename;
+        tempLink.style.display = 'none';
+
+        // Agregar al DOM, click y remover
+        document.body.appendChild(tempLink);
+        tempLink.click();
+        document.body.removeChild(tempLink);
+
+        // Método alternativo para Android usando window.open
+        setTimeout(() => {
+            const newWindow = window.open(dataUrl, '_blank');
+            setTimeout(() => {
+                if (newWindow) newWindow.close();
+            }, 1000);
+        }, 500);
+
+        alert(`Archivo CSV generado: ${filename}\nBusca en tu carpeta de Descargas o en el diálogo de compartir.`);
+
+    } catch (error) {
+        console.error('Error al exportar:', error);
+        alert('Error al generar el archivo CSV');
+    }
+}
+
+    function importFromCSV(input) {
+    const file = input.files[0];
+
+    if (!file) {
+        alert('No se seleccionó ningún archivo');
+        return;
+    }
+
+    if (!file.name.toLowerCase().endsWith('.csv')) {
+        alert('Por favor selecciona un archivo CSV válido (.csv)');
+        input.value = '';
+        return;
+    }
+
+    // Mostrar opciones como en TrackerTung
+    const userChoice = confirm(
+        '¿Qué quieres hacer con los datos existentes?\n\n' +
+        'OK = Reemplazar todos los datos existentes\n' +
+        'Cancelar = Agregar solo datos nuevos (evitando duplicados)'
+    );
+
+    const reader = new FileReader();
+
+    reader.onload = function(e) {
+        try {
+            const csv = e.target.result;
+            const lines = csv.split('\n');
+
+            let currentSection = '';
+            let substancesImported = 0;
+            let entriesImported = 0;
+
+            // Si el usuario eligió reemplazar (OK), limpiar datos existentes
+            if (userChoice) {
+                substances = [];
+                entries = [];
+            }
+
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i].trim();
+
+                if (line === 'SUSTANCIAS') {
+                    currentSection = 'substances';
+                    i++; // Skip header
+                    continue;
+                } else if (line === 'REGISTROS') {
+                    currentSection = 'entries';
+                    i++; // Skip header
+                    continue;
+                }
+
+                if (!line) continue;
+
+                const columns = parseCSVLine(line);
+
+                if (currentSection === 'substances' && columns.length >= 4) {
+                    const substance = {
+                        id: parseInt(columns[0]) || Date.now() + Math.random(),
+                        name: columns[1].replace(/"/g, ''),
+                        color: columns[2].replace(/"/g, ''),
+                        createdAt: columns[3].replace(/"/g, '')
+                    };
+
+                    // Si no está reemplazando, verificar duplicados
+                    if (!userChoice) {
+                        if (!substances.find(s => s.name.toLowerCase() === substance.name.toLowerCase())) {
+                            substances.push(substance);
+                            substancesImported++;
+                        }
+                    } else {
+                        substances.push(substance);
+                        substancesImported++;
+                    }
+                } else if (currentSection === 'entries' && columns.length >= 7) {
+                    const entry = {
+                        id: parseInt(columns[0]) || Date.now() + Math.random(),
+                        substance: columns[1].replace(/"/g, ''),
+                        dose: parseFloat(columns[2]),
+                        unit: columns[3].replace(/"/g, ''),
+                        date: columns[4].replace(/"/g, ''),
+                        notes: columns[5].replace(/"/g, ''),
+                        createdAt: columns[6].replace(/"/g, '')
+                    };
+
+                    entries.push(entry);
+                    entriesImported++;
+                }
+            }
+
+            // Guardar en localStorage
+            localStorage.setItem('substances', JSON.stringify(substances));
+            localStorage.setItem('entries', JSON.stringify(entries));
+
+            // Actualizar interfaz
+            renderSubstanceList();
+            generateCalendar();
+            renderStats();
+
+            alert(`Importación completada:\n${substancesImported} sustancias\n${entriesImported} registros\n\n${userChoice ? 'Datos reemplazados' : 'Datos agregados'}`);
+
+        } catch (error) {
+            console.error('Error al importar:', error);
+            alert('Error al procesar el archivo CSV. Verifica el formato.');
+        }
+    };
+
+    reader.onerror = function() {
+        alert('Error al leer el archivo seleccionado');
+    };
+
+    reader.readAsText(file, 'UTF-8');
+    input.value = ''; // Limpiar input
+}
+
+    function parseCSVLine(line) {
+        const result = [];
+        let current = '';
+        let inQuotes = false;
+
+        for (let i = 0; i < line.length; i++) {
+            const char = line[i];
+
+            if (char === '"') {
+                inQuotes = !inQuotes;
+            } else if (char === ',' && !inQuotes) {
+                result.push(current);
+                current = '';
+            } else {
+                current += char;
+            }
+        }
+
+        result.push(current);
+        return result;
+    }
+
+    function clearAllData() {
+        if (confirm('¿Estás seguro de que quieres eliminar todos los datos? Esta acción no se puede deshacer.')) {
+            localStorage.removeItem('substances');
+            localStorage.removeItem('entries');
+            localStorage.removeItem('userProfile');
+
+            substances = getDefaultSubstances();
+            entries = [];
+            userProfile = {};
+            selectedSubstanceFilter = null;
+
+            localStorage.setItem('substances', JSON.stringify(substances));
+
+            renderSubstanceList();
+            generateCalendar();
+            renderStats();
+            loadUserProfile();
+            updateProfileCard();
+
+            alert('Todos los datos han sido eliminados');
+        }
+    }
+
+    function openExternalURL(url) {
+    // Método 1: Intent de Android (si está disponible)
+    if (typeof Android !== 'undefined' && Android.openUrl) {
+        Android.openUrl(url);
+        return;
+    }
+
+    // Método 2: Para Cordova/PhoneGap
+    if (window.cordova && window.cordova.InAppBrowser) {
+        window.cordova.InAppBrowser.open(url, '_system');
+        return;
+    }
+
+    // Método 3: Para Android WebView
+    const link = document.createElement('a');
+    link.href = url;
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+
+    // Intentar activar el selector de aplicaciones de Android
+    const clickEvent = new MouseEvent('click', {
+        view: window,
+        bubbles: true,
+        cancelable: true
+    });
+
+    document.body.appendChild(link);
+    link.dispatchEvent(clickEvent);
+    document.body.removeChild(link);
+
+    // Método 4: Como último recurso
+    setTimeout(() => {
+        window.open(url, '_blank', 'noopener,noreferrer');
+    }, 100);
+}
+
+    // Close modals when clicking outside
+    document.addEventListener('click', function(e) {
+        if (e.target.classList.contains('modal')) {
+            e.target.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+    });
+
+    // Initialize color picker
+    document.addEventListener('DOMContentLoaded', function() {
+        // Set default color selection
+        setTimeout(() => {
+            const firstColorOption = document.querySelector('.color-option');
+            if (firstColorOption) {
+                firstColorOption.classList.add('selected');
+            }
+        }, 100);
+    });
+
+    // Prevent modal close when clicking inside modal content
+    document.addEventListener('click', function(e) {
+        if (e.target.closest('.modal-content')) {
+            e.stopPropagation();
+        }
+    });
 </script>
+
 </body>
 </html>
