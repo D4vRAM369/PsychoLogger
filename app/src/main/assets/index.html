@@ -1873,13 +1873,10 @@
         window.open(url, '_blank');
     }
 
-    // Data management functions
     function exportToCSV() {
+    try {
         // Export substances
-        let csvContent = "data:text/csv;charset=utf-8,";
-
-        // Substances CSV
-        csvContent += "SUSTANCIAS\n";
+        let csvContent = "SUSTANCIAS\n";
         csvContent += "ID,Nombre,Color,Fecha_Creacion\n";
         substances.forEach(substance => {
             csvContent += `${substance.id},"${substance.name}","${substance.color}","${substance.createdAt}"\n`;
@@ -1891,98 +1888,125 @@
             csvContent += `${entry.id},"${entry.substance}",${entry.dose},"${entry.unit}","${entry.date}","${entry.notes || ''}","${entry.createdAt}"\n`;
         });
 
-        // Download file
-        const encodedUri = encodeURI(csvContent);
-        const link = document.createElement("a");
-        link.setAttribute("href", encodedUri);
-        link.setAttribute("download", `bitacora_psiconáutica_${new Date().toISOString().split('T')[0]}.csv`);
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        // Create blob and download - Android compatible method
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const filename = `bitacora_psiconáutica_${new Date().toISOString().split('T')[0]}.csv`;
+
+        // For Android WebView
+        if (window.navigator && window.navigator.msSaveOrOpenBlob) {
+            window.navigator.msSaveOrOpenBlob(blob, filename);
+        } else {
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', filename);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        }
 
         alert('Datos exportados correctamente');
+    } catch (error) {
+        console.error('Error al exportar:', error);
+        alert('Error al exportar los datos. Intenta de nuevo.');
     }
+}
 
     function importFromCSV(input) {
-        const file = input.files[0];
-        if (!file) return;
+    const file = input.files[0];
+    if (!file) {
+        alert('Por favor selecciona un archivo CSV');
+        return;
+    }
 
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            try {
-                const csv = e.target.result;
-                const lines = csv.split('\n');
+    if (!file.name.toLowerCase().endsWith('.csv')) {
+        alert('Por favor selecciona un archivo CSV válido');
+        input.value = '';
+        return;
+    }
 
-                let currentSection = '';
-                let substancesImported = 0;
-                let entriesImported = 0;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const csv = e.target.result;
+            const lines = csv.split('\n');
 
-                for (let i = 0; i < lines.length; i++) {
-                    const line = lines[i].trim();
+            let currentSection = '';
+            let substancesImported = 0;
+            let entriesImported = 0;
 
-                    if (line === 'SUSTANCIAS') {
-                        currentSection = 'substances';
-                        i++; // Skip header
-                        continue;
-                    } else if (line === 'REGISTROS') {
-                        currentSection = 'entries';
-                        i++; // Skip header
-                        continue;
-                    }
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i].trim();
 
-                    if (!line) continue;
-
-                    const columns = parseCSVLine(line);
-
-                    if (currentSection === 'substances' && columns.length >= 4) {
-                        const substance = {
-                            id: parseInt(columns[0]) || Date.now() + Math.random(),
-                            name: columns[1].replace(/"/g, ''),
-                            color: columns[2].replace(/"/g, ''),
-                            createdAt: columns[3].replace(/"/g, '')
-                        };
-
-                        // Check if substance already exists
-                        if (!substances.find(s => s.name.toLowerCase() === substance.name.toLowerCase())) {
-                            substances.push(substance);
-                            substancesImported++;
-                        }
-                    } else if (currentSection === 'entries' && columns.length >= 7) {
-                        const entry = {
-                            id: parseInt(columns[0]) || Date.now() + Math.random(),
-                            substance: columns[1].replace(/"/g, ''),
-                            dose: parseFloat(columns[2]),
-                            unit: columns[3].replace(/"/g, ''),
-                            date: columns[4].replace(/"/g, ''),
-                            notes: columns[5].replace(/"/g, ''),
-                            createdAt: columns[6].replace(/"/g, '')
-                        };
-
-                        entries.push(entry);
-                        entriesImported++;
-                    }
+                if (line === 'SUSTANCIAS') {
+                    currentSection = 'substances';
+                    i++; // Skip header
+                    continue;
+                } else if (line === 'REGISTROS') {
+                    currentSection = 'entries';
+                    i++; // Skip header
+                    continue;
                 }
 
-                // Save to localStorage
-                localStorage.setItem('substances', JSON.stringify(substances));
-                localStorage.setItem('entries', JSON.stringify(entries));
+                if (!line) continue;
 
-                // Refresh UI
-                renderSubstanceList();
-                generateCalendar();
-                renderStats();
+                const columns = parseCSVLine(line);
 
-                alert(`Importación completada:\n${substancesImported} sustancias\n${entriesImported} registros`);
+                if (currentSection === 'substances' && columns.length >= 4) {
+                    const substance = {
+                        id: parseInt(columns[0]) || Date.now() + Math.random(),
+                        name: columns[1].replace(/"/g, ''),
+                        color: columns[2].replace(/"/g, ''),
+                        createdAt: columns[3].replace(/"/g, '')
+                    };
 
-            } catch (error) {
-                alert('Error al importar el archivo CSV. Verifica el formato.');
-                console.error('Import error:', error);
+                    // Check if substance already exists
+                    if (!substances.find(s => s.name.toLowerCase() === substance.name.toLowerCase())) {
+                        substances.push(substance);
+                        substancesImported++;
+                    }
+                } else if (currentSection === 'entries' && columns.length >= 7) {
+                    const entry = {
+                        id: parseInt(columns[0]) || Date.now() + Math.random(),
+                        substance: columns[1].replace(/"/g, ''),
+                        dose: parseFloat(columns[2]),
+                        unit: columns[3].replace(/"/g, ''),
+                        date: columns[4].replace(/"/g, ''),
+                        notes: columns[5].replace(/"/g, ''),
+                        createdAt: columns[6].replace(/"/g, '')
+                    };
+
+                    entries.push(entry);
+                    entriesImported++;
+                }
             }
-        };
 
-        reader.readAsText(file);
-        input.value = ''; // Reset file input
-    }
+            // Save to localStorage
+            localStorage.setItem('substances', JSON.stringify(substances));
+            localStorage.setItem('entries', JSON.stringify(entries));
+
+            // Refresh UI
+            renderSubstanceList();
+            generateCalendar();
+            renderStats();
+
+            alert(`Importación completada:\n${substancesImported} sustancias\n${entriesImported} registros`);
+
+        } catch (error) {
+            alert('Error al importar el archivo CSV. Verifica el formato.');
+            console.error('Import error:', error);
+        }
+    };
+
+    reader.onerror = function() {
+        alert('Error al leer el archivo');
+    };
+
+    reader.readAsText(file, 'UTF-8');
+    input.value = ''; // Reset file input
+}
 
     function parseCSVLine(line) {
         const result = [];
@@ -2029,10 +2053,22 @@
         }
     }
 
-    // External URL function
     function openExternalURL(url) {
-        window.open(url, '_blank');
+    // Para Android, intenta abrir en navegador externo
+    if (typeof Android !== 'undefined' && Android.openExternalURL) {
+        // Si hay un bridge de Android disponible
+        Android.openExternalURL(url);
+    } else {
+        // Método alternativo que funciona mejor en Android WebView
+        const link = document.createElement('a');
+        link.href = url;
+        link.target = '_system'; // Esto ayuda en Cordova/PhoneGap
+        link.rel = 'noopener noreferrer';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
     }
+}
 
     // Close modals when clicking outside
     document.addEventListener('click', function(e) {
