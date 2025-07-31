@@ -943,7 +943,7 @@
                     <div class="resource-card">
                         <h4>Importar Datos</h4>
                         <p>Cargar datos desde un archivo CSV</p>
-                        <input type="file" id="csvFileInput" class="file-input" accept=".csv" onchange="importFromCSV(this)">
+                        <input type="file" id="csvFileInput" class="file-input" accept=".csv, text/csv" onchange="importFromCSV(this)" multiple="false">
                         <label for="csvFileInput" class="file-label">Seleccionar CSV</label>
                     </div>
                     <div class="resource-card">
@@ -1851,31 +1851,31 @@
     function shareToTwitter() {
         const text = `🧙‍♂️ ${userProfile.nickname || 'Psiconáuta Anónimo'} - Explorador de la conciencia\n💊 ${substances.length} sustancias exploradas\n📊 ${entries.length} experiencias documentadas\n\n#Psiconáutica #ConsciousUse`;
         const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`;
-        window.open(url, '_blank');
+        openExternalURL(url);
     }
 
     function shareToWhatsApp() {
         const text = `🧙‍♂️ ${userProfile.nickname || 'Psiconáuta Anónimo'} - Explorador de la conciencia\n💊 ${substances.length} sustancias exploradas\n📊 ${entries.length} experiencias documentadas`;
         const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
-        window.open(url, '_blank');
+        openExternalURL(url);
     }
 
     function shareToTelegram() {
         const text = `🧙‍♂️ ${userProfile.nickname || 'Psiconáuta Anónimo'} - Explorador de la conciencia\n💊 ${substances.length} sustancias exploradas\n📊 ${entries.length} experiencias documentadas`;
         const url = `https://t.me/share/url?text=${encodeURIComponent(text)}`;
-        window.open(url, '_blank');
+        openExternalURL(url);
     }
 
     function shareToReddit() {
         const title = `Mi perfil psiconáutico: ${userProfile.nickname || 'Psiconáuta Anónimo'}`;
         const text = `Explorador de la conciencia con ${substances.length} sustancias exploradas y ${entries.length} experiencias documentadas`;
         const url = `https://reddit.com/submit?title=${encodeURIComponent(title)}&text=${encodeURIComponent(text)}`;
-        window.open(url, '_blank');
+        openExternalURL(url);
     }
 
     function exportToCSV() {
     try {
-        // Export substances
+        // Crear contenido CSV
         let csvContent = "SUSTANCIAS\n";
         csvContent += "ID,Nombre,Color,Fecha_Creacion\n";
         substances.forEach(substance => {
@@ -1888,46 +1888,62 @@
             csvContent += `${entry.id},"${entry.substance}",${entry.dose},"${entry.unit}","${entry.date}","${entry.notes || ''}","${entry.createdAt}"\n`;
         });
 
-        // Create blob and download - Android compatible method
-        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        // Nombre del archivo con fecha
         const filename = `bitacora_psiconáutica_${new Date().toISOString().split('T')[0]}.csv`;
 
-        // For Android WebView
-        if (window.navigator && window.navigator.msSaveOrOpenBlob) {
-            window.navigator.msSaveOrOpenBlob(blob, filename);
-        } else {
-            const link = document.createElement('a');
-            const url = URL.createObjectURL(blob);
-            link.setAttribute('href', url);
-            link.setAttribute('download', filename);
-            link.style.visibility = 'hidden';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            URL.revokeObjectURL(url);
-        }
+        // Método para Android WebView usando data URL
+        const dataUrl = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csvContent);
 
-        alert('Datos exportados correctamente');
+        // Crear elemento temporal para descarga
+        const tempLink = document.createElement('a');
+        tempLink.href = dataUrl;
+        tempLink.download = filename;
+        tempLink.style.display = 'none';
+
+        // Agregar al DOM, click y remover
+        document.body.appendChild(tempLink);
+        tempLink.click();
+        document.body.removeChild(tempLink);
+
+        // Método alternativo para Android usando window.open
+        setTimeout(() => {
+            const newWindow = window.open(dataUrl, '_blank');
+            setTimeout(() => {
+                if (newWindow) newWindow.close();
+            }, 1000);
+        }, 500);
+
+        alert(`Archivo CSV generado: ${filename}\nBusca en tu carpeta de Descargas o en el diálogo de compartir.`);
+
     } catch (error) {
         console.error('Error al exportar:', error);
-        alert('Error al exportar los datos. Intenta de nuevo.');
+        alert('Error al generar el archivo CSV');
     }
 }
 
     function importFromCSV(input) {
     const file = input.files[0];
+
     if (!file) {
-        alert('Por favor selecciona un archivo CSV');
+        alert('No se seleccionó ningún archivo');
         return;
     }
 
     if (!file.name.toLowerCase().endsWith('.csv')) {
-        alert('Por favor selecciona un archivo CSV válido');
+        alert('Por favor selecciona un archivo CSV válido (.csv)');
         input.value = '';
         return;
     }
 
+    // Mostrar opciones como en TrackerTung
+    const userChoice = confirm(
+        '¿Qué quieres hacer con los datos existentes?\n\n' +
+        'OK = Reemplazar todos los datos existentes\n' +
+        'Cancelar = Agregar solo datos nuevos (evitando duplicados)'
+    );
+
     const reader = new FileReader();
+
     reader.onload = function(e) {
         try {
             const csv = e.target.result;
@@ -1936,6 +1952,12 @@
             let currentSection = '';
             let substancesImported = 0;
             let entriesImported = 0;
+
+            // Si el usuario eligió reemplazar (OK), limpiar datos existentes
+            if (userChoice) {
+                substances = [];
+                entries = [];
+            }
 
             for (let i = 0; i < lines.length; i++) {
                 const line = lines[i].trim();
@@ -1962,8 +1984,13 @@
                         createdAt: columns[3].replace(/"/g, '')
                     };
 
-                    // Check if substance already exists
-                    if (!substances.find(s => s.name.toLowerCase() === substance.name.toLowerCase())) {
+                    // Si no está reemplazando, verificar duplicados
+                    if (!userChoice) {
+                        if (!substances.find(s => s.name.toLowerCase() === substance.name.toLowerCase())) {
+                            substances.push(substance);
+                            substancesImported++;
+                        }
+                    } else {
                         substances.push(substance);
                         substancesImported++;
                     }
@@ -1983,29 +2010,29 @@
                 }
             }
 
-            // Save to localStorage
+            // Guardar en localStorage
             localStorage.setItem('substances', JSON.stringify(substances));
             localStorage.setItem('entries', JSON.stringify(entries));
 
-            // Refresh UI
+            // Actualizar interfaz
             renderSubstanceList();
             generateCalendar();
             renderStats();
 
-            alert(`Importación completada:\n${substancesImported} sustancias\n${entriesImported} registros`);
+            alert(`Importación completada:\n${substancesImported} sustancias\n${entriesImported} registros\n\n${userChoice ? 'Datos reemplazados' : 'Datos agregados'}`);
 
         } catch (error) {
-            alert('Error al importar el archivo CSV. Verifica el formato.');
-            console.error('Import error:', error);
+            console.error('Error al importar:', error);
+            alert('Error al procesar el archivo CSV. Verifica el formato.');
         }
     };
 
     reader.onerror = function() {
-        alert('Error al leer el archivo');
+        alert('Error al leer el archivo seleccionado');
     };
 
     reader.readAsText(file, 'UTF-8');
-    input.value = ''; // Reset file input
+    input.value = ''; // Limpiar input
 }
 
     function parseCSVLine(line) {
@@ -2054,20 +2081,39 @@
     }
 
     function openExternalURL(url) {
-    // Para Android, intenta abrir en navegador externo
-    if (typeof Android !== 'undefined' && Android.openExternalURL) {
-        // Si hay un bridge de Android disponible
-        Android.openExternalURL(url);
-    } else {
-        // Método alternativo que funciona mejor en Android WebView
-        const link = document.createElement('a');
-        link.href = url;
-        link.target = '_system'; // Esto ayuda en Cordova/PhoneGap
-        link.rel = 'noopener noreferrer';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+    // Método 1: Intent de Android (si está disponible)
+    if (typeof Android !== 'undefined' && Android.openUrl) {
+        Android.openUrl(url);
+        return;
     }
+
+    // Método 2: Para Cordova/PhoneGap
+    if (window.cordova && window.cordova.InAppBrowser) {
+        window.cordova.InAppBrowser.open(url, '_system');
+        return;
+    }
+
+    // Método 3: Para Android WebView
+    const link = document.createElement('a');
+    link.href = url;
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+
+    // Intentar activar el selector de aplicaciones de Android
+    const clickEvent = new MouseEvent('click', {
+        view: window,
+        bubbles: true,
+        cancelable: true
+    });
+
+    document.body.appendChild(link);
+    link.dispatchEvent(clickEvent);
+    document.body.removeChild(link);
+
+    // Método 4: Como último recurso
+    setTimeout(() => {
+        window.open(url, '_blank', 'noopener,noreferrer');
+    }, 100);
 }
 
     // Close modals when clicking outside
