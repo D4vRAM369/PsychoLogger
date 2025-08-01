@@ -1955,56 +1955,29 @@
         return;
     }
 
-    // Crear headers para sustancias
-    const substanceHeaders = ['ID', 'Nombre', 'Color', 'Fecha_Creacion'];
-    const substanceRows = substances.map(substance => [
-        substance.id,
-        `"${substance.name}"`,
-        `"${substance.color}"`,
-        `"${substance.createdAt}"`
-    ]);
-
-    // Crear headers para registros
-    const entryHeaders = ['ID', 'Sustancia', 'Dosis', 'Unidad', 'Fecha_Hora', 'Notas', 'Fecha_Creacion'];
-    const entryRows = entries.map(entry => [
-        entry.id,
-        `"${entry.substance}"`,
-        entry.dose,
-        `"${entry.unit}"`,
-        `"${entry.date}"`,
-        `"${entry.notes || ''}"`,
-        `"${entry.createdAt}"`
-    ]);
-
-    // Combinar todo el contenido CSV
+    // Crear el contenido CSV
     const csvContent = [
         'SUSTANCIAS',
-        substanceHeaders.join(','),
-        ...substanceRows.map(row => row.join(',')),
+        'ID,Nombre,Color,Fecha_Creacion',
+        ...substances.map(s => `${s.id},"${s.name}","${s.color}","${s.createdAt}"`),
         '',
         'REGISTROS',
-        entryHeaders.join(','),
-        ...entryRows.map(row => row.join(','))
+        'ID,Sustancia,Dosis,Unidad,Fecha_Hora,Notas,Fecha_Creacion',
+        ...entries.map(e => `${e.id},"${e.substance}",${e.dose},"${e.unit}","${e.date}","${e.notes || ''}","${e.createdAt}"`)
     ].join('\n');
 
     const fileName = `bitacora_psiconáutica_${new Date().toISOString().split('T')[0]}.csv`;
 
-    // Verificar si estamos en Android WebView
-    if (typeof Android !== 'undefined' && Android.exportCSV) {
-        Android.exportCSV(csvContent, fileName);
-    } else {
-        // Método estándar para navegadores
-        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = fileName;
-        a.style.display = 'none';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        window.URL.revokeObjectURL(url);
-    }
+    // Método unificado que funciona en web y Android
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
 
     alert('Archivo CSV exportado exitosamente');
 }
