@@ -1371,10 +1371,15 @@
         dayElement.textContent = day.getDate();
 
         // Check if day has entries
-        const dayEntries = entries.filter(entry => {
+        let dayEntries = entries.filter(entry => {
             const entryDate = new Date(entry.date);
             return entryDate.toDateString() === day.toDateString();
         });
+
+        // Apply substance filter if one selected
+        if (selectedSubstanceFilter) {
+            dayEntries = dayEntries.filter(entry => entry.substance === selectedSubstanceFilter);
+        }
 
         if (dayEntries.length > 0) {
             dayElement.classList.add('has-entry');
@@ -1589,8 +1594,27 @@
 
     function filterBySubstance(substanceName) {
         selectedSubstanceFilter = substanceName;
-        renderSubstanceList();
+        // Update active state for substances
+        document.querySelectorAll('.substance-item').forEach(item => {
+            item.classList.remove('active');
+        });
+
+        if (substanceName === null) {
+            //Mark "Todas las sustancias" as active
+            document.querySelector('.substance-item:first-child').classList.add('active');
+        } else {
+            // Find and mark the specific substance as active
+            document.querySelectorAll('.substance-item').forEach(item => {
+               const substanceText = item.querySelector('.substance-info span').textContent;
+                if (substanceText === substanceName) {
+                    item.classList.add('active');
+                }
+            });
+        }
+
         generateCalendar();
+        renderSubstanceList();
+        renderStats();
     }
 
     function deleteSubstance(substanceId) {
@@ -1926,51 +1950,63 @@
     }
 
     function exportToCSV() {
-    try {
-        // Crear contenido CSV
-        let csvContent = "SUSTANCIAS\n";
-        csvContent += "ID,Nombre,Color,Fecha_Creacion\n";
-        substances.forEach(substance => {
-            csvContent += `${substance.id},"${substance.name}","${substance.color}","${substance.createdAt}"\n`;
-        });
-
-        csvContent += "\nREGISTROS\n";
-        csvContent += "ID,Sustancia,Dosis,Unidad,Fecha_Hora,Notas,Fecha_Creacion\n";
-        entries.forEach(entry => {
-            csvContent += `${entry.id},"${entry.substance}",${entry.dose},"${entry.unit}","${entry.date}","${entry.notes || ''}","${entry.createdAt}"\n`;
-        });
-
-        // Nombre del archivo con fecha
-        const filename = `bitacora_psiconáutica_${new Date().toISOString().split('T')[0]}.csv`;
-
-        // Método para Android WebView usando data URL
-        const dataUrl = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csvContent);
-
-        // Crear elemento temporal para descarga
-        const tempLink = document.createElement('a');
-        tempLink.href = dataUrl;
-        tempLink.download = filename;
-        tempLink.style.display = 'none';
-
-        // Agregar al DOM, click y remover
-        document.body.appendChild(tempLink);
-        tempLink.click();
-        document.body.removeChild(tempLink);
-
-        // Método alternativo para Android usando window.open
-        setTimeout(() => {
-            const newWindow = window.open(dataUrl, '_blank');
-            setTimeout(() => {
-                if (newWindow) newWindow.close();
-            }, 1000);
-        }, 500);
-
-        alert(`Archivo CSV generado: ${filename}\nBusca en tu carpeta de Descargas o en el diálogo de compartir.`);
-
-    } catch (error) {
-        console.error('Error al exportar:', error);
-        alert('Error al generar el archivo CSV');
+    if (substances.length === 0 && entries.length === 0) {
+        alert('No hay datos para exportar');
+        return;
     }
+
+    // Crear headers para sustancias
+    const substanceHeaders = ['ID', 'Nombre', 'Color', 'Fecha_Creacion'];
+    const substanceRows = substances.map(substance => [
+        substance.id,
+        `"${substance.name}"`,
+        `"${substance.color}"`,
+        `"${substance.createdAt}"`
+    ]);
+
+    // Crear headers para registros
+    const entryHeaders = ['ID', 'Sustancia', 'Dosis', 'Unidad', 'Fecha_Hora', 'Notas', 'Fecha_Creacion'];
+    const entryRows = entries.map(entry => [
+        entry.id,
+        `"${entry.substance}"`,
+        entry.dose,
+        `"${entry.unit}"`,
+        `"${entry.date}"`,
+        `"${entry.notes || ''}"`,
+        `"${entry.createdAt}"`
+    ]);
+
+    // Combinar todo el contenido CSV
+    const csvContent = [
+        'SUSTANCIAS',
+        substanceHeaders.join(','),
+        ...substanceRows.map(row => row.join(',')),
+        '',
+        'REGISTROS',
+        entryHeaders.join(','),
+        ...entryRows.map(row => row.join(','))
+    ].join('\n');
+
+    const fileName = `bitacora_psiconáutica_${new Date().toISOString().split('T')[0]}.csv`;
+
+    // Verificar si estamos en Android WebView
+    if (typeof Android !== 'undefined' && Android.exportCSV) {
+        Android.exportCSV(csvContent, fileName);
+    } else {
+        // Método estándar para navegadores
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = fileName;
+        a.style.display = 'none';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+    }
+
+    alert('Archivo CSV exportado exitosamente');
 }
 
     function importFromCSV(input) {
