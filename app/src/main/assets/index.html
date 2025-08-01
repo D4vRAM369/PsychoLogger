@@ -332,23 +332,34 @@
         }
 
         .calendar-day:hover {
-            background: rgba(139, 92, 246, 0.2);
+            opacity: 0.8;
+            transform: scale(1.05);
         }
 
         .calendar-day.has-entry {
-            background: linear-gradient(135deg, var(--primary-purple), var(--secondary-pink));
             color: white;
+            font-weight: 600;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.5);
         }
 
-        .calendar-day.has-entry::after {
+        .calendar-day.has-entry.single-substance {
+        /* Color sólido para una sola sustancia */
+        }
+
+        .calendar-day.has-entry.multiple-substances {
+        /* Gradiente para múltiples sustancias */
+            position: relative;
+        }
+
+        .calendar-day.has-entry.multiple-substances::before {
             content: '';
             position: absolute;
-            top: 5px;
-            right: 5px;
-            width: 8px;
-            height: 8px;
-            background: var(--accent-cyan);
-            border-radius: 50%;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border-radius: inherit;
+            z-index: -1;
         }
 
         .substance-indicators {
@@ -361,9 +372,10 @@
         }
 
         .substance-dot {
-            width: 6px;
-            height: 6px;
+            width: 4px;
+            height: 4px;
             border-radius: 50%;
+            box-shadow: 0 0 2px rgba(0,0,0,0.3);
         }
 
         .day-header {
@@ -1328,73 +1340,106 @@
 
     // Calendar functions
     function generateCalendar() {
-        const grid = document.getElementById('calendar-grid');
-        const monthName = currentDate.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' });
-        document.getElementById('current-month').textContent = monthName.charAt(0).toUpperCase() + monthName.slice(1);
+    const grid = document.getElementById('calendar-grid');
+    const monthName = currentDate.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' });
+    document.getElementById('current-month').textContent = monthName.charAt(0).toUpperCase() + monthName.slice(1);
 
-        // Clear grid
-        grid.innerHTML = '';
+    // Clear grid
+    grid.innerHTML = '';
 
-        // Add day headers
-        const dayHeaders = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
-        dayHeaders.forEach(day => {
-            const dayElement = document.createElement('div');
-            dayElement.className = 'calendar-day day-header';
-            dayElement.textContent = day;
-            grid.appendChild(dayElement);
+    // Add day headers
+    const dayHeaders = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+    dayHeaders.forEach(day => {
+        const dayElement = document.createElement('div');
+        dayElement.className = 'calendar-day day-header';
+        dayElement.textContent = day;
+        grid.appendChild(dayElement);
+    });
+
+    // Get first day of month and number of days
+    const firstDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+    const startDate = new Date(firstDay);
+    startDate.setDate(startDate.getDate() - firstDay.getDay());
+
+    // Generate calendar days
+    for (let i = 0; i < 42; i++) {
+        const day = new Date(startDate);
+        day.setDate(startDate.getDate() + i);
+
+        const dayElement = document.createElement('div');
+        dayElement.className = 'calendar-day';
+        dayElement.textContent = day.getDate();
+
+        // Check if day has entries
+        const dayEntries = entries.filter(entry => {
+            const entryDate = new Date(entry.date);
+            return entryDate.toDateString() === day.toDateString();
         });
 
-        // Get first day of month and number of days
-        const firstDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
-        const lastDay = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
-        const startDate = new Date(firstDay);
-        startDate.setDate(startDate.getDate() - firstDay.getDay());
+        if (dayEntries.length > 0) {
+            dayElement.classList.add('has-entry');
 
-        // Generate calendar days
-        for (let i = 0; i < 42; i++) {
-            const day = new Date(startDate);
-            day.setDate(startDate.getDate() + i);
+            // Get unique substances for this day
+            const uniqueSubstances = [...new Set(dayEntries.map(entry => entry.substance))];
 
-            const dayElement = document.createElement('div');
-            dayElement.className = 'calendar-day';
-            dayElement.textContent = day.getDate();
-
-            // Check if day has entries (filtered by selected substance)
-            let dayEntries = entries.filter(entry => {
-                const entryDate = new Date(entry.date);
-                return entryDate.toDateString() === day.toDateString();
-            });
-
-            // Apply substance filter if selected
-            if (selectedSubstanceFilter) {
-                dayEntries = dayEntries.filter(entry => entry.substance === selectedSubstanceFilter);
-            }
-
-            if (dayEntries.length > 0) {
-                dayElement.classList.add('has-entry');
-
-                // Add substance indicators
-                const indicators = document.createElement('div');
-                indicators.className = 'substance-indicators';
-
-                const uniqueSubstances = [...new Set(dayEntries.map(entry => entry.substance))];
-                uniqueSubstances.slice(0, 3).forEach(substanceName => {
+            if (uniqueSubstances.length === 1) {
+                // Single substance - use solid color
+                const substance = substances.find(s => s.name === uniqueSubstances[0]);
+                const color = substance ? substance.color : '#8B5CF6';
+                dayElement.classList.add('single-substance');
+                dayElement.style.background = color;
+                dayElement.style.boxShadow = `0 0 10px ${color}50`;
+            } else if (uniqueSubstances.length > 1) {
+                // Multiple substances - create gradient
+                const colors = uniqueSubstances.map(substanceName => {
                     const substance = substances.find(s => s.name === substanceName);
-                    const dot = document.createElement('div');
-                    dot.className = 'substance-dot';
-                    dot.style.backgroundColor = substance ? substance.color : '#8B5CF6';
-                    indicators.appendChild(dot);
+                    return substance ? substance.color : '#8B5CF6';
                 });
 
-                dayElement.appendChild(indicators);
+                dayElement.classList.add('multiple-substances');
+
+                if (colors.length === 2) {
+                    dayElement.style.background = `linear-gradient(135deg, ${colors[0]} 0%, ${colors[1]} 100%)`;
+                } else if (colors.length === 3) {
+                    dayElement.style.background = `linear-gradient(135deg, ${colors[0]} 0%, ${colors[1]} 50%, ${colors[2]} 100%)`;
+                } else {
+                    // More than 3 colors - create a more complex gradient
+                    const step = 100 / colors.length;
+                    const gradientStops = colors.map((color, index) => `${color} ${index * step}%`).join(', ');
+                    dayElement.style.background = `linear-gradient(135deg, ${gradientStops})`;
+                }
+
+                // Add subtle animation for multiple substances
+                dayElement.style.animation = 'colorShift 3s ease-in-out infinite';
             }
 
-            // Add click event
-            dayElement.addEventListener('click', () => showDayEntries(day));
+            // Add substance indicators (small dots)
+            const indicators = document.createElement('div');
+            indicators.className = 'substance-indicators';
 
-            grid.appendChild(dayElement);
+            uniqueSubstances.slice(0, 4).forEach(substanceName => {
+                const substance = substances.find(s => s.name === substanceName);
+                const dot = document.createElement('div');
+                dot.className = 'substance-dot';
+                dot.style.backgroundColor = substance ? substance.color : '#8B5CF6';
+                dot.title = substanceName; // Tooltip
+                indicators.appendChild(dot);
+            });
+
+            dayElement.appendChild(indicators);
         }
+
+        // Dim days from other months
+        if (day.getMonth() !== currentDate.getMonth()) {
+            dayElement.style.opacity = '0.3';
+        }
+
+        // Add click event
+        dayElement.addEventListener('click', () => showDayEntries(day));
+
+        grid.appendChild(dayElement);
     }
+}
 
     function previousMonth() {
         currentDate.setMonth(currentDate.getMonth() - 1);
@@ -1531,6 +1576,7 @@
                 </div>
             `;
             item.style.borderLeft = `4px solid ${substance.color}`;
+            item.style.backgroundColor = `${substance.color}15`; // Lighten color for background
 
             // Add click event for filtering (exclude the delete button)
             item.querySelector('.substance-info').addEventListener('click', () => {
