@@ -453,7 +453,11 @@
         }
 
         .modal.active {
-            display: block;
+            display: flex;  /* CAMBIO: de block a flex */
+            align-items: flex-start;  /* NUEVO */
+            justify-content: center;  /* NUEVO */
+            padding: 0.5rem;  /* NUEVO */
+            overflow-y: auto;
         }
 
         .modal-content {
@@ -727,7 +731,7 @@
             transform: translateY(-2px);
         }
 
-        .profile-card {
+         .profile-card {
             background: var(--card-bg);
             border-radius: 20px;
             padding: 2rem;
@@ -805,6 +809,40 @@
             border-radius: 50%;
             cursor: pointer;
             font-size: 0.8rem;
+        }
+
+        .btn-edit, .btn-delete {
+            background: var(--accent-cyan);
+            border: none;
+            color: white;
+            padding: 0.4rem 0.8rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            margin-right: 0.5rem;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .btn-delete {
+            background: var(--secondary-pink);
+        }
+
+        .btn-edit:hover {
+            background: var(--accent-orange);
+        }
+
+        .btn-delete:hover {
+            background: #dc2626;
+            transform translateY(-1px);
+        }
+
+        .entry-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+            padding-top: 0.5rem;
+            border-top: 1px solid var(--border-color);
         }
 
         .quote-item {
@@ -1610,7 +1648,7 @@
                     ${entry.setting ? `<div class="entry-meta">🏞️ Setting: ${entry.setting}</div>` : ''}
                     ${entry.notes ? `<div class="entry-notes">📝 ${entry.notes}</div>` : ''}
                     <div class="entry-actions" style="margin-top: 0.5rem;">
-                        <button onclick="editEntry(${entry.id})" class="btn-edit">✏️ Editar</button>
+                        <button onclick="editEntryFromDaySafe(${entry.id})" class="btn-edit">✏️ Editar</button>
                         <button onclick="deleteEntry(${entry.id})" class="btn-delete">🗑️ Eliminar</button>
                     </div>
                 </div>
@@ -1631,7 +1669,7 @@
         modal.className = 'modal active';
         modal.innerHTML = `
             <div class="modal-content">
-                <button class="close-btn" onclick="this.closest('.modal').remove(); document.body.style.overflow = '';">×</button>
+                <button class="close-btn" onclick="closeDayModalSafe()">×</button>
                 ${content}
             </div>
         `;
@@ -2560,11 +2598,49 @@
     }
 
     function editEntryFromDaySafe(entryId) {
-        closeDayModalSafe();
-        setTimeout(() => {
-            editEntry(entryId);
-        }, 200);
+    console.log('Editando entrada:', entryId); // Para debug
+
+    // Cerrar modal del día
+    closeDayModalSafe();
+
+    // Buscar la entrada
+    const entry = entries.find(e => e.id === entryId);
+    if (!entry) {
+        alert('Registro no encontrado');
+        return;
     }
+
+    console.log('Entrada encontrada:', entry); // Para debug
+
+    setTimeout(() => {
+        // Llenar formulario
+        populateSubstanceDropdown();
+
+        setTimeout(() => {
+            document.getElementById('entrySubstance').value = entry.substance;
+            document.getElementById('entryDose').value = entry.dose;
+            document.getElementById('entryUnit').value = entry.unit;
+            document.getElementById('entryDateTime').value = entry.date;
+            document.getElementById('entrySet').value = entry.set || '';
+            document.getElementById('entrySetting').value = entry.setting || '';
+
+            // Limpiar notas
+            let cleanNotes = entry.notes || '';
+            if (entry.set) cleanNotes = cleanNotes.replace(`Set: ${entry.set}. `, '');
+            if (entry.setting) cleanNotes = cleanNotes.replace(`Setting: ${entry.setting}. `, '');
+            document.getElementById('entryNotes').value = cleanNotes;
+
+            console.log('Formulario llenado'); // Para debug
+        }, 100);
+
+        // Abrir modal
+        openModal('entryModal');
+
+        console.log('Modal abierto'); // Para debug
+
+    }, 200);
+}
+
 </script>
 
 </body>
