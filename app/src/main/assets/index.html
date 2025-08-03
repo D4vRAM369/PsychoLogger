@@ -2525,6 +2525,46 @@
             e.stopPropagation();
         }
     });
+
+    // AÑADIR ESTAS 3 FUNCIONES NUEVAS AL FINAL DEL SCRIPT:
+
+    function closeDayModalSafe() {
+        const modal = document.getElementById('dayEntriesModal');
+        if (modal) {
+            modal.remove();
+        }
+        // Restaurar navegación
+        setTimeout(() => {
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            const calendarNav = document.querySelector('.nav-item[onclick*="calendar"]');
+            if (calendarNav) {
+                calendarNav.classList.add('active');
+            }
+        }, 100);
+    }
+
+    function openAddEntryForDateSafe(date) {
+        closeDayModalSafe();
+
+        populateSubstanceDropdown();
+        resetEntryForm();
+
+        // Establecer fecha específica
+        const targetDate = new Date(date);
+        const localDateTime = new Date(targetDate.getTime() - targetDate.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+        document.getElementById('entryDateTime').value = localDateTime;
+
+        openModal('entryModal');
+    }
+
+    function editEntryFromDaySafe(entryId) {
+        closeDayModalSafe();
+        setTimeout(() => {
+            editEntry(entryId);
+        }, 200);
+    }
 </script>
 
 </body>
