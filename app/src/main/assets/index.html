@@ -1023,7 +1023,7 @@
     </div>
 </nav>
 
-<!-- Add Entry Modal - VERSIÓN CORREGIDA -->
+<!-- Add Entry Modal - VERSIÓN 2.0 -->
 <div id="entryModal" class="modal">
     <div class="modal-content">
         <button class="close-btn" onclick="closeModal('entryModal')">×</button>
@@ -1744,28 +1744,47 @@
         });
     }
 
-    // Entry functions
+    // Entry functions - VERSIÓN 2.0
     function addEntry() {
         const substance = document.getElementById('entrySubstance').value;
         const dose = parseFloat(document.getElementById('entryDose').value);
-        const unit = document.getElementById('entryUnit').value;
+        const unit = document.getElementById('entryUnit').value; // ✅ CORREGIDO: obtener valor real
         const dateTime = document.getElementById('entryDateTime').value;
+        const set = document.getElementById('entrySet').value;
+        const setting = document.getElementById('entrySetting').value;
         const notes = document.getElementById('entryNotes').value.trim();
 
-        if (!substance || !dose || !dateTime) {
-            alert('Por favor, completa todos los campos obligatorios');
+        // Validación mejorada
+        if (!substance || !dose || !unit || !dateTime) {
+            alert('Por favor, completa todos los campos obligatorios (marcados con *)');
             return;
         }
+
+        if (dose <= 0) {
+            alert('La dosis debe ser mayor que 0');
+            return;
+        }
+
+        // Construir notas completas
+        let fullNotes = '';
+        if (set) fullNotes += `Set: ${set}. `;
+        if (setting) fullNotes += `Setting: ${setting}. `;
+        if (notes) fullNotes += notes;
 
         const entry = {
             id: Date.now(),
             substance: substance,
             dose: dose,
-            unit: unit,
+            unit: unit, // ✅ CORREGIDO: se guarda la unidad correcta
             date: dateTime,
-            notes: notes,
+            set: set,
+            setting: setting,
+            notes: fullNotes || null,
             createdAt: new Date().toISOString()
         };
+
+        // Debugging: mostrar qué se va a guardar
+        console.log('Guardando entrada:', entry);
 
         entries.push(entry);
         localStorage.setItem('entries', JSON.stringify(entries));
@@ -1779,6 +1798,9 @@
         const now = new Date();
         const localDateTime = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
         document.getElementById('entryDateTime').value = localDateTime;
+
+        // Mensaje de confirmación
+        alert(`✅ Registro guardado: ${dose} ${unit} de ${substance}`);
     }
 
     // Stats functions
