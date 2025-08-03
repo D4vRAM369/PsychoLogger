@@ -1357,38 +1357,64 @@
         }
     }
 
-    // Navigation functions
+    // Navigation functions - VERSIÓN SIMPLIFICADA Y ROBUSTA
     function switchView(viewName) {
+        console.log('Switching to view:', viewName); // Debug
+
         // Hide all views
         document.querySelectorAll('.view').forEach(view => {
             view.style.display = 'none';
         });
 
         // Show selected view
-        document.getElementById(viewName + '-view').style.display = 'grid';
+        const targetView = document.getElementById(viewName + '-view');
+        if (targetView) {
+            targetView.style.display = 'grid';
+        } else {
+            console.error('View not found:', viewName + '-view');
+            return;
+        }
 
-        // Update navigation
+        // Update navigation - método más directo
         document.querySelectorAll('.nav-item').forEach(item => {
             item.classList.remove('active');
         });
 
-        // Find the clicked nav item and make it active
+        // Activar el item correcto basado en el viewName
+        const navMapping = {
+            'calendar': 0,
+            'stats': 2,
+            'resources': 3,
+            'data': 4,
+            'profile': 5
+        };
+
         const navItems = document.querySelectorAll('.nav-item');
-        navItems.forEach(item => {
-            const label = item.querySelector('.nav-label').textContent.toLowerCase();
-            if ((viewName === 'calendar' && label === 'calendario') ||
-                (viewName === 'stats' && label === 'stats') ||
-                (viewName === 'resources' && label === 'recursos') ||
-                (viewName === 'data' && label === 'datos') ||
-                (viewName === 'profile' && label === 'perfil')) {
-                item.classList.add('active');
-            }
-        });
+        const navIndex = navMapping[viewName];
+        if (navItems[navIndex]) {
+            navItems[navIndex].classList.add('active');
+        }
 
         // Regenerate content for specific views
         if (viewName === 'stats') {
             renderStats();
         }
+    }
+
+    // Función para manejar clicks en navegación
+    function handleNavClick(viewName, element) {
+        // Quitar active de todos
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.classList.remove('active');
+        });
+
+        // Añadir active al elemento clickeado
+        if (element) {
+            element.classList.add('active');
+        }
+
+        // Cambiar vista
+        switchView(viewName);
     }
 
     // Modal functions
