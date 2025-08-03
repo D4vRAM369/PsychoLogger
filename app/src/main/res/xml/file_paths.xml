@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths xmlns:android="http://schemas.android.com/apk/res/android">
+    <!--
+    ✅ EXPLICACIÓN DE CADA PATH:
+
+    external-files-path:
+    - Carpeta: /storage/emulated/0/Android/data/com.d4vram.psychologger/files/
+    - Se elimina automáticamente cuando desinstalas la app
+    - Ideal para archivos temporales de la app
+
+    external-cache-path:
+    - Carpeta: /storage/emulated/0/Android/data/com.d4vram.psychologger/cache/
+    - Para archivos temporales que se pueden eliminar automáticamente
+
+    files-path:
+    - Carpeta interna de la app: /data/data/com.d4vram.psychologger/files/
+    - Privada, no accesible desde explorador de archivos
+
+    cache-path:
+    - Cache interno: /data/data/com.d4vram.psychologger/cache/
+    - Para archivos muy temporales
+    -->
+
+    <!-- Para archivos CSV que el usuario quiere guardar -->
+    <external-files-path
+        name="csv_files"
+        path="." />
+
+    <!-- Para archivos temporales durante export/import -->
+    <external-cache-path
+        name="csv_cache"
+        path="." />
+
+    <!-- Para archivos internos de la app -->
+    <files-path
+        name="internal_files"
+        path="." />
+
+    <!-- Cache interno -->
+    <cache-path
+        name="internal_cache"
+        path="." />
+
+</paths>
