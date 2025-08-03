@@ -1547,28 +1547,58 @@
         }
 
         if (dayEntries.length === 0) {
-            alert('No hay registros para este día' + (selectedSubstanceFilter ? ` de ${selectedSubstanceFilter}` : ''));
+            // ✅ NUEVA FUNCIONALIDAD: Crear entrada para este día
+            if (confirm('No hay registros para este día. ¿Quieres añadir uno?')) {
+                openModal('entryModal');
+                //Pre-llenar fecha seleccionada
+                const localDateTime = new Date(date.getTime() - date.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+                document.getElementById('entryDateTime').value = localDateTime;
+            }
             return;
         }
 
-        let content = `<h3>Registros del ${date.toLocaleDateString('es-ES')}</h3>`;
+        let content = `<h3>📅 Registros del ${date.toLocaleDateString('es-ES', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        })}</h3>`;
+
         if (selectedSubstanceFilter) {
             content += `<p style="color: var(--accent-cyan); margin-bottom: 1rem;">Filtrado por: ${selectedSubstanceFilter}</p>`;
         }
 
         dayEntries.forEach(entry => {
             const time = new Date(entry.date).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+            const substance = substances.find(s => s.name === entry.substance);
+            const substanceColor = substance ? substance.color : '#8B5CF6';
+
             content += `
-                <div class="entry-item">
+                <div class="entry-item" style="border-left: 4px solid ${substanceColor};">
                     <div class="entry-header">
                         <span class="entry-substance">${entry.substance}</span>
                         <span class="entry-time">${time}</span>
                     </div>
-                    <div class="entry-dose">${entry.dose} ${entry.unit}</div>
-                    ${entry.notes ? `<div class="entry-notes">${entry.notes}</div>` : ''}
+                    <div class="entry-dose">💊 ${entry.dose} ${entry.unit}</div>
+                    ${entry.set ? `<div class="entry-meta">🧠 Set: ${entry.set}</div>` : ''}
+                    ${entry.setting ? `<div class="entry-meta">🏞️ Setting: ${entry.setting}</div>` : ''}
+                    ${entry.notes ? `<div class="entry-notes">📝 ${entry.notes}</div>` : ''}
+                    <div class="entry-actions" style="margin-top: 0.5rem;">
+                        <button onclick="editEntry(${entry.id})" class="btn-edit">✏️ Editar</button>
+                        <button onclick="deleteEntry(${entry.id})" class="btn-delete">🗑️ Eliminar</button>
+                    </div>
                 </div>
             `;
         });
+
+        // Botón para añadir entrada rápida
+        content += `
+             <div style="margin-top: 1rem; text-align: center;">
+                <button onclick="addNewEntryForDate('${date.toISOString()}')" class="btn-primary" style="padding: 0.5rem 1rem; font-size: 1rem;">
+                    ➕ Añadir Registro para este Día
+                </button>
+            </div>
+        `;
 
         // Create temporary modal
         const modal = document.createElement('div');
@@ -1581,6 +1611,172 @@
         `;
         document.body.appendChild(modal);
         document.body.style.overflow = 'hidden';
+    }
+
+    // ✅ NUEVA: Función para añadir entrada en fecha específica
+    function addNewEntryForDate(dateString) {
+        // Cerrar modal actual
+        document.querySelectorAll('.modal').forEach(modal => modal.remove());
+        document.body.style.overflow = '';
+
+        // Abrir formulario con fecha preseleccionada
+        openModal('entryModal');
+        const localDateTime = new Date(dateString).toISOString().slice(0, 16);
+        document.getElementById('entryDateTime').value = localDateTime;
+    }
+
+    // ✅ NUEVA: Función para editar una entrada
+    function editEntry(entryId) {
+        const entry = entries.find(e => e.id === entryId);
+        if (!entry) {
+            alert('Registro no encontrado');
+            return;
+        }
+
+        // Cerrar modal actual
+        document.querySelectorAll('.modal').forEach(modal => modal.remove());
+        document.body.style.overflow = '';
+
+        // Llenar formulario con los datos existentes
+        populateSubstanceDropdown(); // Asegurarse de que el dropdown esté actualizado
+
+        setTimeout(() => {
+            document.getElementById('entrySubstance').value = entry.substance;
+            document.getElementById('entryDose').value = entry.dose;
+            document.getElementById('entryUnit').value = entry.unit;
+            document.getElementById('entryDateTime').value = entry.date;
+            document.getElementById('entrySet').value = entry.set || '';
+            document.getElementById('entrySetting').value = entry.setting || '';
+
+            // Extraer notas sin Set/Setting
+            let cleanNotes = entry.notes || '';
+            if (entry.set) cleanNotes = cleanNotes.replace(`Set: ${entry.set}. `, '');
+            if (entry.setting) cleanNotes = cleanNotes.replace(`Setting: ${entry.setting}. `, '');
+            document.getElementById('entryNotes').value = cleanNotes;
+        }, 100); // Esperar un poco para que el dropdown se llene
+
+        // Abrir modal de entrada
+        openModal('entryModal');
+
+        // Cambiar el botón de guardar a "Actualizar Registro"
+        const form = document.getElementById('entryForm');
+        const submitButton = form.querySelector('button[type="submit"]');
+        const originalText = submitButton.innerHTML;
+
+        submitButton.innerHTML = '✅ Actualizar Registro';
+        submitButton.style.background = 'linear-gradient(135deg, var(--accent-orange), var(--secondary-pink))';
+
+        // Crear nueva función de submit
+        const newSubmitHandler = (e) => {
+            e.preventDefault();
+            updateEntry(entryId, originalText);
+        };
+
+        // Remover listener anterior y añadir nuevo
+        form.removeEventListener('submit', form.currentSubmitHandler || (() => {}));
+        form.addEventListener('submit', newSubmitHandler);
+        form.currentSubmitHandler = newSubmitHandler; // Guardar referencia para remover después
+    }
+
+    // ✅ NUEVA: Función para actualizar entrada
+    function updateEntry(entryId, originalButtonText) {
+        const entryIndex = entries.findIndex(e => e.id === entryId);
+        if (entryIndex === -1) {
+            alert('Entrada no encontrada');
+            return;
+        }
+
+        const substance = document.getElementById('entrySubstance').value;
+        const dose = parseFloat(document.getElementById('entryDose').value);
+        const unit = document.getElementById('entryUnit').value;
+        const dateTime = document.getElementById('entryDateTime').value;
+        const set = document.getElementById('entrySet').value;
+        const setting = document.getElementById('entrySetting').value;
+        const notes = document.getElementById('entryNotes').value.trim();
+
+        if (!substance || !dose || !unit || !dateTime) {
+            alert('Por favor, completa todos los campos obligatorios');
+            return;
+        }
+
+        if (dose <= 0) {
+            alert('La dosis debe ser un número positivo');
+            return;
+        }
+
+        // Construir notas completas
+        let fullNotes = '';
+        if (set) fullNotes += `Set: ${set}. `;
+        if (setting) fullNotes += `Setting: ${setting}. `;
+        if (notes) fullNotes += notes;
+
+        // Actualizar entrada
+        entries[entryIndex] = {
+            ...entries[entryIndex],
+            substance: substance,
+            dose: dose,
+            unit: unit,
+            date: dateTime,
+            set: set,
+            setting: setting,
+            notes: fullNotes || null,
+            updatedAt: new Date().toISOString()
+        };
+
+        localStorage.setItem('entries', JSON.stringify(entries));
+
+        generateCalendar();
+        renderSubstanceList();
+        closeModal('entryModal');
+
+        // Restaurar formulario normal
+        resetEntryForm(originalButtonText);
+
+        alert('✅ Registro actualizado correctamente');
+    }
+
+    // ✅ NUEVA: Función para eliminar entrada
+    function deleteEntry(entryId) {
+        const entry = entries.find(e => e.id === entryId);
+        if (!entry) {
+            alert('Entrada no encontrada');
+            return;
+        }
+
+        if (confirm(`¿Estás seguro de que quieres eliminar este registro?\n\n${entry.substance} - ${entry.dose} ${entry.unit}`)) {
+            entries = entries.filter(e => e.id !== entryId);
+            localStorage.setItem('entries', JSON.stringify(entries));
+
+            generateCalendar();
+            renderSubstanceList();
+            renderStats();
+
+            // Cerrar modal
+            document.querySelectorAll('.modal').forEach(modal => modal.remove());
+            document.body.style.overflow = '';
+
+            alert('🗑️ Registro eliminado correctamente');
+        }
+    }
+
+    // ✅ NUEVA: Restaurar formulario a modo normal
+    function resetEntryForm(originalButtonText = '💾 Guardar Registro') {
+        const form = document.getElementById('entryForm');
+        const submitBtn = form.querySelector('button[type="submit"]');
+
+        submitBtn.innerHTML = originalButtonText;
+        submitBtn.style.background = 'linear-gradient(135deg, var(--primary-purple), var(--secondary-pink))';
+
+        // Restaurar handler original
+        form.removeEventListener('submit', form.currentSubmitHandler || (() => {}));
+
+        const originalHandler = function(e) {
+            e.preventDefault();
+            addEntry();
+        };
+
+        form.addEventListener('submit', originalHandler);
+        form.currentSubmitHandler = originalHandler;
     }
 
     // Substance functions
