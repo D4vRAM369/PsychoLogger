@@ -995,7 +995,6 @@
                         <p>Cargar datos desde un archivo CSV</p>
                         <input type="file" id="csvFileInput" accept=".csv" style="display: none;" onchange="importFromCSV(this)">
                         <button class="file-label" onclick="forceFileSelect()" style="border: none; width: 100%;">📁 Seleccionar CSV</button>
-                        <button class="btn-secondary" onclick="debugFileInput()" style="margin-top: 0.5rem;">🔍 Debug Import</button>
                     </div>
                     <div class="resource-card">
                         <h4>Limpiar Datos</h4>
@@ -2485,25 +2484,6 @@
     setTimeout(() => {
         input.value = '';
     }, 1000);
-}
-
-function debugFileInput() {
-    console.log('=== DEBUG FILE INPUT ===');
-
-    const input = document.getElementById('csvFileInput');
-    const label = document.querySelector('label[for="csvFileInput"]');
-
-    console.log('Input encontrado:', !!input);
-    console.log('Label encontrado:', !!label);
-    console.log('Input type:', input?.type);
-    console.log('Input accept:', input?.accept);
-    console.log('Input onchange:', !!input?.onchange);
-
-    // Probar click programático
-    if (input) {
-        console.log('Intentando click en input...');
-        input.click();
-    }
 }
 
     function parseCSVLine(line) {
