@@ -2567,10 +2567,15 @@
     // AÑADIR ESTAS 3 FUNCIONES NUEVAS AL FINAL DEL SCRIPT:
 
     function closeDayModalSafe() {
-        const modal = document.getElementById('dayEntriesModal');
-        if (modal) {
+        const modals = document.querySelectorAll('.modal.active');
+        modals.forEach(modal => {
+            modal.classList.remove('active');
             modal.remove();
-        }
+        });
+
+       // Restaurar scroll
+       document.body.style.overflow = '';
+
         // Restaurar navegación
         setTimeout(() => {
             document.querySelectorAll('.nav-item').forEach(item => {
@@ -2581,6 +2586,8 @@
                 calendarNav.classList.add('active');
             }
         }, 100);
+
+        console.log('Modal del día cerrado de forma segura'); // Para debug
     }
 
     function openAddEntryForDateSafe(date) {
