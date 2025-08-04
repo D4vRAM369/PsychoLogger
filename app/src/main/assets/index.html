@@ -993,8 +993,9 @@
                     <div class="resource-card">
                         <h4>Importar Datos</h4>
                         <p>Cargar datos desde un archivo CSV</p>
-                        <input type="file" id="csvFileInput" class="file-input" accept=".csv" onchange="importFromCSV(this)" style="display: none;">
-                        <label for="csvFileInput" class="file-label" onclick="document.getElementById('csvFileInput').click()">📁 Seleccionar CSV</label>
+                        <input type="file" id="csvFileInput" accept=".csv" style="display: none;" onchange="importFromCSV(this)">
+                        <button class="file-label" onclick="forceFileSelect()" style="border: none; width: 100%;">📁 Seleccionar CSV</button>
+                        <button class="btn-secondary" onclick="debugFileInput()" style="margin-top: 0.5rem;">🔍 Debug Import</button>
                     </div>
                     <div class="resource-card">
                         <h4>Limpiar Datos</h4>
@@ -2316,7 +2317,7 @@
         return;
     }
 
-    // Crear contenido CSV limpio
+    // Crear contenido CSV
     const csvLines = [
         'SUSTANCIAS',
         'ID,Nombre,Color,Fecha_Creacion'
@@ -2337,53 +2338,20 @@
     const csvContent = csvLines.join('\n');
     const fileName = `bitacora_psiconáutica_${new Date().toISOString().split('T')[0]}.csv`;
 
-    // Método que funciona en Android sin mostrar "página file://"
-    const element = document.createElement('a');
-    const file = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8' });
-    element.href = URL.createObjectURL(file);
-    element.download = fileName;
+    // MÉTODO QUE FUNCIONA EN ANDROID: Data URI en lugar de blob
+    const dataUri = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csvContent);
 
-    // Hacer invisible y añadir al DOM temporalmente
-    element.style.display = 'none';
-    document.body.appendChild(element);
+    const link = document.createElement('a');
+    link.href = dataUri;
+    link.download = fileName;
+    link.style.display = 'none';
 
-    // Hacer click programáticamente
-    element.click();
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
 
-    // Limpiar
-    document.body.removeChild(element);
-    URL.revokeObjectURL(element.href);
-
-    // Mostrar confirmación personalizada (NO alert del sistema)
-    showCustomAlert(`✅ Archivo descargado\n\n📁 ${fileName}\n\nBúscalo en tu carpeta de Descargas`);
-}
-
-// Función para mostrar alertas personalizadas (sin "página file://")
-function showCustomAlert(message) {
-    const modal = document.createElement('div');
-    modal.className = 'modal active';
-    modal.style.zIndex = '10000';
-
-    modal.innerHTML = `
-        <div class="modal-content" style="max-width: 400px; text-align: center;">
-            <h3 style="color: var(--accent-cyan); margin-bottom: 1rem;">📱 Exportación</h3>
-            <p style="white-space: pre-line; margin-bottom: 1.5rem;">${message}</p>
-            <button class="btn-primary" onclick="this.closest('.modal').remove(); document.body.style.overflow = '';" style="width: auto; padding: 0.5rem 2rem;">
-                Entendido
-            </button>
-        </div>
-    `;
-
-    document.body.appendChild(modal);
-    document.body.style.overflow = 'hidden';
-
-    // Auto-cerrar después de 4 segundos
-    setTimeout(() => {
-        if (modal.parentNode) {
-            modal.remove();
-            document.body.style.overflow = '';
-        }
-    }, 4000);
+    // Confirmación sin alert del sistema
+    showCustomAlert(`✅ Archivo exportado\n\n📁 ${fileName}\n\nRevisa tu carpeta de Descargas`);
 }
 
 
@@ -2517,6 +2485,25 @@ function showCustomAlert(message) {
     setTimeout(() => {
         input.value = '';
     }, 1000);
+}
+
+function debugFileInput() {
+    console.log('=== DEBUG FILE INPUT ===');
+
+    const input = document.getElementById('csvFileInput');
+    const label = document.querySelector('label[for="csvFileInput"]');
+
+    console.log('Input encontrado:', !!input);
+    console.log('Label encontrado:', !!label);
+    console.log('Input type:', input?.type);
+    console.log('Input accept:', input?.accept);
+    console.log('Input onchange:', !!input?.onchange);
+
+    // Probar click programático
+    if (input) {
+        console.log('Intentando click en input...');
+        input.click();
+    }
 }
 
     function parseCSVLine(line) {
@@ -2780,6 +2767,41 @@ function showCustomAlert(message) {
 
         }, 200);
     }
+
+    function forceFileSelect() {
+    console.log('forceFileSelect llamada');
+
+    const input = document.getElementById('csvFileInput');
+    if (!input) {
+        console.error('Input no encontrado');
+        alert('Error: Input de archivo no encontrado');
+        return;
+    }
+
+    console.log('Input encontrado, haciendo click...');
+
+    // Método 1: Click directo
+    try {
+        input.click();
+        console.log('Click realizado');
+    } catch (error) {
+        console.error('Error en click:', error);
+
+        // Método 2: Evento sintético
+        try {
+            const event = new MouseEvent('click', {
+                view: window,
+                bubbles: true,
+                cancelable: true
+            });
+            input.dispatchEvent(event);
+            console.log('Evento sintético disparado');
+        } catch (error2) {
+            console.error('Error en evento sintético:', error2);
+            alert('No se puede abrir selector de archivos en este dispositivo');
+        }
+    }
+}
 
 </script>
 
