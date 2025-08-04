@@ -332,23 +332,34 @@
         }
 
         .calendar-day:hover {
-            background: rgba(139, 92, 246, 0.2);
+            opacity: 0.8;
+            transform: scale(1.05);
         }
 
         .calendar-day.has-entry {
-            background: linear-gradient(135deg, var(--primary-purple), var(--secondary-pink));
             color: white;
+            font-weight: 600;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.5);
         }
 
-        .calendar-day.has-entry::after {
+        .calendar-day.has-entry.single-substance {
+        /* Color sólido para una sola sustancia */
+        }
+
+        .calendar-day.has-entry.multiple-substances {
+        /* Gradiente para múltiples sustancias */
+            position: relative;
+        }
+
+        .calendar-day.has-entry.multiple-substances::before {
             content: '';
             position: absolute;
-            top: 5px;
-            right: 5px;
-            width: 8px;
-            height: 8px;
-            background: var(--accent-cyan);
-            border-radius: 50%;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border-radius: inherit;
+            z-index: -1;
         }
 
         .substance-indicators {
@@ -361,9 +372,10 @@
         }
 
         .substance-dot {
-            width: 6px;
-            height: 6px;
+            width: 4px;
+            height: 4px;
             border-radius: 50%;
+            box-shadow: 0 0 2px rgba(0,0,0,0.3);
         }
 
         .day-header {
@@ -441,7 +453,11 @@
         }
 
         .modal.active {
-            display: block;
+            display: flex;  /* CAMBIO: de block a flex */
+            align-items: flex-start;  /* NUEVO */
+            justify-content: center;  /* NUEVO */
+            padding: 0.5rem;  /* NUEVO */
+            overflow-y: auto;
         }
 
         .modal-content {
@@ -715,7 +731,7 @@
             transform: translateY(-2px);
         }
 
-        .profile-card {
+         .profile-card {
             background: var(--card-bg);
             border-radius: 20px;
             padding: 2rem;
@@ -793,6 +809,40 @@
             border-radius: 50%;
             cursor: pointer;
             font-size: 0.8rem;
+        }
+
+        .btn-edit, .btn-delete {
+            background: var(--accent-cyan);
+            border: none;
+            color: white;
+            padding: 0.4rem 0.8rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            margin-right: 0.5rem;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .btn-delete {
+            background: var(--secondary-pink);
+        }
+
+        .btn-edit:hover {
+            background: var(--accent-orange);
+        }
+
+        .btn-delete:hover {
+            background: #dc2626;
+            transform translateY(-1px);
+        }
+
+        .entry-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+            padding-top: 0.5rem;
+            border-top: 1px solid var(--border-color);
         }
 
         .quote-item {
@@ -943,8 +993,9 @@
                     <div class="resource-card">
                         <h4>Importar Datos</h4>
                         <p>Cargar datos desde un archivo CSV</p>
-                        <input type="file" id="csvFileInput" class="file-input" accept=".csv, text/csv" onchange="importFromCSV(this)" multiple="false">
-                        <label for="csvFileInput" class="file-label">Seleccionar CSV</label>
+                        <input type="file" id="csvFileInput" accept=".csv" style="display: none;" onchange="importFromCSV(this)">
+                        <button class="file-label" onclick="forceFileSelect()" style="border: none; width: 100%;">📁 Seleccionar CSV</button>
+                        <button class="btn-secondary" onclick="debugFileInput()" style="margin-top: 0.5rem;">🔍 Debug Import</button>
                     </div>
                     <div class="resource-card">
                         <h4>Limpiar Datos</h4>
@@ -1011,42 +1062,127 @@
     </div>
 </nav>
 
-<!-- Add Entry Modal -->
+<!-- Add Entry Modal - VERSIÓN 2.0 -->
 <div id="entryModal" class="modal">
     <div class="modal-content">
         <button class="close-btn" onclick="closeModal('entryModal')">×</button>
         <h3>Nuevo Registro</h3>
         <form id="entryForm">
             <div class="form-group">
-                <label>Sustancia</label>
-                <select id="entrySubstance">
+                <label>Sustancia *</label>
+                <select id="entrySubstance" required>
+                    <option value="">Selecciona una sustancia...</option>
                     <!-- Se llenarán dinámicamente -->
                 </select>
             </div>
+
             <div class="form-group">
-                <label>Dosis</label>
-                <input type="number" id="entryDose" placeholder="100" step="0.1">
+                <label>Dosis *</label>
+                <input type="number" id="entryDose" placeholder="100" step="0.01" min="0" required>
             </div>
+
             <div class="form-group">
-                <label>Unidad</label>
-                <select id="entryUnit">
-                    <option value="mg">mg</option>
-                    <option value="g">g</option>
-                    <option value="ml">ml</option>
-                    <option value="ug">μg</option>
-                    <option value="pills">pastillas</option>
-                    <option value="drops">gotas</option>
+                <label>Unidad *</label>
+                <select id="entryUnit" required>
+                    <!-- Unidades específicas para psicodélicos -->
+                    <optgroup label="Psicodélicos">
+                        <option value="ug">μg (microgramos)</option>
+                        <option value="mg">mg (miligramos)</option>
+                        <option value="tripi">tripi completo</option>
+                        <option value="medio-tripi">1/2 tripi</option>
+                        <option value="cuarto-tripi">1/4 tripi</option>
+                        <option value="octavo-tripi">1/8 tripi</option>
+                    </optgroup>
+
+                    <!-- Unidades para hongos -->
+                    <optgroup label="Hongos/Plantas">
+                        <option value="g">g (gramos)</option>
+                        <option value="mg">mg (miligramos)</option>
+                        <option value="seta">seta completa</option>
+                        <option value="media-seta">1/2 seta</option>
+                    </optgroup>
+
+                    <!-- Unidades para estimulantes -->
+                    <optgroup label="Estimulantes/MDMA">
+                        <option value="mg">mg (miligramos)</option>
+                        <option value="pastilla">pastilla completa</option>
+                        <option value="media-pastilla">1/2 pastilla</option>
+                        <option value="cuarto-pastilla">1/4 pastilla</option>
+                        <option value="punto">punto/bomba</option>
+                    </optgroup>
+
+                    <!-- Unidades para polvo -->
+                    <optgroup label="Polvo/Cristal">
+                        <option value="mg">mg (miligramos)</option>
+                        <option value="g">g (gramos)</option>
+                        <option value="raya">raya/línea</option>
+                        <option value="tirito">tirito</option>
+                        <option value="bump">bump</option>
+                        <option value="key">key bump</option>
+                    </optgroup>
+
+                    <!-- Unidades líquidas -->
+                    <optgroup label="Líquidos">
+                        <option value="ml">ml (mililitros)</option>
+                        <option value="gotas">gotas</option>
+                        <option value="vial">vial</option>
+                    </optgroup>
+
+                    <!-- Otras -->
+                    <optgroup label="Otras">
+                        <option value="calada">calada</option>
+                        <option value="inhalacion">inhalación</option>
+                        <option value="aplicacion">aplicación</option>
+                        <option value="dosis">dosis</option>
+                    </optgroup>
                 </select>
             </div>
+
             <div class="form-group">
-                <label>Fecha y Hora</label>
-                <input type="datetime-local" id="entryDateTime">
+                <label>Fecha y Hora *</label>
+                <input type="datetime-local" id="entryDateTime" required>
             </div>
+
             <div class="form-group">
-                <label>Notas</label>
-                <textarea id="entryNotes" placeholder="Describe tu experiencia, estado de ánimo, entorno..." rows="4"></textarea>
+                <label>Set (Estado mental)</label>
+                <select id="entrySet">
+                    <option value="">Seleccionar...</option>
+                    <option value="excelente">😊 Excelente</option>
+                    <option value="bueno">🙂 Bueno</option>
+                    <option value="neutral">😐 Neutral</option>
+                    <option value="ansioso">😰 Ansioso</option>
+                    <option value="triste">😢 Triste</option>
+                    <option value="estresado">😤 Estresado</option>
+                    <option value="emocionado">🤩 Emocionado</option>
+                </select>
             </div>
-            <button type="submit" class="btn-primary">Guardar Registro</button>
+
+            <div class="form-group">
+                <label>Setting (Entorno)</label>
+                <select id="entrySetting">
+                    <option value="">Seleccionar...</option>
+                    <option value="casa">🏠 En casa</option>
+                    <option value="naturaleza">🌲 Naturaleza</option>
+                    <option value="fiesta">🎉 Fiesta/Evento</option>
+                    <option value="festival">🎪 Festival</option>
+                    <option value="amigos">👥 Con amigos</option>
+                    <option value="solo">👤 Solo/a</option>
+                    <option value="pareja">💑 En pareja</option>
+                    <option value="club">🎭 Club nocturno</option>
+                    <option value="concierto">🎵 Concierto</option>
+                    <option value="ceremonia">🕯️ Ceremonia</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Notas adicionales</label>
+                <textarea id="entryNotes" placeholder="ROA (vía de administración), efectos esperados, compañía, música, etc..." rows="4"></textarea>
+                <small style="color: var(--text-muted); font-size: 0.8rem;">
+                    💡 Tip: Incluye ROA (oral, sublingual, nasal, etc.), testing, pureza estimada, etc.
+                </small>
+            </div>
+
+            <button type="submit" class="btn-primary">💾 Guardar Registro</button>
         </form>
     </div>
 </div>
@@ -1260,38 +1396,64 @@
         }
     }
 
-    // Navigation functions
+    // Navigation functions - VERSIÓN SIMPLIFICADA Y ROBUSTA
     function switchView(viewName) {
+        console.log('Switching to view:', viewName); // Debug
+
         // Hide all views
         document.querySelectorAll('.view').forEach(view => {
             view.style.display = 'none';
         });
 
         // Show selected view
-        document.getElementById(viewName + '-view').style.display = 'grid';
+        const targetView = document.getElementById(viewName + '-view');
+        if (targetView) {
+            targetView.style.display = 'grid';
+        } else {
+            console.error('View not found:', viewName + '-view');
+            return;
+        }
 
-        // Update navigation
+        // Update navigation - método más directo
         document.querySelectorAll('.nav-item').forEach(item => {
             item.classList.remove('active');
         });
 
-        // Find the clicked nav item and make it active
+        // Activar el item correcto basado en el viewName
+        const navMapping = {
+            'calendar': 0,
+            'stats': 2,
+            'resources': 3,
+            'data': 4,
+            'profile': 5
+        };
+
         const navItems = document.querySelectorAll('.nav-item');
-        navItems.forEach(item => {
-            const label = item.querySelector('.nav-label').textContent.toLowerCase();
-            if ((viewName === 'calendar' && label === 'calendario') ||
-                (viewName === 'stats' && label === 'stats') ||
-                (viewName === 'resources' && label === 'recursos') ||
-                (viewName === 'data' && label === 'datos') ||
-                (viewName === 'profile' && label === 'perfil')) {
-                item.classList.add('active');
-            }
-        });
+        const navIndex = navMapping[viewName];
+        if (navItems[navIndex]) {
+            navItems[navIndex].classList.add('active');
+        }
 
         // Regenerate content for specific views
         if (viewName === 'stats') {
             renderStats();
         }
+    }
+
+    // Función para manejar clicks en navegación
+    function handleNavClick(viewName, element) {
+        // Quitar active de todos
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.classList.remove('active');
+        });
+
+        // Añadir active al elemento clickeado
+        if (element) {
+            element.classList.add('active');
+        }
+
+        // Cambiar vista
+        switchView(viewName);
     }
 
     // Modal functions
@@ -1322,73 +1484,111 @@
 
     // Calendar functions
     function generateCalendar() {
-        const grid = document.getElementById('calendar-grid');
-        const monthName = currentDate.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' });
-        document.getElementById('current-month').textContent = monthName.charAt(0).toUpperCase() + monthName.slice(1);
+    const grid = document.getElementById('calendar-grid');
+    const monthName = currentDate.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' });
+    document.getElementById('current-month').textContent = monthName.charAt(0).toUpperCase() + monthName.slice(1);
 
-        // Clear grid
-        grid.innerHTML = '';
+    // Clear grid
+    grid.innerHTML = '';
 
-        // Add day headers
-        const dayHeaders = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
-        dayHeaders.forEach(day => {
-            const dayElement = document.createElement('div');
-            dayElement.className = 'calendar-day day-header';
-            dayElement.textContent = day;
-            grid.appendChild(dayElement);
+    // Add day headers
+    const dayHeaders = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+    dayHeaders.forEach(day => {
+        const dayElement = document.createElement('div');
+        dayElement.className = 'calendar-day day-header';
+        dayElement.textContent = day;
+        grid.appendChild(dayElement);
+    });
+
+    // Get first day of month and number of days
+    const firstDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+    const startDate = new Date(firstDay);
+    startDate.setDate(startDate.getDate() - firstDay.getDay());
+
+    // Generate calendar days
+    for (let i = 0; i < 42; i++) {
+        const day = new Date(startDate);
+        day.setDate(startDate.getDate() + i);
+
+        const dayElement = document.createElement('div');
+        dayElement.className = 'calendar-day';
+        dayElement.textContent = day.getDate();
+
+        // Check if day has entries
+        let dayEntries = entries.filter(entry => {
+            const entryDate = new Date(entry.date);
+            return entryDate.toDateString() === day.toDateString();
         });
 
-        // Get first day of month and number of days
-        const firstDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
-        const lastDay = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
-        const startDate = new Date(firstDay);
-        startDate.setDate(startDate.getDate() - firstDay.getDay());
+        // Apply substance filter if one selected
+        if (selectedSubstanceFilter) {
+            dayEntries = dayEntries.filter(entry => entry.substance === selectedSubstanceFilter);
+        }
 
-        // Generate calendar days
-        for (let i = 0; i < 42; i++) {
-            const day = new Date(startDate);
-            day.setDate(startDate.getDate() + i);
+        if (dayEntries.length > 0) {
+            dayElement.classList.add('has-entry');
 
-            const dayElement = document.createElement('div');
-            dayElement.className = 'calendar-day';
-            dayElement.textContent = day.getDate();
+            // Get unique substances for this day
+            const uniqueSubstances = [...new Set(dayEntries.map(entry => entry.substance))];
 
-            // Check if day has entries (filtered by selected substance)
-            let dayEntries = entries.filter(entry => {
-                const entryDate = new Date(entry.date);
-                return entryDate.toDateString() === day.toDateString();
-            });
-
-            // Apply substance filter if selected
-            if (selectedSubstanceFilter) {
-                dayEntries = dayEntries.filter(entry => entry.substance === selectedSubstanceFilter);
-            }
-
-            if (dayEntries.length > 0) {
-                dayElement.classList.add('has-entry');
-
-                // Add substance indicators
-                const indicators = document.createElement('div');
-                indicators.className = 'substance-indicators';
-
-                const uniqueSubstances = [...new Set(dayEntries.map(entry => entry.substance))];
-                uniqueSubstances.slice(0, 3).forEach(substanceName => {
+            if (uniqueSubstances.length === 1) {
+                // Single substance - use solid color
+                const substance = substances.find(s => s.name === uniqueSubstances[0]);
+                const color = substance ? substance.color : '#8B5CF6';
+                dayElement.classList.add('single-substance');
+                dayElement.style.background = color;
+                dayElement.style.boxShadow = `0 0 10px ${color}50`;
+            } else if (uniqueSubstances.length > 1) {
+                // Multiple substances - create gradient
+                const colors = uniqueSubstances.map(substanceName => {
                     const substance = substances.find(s => s.name === substanceName);
-                    const dot = document.createElement('div');
-                    dot.className = 'substance-dot';
-                    dot.style.backgroundColor = substance ? substance.color : '#8B5CF6';
-                    indicators.appendChild(dot);
+                    return substance ? substance.color : '#8B5CF6';
                 });
 
-                dayElement.appendChild(indicators);
+                dayElement.classList.add('multiple-substances');
+
+                if (colors.length === 2) {
+                    dayElement.style.background = `linear-gradient(135deg, ${colors[0]} 0%, ${colors[1]} 100%)`;
+                } else if (colors.length === 3) {
+                    dayElement.style.background = `linear-gradient(135deg, ${colors[0]} 0%, ${colors[1]} 50%, ${colors[2]} 100%)`;
+                } else {
+                    // More than 3 colors - create a more complex gradient
+                    const step = 100 / colors.length;
+                    const gradientStops = colors.map((color, index) => `${color} ${index * step}%`).join(', ');
+                    dayElement.style.background = `linear-gradient(135deg, ${gradientStops})`;
+                }
+
+                // Add subtle animation for multiple substances
+                dayElement.style.animation = 'colorShift 3s ease-in-out infinite';
             }
 
-            // Add click event
-            dayElement.addEventListener('click', () => showDayEntries(day));
+            // Add substance indicators (small dots)
+            const indicators = document.createElement('div');
+            indicators.className = 'substance-indicators';
 
-            grid.appendChild(dayElement);
+            uniqueSubstances.slice(0, 4).forEach(substanceName => {
+                const substance = substances.find(s => s.name === substanceName);
+                const dot = document.createElement('div');
+                dot.className = 'substance-dot';
+                dot.style.backgroundColor = substance ? substance.color : '#8B5CF6';
+                dot.title = substanceName; // Tooltip
+                indicators.appendChild(dot);
+            });
+
+            dayElement.appendChild(indicators);
         }
+
+        // Dim days from other months
+        if (day.getMonth() !== currentDate.getMonth()) {
+            dayElement.style.opacity = '0.3';
+        }
+
+        // Add click event
+        dayElement.addEventListener('click', () => showDayEntries(day));
+
+        grid.appendChild(dayElement);
     }
+}
 
     function previousMonth() {
         currentDate.setMonth(currentDate.getMonth() - 1);
@@ -1412,40 +1612,236 @@
         }
 
         if (dayEntries.length === 0) {
-            alert('No hay registros para este día' + (selectedSubstanceFilter ? ` de ${selectedSubstanceFilter}` : ''));
+            // ✅ NUEVA FUNCIONALIDAD: Crear entrada para este día
+            if (confirm('No hay registros para este día. ¿Quieres añadir uno?')) {
+                openModal('entryModal');
+                //Pre-llenar fecha seleccionada
+                const localDateTime = new Date(date.getTime() - date.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+                document.getElementById('entryDateTime').value = localDateTime;
+            }
             return;
         }
 
-        let content = `<h3>Registros del ${date.toLocaleDateString('es-ES')}</h3>`;
+        let content = `<h3>📅 Registros del ${date.toLocaleDateString('es-ES', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        })}</h3>`;
+
         if (selectedSubstanceFilter) {
             content += `<p style="color: var(--accent-cyan); margin-bottom: 1rem;">Filtrado por: ${selectedSubstanceFilter}</p>`;
         }
 
         dayEntries.forEach(entry => {
             const time = new Date(entry.date).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+            const substance = substances.find(s => s.name === entry.substance);
+            const substanceColor = substance ? substance.color : '#8B5CF6';
+
             content += `
-                <div class="entry-item">
+                <div class="entry-item" style="border-left: 4px solid ${substanceColor};">
                     <div class="entry-header">
                         <span class="entry-substance">${entry.substance}</span>
                         <span class="entry-time">${time}</span>
                     </div>
-                    <div class="entry-dose">${entry.dose} ${entry.unit}</div>
-                    ${entry.notes ? `<div class="entry-notes">${entry.notes}</div>` : ''}
+                    <div class="entry-dose">💊 ${entry.dose} ${entry.unit}</div>
+                    ${entry.set ? `<div class="entry-meta">🧠 Set: ${entry.set}</div>` : ''}
+                    ${entry.setting ? `<div class="entry-meta">🏞️ Setting: ${entry.setting}</div>` : ''}
+                    ${entry.notes ? `<div class="entry-notes">📝 ${entry.notes}</div>` : ''}
+                    <div class="entry-actions" style="margin-top: 0.5rem;">
+                        <button onclick="editEntryFromDaySafe(${entry.id})" class="btn-edit">✏️ Editar</button>
+                        <button onclick="deleteEntry(${entry.id})" class="btn-delete">🗑️ Eliminar</button>
+                    </div>
                 </div>
             `;
         });
+
+        // Botón para añadir entrada rápida
+        content += `
+             <div style="margin-top: 1rem; text-align: center;">
+                <button onclick="addNewEntryForDate('${date.toISOString()}')" class="btn-primary" style="padding: 0.5rem 1rem; font-size: 1rem;">
+                    ➕ Añadir Registro para este Día
+                </button>
+            </div>
+        `;
 
         // Create temporary modal
         const modal = document.createElement('div');
         modal.className = 'modal active';
         modal.innerHTML = `
             <div class="modal-content">
-                <button class="close-btn" onclick="this.closest('.modal').remove(); document.body.style.overflow = '';">×</button>
+                <button class="close-btn" onclick="closeDayModalSafe()">×</button>
                 ${content}
             </div>
         `;
         document.body.appendChild(modal);
         document.body.style.overflow = 'hidden';
+    }
+
+    // ✅ NUEVA: Función para añadir entrada en fecha específica
+    function addNewEntryForDate(dateString) {
+        // Cerrar modal actual
+        document.querySelectorAll('.modal').forEach(modal => modal.remove());
+        document.body.style.overflow = '';
+
+        // Abrir formulario con fecha preseleccionada
+        openModal('entryModal');
+        const localDateTime = new Date(dateString).toISOString().slice(0, 16);
+        document.getElementById('entryDateTime').value = localDateTime;
+    }
+
+    // ✅ NUEVA: Función para editar una entrada
+    function editEntry(entryId) {
+        const entry = entries.find(e => e.id === entryId);
+        if (!entry) {
+            alert('Registro no encontrado');
+            return;
+        }
+
+        // Cerrar modal actual
+        document.querySelectorAll('.modal').forEach(modal => modal.remove());
+        document.body.style.overflow = '';
+
+        // Llenar formulario con los datos existentes
+        populateSubstanceDropdown(); // Asegurarse de que el dropdown esté actualizado
+
+        setTimeout(() => {
+            document.getElementById('entrySubstance').value = entry.substance;
+            document.getElementById('entryDose').value = entry.dose;
+            document.getElementById('entryUnit').value = entry.unit;
+            document.getElementById('entryDateTime').value = entry.date;
+            document.getElementById('entrySet').value = entry.set || '';
+            document.getElementById('entrySetting').value = entry.setting || '';
+
+            // Extraer notas sin Set/Setting
+            let cleanNotes = entry.notes || '';
+            if (entry.set) cleanNotes = cleanNotes.replace(`Set: ${entry.set}. `, '');
+            if (entry.setting) cleanNotes = cleanNotes.replace(`Setting: ${entry.setting}. `, '');
+            document.getElementById('entryNotes').value = cleanNotes;
+        }, 100); // Esperar un poco para que el dropdown se llene
+
+        // Abrir modal de entrada
+        openModal('entryModal');
+
+        // Cambiar el botón de guardar a "Actualizar Registro"
+        const form = document.getElementById('entryForm');
+        const submitButton = form.querySelector('button[type="submit"]');
+        const originalText = submitButton.innerHTML;
+
+        submitButton.innerHTML = '✅ Actualizar Registro';
+        submitButton.style.background = 'linear-gradient(135deg, var(--accent-orange), var(--secondary-pink))';
+
+        // Crear nueva función de submit
+        const newSubmitHandler = (e) => {
+            e.preventDefault();
+            updateEntry(entryId, originalText);
+        };
+
+        // Remover listener anterior y añadir nuevo
+        form.removeEventListener('submit', form.currentSubmitHandler || (() => {}));
+        form.addEventListener('submit', newSubmitHandler);
+        form.currentSubmitHandler = newSubmitHandler; // Guardar referencia para remover después
+    }
+
+    // ✅ NUEVA: Función para actualizar entrada
+    function updateEntry(entryId, originalButtonText) {
+        const entryIndex = entries.findIndex(e => e.id === entryId);
+        if (entryIndex === -1) {
+            alert('Entrada no encontrada');
+            return;
+        }
+
+        const substance = document.getElementById('entrySubstance').value;
+        const dose = parseFloat(document.getElementById('entryDose').value);
+        const unit = document.getElementById('entryUnit').value;
+        const dateTime = document.getElementById('entryDateTime').value;
+        const set = document.getElementById('entrySet').value;
+        const setting = document.getElementById('entrySetting').value;
+        const notes = document.getElementById('entryNotes').value.trim();
+
+        if (!substance || !dose || !unit || !dateTime) {
+            alert('Por favor, completa todos los campos obligatorios');
+            return;
+        }
+
+        if (dose <= 0) {
+            alert('La dosis debe ser un número positivo');
+            return;
+        }
+
+        // Construir notas completas
+        let fullNotes = '';
+        if (set) fullNotes += `Set: ${set}. `;
+        if (setting) fullNotes += `Setting: ${setting}. `;
+        if (notes) fullNotes += notes;
+
+        // Actualizar entrada
+        entries[entryIndex] = {
+            ...entries[entryIndex],
+            substance: substance,
+            dose: dose,
+            unit: unit,
+            date: dateTime,
+            set: set,
+            setting: setting,
+            notes: fullNotes || null,
+            updatedAt: new Date().toISOString()
+        };
+
+        localStorage.setItem('entries', JSON.stringify(entries));
+
+        generateCalendar();
+        renderSubstanceList();
+        closeModal('entryModal');
+
+        // Restaurar formulario normal
+        resetEntryForm(originalButtonText);
+
+        alert('✅ Registro actualizado correctamente');
+    }
+
+    // ✅ NUEVA: Función para eliminar entrada
+    function deleteEntry(entryId) {
+        const entry = entries.find(e => e.id === entryId);
+        if (!entry) {
+            alert('Entrada no encontrada');
+            return;
+        }
+
+        if (confirm(`¿Estás seguro de que quieres eliminar este registro?\n\n${entry.substance} - ${entry.dose} ${entry.unit}`)) {
+            entries = entries.filter(e => e.id !== entryId);
+            localStorage.setItem('entries', JSON.stringify(entries));
+
+            generateCalendar();
+            renderSubstanceList();
+            renderStats();
+
+            // Cerrar modal
+            document.querySelectorAll('.modal').forEach(modal => modal.remove());
+            document.body.style.overflow = '';
+
+            alert('🗑️ Registro eliminado correctamente');
+        }
+    }
+
+    // ✅ NUEVA: Restaurar formulario a modo normal
+    function resetEntryForm(originalButtonText = '💾 Guardar Registro') {
+        const form = document.getElementById('entryForm');
+        const submitBtn = form.querySelector('button[type="submit"]');
+
+        submitBtn.innerHTML = originalButtonText;
+        submitBtn.style.background = 'linear-gradient(135deg, var(--primary-purple), var(--secondary-pink))';
+
+        // Restaurar handler original
+        form.removeEventListener('submit', form.currentSubmitHandler || (() => {}));
+
+        const originalHandler = function(e) {
+            e.preventDefault();
+            addEntry();
+        };
+
+        form.addEventListener('submit', originalHandler);
+        form.currentSubmitHandler = originalHandler;
     }
 
     // Substance functions
@@ -1525,6 +1921,7 @@
                 </div>
             `;
             item.style.borderLeft = `4px solid ${substance.color}`;
+            item.style.backgroundColor = `${substance.color}15`; // Lighten color for background
 
             // Add click event for filtering (exclude the delete button)
             item.querySelector('.substance-info').addEventListener('click', () => {
@@ -1537,8 +1934,27 @@
 
     function filterBySubstance(substanceName) {
         selectedSubstanceFilter = substanceName;
-        renderSubstanceList();
+        // Update active state for substances
+        document.querySelectorAll('.substance-item').forEach(item => {
+            item.classList.remove('active');
+        });
+
+        if (substanceName === null) {
+            //Mark "Todas las sustancias" as active
+            document.querySelector('.substance-item:first-child').classList.add('active');
+        } else {
+            // Find and mark the specific substance as active
+            document.querySelectorAll('.substance-item').forEach(item => {
+               const substanceText = item.querySelector('.substance-info span').textContent;
+                if (substanceText === substanceName) {
+                    item.classList.add('active');
+                }
+            });
+        }
+
         generateCalendar();
+        renderSubstanceList();
+        renderStats();
     }
 
     function deleteSubstance(substanceId) {
@@ -1589,28 +2005,47 @@
         });
     }
 
-    // Entry functions
+    // Entry functions - VERSIÓN 2.0
     function addEntry() {
         const substance = document.getElementById('entrySubstance').value;
         const dose = parseFloat(document.getElementById('entryDose').value);
-        const unit = document.getElementById('entryUnit').value;
+        const unit = document.getElementById('entryUnit').value; // ✅ CORREGIDO: obtener valor real
         const dateTime = document.getElementById('entryDateTime').value;
+        const set = document.getElementById('entrySet').value;
+        const setting = document.getElementById('entrySetting').value;
         const notes = document.getElementById('entryNotes').value.trim();
 
-        if (!substance || !dose || !dateTime) {
-            alert('Por favor, completa todos los campos obligatorios');
+        // Validación mejorada
+        if (!substance || !dose || !unit || !dateTime) {
+            alert('Por favor, completa todos los campos obligatorios (marcados con *)');
             return;
         }
+
+        if (dose <= 0) {
+            alert('La dosis debe ser mayor que 0');
+            return;
+        }
+
+        // Construir notas completas
+        let fullNotes = '';
+        if (set) fullNotes += `Set: ${set}. `;
+        if (setting) fullNotes += `Setting: ${setting}. `;
+        if (notes) fullNotes += notes;
 
         const entry = {
             id: Date.now(),
             substance: substance,
             dose: dose,
-            unit: unit,
+            unit: unit, // ✅ CORREGIDO: se guarda la unidad correcta
             date: dateTime,
-            notes: notes,
+            set: set,
+            setting: setting,
+            notes: fullNotes || null,
             createdAt: new Date().toISOString()
         };
+
+        // Debugging: mostrar qué se va a guardar
+        console.log('Guardando entrada:', entry);
 
         entries.push(entry);
         localStorage.setItem('entries', JSON.stringify(entries));
@@ -1624,6 +2059,9 @@
         const now = new Date();
         const localDateTime = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
         document.getElementById('entryDateTime').value = localDateTime;
+
+        // Mensaje de confirmación
+        alert(`✅ Registro guardado: ${dose} ${unit} de ${substance}`);
     }
 
     // Stats functions
@@ -1874,72 +2312,72 @@
     }
 
     function exportToCSV() {
-    try {
-        // Crear contenido CSV
-        let csvContent = "SUSTANCIAS\n";
-        csvContent += "ID,Nombre,Color,Fecha_Creacion\n";
-        substances.forEach(substance => {
-            csvContent += `${substance.id},"${substance.name}","${substance.color}","${substance.createdAt}"\n`;
-        });
-
-        csvContent += "\nREGISTROS\n";
-        csvContent += "ID,Sustancia,Dosis,Unidad,Fecha_Hora,Notas,Fecha_Creacion\n";
-        entries.forEach(entry => {
-            csvContent += `${entry.id},"${entry.substance}",${entry.dose},"${entry.unit}","${entry.date}","${entry.notes || ''}","${entry.createdAt}"\n`;
-        });
-
-        // Nombre del archivo con fecha
-        const filename = `bitacora_psiconáutica_${new Date().toISOString().split('T')[0]}.csv`;
-
-        // Método para Android WebView usando data URL
-        const dataUrl = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csvContent);
-
-        // Crear elemento temporal para descarga
-        const tempLink = document.createElement('a');
-        tempLink.href = dataUrl;
-        tempLink.download = filename;
-        tempLink.style.display = 'none';
-
-        // Agregar al DOM, click y remover
-        document.body.appendChild(tempLink);
-        tempLink.click();
-        document.body.removeChild(tempLink);
-
-        // Método alternativo para Android usando window.open
-        setTimeout(() => {
-            const newWindow = window.open(dataUrl, '_blank');
-            setTimeout(() => {
-                if (newWindow) newWindow.close();
-            }, 1000);
-        }, 500);
-
-        alert(`Archivo CSV generado: ${filename}\nBusca en tu carpeta de Descargas o en el diálogo de compartir.`);
-
-    } catch (error) {
-        console.error('Error al exportar:', error);
-        alert('Error al generar el archivo CSV');
-    }
-}
-
-    function importFromCSV(input) {
-    const file = input.files[0];
-
-    if (!file) {
-        alert('No se seleccionó ningún archivo');
+    if (substances.length === 0 && entries.length === 0) {
+        alert('No hay datos para exportar');
         return;
     }
 
+    // Crear contenido CSV
+    const csvLines = [
+        'SUSTANCIAS',
+        'ID,Nombre,Color,Fecha_Creacion'
+    ];
+
+    substances.forEach(s => {
+        csvLines.push(`${s.id},"${s.name}","${s.color}","${s.createdAt}"`);
+    });
+
+    csvLines.push('');
+    csvLines.push('REGISTROS');
+    csvLines.push('ID,Sustancia,Dosis,Unidad,Fecha_Hora,Set,Setting,Notas,Fecha_Creacion');
+
+    entries.forEach(e => {
+        csvLines.push(`${e.id},"${e.substance}",${e.dose},"${e.unit}","${e.date}","${e.set || ''}","${e.setting || ''}","${e.notes || ''}","${e.createdAt}"`);
+    });
+
+    const csvContent = csvLines.join('\n');
+    const fileName = `bitacora_psiconáutica_${new Date().toISOString().split('T')[0]}.csv`;
+
+    // MÉTODO QUE FUNCIONA EN ANDROID: Data URI en lugar de blob
+    const dataUri = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csvContent);
+
+    const link = document.createElement('a');
+    link.href = dataUri;
+    link.download = fileName;
+    link.style.display = 'none';
+
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    // Confirmación sin alert del sistema
+    showCustomAlert(`✅ Archivo exportado\n\n📁 ${fileName}\n\nRevisa tu carpeta de Descargas`);
+}
+
+
+    function importFromCSV(input) {
+    console.log('ImportFromCSV llamada'); // Debug
+
+    const file = input.files[0];
+
+    if (!file) {
+        showCustomAlert('❌ No se seleccionó ningún archivo');
+        return;
+    }
+
+    console.log('Archivo seleccionado:', file.name); // Debug
+
     if (!file.name.toLowerCase().endsWith('.csv')) {
-        alert('Por favor selecciona un archivo CSV válido (.csv)');
+        showCustomAlert('❌ Solo se permiten archivos .csv');
         input.value = '';
         return;
     }
 
-    // Mostrar opciones como en TrackerTung
-    const userChoice = confirm(
-        '¿Qué quieres hacer con los datos existentes?\n\n' +
-        'OK = Reemplazar todos los datos existentes\n' +
-        'Cancelar = Agregar solo datos nuevos (evitando duplicados)'
+    // Preguntar qué hacer con datos existentes
+    const replaceData = confirm(
+        '¿Qué hacer con los datos actuales?\n\n' +
+        'ACEPTAR = Reemplazar todos los datos\n' +
+        'CANCELAR = Agregar datos nuevos'
     );
 
     const reader = new FileReader();
@@ -1947,33 +2385,37 @@
     reader.onload = function(e) {
         try {
             const csv = e.target.result;
-            const lines = csv.split('\n');
+            let lines = csv.split('\n');
+
+            // Limpiar líneas vacías
+            lines = lines.map(line => line.trim()).filter(line => line.length > 0);
+
+            console.log('Líneas a procesar:', lines.length); // Debug
 
             let currentSection = '';
             let substancesImported = 0;
             let entriesImported = 0;
 
-            // Si el usuario eligió reemplazar (OK), limpiar datos existentes
-            if (userChoice) {
+            // Si reemplazar, limpiar datos existentes
+            if (replaceData) {
                 substances = [];
                 entries = [];
             }
 
             for (let i = 0; i < lines.length; i++) {
-                const line = lines[i].trim();
+                const line = lines[i];
 
                 if (line === 'SUSTANCIAS') {
                     currentSection = 'substances';
-                    i++; // Skip header
                     continue;
                 } else if (line === 'REGISTROS') {
                     currentSection = 'entries';
-                    i++; // Skip header
                     continue;
+                } else if (line.startsWith('ID,')) {
+                    continue; // Skip headers
                 }
 
-                if (!line) continue;
-
+                // Parsear CSV considerando comillas
                 const columns = parseCSVLine(line);
 
                 if (currentSection === 'substances' && columns.length >= 4) {
@@ -1984,25 +2426,23 @@
                         createdAt: columns[3].replace(/"/g, '')
                     };
 
-                    // Si no está reemplazando, verificar duplicados
-                    if (!userChoice) {
-                        if (!substances.find(s => s.name.toLowerCase() === substance.name.toLowerCase())) {
-                            substances.push(substance);
-                            substancesImported++;
-                        }
-                    } else {
+                    // Evitar duplicados
+                    if (!substances.find(s => s.name.toLowerCase() === substance.name.toLowerCase())) {
                         substances.push(substance);
                         substancesImported++;
                     }
-                } else if (currentSection === 'entries' && columns.length >= 7) {
+
+                } else if (currentSection === 'entries' && columns.length >= 9) {
                     const entry = {
                         id: parseInt(columns[0]) || Date.now() + Math.random(),
                         substance: columns[1].replace(/"/g, ''),
-                        dose: parseFloat(columns[2]),
+                        dose: parseFloat(columns[2]) || 0,
                         unit: columns[3].replace(/"/g, ''),
                         date: columns[4].replace(/"/g, ''),
-                        notes: columns[5].replace(/"/g, ''),
-                        createdAt: columns[6].replace(/"/g, '')
+                        set: columns[5].replace(/"/g, ''),
+                        setting: columns[6].replace(/"/g, ''),
+                        notes: columns[7].replace(/"/g, ''),
+                        createdAt: columns[8].replace(/"/g, '') || new Date().toISOString()
                     };
 
                     entries.push(entry);
@@ -2019,20 +2459,51 @@
             generateCalendar();
             renderStats();
 
-            alert(`Importación completada:\n${substancesImported} sustancias\n${entriesImported} registros\n\n${userChoice ? 'Datos reemplazados' : 'Datos agregados'}`);
+            // Mostrar resultado
+            showCustomAlert(
+                `✅ Importación completada\n\n` +
+                `📋 ${substancesImported} sustancias\n` +
+                `📊 ${entriesImported} registros\n\n` +
+                `${replaceData ? '🔄 Datos reemplazados' : '➕ Datos agregados'}`
+            );
+
+            console.log('Importación exitosa'); // Debug
 
         } catch (error) {
             console.error('Error al importar:', error);
-            alert('Error al procesar el archivo CSV. Verifica el formato.');
+            showCustomAlert(`❌ Error al procesar archivo:\n\n${error.message}`);
         }
     };
 
     reader.onerror = function() {
-        alert('Error al leer el archivo seleccionado');
+        showCustomAlert('❌ Error al leer el archivo');
     };
 
     reader.readAsText(file, 'UTF-8');
-    input.value = ''; // Limpiar input
+
+    // Limpiar input para permitir reimportar el mismo archivo
+    setTimeout(() => {
+        input.value = '';
+    }, 1000);
+}
+
+function debugFileInput() {
+    console.log('=== DEBUG FILE INPUT ===');
+
+    const input = document.getElementById('csvFileInput');
+    const label = document.querySelector('label[for="csvFileInput"]');
+
+    console.log('Input encontrado:', !!input);
+    console.log('Label encontrado:', !!label);
+    console.log('Input type:', input?.type);
+    console.log('Input accept:', input?.accept);
+    console.log('Input onchange:', !!input?.onchange);
+
+    // Probar click programático
+    if (input) {
+        console.log('Intentando click en input...');
+        input.click();
+    }
 }
 
     function parseCSVLine(line) {
@@ -2141,6 +2612,197 @@
             e.stopPropagation();
         }
     });
+
+    // AÑADIR ESTAS 3 FUNCIONES NUEVAS AL FINAL DEL SCRIPT:
+
+    function closeDayModalSafe() {
+        const modals = document.querySelectorAll('.modal.active');
+        modals.forEach(modal => {
+            modal.classList.remove('active');
+            modal.remove();
+        });
+
+       // Restaurar scroll
+       document.body.style.overflow = '';
+
+        // Restaurar navegación
+        setTimeout(() => {
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            const calendarNav = document.querySelector('.nav-item[onclick*="calendar"]');
+            if (calendarNav) {
+                calendarNav.classList.add('active');
+            }
+        }, 100);
+
+        console.log('Modal del día cerrado de forma segura'); // Para debug
+    }
+
+    function openAddEntryForDateSafe(date) {
+        closeDayModalSafe();
+
+        populateSubstanceDropdown();
+        resetEntryForm();
+
+        // Establecer fecha específica
+        const targetDate = new Date(date);
+        const localDateTime = new Date(targetDate.getTime() - targetDate.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+        document.getElementById('entryDateTime').value = localDateTime;
+
+        openModal('entryModal');
+    }
+
+    function editEntryFromDaySafe(entryId) {
+        console.log('Editando entrada:', entryId);
+
+        // Cerrar modal del día
+        closeDayModalSafe();
+
+        // Buscar la entrada
+        const entry = entries.find(e => e.id === entryId);
+        if (!entry) {
+            alert('Registro no encontrado');
+            return;
+        }
+
+        setTimeout(() => {
+            // Llenar formulario
+            populateSubstanceDropdown();
+
+            setTimeout(() => {
+                document.getElementById('entrySubstance').value = entry.substance;
+                document.getElementById('entryDose').value = entry.dose;
+                document.getElementById('entryUnit').value = entry.unit;
+                document.getElementById('entryDateTime').value = entry.date;
+                document.getElementById('entrySet').value = entry.set || '';
+                document.getElementById('entrySetting').value = entry.setting || '';
+
+                // Limpiar notas
+                let cleanNotes = entry.notes || '';
+                if (entry.set) cleanNotes = cleanNotes.replace(`Set: ${entry.set}. `, '');
+                if (entry.setting) cleanNotes = cleanNotes.replace(`Setting: ${entry.setting}. `, '');
+                document.getElementById('entryNotes').value = cleanNotes;
+            }, 100);
+
+            // Abrir modal
+            openModal('entryModal');
+
+            // NUEVO: Cambiar el comportamiento del formulario
+            const form = document.getElementById('entryForm');
+            const submitBtn = form.querySelector('button[type="submit"]');
+
+            // Cambiar apariencia del botón
+            submitBtn.innerHTML = '✅ Actualizar Registro';
+            submitBtn.style.background = 'linear-gradient(135deg, var(--accent-orange), var(--secondary-pink))';
+
+            // CRÍTICO: Cambiar qué hace el formulario al enviarse
+            // Remover el evento anterior
+            const newForm = form.cloneNode(true);
+            form.parentNode.replaceChild(newForm, form);
+
+            // Añadir nuevo evento para ACTUALIZAR en lugar de CREAR
+            newForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+
+                // Obtener datos del formulario
+                const substance = document.getElementById('entrySubstance').value;
+                const dose = parseFloat(document.getElementById('entryDose').value);
+                const unit = document.getElementById('entryUnit').value;
+                const dateTime = document.getElementById('entryDateTime').value;
+                const set = document.getElementById('entrySet').value;
+                const setting = document.getElementById('entrySetting').value;
+                const notes = document.getElementById('entryNotes').value.trim();
+
+                // Validar
+                if (!substance || !dose || !unit || !dateTime) {
+                    alert('Por favor, completa todos los campos obligatorios');
+                    return;
+                }
+
+                if (dose <= 0) {
+                    alert('La dosis debe ser mayor que 0');
+                    return;
+                }
+
+                // Construir notas completas
+                let fullNotes = '';
+                if (set) fullNotes += `Set: ${set}. `;
+                if (setting) fullNotes += `Setting: ${setting}. `;
+                if (notes) fullNotes += notes;
+
+                // ACTUALIZAR la entrada existente (no crear nueva)
+                const entryIndex = entries.findIndex(e => e.id === entryId);
+                if (entryIndex !== -1) {
+                    entries[entryIndex] = {
+                        ...entries[entryIndex], // Mantener datos originales
+                        substance: substance,
+                        dose: dose,
+                        unit: unit,
+                        date: dateTime,
+                        set: set,
+                        setting: setting,
+                        notes: fullNotes || null,
+                        updatedAt: new Date().toISOString() // Marcar como actualizado
+                    };
+
+                    // Guardar en localStorage
+                    localStorage.setItem('entries', JSON.stringify(entries));
+
+                    // Actualizar interfaz
+                    generateCalendar();
+                    renderSubstanceList();
+                    renderStats();
+
+                    // Cerrar modal
+                    closeModal('entryModal');
+
+                    alert('✅ Registro actualizado correctamente');
+
+                    console.log('Entrada actualizada:', entries[entryIndex]);
+                } else {
+                    alert('Error: No se pudo actualizar el registro');
+                }
+            });
+
+        }, 200);
+    }
+
+    function forceFileSelect() {
+    console.log('forceFileSelect llamada');
+
+    const input = document.getElementById('csvFileInput');
+    if (!input) {
+        console.error('Input no encontrado');
+        alert('Error: Input de archivo no encontrado');
+        return;
+    }
+
+    console.log('Input encontrado, haciendo click...');
+
+    // Método 1: Click directo
+    try {
+        input.click();
+        console.log('Click realizado');
+    } catch (error) {
+        console.error('Error en click:', error);
+
+        // Método 2: Evento sintético
+        try {
+            const event = new MouseEvent('click', {
+                view: window,
+                bubbles: true,
+                cancelable: true
+            });
+            input.dispatchEvent(event);
+            console.log('Evento sintético disparado');
+        } catch (error2) {
+            console.error('Error en evento sintético:', error2);
+            alert('No se puede abrir selector de archivos en este dispositivo');
+        }
+    }
+}
+
 </script>
 
 </body>
