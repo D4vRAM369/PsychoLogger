@@ -1,64 +1,561 @@
 package com.d4vram.psychologger
 
 import android.annotation.SuppressLint
+import android.app.DownloadManager
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
-import android.webkit.WebView
-import android.webkit.WebViewClient
-import android.webkit.WebChromeClient
+import android.os.Environment
+import android.webkit.*
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
 import com.d4vram.psychologger.ui.theme.PsychoLoggerTheme
+import java.io.File
+import java.io.FileOutputStream
+import java.io.BufferedReader
+import java.io.InputStreamReader
+import java.text.SimpleDateFormat
+import java.util.*
 
 class MainActivity : ComponentActivity() {
+    private var filePathCallback: ValueCallback<Array<Uri>>? = null
+    private lateinit var fileChooserLauncher: ActivityResultLauncher<Intent>
+
+    var webView: WebView? = null
+        private set
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
+        fileChooserLauncher = registerForActivityResult(
+            ActivityResultContracts.StartActivityForResult()
+        ) { result ->
+            val results = if (result.data?.data != null && result.resultCode == RESULT_OK) {
+                arrayOf(result.data!!.data!!)
+            } else {
+                null
+            }
+            filePathCallback?.onReceiveValue(results)
+            filePathCallback = null
+        }
+
         setContent {
             PsychoLoggerTheme {
-                WebViewScreen()
+                WebViewScreen(
+                    context = this,
+                    onFileChooser = { callback ->
+                        filePathCallback = callback
+                        openFileChooser()
+                    },
+                    onWebViewReady = { webView ->
+                        this.webView = webView
+                    }
+                )
             }
+        }
+    }
+
+    private fun openFileChooser() {
+        val intent = Intent(Intent.ACTION_GET_CONTENT).apply {
+            type = "*/*"
+            addCategory(Intent.CATEGORY_OPENABLE)
+            putExtra(Intent.EXTRA_MIME_TYPES, arrayOf(
+                "text/csv",
+                "text/comma-separated-values",
+                "application/csv",
+                "text/plain"
+            ))
+        }
+
+        try {
+            val chooser = Intent.createChooser(intent, "Seleccionar archivo CSV")
+            fileChooserLauncher.launch(chooser)
+        } catch (e: Exception) {
+            filePathCallback?.onReceiveValue(null)
+            Toast.makeText(this, "Error al abrir selector: ${e.message}", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    fun executeJavaScript(script: String) {
+        runOnUiThread {
+            webView?.evaluateJavascript(script) { result ->
+                println("JavaScript ejecutado. Resultado: $result")
+            }
+        }
+    }
+}
+
+class WebAppInterface(private val context: Context, private val activity: MainActivity) {
+
+    @JavascriptInterface
+    fun downloadCSV(csvContent: String, filename: String) {
+        try {
+            val timestamp = SimpleDateFormat("yyyy-MM-dd_HH-mm-ss", Locale.getDefault()).format(Date())
+            val finalFilename = if (filename.isBlank()) "bitacora_psiconáutica_$timestamp.csv" else filename
+
+            val downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+            val file = File(downloadsDir, finalFilename)
+
+            FileOutputStream(file).use { fos ->
+                fos.write(csvContent.toByteArray(Charsets.UTF_8))
+            }
+
+            val intent = Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE)
+            intent.data = Uri.fromFile(file)
+            context.sendBroadcast(intent)
+
+            Toast.makeText(context, "✅ CSV exportado: $finalFilename", Toast.LENGTH_LONG).show()
+
+        } catch (e: Exception) {
+            Toast.makeText(context, "❌ Error al exportar CSV: ${e.message}", Toast.LENGTH_LONG).show()
+        }
+    }
+
+    @JavascriptInterface
+    fun showToast(message: String) {
+        Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+    }
+
+    @JavascriptInterface
+    fun processFileContent(content: String, filename: String) {
+        try {
+            println("Procesando contenido recibido: ${content.take(200)}...")
+
+            if (content.isBlank()) {
+                Toast.makeText(context, "❌ El archivo está vacío", Toast.LENGTH_LONG).show()
+                return
+            }
+
+            val lines = content.split("\n")
+            var substanceCount = 0
+            var entryCount = 0
+            var currentSection = ""
+
+            println("Procesando ${lines.size} líneas del CSV")
+
+            for ((index, line) in lines.withIndex()) {
+                val trimmedLine = line.trim()
+                println("Línea $index: '$trimmedLine'")
+
+                when {
+                    trimmedLine == "SUSTANCIAS" -> {
+                        currentSection = "substances"
+                        println("Sección SUSTANCIAS encontrada")
+                        continue
+                    }
+                    trimmedLine == "REGISTROS" -> {
+                        currentSection = "entries"
+                        println("Sección REGISTROS encontrada")
+                        continue
+                    }
+                    trimmedLine == "PERFIL" -> {
+                        currentSection = "profile"
+                        continue
+                    }
+                    trimmedLine.isEmpty() ||
+                            trimmedLine.startsWith("ID,") ||
+                            trimmedLine.startsWith("Campo,") -> continue
+
+                    currentSection == "substances" && trimmedLine.isNotEmpty() -> {
+                        substanceCount++
+                        println("Sustancia encontrada: $trimmedLine")
+                    }
+                    currentSection == "entries" && trimmedLine.isNotEmpty() -> {
+                        entryCount++
+                        println("Registro encontrado: $trimmedLine")
+                    }
+                }
+            }
+
+            println("Conteo final: $substanceCount sustancias, $entryCount registros")
+
+            if (substanceCount == 0 && entryCount == 0) {
+                Toast.makeText(context, "❌ No se encontraron datos válidos en el archivo", Toast.LENGTH_LONG).show()
+                return
+            }
+
+            showImportDialog(content, substanceCount, entryCount)
+
+        } catch (e: Exception) {
+            Toast.makeText(context, "❌ Error al procesar archivo: ${e.message}", Toast.LENGTH_LONG).show()
+            e.printStackTrace()
+        }
+    }
+
+    private fun showImportDialog(csvContent: String, substancesCount: Int, entriesCount: Int) {
+        activity.runOnUiThread {
+            val builder = android.app.AlertDialog.Builder(context)
+            builder.setTitle("📂 Importar Datos CSV")
+            builder.setMessage("""
+                📊 Datos encontrados en el archivo:
+                • $substancesCount sustancias
+                • $entriesCount registros
+                
+                ⚠️ ¿Qué deseas hacer?
+            """.trimIndent())
+
+            builder.setPositiveButton("➕ AÑADIR") { _, _ ->
+                importCSVData(csvContent, false)
+            }
+
+            builder.setNegativeButton("🔄 REEMPLAZAR") { _, _ ->
+                val confirmBuilder = android.app.AlertDialog.Builder(context)
+                confirmBuilder.setTitle("⚠️ Confirmar Reemplazo")
+                confirmBuilder.setMessage("¿Estás seguro de que quieres BORRAR todos los datos actuales?")
+
+                confirmBuilder.setPositiveButton("SÍ, REEMPLAZAR") { _, _ ->
+                    importCSVData(csvContent, true)
+                }
+
+                confirmBuilder.setNegativeButton("CANCELAR") { dialog, _ ->
+                    dialog.dismiss()
+                }
+
+                confirmBuilder.show()
+            }
+
+            builder.setNeutralButton("CANCELAR") { dialog, _ ->
+                dialog.dismiss()
+            }
+
+            builder.show()
+        }
+    }
+
+    private fun importCSVData(csvContent: String, replaceAll: Boolean) {
+        try {
+            activity.runOnUiThread {
+                Toast.makeText(context, "🔄 Procesando importación...", Toast.LENGTH_SHORT).show()
+
+                if (activity.webView == null) {
+                    Toast.makeText(context, "❌ Error: WebView no disponible", Toast.LENGTH_LONG).show()
+                    return@runOnUiThread
+                }
+
+                // Crear un JSON con los datos para pasar a JavaScript de forma más segura
+                val dataToImport = mutableMapOf<String, Any>()
+                dataToImport["replaceMode"] = replaceAll
+                dataToImport["substances"] = mutableListOf<Map<String, String>>()
+                dataToImport["entries"] = mutableListOf<Map<String, String>>()
+
+                val lines = csvContent.split("\n")
+                var currentSection = ""
+
+                for (line in lines) {
+                    val trimmedLine = line.trim()
+                    when {
+                        trimmedLine == "SUSTANCIAS" -> {
+                            currentSection = "substances"
+                            continue
+                        }
+                        trimmedLine == "REGISTROS" -> {
+                            currentSection = "entries"
+                            continue
+                        }
+                        trimmedLine.isEmpty() || trimmedLine.startsWith("ID,") -> continue
+
+                        currentSection == "substances" -> {
+                            val parts = trimmedLine.split(",")
+                            if (parts.size >= 4) {
+                                val substance = mapOf(
+                                    "id" to (parts[0].toIntOrNull()?.toString() ?: System.currentTimeMillis().toString()),
+                                    "name" to parts[1].replace("\"", ""),
+                                    "color" to parts[2].replace("\"", ""),
+                                    "createdAt" to parts[3].replace("\"", "")
+                                )
+                                (dataToImport["substances"] as MutableList<Map<String, String>>).add(substance)
+                            }
+                        }
+
+                        currentSection == "entries" -> {
+                            val parts = trimmedLine.split(",")
+                            if (parts.size >= 7) {
+                                val entry = mapOf(
+                                    "id" to (parts[0].toIntOrNull()?.toString() ?: System.currentTimeMillis().toString()),
+                                    "substance" to parts[1].replace("\"", ""),
+                                    "dose" to parts[2],
+                                    "unit" to parts[3].replace("\"", ""),
+                                    "date" to parts[4].replace("\"", ""),
+                                    "notes" to (if (parts.size > 5) parts[5].replace("\"", "") else ""),
+                                    "createdAt" to (if (parts.size > 6) parts[6].replace("\"", "") else "")
+                                )
+                                (dataToImport["entries"] as MutableList<Map<String, String>>).add(entry)
+                            }
+                        }
+                    }
+                }
+
+                val substancesToImport = dataToImport["substances"] as List<*>
+                val entriesToImport = dataToImport["entries"] as List<*>
+
+                // Ejecutar JavaScript simple
+                val jsScript = """
+                    try {
+                        console.log('Iniciando importación...');
+                        
+                        if (${replaceAll}) {
+                            substances = getDefaultSubstances();
+                            entries = [];
+                            userProfile = {};
+                        }
+                        
+                        var importedSub = 0;
+                        var importedEnt = 0;
+                        
+                        // Importar sustancias
+                        ${substancesToImport.joinToString("\n") { substance ->
+                    val s = substance as Map<*, *>
+                    """
+                            var newSub = {
+                                id: ${s["id"]},
+                                name: "${s["name"]}",
+                                color: "${s["color"]}",
+                                createdAt: "${s["createdAt"]}"
+                            };
+                            var exists = substances.some(function(existing) {
+                                return existing.name.toLowerCase() === newSub.name.toLowerCase();
+                            });
+                            if (!exists) {
+                                substances.push(newSub);
+                                importedSub++;
+                            }
+                            """.trimIndent()
+                }}
+                        
+                        // Importar entradas
+                        ${entriesToImport.joinToString("\n") { entry ->
+                    val e = entry as Map<*, *>
+                    """
+                            entries.push({
+                                id: ${e["id"]},
+                                substance: "${e["substance"]}",
+                                dose: ${e["dose"]},
+                                unit: "${e["unit"]}",
+                                date: "${e["date"]}",
+                                notes: "${e["notes"]}",
+                                createdAt: "${e["createdAt"]}"
+                            });
+                            importedEnt++;
+                            """.trimIndent()
+                }}
+                        
+                        // Guardar y actualizar
+                        localStorage.setItem('substances', JSON.stringify(substances));
+                        localStorage.setItem('entries', JSON.stringify(entries));
+                        
+                        renderSubstanceList();
+                        generateCalendar();
+                        renderStats();
+                        
+                        Android.showToast('✅ Importado: ' + importedSub + ' sustancias, ' + importedEnt + ' registros');
+                        
+                    } catch (error) {
+                        console.error('Error:', error);
+                        Android.showToast('❌ Error: ' + error.message);
+                    }
+                """
+
+                activity.webView!!.evaluateJavascript(jsScript) { result ->
+                    println("Importación completada: $result")
+                }
+            }
+        } catch (e: Exception) {
+            Toast.makeText(context, "❌ Error: ${e.message}", Toast.LENGTH_LONG).show()
+            e.printStackTrace()
         }
     }
 }
 
 @SuppressLint("SetJavaScriptEnabled")
 @Composable
-fun WebViewScreen() {
+fun WebViewScreen(
+    context: Context,
+    onFileChooser: (ValueCallback<Array<Uri>>) -> Unit,
+    onWebViewReady: (WebView) -> Unit
+) {
     AndroidView(
         modifier = Modifier
             .fillMaxSize()
             .statusBarsPadding(),
-        factory = { context ->
+        factory = { _ ->
             WebView(context).apply {
-                // Configuración del WebView
-                webViewClient = WebViewClient()
-                webChromeClient = WebChromeClient()
+                onWebViewReady(this)
+
+                webViewClient = object : WebViewClient() {
+                    override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
+                        val url = request?.url.toString()
+
+                        if (url.startsWith("http://") || url.startsWith("https://")) {
+                            try {
+                                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                                context.startActivity(intent)
+                                return true
+                            } catch (e: Exception) {
+                                Toast.makeText(context, "No se puede abrir: $url", Toast.LENGTH_SHORT).show()
+                                return true
+                            }
+                        }
+                        return false
+                    }
+
+                    override fun onPageFinished(view: WebView?, url: String?) {
+                        super.onPageFinished(view, url)
+
+                        view?.evaluateJavascript("""
+                            // Función de exportación
+                            window.exportToCSV = function() {
+                                try {
+                                    let csvContent = "";
+
+                                    csvContent += "SUSTANCIAS\n";
+                                    csvContent += "ID,Nombre,Color,Fecha_Creacion\n";
+                                    if (typeof substances !== 'undefined') {
+                                        substances.forEach(substance => {
+                                            csvContent += substance.id + ',"' + substance.name + '","' + substance.color + '","' + substance.createdAt + '"\n';
+                                        });
+                                    }
+
+                                    csvContent += "\nREGISTROS\n";
+                                    csvContent += "ID,Sustancia,Dosis,Unidad,Fecha_Hora,Notas,Fecha_Creacion\n";
+                                    if (typeof entries !== 'undefined') {
+                                        entries.forEach(entry => {
+                                            csvContent += entry.id + ',"' + entry.substance + '",' + entry.dose + ',"' + entry.unit + '","' + entry.date + '","' + (entry.notes || '') + '","' + entry.createdAt + '"\n';
+                                        });
+                                    }
+
+                                    const today = new Date().toISOString().split('T')[0];
+                                    const filename = 'bitacora_psiconáutica_' + today + '.csv';
+                                    
+                                    Android.downloadCSV(csvContent, filename);
+                                } catch (error) {
+                                    console.error('Error en exportToCSV:', error);
+                                    Android.showToast('❌ Error al exportar: ' + error.message);
+                                }
+                            };
+                            
+                            // Función de importación que lee archivo directamente
+                            window.importFromCSV = function(input) {
+                                const file = input.files[0];
+                                if (!file) return;
+                                
+                                console.log('Archivo seleccionado:', file.name, 'Tamaño:', file.size);
+                                Android.showToast('📁 Leyendo archivo: ' + file.name);
+                                
+                                // Leer el archivo con FileReader
+                                const reader = new FileReader();
+                                reader.onload = function(e) {
+                                    try {
+                                        const content = e.target.result;
+                                        console.log('Contenido leído, longitud:', content.length);
+                                        console.log('Primeros 200 caracteres:', content.substring(0, 200));
+                                        
+                                        if (!content || content.length === 0) {
+                                            Android.showToast('❌ El archivo está vacío');
+                                            return;
+                                        }
+                                        
+                                        // Pasar contenido directamente a Android
+                                        Android.processFileContent(content, file.name);
+                                        
+                                    } catch (error) {
+                                        console.error('Error leyendo archivo:', error);
+                                        Android.showToast('❌ Error al leer archivo: ' + error.message);
+                                    }
+                                };
+                                
+                                reader.onerror = function(error) {
+                                    console.error('FileReader error:', error);
+                                    Android.showToast('❌ Error al leer archivo');
+                                };
+                                
+                                reader.readAsText(file, 'UTF-8');
+                                input.value = '';
+                            };
+                            
+                            console.log('Funciones CSV configuradas');
+                        """, null)
+                    }
+                }
+
+                webChromeClient = object : WebChromeClient() {
+                    override fun onShowFileChooser(
+                        webView: WebView?,
+                        filePathCallback: ValueCallback<Array<Uri>>?,
+                        fileChooserParams: FileChooserParams?
+                    ): Boolean {
+                        if (filePathCallback != null) {
+                            onFileChooser(filePathCallback)
+                            return true
+                        }
+                        return false
+                    }
+
+                    override fun onConsoleMessage(consoleMessage: ConsoleMessage?): Boolean {
+                        consoleMessage?.let {
+                            println("WebView Console [${it.messageLevel()}]: ${it.message()}")
+                        }
+                        return true
+                    }
+                }
 
                 settings.apply {
                     javaScriptEnabled = true
                     domStorageEnabled = true
-                    allowFileAccess = true
-                    allowContentAccess = true
                     loadWithOverviewMode = true
                     useWideViewPort = true
                     setSupportZoom(true)
                     builtInZoomControls = true
                     displayZoomControls = false
+                    cacheMode = WebSettings.LOAD_DEFAULT
+                    databaseEnabled = true
+                    allowFileAccess = true
+                    allowContentAccess = true
+                    javaScriptCanOpenWindowsAutomatically = true
 
-                    // Para mejor rendimiento
-                    cacheMode = android.webkit.WebSettings.LOAD_DEFAULT
+                    @Suppress("DEPRECATION")
                     allowFileAccessFromFileURLs = true
+                    @Suppress("DEPRECATION")
                     allowUniversalAccessFromFileURLs = true
                 }
 
-                // Cargar tu HTML desde assets
+                addJavascriptInterface(WebAppInterface(context, context as MainActivity), "Android")
+
+                setDownloadListener { url, userAgent, contentDisposition, mimetype, contentLength ->
+                    try {
+                        val request = DownloadManager.Request(Uri.parse(url))
+                        var fileName = URLUtil.guessFileName(url, contentDisposition, mimetype)
+
+                        if (mimetype.contains("csv") && !fileName.endsWith(".csv")) {
+                            fileName = fileName.split(".")[0] + ".csv"
+                        }
+
+                        request.setMimeType(mimetype)
+                        request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, fileName)
+                        request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
+                        request.setAllowedOverMetered(true)
+                        request.setAllowedOverRoaming(true)
+
+                        val downloadManager = context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
+                        downloadManager.enqueue(request)
+
+                        Toast.makeText(context, "Descargando $fileName...", Toast.LENGTH_LONG).show()
+                    } catch (e: Exception) {
+                        Toast.makeText(context, "Error al descargar: ${e.message}", Toast.LENGTH_LONG).show()
+                    }
+                }
+
                 loadUrl("file:///android_asset/index.html")
             }
         }
