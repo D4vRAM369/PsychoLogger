@@ -2605,48 +2605,119 @@
     }
 
     function editEntryFromDaySafe(entryId) {
-    console.log('Editando entrada:', entryId); // Para debug
+        console.log('Editando entrada:', entryId);
 
-    // Cerrar modal del día
-    closeDayModalSafe();
+        // Cerrar modal del día
+        closeDayModalSafe();
 
-    // Buscar la entrada
-    const entry = entries.find(e => e.id === entryId);
-    if (!entry) {
-        alert('Registro no encontrado');
-        return;
-    }
-
-    console.log('Entrada encontrada:', entry); // Para debug
-
-    setTimeout(() => {
-        // Llenar formulario
-        populateSubstanceDropdown();
+        // Buscar la entrada
+        const entry = entries.find(e => e.id === entryId);
+        if (!entry) {
+            alert('Registro no encontrado');
+            return;
+        }
 
         setTimeout(() => {
-            document.getElementById('entrySubstance').value = entry.substance;
-            document.getElementById('entryDose').value = entry.dose;
-            document.getElementById('entryUnit').value = entry.unit;
-            document.getElementById('entryDateTime').value = entry.date;
-            document.getElementById('entrySet').value = entry.set || '';
-            document.getElementById('entrySetting').value = entry.setting || '';
+            // Llenar formulario
+            populateSubstanceDropdown();
 
-            // Limpiar notas
-            let cleanNotes = entry.notes || '';
-            if (entry.set) cleanNotes = cleanNotes.replace(`Set: ${entry.set}. `, '');
-            if (entry.setting) cleanNotes = cleanNotes.replace(`Setting: ${entry.setting}. `, '');
-            document.getElementById('entryNotes').value = cleanNotes;
+            setTimeout(() => {
+                document.getElementById('entrySubstance').value = entry.substance;
+                document.getElementById('entryDose').value = entry.dose;
+                document.getElementById('entryUnit').value = entry.unit;
+                document.getElementById('entryDateTime').value = entry.date;
+                document.getElementById('entrySet').value = entry.set || '';
+                document.getElementById('entrySetting').value = entry.setting || '';
 
-            console.log('Formulario llenado'); // Para debug
-        }, 100);
+                // Limpiar notas
+                let cleanNotes = entry.notes || '';
+                if (entry.set) cleanNotes = cleanNotes.replace(`Set: ${entry.set}. `, '');
+                if (entry.setting) cleanNotes = cleanNotes.replace(`Setting: ${entry.setting}. `, '');
+                document.getElementById('entryNotes').value = cleanNotes;
+            }, 100);
 
-        // Abrir modal
-        openModal('entryModal');
+            // Abrir modal
+            openModal('entryModal');
 
-        console.log('Modal abierto'); // Para debug
+            // NUEVO: Cambiar el comportamiento del formulario
+            const form = document.getElementById('entryForm');
+            const submitBtn = form.querySelector('button[type="submit"]');
 
-    }, 200);
-}
+            // Cambiar apariencia del botón
+            submitBtn.innerHTML = '✅ Actualizar Registro';
+            submitBtn.style.background = 'linear-gradient(135deg, var(--accent-orange), var(--secondary-pink))';
+
+            // CRÍTICO: Cambiar qué hace el formulario al enviarse
+            // Remover el evento anterior
+            const newForm = form.cloneNode(true);
+            form.parentNode.replaceChild(newForm, form);
+
+            // Añadir nuevo evento para ACTUALIZAR en lugar de CREAR
+            newForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+
+                // Obtener datos del formulario
+                const substance = document.getElementById('entrySubstance').value;
+                const dose = parseFloat(document.getElementById('entryDose').value);
+                const unit = document.getElementById('entryUnit').value;
+                const dateTime = document.getElementById('entryDateTime').value;
+                const set = document.getElementById('entrySet').value;
+                const setting = document.getElementById('entrySetting').value;
+                const notes = document.getElementById('entryNotes').value.trim();
+
+                // Validar
+                if (!substance || !dose || !unit || !dateTime) {
+                    alert('Por favor, completa todos los campos obligatorios');
+                    return;
+                }
+
+                if (dose <= 0) {
+                    alert('La dosis debe ser mayor que 0');
+                    return;
+                }
+
+                // Construir notas completas
+                let fullNotes = '';
+                if (set) fullNotes += `Set: ${set}. `;
+                if (setting) fullNotes += `Setting: ${setting}. `;
+                if (notes) fullNotes += notes;
+
+                // ACTUALIZAR la entrada existente (no crear nueva)
+                const entryIndex = entries.findIndex(e => e.id === entryId);
+                if (entryIndex !== -1) {
+                    entries[entryIndex] = {
+                        ...entries[entryIndex], // Mantener datos originales
+                        substance: substance,
+                        dose: dose,
+                        unit: unit,
+                        date: dateTime,
+                        set: set,
+                        setting: setting,
+                        notes: fullNotes || null,
+                        updatedAt: new Date().toISOString() // Marcar como actualizado
+                    };
+
+                    // Guardar en localStorage
+                    localStorage.setItem('entries', JSON.stringify(entries));
+
+                    // Actualizar interfaz
+                    generateCalendar();
+                    renderSubstanceList();
+                    renderStats();
+
+                    // Cerrar modal
+                    closeModal('entryModal');
+
+                    alert('✅ Registro actualizado correctamente');
+
+                    console.log('Entrada actualizada:', entries[entryIndex]);
+                } else {
+                    alert('Error: No se pudo actualizar el registro');
+                }
+            });
+
+        }, 200);
+    }
 
 </script>
 
