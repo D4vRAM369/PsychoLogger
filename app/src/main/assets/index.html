@@ -993,8 +993,8 @@
                     <div class="resource-card">
                         <h4>Importar Datos</h4>
                         <p>Cargar datos desde un archivo CSV</p>
-                        <input type="file" id="csvFileInput" class="file-input" accept=".csv, text/csv" onchange="importFromCSV(this)" multiple="false">
-                        <label for="csvFileInput" class="file-label">Seleccionar CSV</label>
+                        <input type="file" id="csvFileInput" class="file-input" accept=".csv" onchange="importFromCSV(this)" style="display: none;">
+                        <label for="csvFileInput" class="file-label" onclick="document.getElementById('csvFileInput').click()">📁 Seleccionar CSV</label>
                     </div>
                     <div class="resource-card">
                         <h4>Limpiar Datos</h4>
@@ -2316,52 +2316,100 @@
         return;
     }
 
-    // Crear el contenido CSV
-    const csvContent = [
+    // Crear contenido CSV limpio
+    const csvLines = [
         'SUSTANCIAS',
-        'ID,Nombre,Color,Fecha_Creacion',
-        ...substances.map(s => `${s.id},"${s.name}","${s.color}","${s.createdAt}"`),
-        '',
-        'REGISTROS',
-        'ID,Sustancia,Dosis,Unidad,Fecha_Hora,Notas,Fecha_Creacion',
-        ...entries.map(e => `${e.id},"${e.substance}",${e.dose},"${e.unit}","${e.date}","${e.notes || ''}","${e.createdAt}"`)
-    ].join('\n');
+        'ID,Nombre,Color,Fecha_Creacion'
+    ];
 
+    substances.forEach(s => {
+        csvLines.push(`${s.id},"${s.name}","${s.color}","${s.createdAt}"`);
+    });
+
+    csvLines.push('');
+    csvLines.push('REGISTROS');
+    csvLines.push('ID,Sustancia,Dosis,Unidad,Fecha_Hora,Set,Setting,Notas,Fecha_Creacion');
+
+    entries.forEach(e => {
+        csvLines.push(`${e.id},"${e.substance}",${e.dose},"${e.unit}","${e.date}","${e.set || ''}","${e.setting || ''}","${e.notes || ''}","${e.createdAt}"`);
+    });
+
+    const csvContent = csvLines.join('\n');
     const fileName = `bitacora_psiconáutica_${new Date().toISOString().split('T')[0]}.csv`;
 
-    // Método unificado que funciona en web y Android
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = fileName;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    window.URL.revokeObjectURL(url);
+    // Método que funciona en Android sin mostrar "página file://"
+    const element = document.createElement('a');
+    const file = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8' });
+    element.href = URL.createObjectURL(file);
+    element.download = fileName;
 
-    alert('Archivo CSV exportado exitosamente');
+    // Hacer invisible y añadir al DOM temporalmente
+    element.style.display = 'none';
+    document.body.appendChild(element);
+
+    // Hacer click programáticamente
+    element.click();
+
+    // Limpiar
+    document.body.removeChild(element);
+    URL.revokeObjectURL(element.href);
+
+    // Mostrar confirmación personalizada (NO alert del sistema)
+    showCustomAlert(`✅ Archivo descargado\n\n📁 ${fileName}\n\nBúscalo en tu carpeta de Descargas`);
 }
 
+// Función para mostrar alertas personalizadas (sin "página file://")
+function showCustomAlert(message) {
+    const modal = document.createElement('div');
+    modal.className = 'modal active';
+    modal.style.zIndex = '10000';
+
+    modal.innerHTML = `
+        <div class="modal-content" style="max-width: 400px; text-align: center;">
+            <h3 style="color: var(--accent-cyan); margin-bottom: 1rem;">📱 Exportación</h3>
+            <p style="white-space: pre-line; margin-bottom: 1.5rem;">${message}</p>
+            <button class="btn-primary" onclick="this.closest('.modal').remove(); document.body.style.overflow = '';" style="width: auto; padding: 0.5rem 2rem;">
+                Entendido
+            </button>
+        </div>
+    `;
+
+    document.body.appendChild(modal);
+    document.body.style.overflow = 'hidden';
+
+    // Auto-cerrar después de 4 segundos
+    setTimeout(() => {
+        if (modal.parentNode) {
+            modal.remove();
+            document.body.style.overflow = '';
+        }
+    }, 4000);
+}
+
+
     function importFromCSV(input) {
+    console.log('ImportFromCSV llamada'); // Debug
+
     const file = input.files[0];
 
     if (!file) {
-        alert('No se seleccionó ningún archivo');
+        showCustomAlert('❌ No se seleccionó ningún archivo');
         return;
     }
 
+    console.log('Archivo seleccionado:', file.name); // Debug
+
     if (!file.name.toLowerCase().endsWith('.csv')) {
-        alert('Por favor selecciona un archivo CSV válido (.csv)');
+        showCustomAlert('❌ Solo se permiten archivos .csv');
         input.value = '';
         return;
     }
 
-    // Mostrar opciones como en TrackerTung
-    const userChoice = confirm(
-        '¿Qué quieres hacer con los datos existentes?\n\n' +
-        'OK = Reemplazar todos los datos existentes\n' +
-        'Cancelar = Agregar solo datos nuevos (evitando duplicados)'
+    // Preguntar qué hacer con datos existentes
+    const replaceData = confirm(
+        '¿Qué hacer con los datos actuales?\n\n' +
+        'ACEPTAR = Reemplazar todos los datos\n' +
+        'CANCELAR = Agregar datos nuevos'
     );
 
     const reader = new FileReader();
@@ -2369,33 +2417,37 @@
     reader.onload = function(e) {
         try {
             const csv = e.target.result;
-            const lines = csv.split('\n');
+            let lines = csv.split('\n');
+
+            // Limpiar líneas vacías
+            lines = lines.map(line => line.trim()).filter(line => line.length > 0);
+
+            console.log('Líneas a procesar:', lines.length); // Debug
 
             let currentSection = '';
             let substancesImported = 0;
             let entriesImported = 0;
 
-            // Si el usuario eligió reemplazar (OK), limpiar datos existentes
-            if (userChoice) {
+            // Si reemplazar, limpiar datos existentes
+            if (replaceData) {
                 substances = [];
                 entries = [];
             }
 
             for (let i = 0; i < lines.length; i++) {
-                const line = lines[i].trim();
+                const line = lines[i];
 
                 if (line === 'SUSTANCIAS') {
                     currentSection = 'substances';
-                    i++; // Skip header
                     continue;
                 } else if (line === 'REGISTROS') {
                     currentSection = 'entries';
-                    i++; // Skip header
                     continue;
+                } else if (line.startsWith('ID,')) {
+                    continue; // Skip headers
                 }
 
-                if (!line) continue;
-
+                // Parsear CSV considerando comillas
                 const columns = parseCSVLine(line);
 
                 if (currentSection === 'substances' && columns.length >= 4) {
@@ -2406,25 +2458,23 @@
                         createdAt: columns[3].replace(/"/g, '')
                     };
 
-                    // Si no está reemplazando, verificar duplicados
-                    if (!userChoice) {
-                        if (!substances.find(s => s.name.toLowerCase() === substance.name.toLowerCase())) {
-                            substances.push(substance);
-                            substancesImported++;
-                        }
-                    } else {
+                    // Evitar duplicados
+                    if (!substances.find(s => s.name.toLowerCase() === substance.name.toLowerCase())) {
                         substances.push(substance);
                         substancesImported++;
                     }
-                } else if (currentSection === 'entries' && columns.length >= 7) {
+
+                } else if (currentSection === 'entries' && columns.length >= 9) {
                     const entry = {
                         id: parseInt(columns[0]) || Date.now() + Math.random(),
                         substance: columns[1].replace(/"/g, ''),
-                        dose: parseFloat(columns[2]),
+                        dose: parseFloat(columns[2]) || 0,
                         unit: columns[3].replace(/"/g, ''),
                         date: columns[4].replace(/"/g, ''),
-                        notes: columns[5].replace(/"/g, ''),
-                        createdAt: columns[6].replace(/"/g, '')
+                        set: columns[5].replace(/"/g, ''),
+                        setting: columns[6].replace(/"/g, ''),
+                        notes: columns[7].replace(/"/g, ''),
+                        createdAt: columns[8].replace(/"/g, '') || new Date().toISOString()
                     };
 
                     entries.push(entry);
@@ -2441,20 +2491,32 @@
             generateCalendar();
             renderStats();
 
-            alert(`Importación completada:\n${substancesImported} sustancias\n${entriesImported} registros\n\n${userChoice ? 'Datos reemplazados' : 'Datos agregados'}`);
+            // Mostrar resultado
+            showCustomAlert(
+                `✅ Importación completada\n\n` +
+                `📋 ${substancesImported} sustancias\n` +
+                `📊 ${entriesImported} registros\n\n` +
+                `${replaceData ? '🔄 Datos reemplazados' : '➕ Datos agregados'}`
+            );
+
+            console.log('Importación exitosa'); // Debug
 
         } catch (error) {
             console.error('Error al importar:', error);
-            alert('Error al procesar el archivo CSV. Verifica el formato.');
+            showCustomAlert(`❌ Error al procesar archivo:\n\n${error.message}`);
         }
     };
 
     reader.onerror = function() {
-        alert('Error al leer el archivo seleccionado');
+        showCustomAlert('❌ Error al leer el archivo');
     };
 
     reader.readAsText(file, 'UTF-8');
-    input.value = ''; // Limpiar input
+
+    // Limpiar input para permitir reimportar el mismo archivo
+    setTimeout(() => {
+        input.value = '';
+    }, 1000);
 }
 
     function parseCSVLine(line) {
