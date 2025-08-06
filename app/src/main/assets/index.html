@@ -2411,37 +2411,40 @@
 
                     const columns = parseCSVLine(line);
 
-                    if (currentSection === 'substances' && columns.length >= 4) {
-                        const substance = {
-                            id: generateUniqueId(), // Always generate new unique ID on import for consistency
-                            name: columns[1].replace(/"/g, ''),
-                            color: columns[2].replace(/"/g, ''),
-                            createdAt: columns[3].replace(/"/g, '')
-                        };
 
-                        if (!substances.find(s => s.name.toLowerCase() === substance.name.toLowerCase())) {
-                            substances.push(substance);
-                            substancesImported++;
-                        }
+                if (currentSection === 'substances' && columns.length >= 4) {
+                    const importedId = columns[0].replace(/"/g, ''); // Obtener el ID del CSV
+                    const substance = {
+                        id: importedId || generateUniqueId(), // Usar el ID importado, o generar uno nuevo si está vacío
+                        name: columns[1].replace(/"/g, ''),
+                        color: columns[2].replace(/"/g, ''),
+                        createdAt: columns[3].replace(/"/g, '')
+                    };
 
-                    } else if (currentSection === 'entries' && columns.length >= 9) {
-                        const entry = {
-                            id: generateUniqueId(), // Always generate new unique ID on import for consistency
-                            substance: columns[1].replace(/"/g, ''),
-                            dose: parseFloat(columns[2]) || 0,
-                            unit: columns[3].replace(/"/g, ''),
-                            date: columns[4].replace(/"/g, ''),
-                            set: columns[5].replace(/"/g, '') || null,
-                            setting: columns[6].replace(/"/g, '') || null,
-                            notes: columns[7].replace(/"/g, '') || null,
-                            createdAt: columns[8].replace(/"/g, '') || new Date().toISOString(),
-                            updatedAt: columns[9] ? columns[9].replace(/"/g, '') : null // Handle new updatedAt field
-                        };
-
-                        entries.push(entry);
-                        entriesImported++;
+                    if (replaceData || !substances.find(s => s.name.toLowerCase() === substance.name.toLowerCase())) {
+                        substances.push(substance);
+                        substancesImported++;
                     }
                 }
+
+                else if (currentSection === 'entries' && columns.length >= 9) {
+                    const importedId = columns[0].replace(/"/g, ''); // Obtener el ID del CSV
+                    const entry = {
+                        id: importedId || generateUniqueId(), // Usar el ID importado, o generar uno nuevo si está vacío
+                        substance: columns[1].replace(/"/g, ''),
+                        dose: parseFloat(columns[2]) || 0,
+                        unit: columns[3].replace(/"/g, ''),
+                        date: columns[4].replace(/"/g, ''),
+                        set: columns[5].replace(/"/g, '') || null,
+                        setting: columns[6].replace(/"/g, '') || null,
+                        notes: columns[7].replace(/"/g, '') || null,
+                        createdAt: columns[8].replace(/"/g, '') || new Date().toISOString(),
+                        updatedAt: columns[9] ? columns[9].replace(/"/g, '') : null
+                    };
+                    entries.push(entry);
+                    entriesImported++;
+                }
+            }
 
                 localStorage.setItem('substances', JSON.stringify(substances));
                 localStorage.setItem('entries', JSON.stringify(entries));
