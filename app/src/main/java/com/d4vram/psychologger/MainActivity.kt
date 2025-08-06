@@ -270,7 +270,7 @@ class WebAppInterface(private val context: Context, private val activity: MainAc
                             val parts = trimmedLine.split(",")
                             if (parts.size >= 4) {
                                 val substance = mapOf(
-                                    "id" to (parts[0].toIntOrNull()?.toString() ?: System.currentTimeMillis().toString()),
+                                    "id" to (parts[0].toIntOrNull()?.toString() ?: "${System.currentTimeMillis()}-${kotlin.random.Random.nextInt(1000, 9999)}"),
                                     "name" to parts[1].replace("\"", ""),
                                     "color" to parts[2].replace("\"", ""),
                                     "createdAt" to parts[3].replace("\"", "")

@@ -453,10 +453,10 @@
         }
 
         .modal.active {
-            display: flex;  /* CAMBIO: de block a flex */
-            align-items: flex-start;  /* NUEVO */
-            justify-content: center;  /* NUEVO */
-            padding: 0.5rem;  /* NUEVO */
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            padding: 0.5rem;
             overflow-y: auto;
         }
 
@@ -1038,7 +1038,7 @@
             <div class="nav-icon">📅</div>
             <div class="nav-label">Calendario</div>
         </div>
-        <div class="nav-item" onclick="openModal('entryModal')">
+        <div class="nav-item" onclick="openModal('entryModal'); resetEditMode();">
             <div class="nav-icon">➕</div>
             <div class="nav-label">Añadir</div>
         </div>
@@ -1061,7 +1061,7 @@
     </div>
 </nav>
 
-<!-- Add Entry Modal - VERSIÓN 2.0 -->
+<!-- Add Entry Modal -->
 <div id="entryModal" class="modal">
     <div class="modal-content">
         <button class="close-btn" onclick="closeModal('entryModal')">×</button>
@@ -1310,29 +1310,31 @@
 <script>
     // Global variables
     let currentDate = new Date();
+    let isEditMode = false;
+    let currentEditingEntryId = null;
     let substances = JSON.parse(localStorage.getItem('substances')) || getDefaultSubstances();
     let entries = JSON.parse(localStorage.getItem('entries') || '[]');
     let userProfile = JSON.parse(localStorage.getItem('userProfile') || '{}');
     let selectedSubstanceColor = '#8B5CF6';
-    let selectedSubstanceFilter = null; // Nueva variable para filtro
+    let selectedSubstanceFilter = null;
 
     // Default substances
     function getDefaultSubstances() {
         return [
             {
-                id: 1,
+                id: generateUniqueId(),
                 name: 'LSD',
                 color: '#8B5CF6',
                 createdAt: new Date().toISOString()
             },
             {
-                id: 2,
+                id: generateUniqueId(),
                 name: 'Ketamina',
                 color: '#06B6D4',
                 createdAt: new Date().toISOString()
             },
             {
-                id: 3,
+                id: generateUniqueId(),
                 name: 'Opio',
                 color: '#8B5A2B',
                 createdAt: new Date().toISOString()
@@ -1368,7 +1370,7 @@
         // Entry form
         document.getElementById('entryForm').addEventListener('submit', function(e) {
             e.preventDefault();
-            addEntry();
+            addEntry(); // This function now handles both add and edit
         });
 
         // Substance form
@@ -1395,10 +1397,8 @@
         }
     }
 
-    // Navigation functions - VERSIÓN SIMPLIFICADA Y ROBUSTA
+    // Navigation functions
     function switchView(viewName) {
-        console.log('Switching to view:', viewName); // Debug
-
         // Hide all views
         document.querySelectorAll('.view').forEach(view => {
             view.style.display = 'none';
@@ -1413,12 +1413,11 @@
             return;
         }
 
-        // Update navigation - método más directo
+        // Update navigation active state
         document.querySelectorAll('.nav-item').forEach(item => {
             item.classList.remove('active');
         });
 
-        // Activar el item correcto basado en el viewName
         const navMapping = {
             'calendar': 0,
             'stats': 2,
@@ -1439,22 +1438,6 @@
         }
     }
 
-    // Función para manejar clicks en navegación
-    function handleNavClick(viewName, element) {
-        // Quitar active de todos
-        document.querySelectorAll('.nav-item').forEach(item => {
-            item.classList.remove('active');
-        });
-
-        // Añadir active al elemento clickeado
-        if (element) {
-            element.classList.add('active');
-        }
-
-        // Cambiar vista
-        switchView(viewName);
-    }
-
     // Modal functions
     function openModal(modalId) {
         const modal = document.getElementById(modalId);
@@ -1464,6 +1447,18 @@
         // Populate dropdowns when opening modals
         if (modalId === 'entryModal') {
             populateSubstanceDropdown();
+            // Reset form for new entry, or prepare for edit if already in edit mode
+            if (!isEditMode) {
+                resetEntryForm();
+            }
+        } else if (modalId === 'substanceModal') {
+            // Reset color selection when opening substance modal
+            document.querySelectorAll('.color-option').forEach(opt => opt.classList.remove('selected'));
+            const firstColorOption = document.querySelector('.color-option');
+            if (firstColorOption) {
+                firstColorOption.classList.add('selected');
+                selectedSubstanceColor = firstColorOption.dataset.color;
+            }
         } else if (modalId === 'favoritesModal') {
             populateFavoriteDropdown();
             renderFavorites();
@@ -1479,115 +1474,116 @@
     function closeModal(modalId) {
         document.getElementById(modalId).classList.remove('active');
         document.body.style.overflow = ''; // Restore background scrolling
+        resetEditMode(); // Always reset edit mode when closing entry modal
     }
 
     // Calendar functions
     function generateCalendar() {
-    const grid = document.getElementById('calendar-grid');
-    const monthName = currentDate.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' });
-    document.getElementById('current-month').textContent = monthName.charAt(0).toUpperCase() + monthName.slice(1);
+        const grid = document.getElementById('calendar-grid');
+        const monthName = currentDate.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' });
+        document.getElementById('current-month').textContent = monthName.charAt(0).toUpperCase() + monthName.slice(1);
 
-    // Clear grid
-    grid.innerHTML = '';
+        // Clear grid
+        grid.innerHTML = '';
 
-    // Add day headers
-    const dayHeaders = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
-    dayHeaders.forEach(day => {
-        const dayElement = document.createElement('div');
-        dayElement.className = 'calendar-day day-header';
-        dayElement.textContent = day;
-        grid.appendChild(dayElement);
-    });
-
-    // Get first day of month and number of days
-    const firstDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
-    const startDate = new Date(firstDay);
-    startDate.setDate(startDate.getDate() - firstDay.getDay());
-
-    // Generate calendar days
-    for (let i = 0; i < 42; i++) {
-        const day = new Date(startDate);
-        day.setDate(startDate.getDate() + i);
-
-        const dayElement = document.createElement('div');
-        dayElement.className = 'calendar-day';
-        dayElement.textContent = day.getDate();
-
-        // Check if day has entries
-        let dayEntries = entries.filter(entry => {
-            const entryDate = new Date(entry.date);
-            return entryDate.toDateString() === day.toDateString();
+        // Add day headers
+        const dayHeaders = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+        dayHeaders.forEach(day => {
+            const dayElement = document.createElement('div');
+            dayElement.className = 'calendar-day day-header';
+            dayElement.textContent = day;
+            grid.appendChild(dayElement);
         });
 
-        // Apply substance filter if one selected
-        if (selectedSubstanceFilter) {
-            dayEntries = dayEntries.filter(entry => entry.substance === selectedSubstanceFilter);
-        }
+        // Get first day of month and number of days
+        const firstDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+        const startDate = new Date(firstDay);
+        startDate.setDate(startDate.getDate() - firstDay.getDay());
 
-        if (dayEntries.length > 0) {
-            dayElement.classList.add('has-entry');
+        // Generate calendar days
+        for (let i = 0; i < 42; i++) {
+            const day = new Date(startDate);
+            day.setDate(startDate.getDate() + i);
 
-            // Get unique substances for this day
-            const uniqueSubstances = [...new Set(dayEntries.map(entry => entry.substance))];
+            const dayElement = document.createElement('div');
+            dayElement.className = 'calendar-day';
+            dayElement.textContent = day.getDate();
 
-            if (uniqueSubstances.length === 1) {
-                // Single substance - use solid color
-                const substance = substances.find(s => s.name === uniqueSubstances[0]);
-                const color = substance ? substance.color : '#8B5CF6';
-                dayElement.classList.add('single-substance');
-                dayElement.style.background = color;
-                dayElement.style.boxShadow = `0 0 10px ${color}50`;
-            } else if (uniqueSubstances.length > 1) {
-                // Multiple substances - create gradient
-                const colors = uniqueSubstances.map(substanceName => {
-                    const substance = substances.find(s => s.name === substanceName);
-                    return substance ? substance.color : '#8B5CF6';
-                });
-
-                dayElement.classList.add('multiple-substances');
-
-                if (colors.length === 2) {
-                    dayElement.style.background = `linear-gradient(135deg, ${colors[0]} 0%, ${colors[1]} 100%)`;
-                } else if (colors.length === 3) {
-                    dayElement.style.background = `linear-gradient(135deg, ${colors[0]} 0%, ${colors[1]} 50%, ${colors[2]} 100%)`;
-                } else {
-                    // More than 3 colors - create a more complex gradient
-                    const step = 100 / colors.length;
-                    const gradientStops = colors.map((color, index) => `${color} ${index * step}%`).join(', ');
-                    dayElement.style.background = `linear-gradient(135deg, ${gradientStops})`;
-                }
-
-                // Add subtle animation for multiple substances
-                dayElement.style.animation = 'colorShift 3s ease-in-out infinite';
-            }
-
-            // Add substance indicators (small dots)
-            const indicators = document.createElement('div');
-            indicators.className = 'substance-indicators';
-
-            uniqueSubstances.slice(0, 4).forEach(substanceName => {
-                const substance = substances.find(s => s.name === substanceName);
-                const dot = document.createElement('div');
-                dot.className = 'substance-dot';
-                dot.style.backgroundColor = substance ? substance.color : '#8B5CF6';
-                dot.title = substanceName; // Tooltip
-                indicators.appendChild(dot);
+            // Check if day has entries
+            let dayEntries = entries.filter(entry => {
+                const entryDate = new Date(entry.date);
+                return entryDate.toDateString() === day.toDateString();
             });
 
-            dayElement.appendChild(indicators);
+            // Apply substance filter if one selected
+            if (selectedSubstanceFilter) {
+                dayEntries = dayEntries.filter(entry => entry.substance === selectedSubstanceFilter);
+            }
+
+            if (dayEntries.length > 0) {
+                dayElement.classList.add('has-entry');
+
+                // Get unique substances for this day
+                const uniqueSubstances = [...new Set(dayEntries.map(entry => entry.substance))];
+
+                if (uniqueSubstances.length === 1) {
+                    // Single substance - use solid color
+                    const substance = substances.find(s => s.name === uniqueSubstances[0]);
+                    const color = substance ? substance.color : '#8B5CF6';
+                    dayElement.classList.add('single-substance');
+                    dayElement.style.background = color;
+                    dayElement.style.boxShadow = `0 0 10px ${color}50`;
+                } else if (uniqueSubstances.length > 1) {
+                    // Multiple substances - create gradient
+                    const colors = uniqueSubstances.map(substanceName => {
+                        const substance = substances.find(s => s.name === substanceName);
+                        return substance ? substance.color : '#8B5CF6';
+                    });
+
+                    dayElement.classList.add('multiple-substances');
+
+                    if (colors.length === 2) {
+                        dayElement.style.background = `linear-gradient(135deg, ${colors[0]} 0%, ${colors[1]} 100%)`;
+                    } else if (colors.length === 3) {
+                        dayElement.style.background = `linear-gradient(135deg, ${colors[0]} 0%, ${colors[1]} 50%, ${colors[2]} 100%)`;
+                    } else {
+                        // More than 3 colors - create a more complex gradient
+                        const step = 100 / colors.length;
+                        const gradientStops = colors.map((color, index) => `${color} ${index * step}%`).join(', ');
+                        dayElement.style.background = `linear-gradient(135deg, ${gradientStops})`;
+                    }
+
+                    // Add subtle animation for multiple substances
+                    dayElement.style.animation = 'colorShift 3s ease-in-out infinite';
+                }
+
+                // Add substance indicators (small dots)
+                const indicators = document.createElement('div');
+                indicators.className = 'substance-indicators';
+
+                uniqueSubstances.slice(0, 4).forEach(substanceName => {
+                    const substance = substances.find(s => s.name === substanceName);
+                    const dot = document.createElement('div');
+                    dot.className = 'substance-dot';
+                    dot.style.backgroundColor = substance ? substance.color : '#8B5CF6';
+                    dot.title = substanceName; // Tooltip
+                    indicators.appendChild(dot);
+                });
+
+                dayElement.appendChild(indicators);
+            }
+
+            // Dim days from other months
+            if (day.getMonth() !== currentDate.getMonth()) {
+                dayElement.style.opacity = '0.3';
+            }
+
+            // Add click event
+            dayElement.addEventListener('click', () => showDayEntries(day));
+
+            grid.appendChild(dayElement);
         }
-
-        // Dim days from other months
-        if (day.getMonth() !== currentDate.getMonth()) {
-            dayElement.style.opacity = '0.3';
-        }
-
-        // Add click event
-        dayElement.addEventListener('click', () => showDayEntries(day));
-
-        grid.appendChild(dayElement);
     }
-}
 
     function previousMonth() {
         currentDate.setMonth(currentDate.getMonth() - 1);
@@ -1599,6 +1595,7 @@
         generateCalendar();
     }
 
+    // Function to show entries for a specific day
     function showDayEntries(date) {
         let dayEntries = entries.filter(entry => {
             const entryDate = new Date(entry.date);
@@ -1611,12 +1608,8 @@
         }
 
         if (dayEntries.length === 0) {
-            // ✅ NUEVA FUNCIONALIDAD: Crear entrada para este día
             if (confirm('No hay registros para este día. ¿Quieres añadir uno?')) {
-                openModal('entryModal');
-                //Pre-llenar fecha seleccionada
-                const localDateTime = new Date(date.getTime() - date.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
-                document.getElementById('entryDateTime').value = localDateTime;
+                addNewEntryForDate(date.toISOString());
             }
             return;
         }
@@ -1632,8 +1625,12 @@
             content += `<p style="color: var(--accent-cyan); margin-bottom: 1rem;">Filtrado por: ${selectedSubstanceFilter}</p>`;
         }
 
-        dayEntries.forEach(entry => {
-            const time = new Date(entry.date).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+        dayEntries.forEach((entry) => {
+            const time = new Date(entry.date).toLocaleTimeString('es-ES', {
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+
             const substance = substances.find(s => s.name === entry.substance);
             const substanceColor = substance ? substance.color : '#8B5CF6';
 
@@ -1648,199 +1645,142 @@
                     ${entry.setting ? `<div class="entry-meta">🏞️ Setting: ${entry.setting}</div>` : ''}
                     ${entry.notes ? `<div class="entry-notes">📝 ${entry.notes}</div>` : ''}
                     <div class="entry-actions" style="margin-top: 0.5rem;">
-                        <button onclick="editEntryFromDaySafe(${entry.id})" class="btn-edit">✏️ Editar</button>
-                        <button onclick="deleteEntry(${entry.id})" class="btn-delete">🗑️ Eliminar</button>
+                        <button class="btn-edit" data-entry-id="${entry.id}">✏️ Editar</button>
+                        <button class="btn-delete" data-entry-id="${entry.id}">🗑️ Eliminar</button>
                     </div>
                 </div>
             `;
         });
 
-        // Botón para añadir entrada rápida
         content += `
-             <div style="margin-top: 1rem; text-align: center;">
-                <button onclick="addNewEntryForDate('${date.toISOString()}')" class="btn-primary" style="padding: 0.5rem 1rem; font-size: 1rem;">
+            <div style="margin-top: 1rem; text-align: center;">
+                <button id="add-entry-for-date-btn" class="btn-primary" data-date="${date.toISOString()}" style="padding: 0.5rem 1rem; font-size: 1rem;">
                     ➕ Añadir Registro para este Día
                 </button>
             </div>
         `;
 
-        // Create temporary modal
+        const modalId = 'day-entries-modal';
+        const existingModal = document.getElementById(modalId);
+        if (existingModal) {
+            existingModal.remove();
+        }
+
         const modal = document.createElement('div');
+        modal.id = modalId;
         modal.className = 'modal active';
         modal.innerHTML = `
             <div class="modal-content">
-                <button class="close-btn" onclick="closeDayModalSafe()">×</button>
+                <button class="close-btn" id="close-day-modal">×</button>
                 ${content}
             </div>
         `;
+
         document.body.appendChild(modal);
         document.body.style.overflow = 'hidden';
+
+        // Attach event listeners AFTER the modal is in the DOM
+        setTimeout(() => {
+            document.getElementById('close-day-modal').addEventListener('click', closeDayModal);
+
+            document.querySelectorAll(`#${modalId} .btn-edit`).forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const entryId = e.currentTarget.dataset.entryId;
+                    editEntryFromCalendar(entryId);
+                });
+            });
+
+            document.querySelectorAll(`#${modalId} .btn-delete`).forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const entryId = e.currentTarget.dataset.entryId;
+                    deleteEntryFromCalendar(entryId);
+                });
+            });
+
+            document.getElementById('add-entry-for-date-btn').addEventListener('click', (e) => {
+                const dateString = e.currentTarget.dataset.date;
+                addNewEntryForDate(dateString);
+            });
+        }, 50); // Small delay to ensure DOM is ready
+
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                closeDayModal();
+            }
+        });
     }
 
-    // ✅ NUEVA: Función para añadir entrada en fecha específica
-    function addNewEntryForDate(dateString) {
-        // Cerrar modal actual
-        document.querySelectorAll('.modal').forEach(modal => modal.remove());
+    function closeDayModal() {
+        const modal = document.getElementById('day-entries-modal');
+        if (modal) {
+            modal.remove();
+        }
         document.body.style.overflow = '';
+    }
 
-        // Abrir formulario con fecha preseleccionada
+    function addNewEntryForDate(dateString) {
+        closeDayModal();
+        resetEditMode();
         openModal('entryModal');
         const localDateTime = new Date(dateString).toISOString().slice(0, 16);
         document.getElementById('entryDateTime').value = localDateTime;
     }
 
-    // ✅ NUEVA: Función para editar una entrada
-    function editEntry(entryId) {
-        const entry = entries.find(e => e.id === entryId);
+    function editEntryFromCalendar(entryId) {
+        const entry = entries.find(e => e.id === entryId); // Use === for strict comparison
         if (!entry) {
-            alert('Registro no encontrado');
+            alert('❌ Registro no encontrado');
             return;
         }
 
-        // Cerrar modal actual
-        document.querySelectorAll('.modal').forEach(modal => modal.remove());
-        document.body.style.overflow = '';
+        closeDayModal(); // Close the day entries modal
 
-        // Llenar formulario con los datos existentes
-        populateSubstanceDropdown(); // Asegurarse de que el dropdown esté actualizado
+        isEditMode = true;
+        currentEditingEntryId = entryId;
 
-        setTimeout(() => {
-            document.getElementById('entrySubstance').value = entry.substance;
-            document.getElementById('entryDose').value = entry.dose;
-            document.getElementById('entryUnit').value = entry.unit;
-            document.getElementById('entryDateTime').value = entry.date;
-            document.getElementById('entrySet').value = entry.set || '';
-            document.getElementById('entrySetting').value = entry.setting || '';
+        populateSubstanceDropdown(); // Ensure dropdown is populated before setting value
 
-            // Extraer notas sin Set/Setting
-            let cleanNotes = entry.notes || '';
-            if (entry.set) cleanNotes = cleanNotes.replace(`Set: ${entry.set}. `, '');
-            if (entry.setting) cleanNotes = cleanNotes.replace(`Setting: ${entry.setting}. `, '');
-            document.getElementById('entryNotes').value = cleanNotes;
-        }, 100); // Esperar un poco para que el dropdown se llene
+        // Populate form fields
+        document.getElementById('entrySubstance').value = entry.substance;
+        document.getElementById('entryDose').value = entry.dose;
+        document.getElementById('entryUnit').value = entry.unit;
+        document.getElementById('entryDateTime').value = entry.date;
+        document.getElementById('entrySet').value = entry.set || '';
+        document.getElementById('entrySetting').value = entry.setting || '';
+        document.getElementById('entryNotes').value = entry.notes || ''; // Notes are now stored cleanly
 
-        // Abrir modal de entrada
+        // Change submit button text
+        const submitBtn = document.querySelector('#entryForm button[type="submit"]');
+        if (submitBtn) {
+            submitBtn.innerHTML = '✅ Actualizar Registro';
+            submitBtn.style.background = 'linear-gradient(135deg, var(--accent-orange), var(--secondary-pink))';
+        }
+
         openModal('entryModal');
-
-        // Cambiar el botón de guardar a "Actualizar Registro"
-        const form = document.getElementById('entryForm');
-        const submitButton = form.querySelector('button[type="submit"]');
-        const originalText = submitButton.innerHTML;
-
-        submitButton.innerHTML = '✅ Actualizar Registro';
-        submitButton.style.background = 'linear-gradient(135deg, var(--accent-orange), var(--secondary-pink))';
-
-        // Crear nueva función de submit
-        const newSubmitHandler = (e) => {
-            e.preventDefault();
-            updateEntry(entryId, originalText);
-        };
-
-        // Remover listener anterior y añadir nuevo
-        form.removeEventListener('submit', form.currentSubmitHandler || (() => {}));
-        form.addEventListener('submit', newSubmitHandler);
-        form.currentSubmitHandler = newSubmitHandler; // Guardar referencia para remover después
     }
 
-    // ✅ NUEVA: Función para actualizar entrada
-    function updateEntry(entryId, originalButtonText) {
-        const entryIndex = entries.findIndex(e => e.id === entryId);
-        if (entryIndex === -1) {
-            alert('Entrada no encontrada');
-            return;
-        }
-
-        const substance = document.getElementById('entrySubstance').value;
-        const dose = parseFloat(document.getElementById('entryDose').value);
-        const unit = document.getElementById('entryUnit').value;
-        const dateTime = document.getElementById('entryDateTime').value;
-        const set = document.getElementById('entrySet').value;
-        const setting = document.getElementById('entrySetting').value;
-        const notes = document.getElementById('entryNotes').value.trim();
-
-        if (!substance || !dose || !unit || !dateTime) {
-            alert('Por favor, completa todos los campos obligatorios');
-            return;
-        }
-
-        if (dose <= 0) {
-            alert('La dosis debe ser un número positivo');
-            return;
-        }
-
-        // Construir notas completas
-        let fullNotes = '';
-        if (set) fullNotes += `Set: ${set}. `;
-        if (setting) fullNotes += `Setting: ${setting}. `;
-        if (notes) fullNotes += notes;
-
-        // Actualizar entrada
-        entries[entryIndex] = {
-            ...entries[entryIndex],
-            substance: substance,
-            dose: dose,
-            unit: unit,
-            date: dateTime,
-            set: set,
-            setting: setting,
-            notes: fullNotes || null,
-            updatedAt: new Date().toISOString()
-        };
-
-        localStorage.setItem('entries', JSON.stringify(entries));
-
-        generateCalendar();
-        renderSubstanceList();
-        closeModal('entryModal');
-
-        // Restaurar formulario normal
-        resetEntryForm(originalButtonText);
-
-        alert('✅ Registro actualizado correctamente');
-    }
-
-    // ✅ NUEVA: Función para eliminar entrada
-    function deleteEntry(entryId) {
-        const entry = entries.find(e => e.id === entryId);
+    function deleteEntryFromCalendar(entryId) {
+        const entry = entries.find(e => e.id === entryId); // Use === for strict comparison
         if (!entry) {
-            alert('Entrada no encontrada');
+            alert('❌ Registro no encontrado');
             return;
         }
 
-        if (confirm(`¿Estás seguro de que quieres eliminar este registro?\n\n${entry.substance} - ${entry.dose} ${entry.unit}`)) {
-            entries = entries.filter(e => e.id !== entryId);
+        const confirmMessage = `¿Estás seguro de que quieres eliminar este registro?\n\n${entry.substance} - ${entry.dose} ${entry.unit}\n${new Date(entry.date).toLocaleString('es-ES')}`;
+
+        if (confirm(confirmMessage)) {
+            entries = entries.filter(e => e.id !== entryId); // Use !== for strict comparison
             localStorage.setItem('entries', JSON.stringify(entries));
+
+            closeDayModal(); // Close the day entries modal
 
             generateCalendar();
             renderSubstanceList();
             renderStats();
-
-            // Cerrar modal
-            document.querySelectorAll('.modal').forEach(modal => modal.remove());
-            document.body.style.overflow = '';
+            updateProfileCard(); // Update profile stats
 
             alert('🗑️ Registro eliminado correctamente');
         }
-    }
-
-    // ✅ NUEVA: Restaurar formulario a modo normal
-    function resetEntryForm(originalButtonText = '💾 Guardar Registro') {
-        const form = document.getElementById('entryForm');
-        const submitBtn = form.querySelector('button[type="submit"]');
-
-        submitBtn.innerHTML = originalButtonText;
-        submitBtn.style.background = 'linear-gradient(135deg, var(--primary-purple), var(--secondary-pink))';
-
-        // Restaurar handler original
-        form.removeEventListener('submit', form.currentSubmitHandler || (() => {}));
-
-        const originalHandler = function(e) {
-            e.preventDefault();
-            addEntry();
-        };
-
-        form.addEventListener('submit', originalHandler);
-        form.currentSubmitHandler = originalHandler;
     }
 
     // Substance functions
@@ -1858,7 +1798,7 @@
         }
 
         const substance = {
-            id: Date.now(),
+            id: generateUniqueId(),
             name: name,
             color: selectedSubstanceColor,
             createdAt: new Date().toISOString()
@@ -1873,7 +1813,7 @@
 
         // Reset color selection
         document.querySelectorAll('.color-option').forEach(opt => opt.classList.remove('selected'));
-        selectedSubstanceColor = '#8B5CF6';
+        selectedSubstanceColor = '#8B5CF6'; // Reset to default
     }
 
     function renderSubstanceList() {
@@ -1916,7 +1856,7 @@
                 </div>
                 <div class="substance-actions">
                     <span class="substance-count">${count}</span>
-                    <button class="delete-substance-btn" onclick="deleteSubstance(${substance.id})" title="Eliminar sustancia">×</button>
+                    <button class="delete-substance-btn" data-substance-id="${substance.id}" title="Eliminar sustancia">×</button>
                 </div>
             `;
             item.style.borderLeft = `4px solid ${substance.color}`;
@@ -1927,8 +1867,33 @@
                 filterBySubstance(substance.name);
             });
 
+            // Attach event listener for delete button
+            item.querySelector('.delete-substance-btn').addEventListener('click', (e) => {
+                const substanceId = e.currentTarget.dataset.substanceId;
+                deleteSubstance(substanceId);
+            });
+
             list.appendChild(item);
         });
+    }
+
+    function resetEditMode() {
+        isEditMode = false;
+        currentEditingEntryId = null;
+
+        const submitBtn = document.querySelector('#entryForm button[type="submit"]');
+        if (submitBtn) {
+            submitBtn.innerHTML = '💾 Guardar Registro';
+            submitBtn.style.background = 'linear-gradient(135deg, var(--primary-purple), var(--secondary-pink))';
+        }
+        resetEntryForm(); // Also reset the form fields
+    }
+
+    function resetEntryForm() {
+        document.getElementById('entryForm').reset();
+        const now = new Date();
+        const localDateTime = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+        document.getElementById('entryDateTime').value = localDateTime;
     }
 
     function filterBySubstance(substanceName) {
@@ -1957,7 +1922,7 @@
     }
 
     function deleteSubstance(substanceId) {
-        const substance = substances.find(s => s.id === substanceId);
+        const substance = substances.find(s => s.id === substanceId); // Use === for strict comparison
         if (!substance) return;
 
         const hasEntries = entries.some(entry => entry.substance === substance.name);
@@ -1969,7 +1934,7 @@
 
         if (confirm(confirmMessage)) {
             // Remove substance
-            substances = substances.filter(s => s.id !== substanceId);
+            substances = substances.filter(s => s.id !== substanceId); // Use !== for strict comparison
 
             // Remove related entries if any
             if (hasEntries) {
@@ -1987,6 +1952,7 @@
             renderSubstanceList();
             generateCalendar();
             renderStats();
+            updateProfileCard(); // Update profile stats
 
             alert(`"${substance.name}" ha sido eliminada${hasEntries ? ' junto con sus registros' : ''}.`);
         }
@@ -2004,63 +1970,79 @@
         });
     }
 
-    // Entry functions - VERSIÓN 2.0
+    // Function to generate truly unique IDs
+    function generateUniqueId() {
+        return Date.now().toString(36) + Math.random().toString(36).substr(2, 9);
+    }
+
+    // Entry functions - Handles both add and edit
     function addEntry() {
         const substance = document.getElementById('entrySubstance').value;
         const dose = parseFloat(document.getElementById('entryDose').value);
-        const unit = document.getElementById('entryUnit').value; // ✅ CORREGIDO: obtener valor real
+        const unit = document.getElementById('entryUnit').value;
         const dateTime = document.getElementById('entryDateTime').value;
         const set = document.getElementById('entrySet').value;
         const setting = document.getElementById('entrySetting').value;
         const notes = document.getElementById('entryNotes').value.trim();
 
-        // Validación mejorada
-        if (!substance || !dose || !unit || !dateTime) {
-            alert('Por favor, completa todos los campos obligatorios (marcados con *)');
+        // Improved validation
+        if (!substance || isNaN(dose) || dose <= 0 || !unit || !dateTime) {
+            alert('Por favor, completa todos los campos obligatorios (Sustancia, Dosis, Unidad, Fecha y Hora) y asegúrate que la dosis sea mayor que 0.');
             return;
         }
 
-        if (dose <= 0) {
-            alert('La dosis debe ser mayor que 0');
-            return;
+        if (isEditMode && currentEditingEntryId) {
+            // EDIT MODE
+            const existingEntryIndex = entries.findIndex(e => e.id === currentEditingEntryId); // Use === for strict comparison
+            if (existingEntryIndex === -1) {
+                alert('❌ Error: Registro no encontrado para actualizar.');
+                resetEditMode();
+                return;
+            }
+
+            // Update existing entry
+            entries[existingEntryIndex] = {
+                ...entries[existingEntryIndex], // Keep original properties like createdAt
+                substance: substance,
+                dose: dose,
+                unit: unit,
+                date: dateTime,
+                set: set || null, // Store null if empty
+                setting: setting || null, // Store null if empty
+                notes: notes || null, // Store null if empty
+                updatedAt: new Date().toISOString()
+            };
+
+            alert(`✅ Registro actualizado: ${dose} ${unit} de ${substance}`);
+
+        } else {
+           // CREATION MODE
+           const entry = {
+               id: generateUniqueId(),
+               substance: substance,
+               dose: dose,
+               unit: unit,
+               date: dateTime,
+               set: set || null,
+               setting: setting || null,
+               notes: notes || null,
+               createdAt: new Date().toISOString()
+           };
+
+           entries.push(entry);
+           alert(`✅ Registro guardado: ${dose} ${unit} de ${substance}`);
         }
 
-        // Construir notas completas
-        let fullNotes = '';
-        if (set) fullNotes += `Set: ${set}. `;
-        if (setting) fullNotes += `Setting: ${setting}. `;
-        if (notes) fullNotes += notes;
-
-        const entry = {
-            id: Date.now(),
-            substance: substance,
-            dose: dose,
-            unit: unit, // ✅ CORREGIDO: se guarda la unidad correcta
-            date: dateTime,
-            set: set,
-            setting: setting,
-            notes: fullNotes || null,
-            createdAt: new Date().toISOString()
-        };
-
-        // Debugging: mostrar qué se va a guardar
-        console.log('Guardando entrada:', entry);
-
-        entries.push(entry);
+        // Save and update
         localStorage.setItem('entries', JSON.stringify(entries));
-
         generateCalendar();
         renderSubstanceList();
+        renderStats();
+        updateProfileCard(); // Update profile stats
+
+        // Clean up
         closeModal('entryModal');
-        document.getElementById('entryForm').reset();
-
-        // Reset datetime to current
-        const now = new Date();
-        const localDateTime = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
-        document.getElementById('entryDateTime').value = localDateTime;
-
-        // Mensaje de confirmación
-        alert(`✅ Registro guardado: ${dose} ${unit} de ${substance}`);
+        resetEditMode(); // Reset form and edit mode state
     }
 
     // Stats functions
@@ -2074,14 +2056,30 @@
 
         const totalEntries = entries.length;
         const uniqueSubstances = [...new Set(entries.map(entry => entry.substance))];
-        const averagePerMonth = (totalEntries / 12).toFixed(1);
+
+        // Calculate average per month based on the span of entries
+        let firstEntryDate = entries.length > 0 ? new Date(Math.min(...entries.map(e => new Date(e.date)))) : null;
+        let lastEntryDate = entries.length > 0 ? new Date(Math.max(...entries.map(e => new Date(e.date)))) : null;
+
+        let monthsSpan = 0;
+        if (firstEntryDate && lastEntryDate) {
+            monthsSpan = (lastEntryDate.getFullYear() - firstEntryDate.getFullYear()) * 12;
+            monthsSpan -= firstEntryDate.getMonth();
+            monthsSpan += lastEntryDate.getMonth();
+            monthsSpan = Math.max(1, monthsSpan + 1); // Ensure at least 1 month
+        } else {
+            monthsSpan = 1; // Default to 1 month if no entries
+        }
+
+        const averagePerMonth = (totalEntries / monthsSpan).toFixed(1);
+
 
         // Most used substance
         const substanceCount = {};
         entries.forEach(entry => {
             substanceCount[entry.substance] = (substanceCount[entry.substance] || 0) + 1;
         });
-        const mostUsed = Object.keys(substanceCount).reduce((a, b) => substanceCount[a] > substanceCount[b] ? a : b);
+        const mostUsed = Object.keys(substanceCount).length > 0 ? Object.keys(substanceCount).reduce((a, b) => substanceCount[a] > substanceCount[b] ? a : b) : 'N/A';
 
         // Recent activity
         const lastWeek = new Date();
@@ -2100,7 +2098,7 @@
             <div class="resource-card">
                 <h4>Más Utilizada</h4>
                 <p style="font-size: 1.5rem; color: var(--primary-purple); font-weight: bold;">${mostUsed}</p>
-                <p>${substanceCount[mostUsed]} veces</p>
+                <p>${substanceCount[mostUsed] || 0} veces</p>
             </div>
             <div class="resource-card">
                 <h4>Actividad Reciente</h4>
@@ -2189,9 +2187,14 @@
             item.className = 'favorite-substance';
             item.innerHTML = `
                 <span>${favorite}</span>
-                <button class="remove-btn" onclick="removeFromFavorites('${favorite}')">×</button>
+                <button class="remove-btn" data-substance-name="${favorite}">×</button>
             `;
             container.appendChild(item);
+
+            item.querySelector('.remove-btn').addEventListener('click', (e) => {
+                const substanceName = e.currentTarget.dataset.substanceName;
+                removeFromFavorites(substanceName);
+            });
         });
     }
 
@@ -2244,7 +2247,7 @@
         }
 
         const quote = {
-            id: Date.now(),
+            id: generateUniqueId(),
             text: quoteText,
             date: new Date().toISOString()
         };
@@ -2271,15 +2274,20 @@
             item.innerHTML = `
                 <div class="quote-text">"${quote.text}"</div>
                 <div class="quote-actions">
-                    <button class="remove-btn" onclick="removeQuote(${quote.id})">×</button>
+                    <button class="remove-btn" data-quote-id="${quote.id}">×</button>
                 </div>
             `;
             container.appendChild(item);
+
+            item.querySelector('.remove-btn').addEventListener('click', (e) => {
+                const quoteId = e.currentTarget.dataset.quoteId;
+                removeQuote(quoteId);
+            });
         });
     }
 
     function removeQuote(quoteId) {
-        userProfile.quotes = userProfile.quotes.filter(quote => quote.id !== quoteId);
+        userProfile.quotes = userProfile.quotes.filter(quote => quote.id !== quoteId); // Use !== for strict comparison
         localStorage.setItem('userProfile', JSON.stringify(userProfile));
         renderQuotes();
     }
@@ -2311,180 +2319,161 @@
     }
 
     function exportToCSV() {
-    if (substances.length === 0 && entries.length === 0) {
-        alert('No hay datos para exportar');
-        return;
+        if (substances.length === 0 && entries.length === 0) {
+            alert('No hay datos para exportar');
+            return;
+        }
+
+        // Create CSV content
+        const csvLines = [
+            'SUSTANCIAS',
+            'ID,Nombre,Color,Fecha_Creacion'
+        ];
+
+        substances.forEach(s => {
+            csvLines.push(`${s.id},"${s.name}","${s.color}","${s.createdAt}"`);
+        });
+
+        csvLines.push('');
+        csvLines.push('REGISTROS');
+        csvLines.push('ID,Sustancia,Dosis,Unidad,Fecha_Hora,Set,Setting,Notas,Fecha_Creacion,Fecha_Actualizacion');
+
+        entries.forEach(e => {
+            csvLines.push(`${e.id},"${e.substance}",${e.dose},"${e.unit}","${e.date}","${e.set || ''}","${e.setting || ''}","${e.notes || ''}","${e.createdAt || ''}","${e.updatedAt || ''}"`);
+        });
+
+        const csvContent = csvLines.join('\n');
+        const fileName = `bitacora_psiconautica_${new Date().toISOString().split('T')[0]}.csv`;
+
+        const dataUri = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csvContent);
+
+        const link = document.createElement('a');
+        link.href = dataUri;
+        link.download = fileName;
+        link.style.display = 'none';
+
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        showCustomAlert(`✅ Archivo exportado\n\n📁 ${fileName}\n\nRevisa tu carpeta de Descargas`);
     }
-
-    // Crear contenido CSV
-    const csvLines = [
-        'SUSTANCIAS',
-        'ID,Nombre,Color,Fecha_Creacion'
-    ];
-
-    substances.forEach(s => {
-        csvLines.push(`${s.id},"${s.name}","${s.color}","${s.createdAt}"`);
-    });
-
-    csvLines.push('');
-    csvLines.push('REGISTROS');
-    csvLines.push('ID,Sustancia,Dosis,Unidad,Fecha_Hora,Set,Setting,Notas,Fecha_Creacion');
-
-    entries.forEach(e => {
-        csvLines.push(`${e.id},"${e.substance}",${e.dose},"${e.unit}","${e.date}","${e.set || ''}","${e.setting || ''}","${e.notes || ''}","${e.createdAt}"`);
-    });
-
-    const csvContent = csvLines.join('\n');
-    const fileName = `bitacora_psiconáutica_${new Date().toISOString().split('T')[0]}.csv`;
-
-    // MÉTODO QUE FUNCIONA EN ANDROID: Data URI en lugar de blob
-    const dataUri = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csvContent);
-
-    const link = document.createElement('a');
-    link.href = dataUri;
-    link.download = fileName;
-    link.style.display = 'none';
-
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-
-    // Confirmación sin alert del sistema
-    showCustomAlert(`✅ Archivo exportado\n\n📁 ${fileName}\n\nRevisa tu carpeta de Descargas`);
-}
-
 
     function importFromCSV(input) {
-    console.log('ImportFromCSV llamada'); // Debug
+        const file = input.files[0];
 
-    const file = input.files[0];
+        if (!file) {
+            showCustomAlert('❌ No se seleccionó ningún archivo');
+            return;
+        }
 
-    if (!file) {
-        showCustomAlert('❌ No se seleccionó ningún archivo');
-        return;
-    }
+        if (!file.name.toLowerCase().endsWith('.csv')) {
+            showCustomAlert('❌ Solo se permiten archivos .csv');
+            input.value = '';
+            return;
+        }
 
-    console.log('Archivo seleccionado:', file.name); // Debug
+        const replaceData = confirm(
+            '¿Qué hacer con los datos actuales?\n\n' +
+            'ACEPTAR = Reemplazar todos los datos\n' +
+            'CANCELAR = Agregar datos nuevos'
+        );
 
-    if (!file.name.toLowerCase().endsWith('.csv')) {
-        showCustomAlert('❌ Solo se permiten archivos .csv');
-        input.value = '';
-        return;
-    }
+        const reader = new FileReader();
 
-    // Preguntar qué hacer con datos existentes
-    const replaceData = confirm(
-        '¿Qué hacer con los datos actuales?\n\n' +
-        'ACEPTAR = Reemplazar todos los datos\n' +
-        'CANCELAR = Agregar datos nuevos'
-    );
+        reader.onload = function(e) {
+            try {
+                const csv = e.target.result;
+                let lines = csv.split('\n');
+                lines = lines.map(line => line.trim()).filter(line => line.length > 0);
 
-    const reader = new FileReader();
+                let currentSection = '';
+                let substancesImported = 0;
+                let entriesImported = 0;
 
-    reader.onload = function(e) {
-        try {
-            const csv = e.target.result;
-            let lines = csv.split('\n');
-
-            // Limpiar líneas vacías
-            lines = lines.map(line => line.trim()).filter(line => line.length > 0);
-
-            console.log('Líneas a procesar:', lines.length); // Debug
-
-            let currentSection = '';
-            let substancesImported = 0;
-            let entriesImported = 0;
-
-            // Si reemplazar, limpiar datos existentes
-            if (replaceData) {
-                substances = [];
-                entries = [];
-            }
-
-            for (let i = 0; i < lines.length; i++) {
-                const line = lines[i];
-
-                if (line === 'SUSTANCIAS') {
-                    currentSection = 'substances';
-                    continue;
-                } else if (line === 'REGISTROS') {
-                    currentSection = 'entries';
-                    continue;
-                } else if (line.startsWith('ID,')) {
-                    continue; // Skip headers
+                if (replaceData) {
+                    substances = [];
+                    entries = [];
                 }
 
-                // Parsear CSV considerando comillas
-                const columns = parseCSVLine(line);
+                for (let i = 0; i < lines.length; i++) {
+                    const line = lines[i];
 
-                if (currentSection === 'substances' && columns.length >= 4) {
-                    const substance = {
-                        id: parseInt(columns[0]) || Date.now() + Math.random(),
-                        name: columns[1].replace(/"/g, ''),
-                        color: columns[2].replace(/"/g, ''),
-                        createdAt: columns[3].replace(/"/g, '')
-                    };
-
-                    // Evitar duplicados
-                    if (!substances.find(s => s.name.toLowerCase() === substance.name.toLowerCase())) {
-                        substances.push(substance);
-                        substancesImported++;
+                    if (line === 'SUSTANCIAS') {
+                        currentSection = 'substances';
+                        continue;
+                    } else if (line === 'REGISTROS') {
+                        currentSection = 'entries';
+                        continue;
+                    } else if (line.startsWith('ID,')) {
+                        continue; // Skip headers
                     }
 
-                } else if (currentSection === 'entries' && columns.length >= 9) {
-                    const entry = {
-                        id: parseInt(columns[0]) || Date.now() + Math.random(),
-                        substance: columns[1].replace(/"/g, ''),
-                        dose: parseFloat(columns[2]) || 0,
-                        unit: columns[3].replace(/"/g, ''),
-                        date: columns[4].replace(/"/g, ''),
-                        set: columns[5].replace(/"/g, ''),
-                        setting: columns[6].replace(/"/g, ''),
-                        notes: columns[7].replace(/"/g, ''),
-                        createdAt: columns[8].replace(/"/g, '') || new Date().toISOString()
-                    };
+                    const columns = parseCSVLine(line);
 
-                    entries.push(entry);
-                    entriesImported++;
+                    if (currentSection === 'substances' && columns.length >= 4) {
+                        const substance = {
+                            id: generateUniqueId(), // Always generate new unique ID on import for consistency
+                            name: columns[1].replace(/"/g, ''),
+                            color: columns[2].replace(/"/g, ''),
+                            createdAt: columns[3].replace(/"/g, '')
+                        };
+
+                        if (!substances.find(s => s.name.toLowerCase() === substance.name.toLowerCase())) {
+                            substances.push(substance);
+                            substancesImported++;
+                        }
+
+                    } else if (currentSection === 'entries' && columns.length >= 9) {
+                        const entry = {
+                            id: generateUniqueId(), // Always generate new unique ID on import for consistency
+                            substance: columns[1].replace(/"/g, ''),
+                            dose: parseFloat(columns[2]) || 0,
+                            unit: columns[3].replace(/"/g, ''),
+                            date: columns[4].replace(/"/g, ''),
+                            set: columns[5].replace(/"/g, '') || null,
+                            setting: columns[6].replace(/"/g, '') || null,
+                            notes: columns[7].replace(/"/g, '') || null,
+                            createdAt: columns[8].replace(/"/g, '') || new Date().toISOString(),
+                            updatedAt: columns[9] ? columns[9].replace(/"/g, '') : null // Handle new updatedAt field
+                        };
+
+                        entries.push(entry);
+                        entriesImported++;
+                    }
                 }
+
+                localStorage.setItem('substances', JSON.stringify(substances));
+                localStorage.setItem('entries', JSON.stringify(entries));
+
+                renderSubstanceList();
+                generateCalendar();
+                renderStats();
+                updateProfileCard(); // Update profile stats
+
+                showCustomAlert(
+                    `✅ Importación completada\n\n` +
+                    `📋 ${substancesImported} sustancias\n` +
+                    `📊 ${entriesImported} registros\n\n` +
+                    `${replaceData ? '🔄 Datos reemplazados' : '➕ Datos agregados'}`
+                );
+
+            } catch (error) {
+                console.error('Error al importar:', error);
+                showCustomAlert(`❌ Error al procesar archivo:\n\n${error.message}`);
             }
+        };
 
-            // Guardar en localStorage
-            localStorage.setItem('substances', JSON.stringify(substances));
-            localStorage.setItem('entries', JSON.stringify(entries));
+        reader.onerror = function() {
+            showCustomAlert('❌ Error al leer el archivo');
+        };
 
-            // Actualizar interfaz
-            renderSubstanceList();
-            generateCalendar();
-            renderStats();
+        reader.readAsText(file, 'UTF-8');
 
-            // Mostrar resultado
-            showCustomAlert(
-                `✅ Importación completada\n\n` +
-                `📋 ${substancesImported} sustancias\n` +
-                `📊 ${entriesImported} registros\n\n` +
-                `${replaceData ? '🔄 Datos reemplazados' : '➕ Datos agregados'}`
-            );
-
-            console.log('Importación exitosa'); // Debug
-
-        } catch (error) {
-            console.error('Error al importar:', error);
-            showCustomAlert(`❌ Error al procesar archivo:\n\n${error.message}`);
-        }
-    };
-
-    reader.onerror = function() {
-        showCustomAlert('❌ Error al leer el archivo');
-    };
-
-    reader.readAsText(file, 'UTF-8');
-
-    // Limpiar input para permitir reimportar el mismo archivo
-    setTimeout(() => {
-        input.value = '';
-    }, 1000);
-}
+        setTimeout(() => {
+            input.value = '';
+        }, 1000);
+    }
 
     function parseCSVLine(line) {
         const result = [];
@@ -2514,12 +2503,12 @@
             localStorage.removeItem('entries');
             localStorage.removeItem('userProfile');
 
-            substances = getDefaultSubstances();
+            substances = getDefaultSubstances(); // Reset to default substances
             entries = [];
             userProfile = {};
             selectedSubstanceFilter = null;
 
-            localStorage.setItem('substances', JSON.stringify(substances));
+            localStorage.setItem('substances', JSON.stringify(substances)); // Save default substances
 
             renderSubstanceList();
             generateCalendar();
@@ -2532,58 +2521,32 @@
     }
 
     function openExternalURL(url) {
-    // Método 1: Intent de Android (si está disponible)
-    if (typeof Android !== 'undefined' && Android.openUrl) {
-        Android.openUrl(url);
-        return;
-    }
-
-    // Método 2: Para Cordova/PhoneGap
-    if (window.cordova && window.cordova.InAppBrowser) {
-        window.cordova.InAppBrowser.open(url, '_system');
-        return;
-    }
-
-    // Método 3: Para Android WebView
-    const link = document.createElement('a');
-    link.href = url;
-    link.target = '_blank';
-    link.rel = 'noopener noreferrer';
-
-    // Intentar activar el selector de aplicaciones de Android
-    const clickEvent = new MouseEvent('click', {
-        view: window,
-        bubbles: true,
-        cancelable: true
-    });
-
-    document.body.appendChild(link);
-    link.dispatchEvent(clickEvent);
-    document.body.removeChild(link);
-
-    // Método 4: Como último recurso
-    setTimeout(() => {
+        // Attempt to open in a new window/tab, which is generally handled by the system browser on mobile
         window.open(url, '_blank', 'noopener,noreferrer');
-    }, 100);
-}
+    }
+
+    // Custom alert function for better UX on mobile
+    function showCustomAlert(message) {
+        alert(message); // Using native alert for simplicity, can be replaced with a custom modal if needed
+    }
 
     // Close modals when clicking outside
     document.addEventListener('click', function(e) {
         if (e.target.classList.contains('modal')) {
             e.target.classList.remove('active');
             document.body.style.overflow = '';
+            resetEditMode(); // Reset edit mode when any modal is closed by clicking outside
         }
     });
 
     // Initialize color picker
     document.addEventListener('DOMContentLoaded', function() {
-        // Set default color selection
-        setTimeout(() => {
-            const firstColorOption = document.querySelector('.color-option');
-            if (firstColorOption) {
-                firstColorOption.classList.add('selected');
-            }
-        }, 100);
+        // Set default color selection for substance modal
+        const firstColorOption = document.querySelector('#substanceModal .color-option');
+        if (firstColorOption) {
+            firstColorOption.classList.add('selected');
+            selectedSubstanceColor = firstColorOption.dataset.color;
+        }
     });
 
     // Prevent modal close when clicking inside modal content
@@ -2593,195 +2556,14 @@
         }
     });
 
-    // AÑADIR ESTAS 3 FUNCIONES NUEVAS AL FINAL DEL SCRIPT:
-
-    function closeDayModalSafe() {
-        const modals = document.querySelectorAll('.modal.active');
-        modals.forEach(modal => {
-            modal.classList.remove('active');
-            modal.remove();
-        });
-
-       // Restaurar scroll
-       document.body.style.overflow = '';
-
-        // Restaurar navegación
-        setTimeout(() => {
-            document.querySelectorAll('.nav-item').forEach(item => {
-                item.classList.remove('active');
-            });
-            const calendarNav = document.querySelector('.nav-item[onclick*="calendar"]');
-            if (calendarNav) {
-                calendarNav.classList.add('active');
-            }
-        }, 100);
-
-        console.log('Modal del día cerrado de forma segura'); // Para debug
-    }
-
-    function openAddEntryForDateSafe(date) {
-        closeDayModalSafe();
-
-        populateSubstanceDropdown();
-        resetEntryForm();
-
-        // Establecer fecha específica
-        const targetDate = new Date(date);
-        const localDateTime = new Date(targetDate.getTime() - targetDate.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
-        document.getElementById('entryDateTime').value = localDateTime;
-
-        openModal('entryModal');
-    }
-
-    function editEntryFromDaySafe(entryId) {
-        console.log('Editando entrada:', entryId);
-
-        // Cerrar modal del día
-        closeDayModalSafe();
-
-        // Buscar la entrada
-        const entry = entries.find(e => e.id === entryId);
-        if (!entry) {
-            alert('Registro no encontrado');
-            return;
-        }
-
-        setTimeout(() => {
-            // Llenar formulario
-            populateSubstanceDropdown();
-
-            setTimeout(() => {
-                document.getElementById('entrySubstance').value = entry.substance;
-                document.getElementById('entryDose').value = entry.dose;
-                document.getElementById('entryUnit').value = entry.unit;
-                document.getElementById('entryDateTime').value = entry.date;
-                document.getElementById('entrySet').value = entry.set || '';
-                document.getElementById('entrySetting').value = entry.setting || '';
-
-                // Limpiar notas
-                let cleanNotes = entry.notes || '';
-                if (entry.set) cleanNotes = cleanNotes.replace(`Set: ${entry.set}. `, '');
-                if (entry.setting) cleanNotes = cleanNotes.replace(`Setting: ${entry.setting}. `, '');
-                document.getElementById('entryNotes').value = cleanNotes;
-            }, 100);
-
-            // Abrir modal
-            openModal('entryModal');
-
-            // NUEVO: Cambiar el comportamiento del formulario
-            const form = document.getElementById('entryForm');
-            const submitBtn = form.querySelector('button[type="submit"]');
-
-            // Cambiar apariencia del botón
-            submitBtn.innerHTML = '✅ Actualizar Registro';
-            submitBtn.style.background = 'linear-gradient(135deg, var(--accent-orange), var(--secondary-pink))';
-
-            // CRÍTICO: Cambiar qué hace el formulario al enviarse
-            // Remover el evento anterior
-            const newForm = form.cloneNode(true);
-            form.parentNode.replaceChild(newForm, form);
-
-            // Añadir nuevo evento para ACTUALIZAR en lugar de CREAR
-            newForm.addEventListener('submit', function(e) {
-                e.preventDefault();
-
-                // Obtener datos del formulario
-                const substance = document.getElementById('entrySubstance').value;
-                const dose = parseFloat(document.getElementById('entryDose').value);
-                const unit = document.getElementById('entryUnit').value;
-                const dateTime = document.getElementById('entryDateTime').value;
-                const set = document.getElementById('entrySet').value;
-                const setting = document.getElementById('entrySetting').value;
-                const notes = document.getElementById('entryNotes').value.trim();
-
-                // Validar
-                if (!substance || !dose || !unit || !dateTime) {
-                    alert('Por favor, completa todos los campos obligatorios');
-                    return;
-                }
-
-                if (dose <= 0) {
-                    alert('La dosis debe ser mayor que 0');
-                    return;
-                }
-
-                // Construir notas completas
-                let fullNotes = '';
-                if (set) fullNotes += `Set: ${set}. `;
-                if (setting) fullNotes += `Setting: ${setting}. `;
-                if (notes) fullNotes += notes;
-
-                // ACTUALIZAR la entrada existente (no crear nueva)
-                const entryIndex = entries.findIndex(e => e.id === entryId);
-                if (entryIndex !== -1) {
-                    entries[entryIndex] = {
-                        ...entries[entryIndex], // Mantener datos originales
-                        substance: substance,
-                        dose: dose,
-                        unit: unit,
-                        date: dateTime,
-                        set: set,
-                        setting: setting,
-                        notes: fullNotes || null,
-                        updatedAt: new Date().toISOString() // Marcar como actualizado
-                    };
-
-                    // Guardar en localStorage
-                    localStorage.setItem('entries', JSON.stringify(entries));
-
-                    // Actualizar interfaz
-                    generateCalendar();
-                    renderSubstanceList();
-                    renderStats();
-
-                    // Cerrar modal
-                    closeModal('entryModal');
-
-                    alert('✅ Registro actualizado correctamente');
-
-                    console.log('Entrada actualizada:', entries[entryIndex]);
-                } else {
-                    alert('Error: No se pudo actualizar el registro');
-                }
-            });
-
-        }, 200);
-    }
-
     function forceFileSelect() {
-    console.log('forceFileSelect llamada');
-
-    const input = document.getElementById('csvFileInput');
-    if (!input) {
-        console.error('Input no encontrado');
-        alert('Error: Input de archivo no encontrado');
-        return;
-    }
-
-    console.log('Input encontrado, haciendo click...');
-
-    // Método 1: Click directo
-    try {
-        input.click();
-        console.log('Click realizado');
-    } catch (error) {
-        console.error('Error en click:', error);
-
-        // Método 2: Evento sintético
-        try {
-            const event = new MouseEvent('click', {
-                view: window,
-                bubbles: true,
-                cancelable: true
-            });
-            input.dispatchEvent(event);
-            console.log('Evento sintético disparado');
-        } catch (error2) {
-            console.error('Error en evento sintético:', error2);
-            alert('No se puede abrir selector de archivos en este dispositivo');
+        const input = document.getElementById('csvFileInput');
+        if (input) {
+            input.click();
+        } else {
+            alert('Error: Input de archivo no encontrado.');
         }
     }
-}
 
 </script>
 
