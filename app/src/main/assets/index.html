@@ -1828,7 +1828,7 @@
         }
         allItem.innerHTML = `
             <div class="substance-info">
-                <span>📋 Todas las sustancias</span>
+                <span>📋 Experiencias registradas</span>
             </div>
             <div class="substance-actions">
                 <span class="substance-count">${entries.length}</span>
@@ -1904,7 +1904,7 @@
         });
 
         if (substanceName === null) {
-            //Mark "Todas las sustancias" as active
+            //Mark "Experiencias registradas" as active
             document.querySelector('.substance-item:first-child').classList.add('active');
         } else {
             // Find and mark the specific substance as active
