@@ -16,6 +16,8 @@ import androidx.compose.ui.unit.sp
 fun SettingsScreen(
     isAppLockEnabled: Boolean,
     onAppLockToggle: (Boolean) -> Unit,
+    onAdvancedSettings: () -> Unit,
+    onPinSetup: () -> Unit,
     onClose: () -> Unit
 ) {
     Box(
@@ -79,9 +81,9 @@ fun SettingsScreen(
                 
                 Spacer(modifier = Modifier.height(24.dp))
                 
-                // Botón para configuraciones avanzadas (futuro)
+                // Botón para configuraciones avanzadas
                 Button(
-                    onClick = { /* TODO: Implementar configuraciones avanzadas */ },
+                    onClick = onAdvancedSettings,
                     modifier = Modifier.fillMaxWidth(),
                     enabled = isAppLockEnabled,
                     colors = ButtonDefaults.buttonColors(
@@ -89,6 +91,20 @@ fun SettingsScreen(
                     )
                 ) {
                     Text("⚙️ Configuraciones Avanzadas")
+                }
+                
+                Spacer(modifier = Modifier.height(16.dp))
+                
+                // Botón para configurar PIN
+                Button(
+                    onClick = onPinSetup,
+                    modifier = Modifier.fillMaxWidth(),
+                    enabled = isAppLockEnabled,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.tertiary
+                    )
+                ) {
+                    Text("🔢 Configurar PIN")
                 }
                 
                 Spacer(modifier = Modifier.height(16.dp))

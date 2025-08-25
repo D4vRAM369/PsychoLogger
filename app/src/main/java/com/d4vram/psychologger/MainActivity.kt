@@ -44,6 +44,9 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import com.d4vram.psychologger.ui.screens.LockScreen
 import com.d4vram.psychologger.ui.screens.SettingsScreen
+import com.d4vram.psychologger.ui.screens.AdvancedSettingsScreen
+import com.d4vram.psychologger.ui.screens.PinSetupScreen
+import com.d4vram.psychologger.ui.screens.PinEntryScreen
 import com.d4vram.psychologger.ui.theme.PsychoLoggerTheme
 import java.io.File
 import java.io.FileOutputStream
@@ -95,10 +98,10 @@ class MainActivity : FragmentActivity() {
                         val observer = LifecycleEventObserver { _, event ->
                             when (event) {
                                 Lifecycle.Event.ON_PAUSE -> {
-                                    appLockManager.lockApp()
+                                    appLockManager.onAppBackgrounded()
                                 }
                                 Lifecycle.Event.ON_RESUME -> {
-                                    // La app se desbloqueará automáticamente si no está habilitado el bloqueo
+                                    appLockManager.onAppForegrounded()
                                 }
                                 else -> {}
                             }
@@ -113,10 +116,14 @@ class MainActivity : FragmentActivity() {
                     
                     // Estado para mostrar/ocultar pantallas
                     var showSettings by remember { mutableStateOf(false) }
+                    var showAdvancedSettings by remember { mutableStateOf(false) }
+                    var showPinSetup by remember { mutableStateOf(false) }
+                    var showPinEntry by remember { mutableStateOf(false) }
                     
                     // Observar el estado de bloqueo
                     val isAppLocked by appLockManager.isAppLocked.collectAsState()
                     val isAppLockEnabled by appLockManager.isAppLockEnabled.collectAsState()
+                    val autoLockDelay by appLockManager.autoLockDelay.collectAsState()
                     
                     // Mostrar pantalla de bloqueo si está habilitado y bloqueado
                     if (isAppLockEnabled && isAppLocked) {
@@ -138,8 +145,11 @@ class MainActivity : FragmentActivity() {
                                 }
                             },
                             onUnlockWithPin = {
-                                // TODO: Implementar desbloqueo con PIN
-                                Toast.makeText(context, "🔢 Función PIN próximamente", Toast.LENGTH_LONG).show()
+                                if (appLockManager.hasPinSet()) {
+                                    showPinEntry = true
+                                } else {
+                                    Toast.makeText(context, "🔢 Primero debes configurar un PIN en Ajustes", Toast.LENGTH_LONG).show()
+                                }
                             }
                         )
                     } else {
@@ -185,7 +195,49 @@ class MainActivity : FragmentActivity() {
                                     Toast.makeText(context, "🔓 Bloqueo de aplicación desactivado", Toast.LENGTH_SHORT).show()
                                 }
                             },
+                            onAdvancedSettings = { showAdvancedSettings = true },
+                            onPinSetup = { showPinSetup = true },
                             onClose = { showSettings = false }
+                        )
+                    }
+                    
+                    // Mostrar pantalla de configuraciones avanzadas
+                    if (showAdvancedSettings) {
+                        AdvancedSettingsScreen(
+                            autoLockDelay = autoLockDelay,
+                            onAutoLockDelayChange = { delay ->
+                                appLockManager.setAutoLockDelay(delay)
+                                Toast.makeText(context, "⏰ Tiempo de bloqueo actualizado", Toast.LENGTH_SHORT).show()
+                            },
+                            onBack = { showAdvancedSettings = false }
+                        )
+                    }
+                    
+                    // Mostrar pantalla de configuración de PIN
+                    if (showPinSetup) {
+                        PinSetupScreen(
+                            onPinSet = { pin ->
+                                appLockManager.setPin(pin)
+                                showPinSetup = false
+                                Toast.makeText(context, "🔢 PIN configurado correctamente", Toast.LENGTH_SHORT).show()
+                            },
+                            onCancel = { showPinSetup = false }
+                        )
+                    }
+                    
+                    // Mostrar pantalla de entrada de PIN
+                    if (showPinEntry) {
+                        PinEntryScreen(
+                            onPinCorrect = {
+                                if (appLockManager.verifyPin("")) { // TODO: Obtener PIN del usuario
+                                    appLockManager.unlockApp()
+                                    showPinEntry = false
+                                    Toast.makeText(context, "✅ PIN correcto", Toast.LENGTH_SHORT).show()
+                                } else {
+                                    Toast.makeText(context, "❌ PIN incorrecto", Toast.LENGTH_SHORT).show()
+                                }
+                            },
+                            onBackToBiometric = { showPinEntry = false }
                         )
                     }
                 }
