@@ -1609,7 +1609,7 @@
 
         if (dayEntries.length === 0) {
             if (confirm('No hay registros para este día. ¿Quieres añadir uno?')) {
-                addNewEntryForDate(date.toISOString());
+                addNewEntryForDate(date);
             }
             return;
         }
@@ -1654,7 +1654,7 @@
 
         content += `
             <div style="margin-top: 1rem; text-align: center;">
-                <button id="add-entry-for-date-btn" class="btn-primary" data-date="${date.toISOString()}" style="padding: 0.5rem 1rem; font-size: 1rem;">
+                <button id="add-entry-for-date-btn" class="btn-primary" data-date="${date.getTime()}" style="padding: 0.5rem 1rem; font-size: 1rem;">
                     ➕ Añadir Registro para este Día
                 </button>
             </div>
@@ -1718,11 +1718,21 @@
         document.body.style.overflow = '';
     }
 
-    function addNewEntryForDate(dateString) {
+    function addNewEntryForDate(dateInput) {
         closeDayModal();
         resetEditMode();
         openModal('entryModal');
-        const localDateTime = new Date(dateString).toISOString().slice(0, 16);
+        
+        // Crear la fecha y mantenerla en zona horaria local
+        const selectedDate = new Date(dateInput);
+        const year = selectedDate.getFullYear();
+        const month = String(selectedDate.getMonth() + 1).padStart(2, '0');
+        const day = String(selectedDate.getDate()).padStart(2, '0');
+        const hours = String(selectedDate.getHours()).padStart(2, '0');
+        const minutes = String(selectedDate.getMinutes()).padStart(2, '0');
+        
+        // Formato: YYYY-MM-DDTHH:MM (sin conversión a UTC)
+        const localDateTime = year + '-' + month + '-' + day + 'T' + hours + ':' + minutes;
         document.getElementById('entryDateTime').value = localDateTime;
     }
 
