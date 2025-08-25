@@ -582,6 +582,84 @@
             transform: translateY(-2px);
         }
 
+        /* ===== ESTILOS PARA DIÁLOGOS PERSONALIZADOS ===== */
+        
+        .custom-dialog {
+            background: var(--card-bg) !important;
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(20px);
+        }
+
+        .custom-dialog-header {
+            padding: 1.5rem 1.5rem 0.5rem 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .custom-dialog-header h3 {
+            margin: 0;
+            color: var(--text-light);
+            font-size: 1.25rem;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .custom-dialog-body {
+            padding: 1.5rem;
+            text-align: center;
+        }
+
+        .custom-dialog-body p {
+            margin: 0;
+            color: var(--text-muted);
+            font-size: 1rem;
+            line-height: 1.5;
+        }
+
+        .custom-dialog-actions {
+            padding: 0 1.5rem 1.5rem 1.5rem;
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+        }
+
+        .custom-dialog-actions button {
+            flex: 1;
+            padding: 0.75rem 1.5rem;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            font-size: 0.9rem;
+        }
+
+        .custom-dialog-actions .btn-primary {
+            background: linear-gradient(135deg, var(--primary-purple), var(--secondary-pink));
+            color: white;
+            margin-bottom: 0;
+        }
+
+        .custom-dialog-actions .btn-secondary {
+            background: var(--darker-bg);
+            color: var(--text-light);
+            border: 1px solid var(--border-color);
+            margin-bottom: 0;
+        }
+
+        .custom-dialog-actions .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(139, 92, 246, 0.3);
+        }
+
+        .custom-dialog-actions .btn-secondary:hover {
+            background: var(--border-color);
+            transform: translateY(-2px);
+        }
+
         .resources-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -1608,9 +1686,11 @@
         }
 
         if (dayEntries.length === 0) {
-            if (confirm('No hay registros para este día. ¿Quieres añadir uno?')) {
-                addNewEntryForDate(date);
-            }
+            showCustomConfirm(
+                'No hay registros para este día. ¿Quieres añadir uno?',
+                '📅 Día sin Registros',
+                () => addNewEntryForDate(date)
+            );
             return;
         }
 
@@ -1739,7 +1819,7 @@
     function editEntryFromCalendar(entryId) {
         const entry = entries.find(e => e.id === entryId); // Use === for strict comparison
         if (!entry) {
-            alert('❌ Registro no encontrado');
+            showCustomAlert('❌ Registro no encontrado', '❌ Error');
             return;
         }
 
@@ -1778,19 +1858,23 @@
 
         const confirmMessage = `¿Estás seguro de que quieres eliminar este registro?\n\n${entry.substance} - ${entry.dose} ${entry.unit}\n${new Date(entry.date).toLocaleString('es-ES')}`;
 
-        if (confirm(confirmMessage)) {
-            entries = entries.filter(e => e.id !== entryId); // Use !== for strict comparison
-            localStorage.setItem('entries', JSON.stringify(entries));
+        showCustomConfirm(
+            confirmMessage,
+            '🗑️ Confirmar Eliminación',
+            () => {
+                entries = entries.filter(e => e.id !== entryId); // Use !== for strict comparison
+                localStorage.setItem('entries', JSON.stringify(entries));
 
-            closeDayModal(); // Close the day entries modal
+                closeDayModal(); // Close the day entries modal
 
-            generateCalendar();
-            renderSubstanceList();
-            renderStats();
-            updateProfileCard(); // Update profile stats
+                generateCalendar();
+                renderSubstanceList();
+                renderStats();
+                updateProfileCard(); // Update profile stats
 
-            alert('🗑️ Registro eliminado correctamente');
-        }
+                showCustomAlert('🗑️ Registro eliminado correctamente', '✅ Eliminado');
+            }
+        );
     }
 
     // Substance functions
@@ -1798,12 +1882,12 @@
         const name = document.getElementById('substanceName').value.trim();
 
         if (!name) {
-            alert('Por favor, introduce un nombre para la sustancia');
+            showCustomAlert('Por favor, introduce un nombre para la sustancia', '⚠️ Campo Requerido');
             return;
         }
 
         if (substances.find(s => s.name.toLowerCase() === name.toLowerCase())) {
-            alert('Esta sustancia ya existe');
+            showCustomAlert('Esta sustancia ya existe', '⚠️ Sustancia Duplicada');
             return;
         }
 
@@ -1970,6 +2054,8 @@
 
     function populateSubstanceDropdown() {
         const select = document.getElementById('entrySubstance');
+        const currentValue = select.value; // Guardar el valor actual
+        
         select.innerHTML = '<option value="">Selecciona una sustancia...</option>';
 
         substances.forEach(substance => {
@@ -1978,6 +2064,11 @@
             option.textContent = substance.name;
             select.appendChild(option);
         });
+        
+        // Restaurar el valor si estamos en modo edición
+        if (currentValue && isEditMode) {
+            select.value = currentValue;
+        }
     }
 
     // Function to generate truly unique IDs
@@ -1997,7 +2088,7 @@
 
         // Improved validation
         if (!substance || isNaN(dose) || dose <= 0 || !unit || !dateTime) {
-            alert('Por favor, completa todos los campos obligatorios (Sustancia, Dosis, Unidad, Fecha y Hora) y asegúrate que la dosis sea mayor que 0.');
+            showCustomAlert('Por favor, completa todos los campos obligatorios (Sustancia, Dosis, Unidad, Fecha y Hora) y asegúrate que la dosis sea mayor que 0.', '⚠️ Campos Requeridos');
             return;
         }
 
@@ -2005,7 +2096,7 @@
             // EDIT MODE
             const existingEntryIndex = entries.findIndex(e => e.id === currentEditingEntryId); // Use === for strict comparison
             if (existingEntryIndex === -1) {
-                alert('❌ Error: Registro no encontrado para actualizar.');
+                showCustomAlert('❌ Error: Registro no encontrado para actualizar.', '❌ Error');
                 resetEditMode();
                 return;
             }
@@ -2023,7 +2114,7 @@
                 updatedAt: new Date().toISOString()
             };
 
-            alert(`✅ Registro actualizado: ${dose} ${unit} de ${substance}`);
+            showCustomAlert(`✅ Registro actualizado: ${dose} ${unit} de ${substance}`, '✅ Registro Actualizado');
 
         } else {
            // CREATION MODE
@@ -2040,7 +2131,7 @@
            };
 
            entries.push(entry);
-           alert(`✅ Registro guardado: ${dose} ${unit} de ${substance}`);
+           showCustomAlert(`✅ Registro guardado: ${dose} ${unit} de ${substance}`, '✅ Registro Guardado');
         }
 
         // Save and update
@@ -2511,26 +2602,30 @@
     }
 
     function clearAllData() {
-        if (confirm('¿Estás seguro de que quieres eliminar todos los datos? Esta acción no se puede deshacer.')) {
-            localStorage.removeItem('substances');
-            localStorage.removeItem('entries');
-            localStorage.removeItem('userProfile');
+        showCustomConfirm(
+            '¿Estás seguro de que quieres eliminar todos los datos? Esta acción no se puede deshacer.',
+            '🗑️ Eliminar Todos los Datos',
+            () => {
+                localStorage.removeItem('substances');
+                localStorage.removeItem('entries');
+                localStorage.removeItem('userProfile');
 
-            substances = getDefaultSubstances(); // Reset to default substances
-            entries = [];
-            userProfile = {};
-            selectedSubstanceFilter = null;
+                substances = getDefaultSubstances(); // Reset to default substances
+                entries = [];
+                userProfile = {};
+                selectedSubstanceFilter = null;
 
-            localStorage.setItem('substances', JSON.stringify(substances)); // Save default substances
+                localStorage.setItem('substances', JSON.stringify(substances)); // Save default substances
 
-            renderSubstanceList();
-            generateCalendar();
-            renderStats();
-            loadUserProfile();
-            updateProfileCard();
+                renderSubstanceList();
+                generateCalendar();
+                renderStats();
+                loadUserProfile();
+                updateProfileCard();
 
-            alert('Todos los datos han sido eliminados');
-        }
+                showCustomAlert('Todos los datos han sido eliminados', '🗑️ Datos Eliminados');
+            }
+        );
     }
 
     function openExternalURL(url) {
@@ -2538,10 +2633,7 @@
         window.open(url, '_blank', 'noopener,noreferrer');
     }
 
-    // Custom alert function for better UX on mobile
-    function showCustomAlert(message) {
-        alert(message); // Using native alert for simplicity, can be replaced with a custom modal if needed
-    }
+
 
     // Close modals when clicking outside
     document.addEventListener('click', function(e) {
@@ -2574,8 +2666,106 @@
         if (input) {
             input.click();
         } else {
-            alert('Error: Input de archivo no encontrado.');
+            showCustomAlert('Error: Input de archivo no encontrado.', '❌ Error');
         }
+    }
+
+    // ===== DIÁLOGOS PERSONALIZADOS =====
+    
+    function showCustomConfirm(message, title, onConfirm) {
+        const modalId = 'custom-confirm-modal';
+        const existingModal = document.getElementById(modalId);
+        if (existingModal) {
+            existingModal.remove();
+        }
+
+        const modal = document.createElement('div');
+        modal.id = modalId;
+        modal.className = 'modal active';
+        modal.innerHTML = `
+            <div class="modal-content custom-dialog">
+                <div class="custom-dialog-header">
+                    <h3>${title}</h3>
+                </div>
+                <div class="custom-dialog-body">
+                    <p>${message}</p>
+                </div>
+                <div class="custom-dialog-actions">
+                    <button class="btn-secondary" onclick="closeCustomConfirm()">Cancelar</button>
+                    <button class="btn-primary" onclick="confirmAndClose()">Aceptar</button>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(modal);
+        document.body.style.overflow = 'hidden';
+
+        // Guardar la función de confirmación globalmente
+        window.pendingConfirmAction = onConfirm;
+
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                closeCustomConfirm();
+            }
+        });
+    }
+
+    function showCustomAlert(message, title) {
+        const modalId = 'custom-alert-modal';
+        const existingModal = document.getElementById(modalId);
+        if (existingModal) {
+            existingModal.remove();
+        }
+
+        const modal = document.createElement('div');
+        modal.id = modalId;
+        modal.className = 'modal active';
+        modal.innerHTML = `
+            <div class="modal-content custom-dialog">
+                <div class="custom-dialog-header">
+                    <h3>${title}</h3>
+                </div>
+                <div class="custom-dialog-body">
+                    <p>${message}</p>
+                </div>
+                <div class="custom-dialog-actions">
+                    <button class="btn-primary" onclick="closeCustomAlert()">Aceptar</button>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(modal);
+        document.body.style.overflow = 'hidden';
+
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                closeCustomAlert();
+            }
+        });
+    }
+
+    function closeCustomConfirm() {
+        const modal = document.getElementById('custom-confirm-modal');
+        if (modal) {
+            modal.remove();
+        }
+        document.body.style.overflow = '';
+        window.pendingConfirmAction = null;
+    }
+
+    function closeCustomAlert() {
+        const modal = document.getElementById('custom-alert-modal');
+        if (modal) {
+            modal.remove();
+        }
+        document.body.style.overflow = '';
+    }
+
+    function confirmAndClose() {
+        if (window.pendingConfirmAction) {
+            window.pendingConfirmAction();
+        }
+        closeCustomConfirm();
     }
 
 </script>
