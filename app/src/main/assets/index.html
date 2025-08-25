@@ -230,6 +230,29 @@
             font-weight: bold;
         }
 
+        .edit-substance-btn {
+            background: var(--accent-cyan);
+            border: none;
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            opacity: 0.7;
+            margin-right: 8px;
+        }
+
+        .edit-substance-btn:hover {
+            opacity: 1;
+            background: var(--primary-purple);
+            transform: scale(1.1);
+        }
+
         .delete-substance-btn {
             background: var(--secondary-pink);
             border: none;
@@ -1199,20 +1222,36 @@
             </div>
             <div class="color-picker-container">
                 <label>Color Identificativo</label>
-                <div class="color-options">
-                    <div class="color-option" data-color="#8B5CF6" style="background: #8B5CF6"></div>
-                    <div class="color-option" data-color="#EC4899" style="background: #EC4899"></div>
-                    <div class="color-option" data-color="#06B6D4" style="background: #06B6D4"></div>
-                    <div class="color-option" data-color="#F97316" style="background: #F97316"></div>
-                    <div class="color-option" data-color="#10B981" style="background: #10B981"></div>
-                    <div class="color-option" data-color="#F59E0B" style="background: #F59E0B"></div>
-                    <div class="color-option" data-color="#EF4444" style="background: #EF4444"></div>
-                    <div class="color-option" data-color="#8B5A2B" style="background: #8B5A2B"></div>
-                    <div class="color-option" data-color="#6366F1" style="background: #6366F1"></div>
-                    <div class="color-option" data-color="#84CC16" style="background: #84CC16"></div>
-                    <div class="color-option" data-color="#F472B6" style="background: #F472B6"></div>
-                    <div class="color-option" data-color="#14B8A6" style="background: #14B8A6"></div>
-                </div>
+                        <div class="color-options">
+            <div class="color-option" data-color="#8B5CF6" style="background: #8B5CF6"></div>
+            <div class="color-option" data-color="#EC4899" style="background: #EC4899"></div>
+            <div class="color-option" data-color="#06B6D4" style="background: #06B6D4"></div>
+            <div class="color-option" data-color="#F97316" style="background: #F97316"></div>
+            <div class="color-option" data-color="#10B981" style="background: #10B981"></div>
+            <div class="color-option" data-color="#F59E0B" style="background: #F59E0B"></div>
+            <div class="color-option" data-color="#EF4444" style="background: #EF4444"></div>
+            <div class="color-option" data-color="#8B5A2B" style="background: #8B5A2B"></div>
+            <div class="color-option" data-color="#6366F1" style="background: #6366F1"></div>
+            <div class="color-option" data-color="#84CC16" style="background: #84CC16"></div>
+            <div class="color-option" data-color="#F472B6" style="background: #F472B6"></div>
+            <div class="color-option" data-color="#14B8A6" style="background: #14B8A6"></div>
+            <!-- Nuevos colores añadidos -->
+            <div class="color-option" data-color="#A855F7" style="background: #A855F7"></div>
+            <div class="color-option" data-color="#E91E63" style="background: #E91E63"></div>
+            <div class="color-option" data-color="#00BCD4" style="background: #00BCD4"></div>
+            <div class="color-option" data-color="#FF9800" style="background: #FF9800"></div>
+            <div class="color-option" data-color="#4CAF50" style="background: #4CAF50"></div>
+            <div class="color-option" data-color="#FFC107" style="background: #FFC107"></div>
+            <div class="color-option" data-color="#F44336" style="background: #F44336"></div>
+            <div class="color-option" data-color="#795548" style="background: #795548"></div>
+            <div class="color-option" data-color="#3F51B5" style="background: #3F51B5"></div>
+            <div class="color-option" data-color="#8BC34A" style="background: #8BC34A"></div>
+            <div class="color-option" data-color="#E91E63" style="background: #E91E63"></div>
+            <div class="color-option" data-color="#009688" style="background: #009688"></div>
+            <div class="color-option" data-color="#9C27B0" style="background: #9C27B0"></div>
+            <div class="color-option" data-color="#FF5722" style="background: #FF5722"></div>
+            <div class="color-option" data-color="#607D8B" style="background: #607D8B"></div>
+        </div>
             </div>
             <button type="submit" class="btn-primary">Añadir Sustancia</button>
         </form>
@@ -1853,28 +1892,84 @@
             return;
         }
 
-        if (substances.find(s => s.name.toLowerCase() === name.toLowerCase())) {
-            alert('Esta sustancia ya existe');
+        // Verificar si ya existe una sustancia con el mismo nombre (excluyendo la que estamos editando)
+        const existingSubstance = substances.find(s => 
+            s.name.toLowerCase() === name.toLowerCase() && 
+            (!window.isEditingSubstance || s.id !== window.editingSubstanceId)
+        );
+        
+        if (existingSubstance) {
+            showCustomAlert('Esta sustancia ya existe', '⚠️ Sustancia Duplicada');
             return;
         }
 
-        const substance = {
-            id: Date.now(),
-            name: name,
-            color: selectedSubstanceColor,
-            createdAt: new Date().toISOString()
-        };
+        if (window.isEditingSubstance && window.editingSubstanceId) {
+            // MODO EDICIÓN
+            const substanceIndex = substances.findIndex(s => s.id === window.editingSubstanceId);
+            if (substanceIndex !== -1) {
+                substances[substanceIndex] = {
+                    ...substances[substanceIndex],
+                    name: name,
+                    color: selectedSubstanceColor,
+                    updatedAt: new Date().toISOString()
+                };
+                
+                // Actualizar registros existentes si cambió el nombre
+                if (substances[substanceIndex].name !== name) {
+                    entries.forEach(entry => {
+                        if (entry.substance === substances[substanceIndex].name) {
+                            entry.substance = name;
+                        }
+                    });
+                    localStorage.setItem('entries', JSON.stringify(entries));
+                }
+                
+                localStorage.setItem('substances', JSON.stringify(substances));
+                
+                showCustomAlert(`✅ Sustancia "${name}" actualizada correctamente`, '✅ Sustancia Actualizada');
+            }
+        } else {
+            // MODO CREACIÓN
+            const substance = {
+                id: generateUniqueId(),
+                name: name,
+                color: selectedSubstanceColor,
+                createdAt: new Date().toISOString()
+            };
 
-        substances.push(substance);
-        localStorage.setItem('substances', JSON.stringify(substances));
+            substances.push(substance);
+            localStorage.setItem('substances', JSON.stringify(substances));
+            
+            showCustomAlert(`✅ Sustancia "${name}" añadida correctamente`, '✅ Sustancia Añadida');
+        }
 
+        // Limpiar y actualizar
         renderSubstanceList();
+        generateCalendar();
+        renderStats();
+        updateProfileCard();
         closeModal('substanceModal');
         document.getElementById('substanceForm').reset();
 
         // Reset color selection
         document.querySelectorAll('.color-option').forEach(opt => opt.classList.remove('selected'));
-        selectedSubstanceColor = '#8B5CF6';
+        selectedSubstanceColor = '#8B5CF6'; // Reset to default
+        
+        // Limpiar modo edición
+        window.isEditingSubstance = false;
+        window.editingSubstanceId = null;
+        
+        // Restaurar botón y título originales
+        const submitBtn = document.querySelector('#substanceModal button[type="submit"]');
+        if (submitBtn) {
+            submitBtn.innerHTML = 'Añadir Sustancia';
+            submitBtn.style.background = 'linear-gradient(135deg, var(--primary-purple), var(--secondary-pink))';
+        }
+        
+        const modalTitle = document.querySelector('#substanceModal h3');
+        if (modalTitle) {
+            modalTitle.innerHTML = '➕ Añadir Nueva Sustancia';
+        }
     }
 
     function renderSubstanceList() {
@@ -1917,7 +2012,8 @@
                 </div>
                 <div class="substance-actions">
                     <span class="substance-count">${count}</span>
-                    <button class="delete-substance-btn" onclick="deleteSubstance(${substance.id})" title="Eliminar sustancia">×</button>
+                    <button class="edit-substance-btn" data-substance-id="${substance.id}" title="Editar sustancia">✏️</button>
+                    <button class="delete-substance-btn" data-substance-id="${substance.id}" title="Eliminar sustancia">×</button>
                 </div>
             `;
             item.style.borderLeft = `4px solid ${substance.color}`;
@@ -1928,6 +2024,18 @@
                 filterBySubstance(substance.name);
             });
 
+            // Attach event listener for edit button
+            item.querySelector('.edit-substance-btn').addEventListener('click', (e) => {
+                e.stopPropagation(); // Prevent filtering when clicking edit
+                const substanceId = e.currentTarget.dataset.substanceId;
+                editSubstance(substanceId);
+            });
+
+            // Attach event listener for delete button
+            item.querySelector('.delete-substance-btn').addEventListener('click', (e) => {
+                const substanceId = e.currentTarget.dataset.substanceId;
+                deleteSubstance(substanceId);
+            });
             list.appendChild(item);
         });
     }
@@ -1968,29 +2076,74 @@
             confirmMessage += '\n\n⚠️ Esta sustancia tiene registros asociados. Si la eliminas, también se eliminarán todos sus registros.';
         }
 
-        if (confirm(confirmMessage)) {
-            // Remove substance
-            substances = substances.filter(s => s.id !== substanceId);
+        showCustomConfirm(
+            confirmMessage,
+            '🗑️ Confirmar Eliminación',
+            () => {
+                // Remove substance
+                substances = substances.filter(s => s.id !== substanceId); // Use !== for strict comparison
 
-            // Remove related entries if any
-            if (hasEntries) {
-                entries = entries.filter(entry => entry.substance !== substance.name);
-                localStorage.setItem('entries', JSON.stringify(entries));
+                // Remove related entries if any
+                if (hasEntries) {
+                    entries = entries.filter(entry => entry.substance !== substance.name);
+                    localStorage.setItem('entries', JSON.stringify(entries));
+                }
+
+                // Clear filter if we're filtering by this substance
+                if (selectedSubstanceFilter === substance.name) {
+                    selectedSubstanceFilter = null;
+                }
+
+                localStorage.setItem('substances', JSON.stringify(substances));
+
+                renderSubstanceList();
+                generateCalendar();
+                renderStats();
+                updateProfileCard(); // Update profile stats
+
+                showCustomAlert(`"${substance.name}" ha sido eliminada${hasEntries ? ' junto con sus registros' : ''}.`, '✅ Sustancia Eliminada');
             }
+        );
+    }
 
-            // Clear filter if we're filtering by this substance
-            if (selectedSubstanceFilter === substance.name) {
-                selectedSubstanceFilter = null;
-            }
-
-            localStorage.setItem('substances', JSON.stringify(substances));
-
-            renderSubstanceList();
-            generateCalendar();
-            renderStats();
-
-            alert(`"${substance.name}" ha sido eliminada${hasEntries ? ' junto con sus registros' : ''}.`);
+    function editSubstance(substanceId) {
+        const substance = substances.find(s => s.id === substanceId);
+        if (!substance) {
+            showCustomAlert('❌ Sustancia no encontrada', '❌ Error');
+            return;
         }
+
+        // Abrir el modal de sustancia en modo edición
+        openModal('substanceModal');
+        
+        // Configurar el modal para edición
+        document.getElementById('substanceName').value = substance.name;
+        selectedSubstanceColor = substance.color;
+        
+        // Marcar el color correcto como seleccionado
+        document.querySelectorAll('.color-option').forEach(opt => {
+            opt.classList.remove('selected');
+            if (opt.dataset.color === substance.color) {
+                opt.classList.add('selected');
+            }
+        });
+        
+        // Cambiar el botón y título
+        const submitBtn = document.querySelector('#substanceModal button[type="submit"]');
+        if (submitBtn) {
+            submitBtn.innerHTML = '✅ Actualizar Sustancia';
+            submitBtn.style.background = 'linear-gradient(135deg, var(--accent-orange), var(--secondary-pink))';
+        }
+        
+        // Cambiar el título del modal
+        const modalTitle = document.querySelector('#substanceModal h3');
+        if (modalTitle) {
+            modalTitle.innerHTML = '✏️ Editar Sustancia';
+        }
+        
+        // Configurar el modal para actualizar en lugar de crear
+        window.editingSubstanceId = substanceId;
+        window.isEditingSubstance = true;
     }
 
     function populateSubstanceDropdown() {
