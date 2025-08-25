@@ -20,17 +20,30 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.fragment.app.FragmentActivity
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.runtime.Composable
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.view.WindowCompat
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.LifecycleOwner
+import com.d4vram.psychologger.ui.screens.LockScreen
+import com.d4vram.psychologger.ui.screens.SettingsScreen
 import com.d4vram.psychologger.ui.theme.PsychoLoggerTheme
 import java.io.File
 import java.io.FileOutputStream
@@ -38,9 +51,10 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 import java.util.Date
 
-class MainActivity : ComponentActivity() {
+class MainActivity : FragmentActivity() {
     private var filePathCallback: ValueCallback<Array<Uri>>? = null
     private lateinit var fileChooserLauncher: ActivityResultLauncher<Intent>
+    private lateinit var appLockManager: AppLockManager
 
     var webView: WebView? = null
         private set
@@ -48,6 +62,10 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        
+        // Inicializar el gestor de bloqueo de aplicación
+        appLockManager = AppLockManager(this)
+        
         // Deja que Compose gestione los insets (barra de estado / teclado)
         WindowCompat.setDecorFitsSystemWindows(window, false)
 
@@ -70,16 +88,106 @@ class MainActivity : ComponentActivity() {
                         .imePadding()
                 ) {
                     val context = LocalContext.current
-                    WebViewScreen(
-                        context = context,
-                        onFileChooser = { callback ->
-                            filePathCallback = callback
-                            this@MainActivity.openFileChooser()   // <- llamada correcta
-                        },
-                        onWebViewReady = { webView ->
-                            this@MainActivity.webView = webView
+                    val lifecycleOwner = LocalLifecycleOwner.current
+                    
+                    // Observar el ciclo de vida para bloquear la app cuando pase a segundo plano
+                    DisposableEffect(lifecycleOwner) {
+                        val observer = LifecycleEventObserver { _, event ->
+                            when (event) {
+                                Lifecycle.Event.ON_PAUSE -> {
+                                    appLockManager.lockApp()
+                                }
+                                Lifecycle.Event.ON_RESUME -> {
+                                    // La app se desbloqueará automáticamente si no está habilitado el bloqueo
+                                }
+                                else -> {}
+                            }
                         }
-                    )
+                        
+                        lifecycleOwner.lifecycle.addObserver(observer)
+                        
+                        onDispose {
+                            lifecycleOwner.lifecycle.removeObserver(observer)
+                        }
+                    }
+                    
+                    // Estado para mostrar/ocultar pantallas
+                    var showSettings by remember { mutableStateOf(false) }
+                    
+                    // Observar el estado de bloqueo
+                    val isAppLocked by appLockManager.isAppLocked.collectAsState()
+                    val isAppLockEnabled by appLockManager.isAppLockEnabled.collectAsState()
+                    
+                    // Mostrar pantalla de bloqueo si está habilitado y bloqueado
+                    if (isAppLockEnabled && isAppLocked) {
+                        LockScreen(
+                            onUnlockWithBiometric = {
+                                if (appLockManager.isBiometricAvailable()) {
+                                    appLockManager.showBiometricPrompt(
+                                        activity = this@MainActivity,
+                                        onSuccess = {
+                                            appLockManager.unlockApp()
+                                            Toast.makeText(context, "✅ Aplicación desbloqueada", Toast.LENGTH_SHORT).show()
+                                        },
+                                        onError = { error ->
+                                            Toast.makeText(context, error, Toast.LENGTH_LONG).show()
+                                        }
+                                    )
+                                } else {
+                                    Toast.makeText(context, "❌ Biometría no disponible", Toast.LENGTH_LONG).show()
+                                }
+                            },
+                            onUnlockWithPin = {
+                                // TODO: Implementar desbloqueo con PIN
+                                Toast.makeText(context, "🔢 Función PIN próximamente", Toast.LENGTH_LONG).show()
+                            }
+                        )
+                    } else {
+                        // Contenido principal de la aplicación
+                        Box(modifier = Modifier.fillMaxSize()) {
+                            WebViewScreen(
+                                context = context,
+                                onFileChooser = { callback ->
+                                    filePathCallback = callback
+                                    this@MainActivity.openFileChooser()
+                                },
+                                onWebViewReady = { webView ->
+                                    this@MainActivity.webView = webView
+                                }
+                            )
+                            
+                            // Botón de configuración flotante
+                            FloatingActionButton(
+                                onClick = { showSettings = true },
+                                modifier = Modifier
+                                    .align(Alignment.TopEnd)
+                                    .padding(16.dp),
+                                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                                contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Settings,
+                                    contentDescription = "Configuración"
+                                )
+                            }
+                        }
+                    }
+                    
+                    // Mostrar pantalla de ajustes si está solicitada
+                    if (showSettings) {
+                        SettingsScreen(
+                            isAppLockEnabled = isAppLockEnabled,
+                            onAppLockToggle = { enabled ->
+                                appLockManager.setAppLockEnabled(enabled)
+                                if (enabled) {
+                                    Toast.makeText(context, "🔒 Bloqueo de aplicación activado", Toast.LENGTH_SHORT).show()
+                                } else {
+                                    Toast.makeText(context, "🔓 Bloqueo de aplicación desactivado", Toast.LENGTH_SHORT).show()
+                                }
+                            },
+                            onClose = { showSettings = false }
+                        )
+                    }
                 }
             }
         }
