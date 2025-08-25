@@ -135,6 +135,81 @@ class AppLockManager(private val context: Context) {
         return shouldBeLocked
     }
     
+    /**
+     * Verificación de seguridad ABSOLUTA que se ejecuta ANTES de cualquier renderizado
+     * Esta función es la última línea de defensa contra bypass de seguridad
+     */
+    fun isSecurityBypassAttempt(): Boolean {
+        val isEnabled = encryptedPrefs.getBoolean(KEY_APP_LOCK_ENABLED, false)
+        if (!isEnabled) return false
+        
+        val wasInitialized = encryptedPrefs.getBoolean(KEY_APP_INITIALIZED, false)
+        if (!wasInitialized) return false
+        
+        val lastUnlockTime = encryptedPrefs.getLong(KEY_LAST_UNLOCK_TIME, 0L)
+        if (lastUnlockTime == 0L) return true // Nunca se ha desbloqueado
+        
+        val currentTime = System.currentTimeMillis()
+        val timeSinceUnlock = currentTime - lastUnlockTime
+        
+        // Cualquier intento de bypass debe ser bloqueado
+        return timeSinceUnlock < 1000 || timeSinceUnlock > 5 * 60 * 1000
+    }
+    
+    /**
+     * Verificación de seguridad específica para Android 16+
+     * Esta función es más agresiva y detecta mejor los intentos de bypass
+     */
+    fun shouldForceLockOnStartup(): Boolean {
+        val isEnabled = encryptedPrefs.getBoolean(KEY_APP_LOCK_ENABLED, false)
+        if (!isEnabled) return false
+        
+        val wasInitialized = encryptedPrefs.getBoolean(KEY_APP_INITIALIZED, false)
+        if (!wasInitialized) return false
+        
+        val lastUnlockTime = encryptedPrefs.getLong(KEY_LAST_UNLOCK_TIME, 0L)
+        if (lastUnlockTime == 0L) return true // Nunca se ha desbloqueado
+        
+        val currentTime = System.currentTimeMillis()
+        val timeSinceUnlock = currentTime - lastUnlockTime
+        
+        // En Android 16, ser más agresivo con la detección
+        // Cualquier tiempo menor a 2 segundos se considera bypass
+        if (timeSinceUnlock < 2000) return true // 2 segundos = forzada a detener
+        
+        // También bloquear si han pasado más de 1 minuto (más estricto)
+        if (timeSinceUnlock > 60 * 1000) return true // 1 minuto
+        
+        return false
+    }
+    
+    /**
+     * Detección AGRESIVA de primer lanzamiento después de forzar detención
+     * Esta función es la última línea de defensa para Android 16
+     */
+    fun isFirstLaunchAfterForceStop(): Boolean {
+        val isEnabled = encryptedPrefs.getBoolean(KEY_APP_LOCK_ENABLED, false)
+        if (!isEnabled) return false
+        
+        val wasInitialized = encryptedPrefs.getBoolean(KEY_APP_INITIALIZED, false)
+        if (!wasInitialized) return false
+        
+        val lastUnlockTime = encryptedPrefs.getLong(KEY_LAST_UNLOCK_TIME, 0L)
+        if (lastUnlockTime == 0L) return true // Nunca se ha desbloqueado
+        
+        val currentTime = System.currentTimeMillis()
+        val timeSinceUnlock = currentTime - lastUnlockTime
+        
+        // En Android 16, ser EXTREMADAMENTE agresivo
+        // Cualquier tiempo menor a 5 segundos se considera forzar detención
+        if (timeSinceUnlock < 5000) return true // 5 segundos = forzada a detener
+        
+        // También bloquear si han pasado más de 30 segundos (muy estricto)
+        if (timeSinceUnlock > 30 * 1000) return true // 30 segundos
+        
+        return false
+    }
+    
     fun lockApp() {
         if (_isAppLockEnabled.value) {
             _isAppLocked.value = true

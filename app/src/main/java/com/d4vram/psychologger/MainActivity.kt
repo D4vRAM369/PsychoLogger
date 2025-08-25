@@ -69,17 +69,6 @@ class MainActivity : FragmentActivity() {
         // Inicializar el gestor de bloqueo de aplicación
         appLockManager = AppLockManager(this)
         
-        // Inicializar el estado de bloqueo de forma SÍNCRONA
-        appLockManager.initializeAppLock()
-        
-        // VERIFICACIÓN CRÍTICA DE SEGURIDAD ANTES de cualquier renderizado
-        val isSecurityEnforced = appLockManager.enforceSecurityOnStartup()
-        
-        // Si la app debe estar bloqueada, forzar el estado inmediatamente
-        if (isSecurityEnforced) {
-            appLockManager.lockApp()
-        }
-        
         // Deja que Compose gestione los insets (barra de estado / teclado)
         WindowCompat.setDecorFitsSystemWindows(window, false)
 
@@ -96,7 +85,7 @@ class MainActivity : FragmentActivity() {
         setContent {
             PsychoLoggerTheme {
                 // Estado local para garantizar bloqueo inmediato
-                var forceLocked by remember { mutableStateOf(isSecurityEnforced) }
+                var forceLocked by remember { mutableStateOf(false) }
                 
                 // Verificación adicional de seguridad al renderizar
                 LaunchedEffect(Unit) {
