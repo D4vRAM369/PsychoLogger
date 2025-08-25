@@ -49,6 +49,8 @@ class AppLockManager(private val context: Context) {
         private const val KEY_APP_LOCK_ENABLED = "app_lock_enabled"
         private const val KEY_AUTO_LOCK_DELAY = "auto_lock_delay"
         private const val KEY_PIN_HASH = "pin_hash"
+        private const val KEY_LAST_UNLOCK_TIME = "last_unlock_time"
+        private const val KEY_APP_INITIALIZED = "app_initialized"
     }
     
     fun setAppLockEnabled(enabled: Boolean) {
@@ -60,6 +62,79 @@ class AppLockManager(private val context: Context) {
         }
     }
     
+    /**
+     * Inicializa el estado de bloqueo de la aplicación
+     * Esta función debe llamarse al iniciar la app para verificar si debe estar bloqueada
+     * RETORNA: true si la app debe estar bloqueada, false si no
+     */
+    fun initializeAppLock(): Boolean {
+        val isEnabled = encryptedPrefs.getBoolean(KEY_APP_LOCK_ENABLED, false)
+        val wasInitialized = encryptedPrefs.getBoolean(KEY_APP_INITIALIZED, false)
+        
+        var shouldBeLocked = false
+        
+        if (isEnabled && wasInitialized) {
+            // Si el bloqueo está habilitado y la app ya fue inicializada antes,
+            // verificar si debe estar bloqueada basándose en el tiempo transcurrido
+            val lastUnlockTime = encryptedPrefs.getLong(KEY_LAST_UNLOCK_TIME, 0L)
+            val currentTime = System.currentTimeMillis()
+            val timeSinceUnlock = currentTime - lastUnlockTime
+            
+            // Si han pasado más de 5 minutos desde el último desbloqueo, bloquear la app
+            if (timeSinceUnlock > 5 * 60 * 1000) { // 5 minutos en milisegundos
+                shouldBeLocked = true
+                _isAppLocked.value = true
+            }
+            
+            // SIEMPRE bloquear si la app fue forzada a detenerse
+            if (timeSinceUnlock < 1000) { // Menos de 1 segundo = forzada a detener
+                shouldBeLocked = true
+                _isAppLocked.value = true
+            }
+        }
+        
+        // Marcar que la app ha sido inicializada
+        encryptedPrefs.edit().putBoolean(KEY_APP_INITIALIZED, true).apply()
+        
+        return shouldBeLocked
+    }
+    
+    /**
+     * Verifica si la app debe estar bloqueada basándose en el estado actual
+     * Esta función se puede llamar en cualquier momento para verificar la seguridad
+     */
+    fun shouldAppBeLocked(): Boolean {
+        val isEnabled = encryptedPrefs.getBoolean(KEY_APP_LOCK_ENABLED, false)
+        if (!isEnabled) return false
+        
+        val wasInitialized = encryptedPrefs.getBoolean(KEY_APP_INITIALIZED, false)
+        if (!wasInitialized) return false
+        
+        val lastUnlockTime = encryptedPrefs.getLong(KEY_LAST_UNLOCK_TIME, 0L)
+        if (lastUnlockTime == 0L) return true // Nunca se ha desbloqueado
+        
+        val currentTime = System.currentTimeMillis()
+        val timeSinceUnlock = currentTime - lastUnlockTime
+        
+        // Si han pasado más de 5 minutos, debe estar bloqueada
+        // También si la app fue forzada a detenerse (tiempo muy corto)
+        if (timeSinceUnlock < 1000) return true // Menos de 1 segundo = forzada a detener
+        
+        return timeSinceUnlock > 5 * 60 * 1000
+    }
+    
+    /**
+     * Verificación de seguridad CRÍTICA que debe ejecutarse ANTES de cualquier renderizado
+     * Esta función garantiza que la app esté bloqueada si debe estarlo
+     */
+    fun enforceSecurityOnStartup(): Boolean {
+        val shouldBeLocked = shouldAppBeLocked()
+        if (shouldBeLocked) {
+            _isAppLocked.value = true
+        }
+        return shouldBeLocked
+    }
+    
     fun lockApp() {
         if (_isAppLockEnabled.value) {
             _isAppLocked.value = true
@@ -68,6 +143,8 @@ class AppLockManager(private val context: Context) {
     
     fun unlockApp() {
         _isAppLocked.value = false
+        // Registrar el tiempo de desbloqueo
+        encryptedPrefs.edit().putLong(KEY_LAST_UNLOCK_TIME, System.currentTimeMillis()).apply()
     }
     
     fun setAutoLockDelay(delaySeconds: Int) {

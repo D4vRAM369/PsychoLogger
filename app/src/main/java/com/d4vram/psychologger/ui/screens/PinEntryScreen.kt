@@ -16,7 +16,7 @@ import androidx.compose.ui.unit.sp
 
 @Composable
 fun PinEntryScreen(
-    onPinCorrect: () -> Unit,
+    onPinCorrect: (String) -> Unit,
     onBackToBiometric: () -> Unit
 ) {
     var pin by remember { mutableStateOf("") }
@@ -119,7 +119,7 @@ fun PinEntryScreen(
                             errorMessage = "El PIN debe tener al menos 4 dígitos"
                         } else {
                             // Aquí se validará el PIN (se implementará en AppLockManager)
-                            onPinCorrect()
+                            onPinCorrect(pin)
                         }
                     },
                     modifier = Modifier

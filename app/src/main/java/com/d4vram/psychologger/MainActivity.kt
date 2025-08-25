@@ -69,6 +69,17 @@ class MainActivity : FragmentActivity() {
         // Inicializar el gestor de bloqueo de aplicación
         appLockManager = AppLockManager(this)
         
+        // Inicializar el estado de bloqueo de forma SÍNCRONA
+        appLockManager.initializeAppLock()
+        
+        // VERIFICACIÓN CRÍTICA DE SEGURIDAD ANTES de cualquier renderizado
+        val isSecurityEnforced = appLockManager.enforceSecurityOnStartup()
+        
+        // Si la app debe estar bloqueada, forzar el estado inmediatamente
+        if (isSecurityEnforced) {
+            appLockManager.lockApp()
+        }
+        
         // Deja que Compose gestione los insets (barra de estado / teclado)
         WindowCompat.setDecorFitsSystemWindows(window, false)
 
@@ -84,6 +95,17 @@ class MainActivity : FragmentActivity() {
 
         setContent {
             PsychoLoggerTheme {
+                // Estado local para garantizar bloqueo inmediato
+                var forceLocked by remember { mutableStateOf(isSecurityEnforced) }
+                
+                // Verificación adicional de seguridad al renderizar
+                LaunchedEffect(Unit) {
+                    if (appLockManager.shouldAppBeLocked() && !forceLocked) {
+                        forceLocked = true
+                        appLockManager.lockApp()
+                    }
+                }
+                
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
@@ -125,8 +147,15 @@ class MainActivity : FragmentActivity() {
                     val isAppLockEnabled by appLockManager.isAppLockEnabled.collectAsState()
                     val autoLockDelay by appLockManager.autoLockDelay.collectAsState()
                     
+                    // Verificación adicional de seguridad al renderizar
+                    LaunchedEffect(Unit) {
+                        if (appLockManager.shouldAppBeLocked() && !isAppLocked) {
+                            appLockManager.lockApp()
+                        }
+                    }
+                    
                     // Mostrar pantalla de bloqueo si está habilitado y bloqueado
-                    if (isAppLockEnabled && isAppLocked) {
+                    if ((isAppLockEnabled && isAppLocked) || forceLocked) {
                         LockScreen(
                             onUnlockWithBiometric = {
                                 if (appLockManager.isBiometricAvailable()) {
@@ -134,6 +163,7 @@ class MainActivity : FragmentActivity() {
                                         activity = this@MainActivity,
                                         onSuccess = {
                                             appLockManager.unlockApp()
+                                            forceLocked = false // Resetear estado local
                                             Toast.makeText(context, "✅ Aplicación desbloqueada", Toast.LENGTH_SHORT).show()
                                         },
                                         onError = { error ->
@@ -228,9 +258,10 @@ class MainActivity : FragmentActivity() {
                     // Mostrar pantalla de entrada de PIN
                     if (showPinEntry) {
                         PinEntryScreen(
-                            onPinCorrect = {
-                                if (appLockManager.verifyPin("")) { // TODO: Obtener PIN del usuario
+                            onPinCorrect = { pin ->
+                                if (appLockManager.verifyPin(pin)) {
                                     appLockManager.unlockApp()
+                                    forceLocked = false // Resetear estado local
                                     showPinEntry = false
                                     Toast.makeText(context, "✅ PIN correcto", Toast.LENGTH_SHORT).show()
                                 } else {
