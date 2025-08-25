@@ -2,8 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bitácora Psiconáutica</title>
     <style>
         :root {
@@ -2568,24 +2567,6 @@
             alert('Error: Input de archivo no encontrado.');
         }
     }
-
-
-    (function () {
-      const vv = window.visualViewport;
-      const modal = document.querySelector('.modal'); // tu contenedor del modal
-      const backdrop = document.querySelector('.modal-backdrop');
-      if (!vv || !modal) return;
-
-      function applyOffset() {
-        const keyboard = Math.max(0, window.innerHeight - (vv.height + vv.offsetTop));
-        modal.style.bottom = `${Math.max(16, keyboard + 12)}px`;
-        if (backdrop) backdrop.style.minHeight = `${Math.max(vv.height, window.innerHeight)}px`;
-      }
-      vv.addEventListener('resize', applyOffset);
-      vv.addEventListener('scroll', applyOffset);
-      window.addEventListener('resize', applyOffset);
-      applyOffset();
-    })();
 
 </script>
 

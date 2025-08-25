@@ -57,6 +57,10 @@ dependencies {
     // WebView support - NUEVA DEPENDENCIA AGREGADA
     implementation("androidx.webkit:webkit:1.8.0")
 
+    // Biometric and Security
+    implementation(libs.androidx.biometric)
+    implementation(libs.androidx.security.crypto)
+
     // Compose core
     implementation("androidx.compose.ui:ui:1.5.1")
     implementation("androidx.compose.ui:ui-tooling-preview:1.5.1")
