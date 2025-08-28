@@ -2587,15 +2587,20 @@
                         entries = entries.filter(e => e.id !== entryId); // Use !== for strict comparison
                         localStorage.setItem('entries', JSON.stringify(entries));
 
-                        closeDayModal(); // Close the day entries modal
+                        closeDayModal?.(); // Close the day entries modal
+                        closeModal?.('entryModal'); // Close entry modal if open
 
+                        // 3. Refresh UI
 
-                        generateCalendar();
-                        renderSubstanceList();
-                        renderStats();
+                    if (typeof goToCalendar === 'function') {
+                        resetEditMode?.();
+                        goToCalendar(entry.date);
                         updateProfileCard(); // Update profile stats
+                        return;
+                    }
 
-                        showCustomAlert('🗑️ Registro eliminado correctamente', '✅ Eliminado');
+                        showAutoCloseAlert('🗑️ Eliminando registro correctamente', '✅ Eliminado');
+                        generateCalendar();
                     }
                 );
             }
@@ -3489,7 +3494,7 @@
             }
 
             // Nueva función para alertas que se cierran automáticamente
-            function showAutoCloseAlert(message, title, autoCloseDelay = 2000) {
+            function showAutoCloseAlert(message, title, autoCloseDelay = 2000, onClose) {
                 const modalId = 'auto-close-alert-modal';
                 const existingModal = document.getElementById(modalId);
                 if (existingModal) {
@@ -3515,6 +3520,8 @@
                         </div>
                     </div>
                 `;
+
+                modal._onClose = (typeof onClose === 'function') ? onClose : null;
 
                 document.body.appendChild(modal);
                 document.body.style.overflow = 'hidden';
@@ -3561,6 +3568,8 @@
                 const modal = document.getElementById('auto-close-alert-modal');
                 if (modal) {
                     const dialog = modal.querySelector('.custom-dialog');
+                    // Ejecutar la función onClose si existe
+                    const onClose = modal._onClose;
                     if (dialog) {
                         // Agregar clase de fade-out para la animación
                         dialog.classList.add('fade-out');
@@ -3570,10 +3579,16 @@
                                 modal.remove();
                             }
                             document.body.style.overflow = '';
+                            // Dispara el callback si existe
+                            if (typeof onClose === 'function') {
+                                onClose();
+                            }
                         }, 300); // 300ms = duración de la animación
                     } else {
                         modal.remove();
                         document.body.style.overflow = '';
+
+                        if (typeof onClose === 'function') onClose();
                     }
                 }
             }
