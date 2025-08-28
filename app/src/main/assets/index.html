@@ -771,6 +771,37 @@
             transform: translateY(-2px);
         }
 
+        /* Estilos para el modal de auto-cierre */
+        .custom-dialog.auto-close {
+            animation: slideInUp 0.3s ease-out;
+        }
+
+        .custom-dialog.auto-close.fade-out {
+            animation: fadeOut 0.3s ease-in forwards;
+        }
+
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeOut {
+            from {
+                opacity: 1;
+                transform: translateY(0);
+            }
+            to {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+        }
+
         /* ===== ESTILOS PARA BOTONES PRINCIPALES ===== */
         .btn-primary {
             background: linear-gradient(135deg, var(--primary-purple), var(--secondary-pink));
@@ -2596,7 +2627,7 @@
                 
                 localStorage.setItem('substances', JSON.stringify(substances));
                 
-                showCustomAlert(`✅ Sustancia "${name}" actualizada correctamente`, '✅ Sustancia Actualizada');
+                showAutoCloseAlert(`✅ Sustancia "${name}" actualizada correctamente`, '✅ Sustancia Actualizada', 2000);
             }
         } else {
             // MODO CREACIÓN
@@ -2613,7 +2644,7 @@
             substances.push(substance);
             localStorage.setItem('substances', JSON.stringify(substances));
             
-            showCustomAlert(`✅ Sustancia "${name}" añadida correctamente`, '✅ Sustancia Añadida');
+            showAutoCloseAlert(`✅ Sustancia "${name}" añadida correctamente`, '✅ Sustancia Añadida', 2000);
         }
 
         // Limpiar y actualizar
@@ -2992,7 +3023,7 @@
                 updatedAt: new Date().toISOString()
             };
 
-            showCustomAlert(`✅ Registro actualizado: ${dose} ${unit} de ${substance}`, '✅ Registro Actualizado');
+            showAutoCloseAlert(`✅ Registro actualizado: ${dose} ${unit} de ${substance}`, '✅ Registro Actualizado', 2000);
 
         } else {
            // CREATION MODE
@@ -3008,7 +3039,7 @@
                createdAt: new Date().toISOString()
            };
            entries.push(entry);
-           showCustomAlert(`✅ Registro guardado: ${dose} ${unit} de ${substance}`, '✅ Registro Guardado');
+           showAutoCloseAlert(`✅ Registro guardado: ${dose} ${unit} de ${substance}`, '✅ Registro Guardado', 2000);
         }
 
         // Save and update
@@ -3413,6 +3444,46 @@
         });
     }
 
+    // Nueva función para alertas que se cierran automáticamente
+    function showAutoCloseAlert(message, title, autoCloseDelay = 2000) {
+        const modalId = 'auto-close-alert-modal';
+        const existingModal = document.getElementById(modalId);
+        if (existingModal) {
+            existingModal.remove();
+        }
+
+        const modal = document.createElement('div');
+        modal.id = modalId;
+        modal.className = 'modal active';
+        modal.innerHTML = `
+            <div class="modal-content custom-dialog auto-close">
+                <div class="custom-dialog-header">
+                    <h3>${title}</h3>
+                </div>
+                <div class="custom-dialog-body">
+                    <p>${message}</p>
+                </div>
+                <div class="custom-dialog-actions">
+                    <button class="btn-primary" onclick="closeAutoCloseAlert()">Aceptar</button>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(modal);
+        document.body.style.overflow = 'hidden';
+
+        // Cerrar automáticamente después del tiempo especificado
+        setTimeout(() => {
+            closeAutoCloseAlert();
+        }, autoCloseDelay);
+
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                closeAutoCloseAlert();
+            }
+        });
+    }
+
     function closeCustomConfirm() {
         const modal = document.getElementById('custom-confirm-modal');
         if (modal) {
@@ -3428,6 +3499,27 @@
             modal.remove();
         }
         document.body.style.overflow = '';
+    }
+
+    function closeAutoCloseAlert() {
+        const modal = document.getElementById('auto-close-alert-modal');
+        if (modal) {
+            const dialog = modal.querySelector('.custom-dialog');
+            if (dialog) {
+                // Agregar clase de fade-out para la animación
+                dialog.classList.add('fade-out');
+                // Esperar a que termine la animación antes de cerrar
+                setTimeout(() => {
+                    if (modal && modal.parentNode) {
+                        modal.remove();
+                    }
+                    document.body.style.overflow = '';
+                }, 300); // 300ms = duración de la animación
+            } else {
+                modal.remove();
+                document.body.style.overflow = '';
+            }
+        }
     }
 
     function confirmAndClose() {
