@@ -802,6 +802,24 @@
             }
         }
 
+        /* Barra de progreso para auto-cierre */
+        .auto-close-progress {
+            width: 100%;
+            height: 3px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+            margin-top: 0.5rem;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-cyan), var(--accent-orange));
+            border-radius: 2px;
+            transition: width 2s linear;
+        }
+
         /* ===== ESTILOS PARA BOTONES PRINCIPALES ===== */
         .btn-primary {
             background: linear-gradient(135deg, var(--primary-purple), var(--secondary-pink));
@@ -2656,7 +2674,12 @@
         // Actualizar el dropdown de sustancias si está abierto
         updateSubstanceDropdown();
         
-        closeModal('substanceModal');
+        // Cerrar modal y redirigir al calendario después del alert
+        setTimeout(() => {
+            closeModal('substanceModal');
+            // Redirect to calendar view
+            switchView('calendar');
+        }, 2500); // Wait for alert to fade out (2000ms) + extra time for smooth transition
         document.getElementById('substanceForm').reset();
         const emojiInput = document.getElementById('substanceEmoji');
         if (emojiInput) {
@@ -3050,9 +3073,13 @@
         renderStats();
         updateProfileCard(); // Update profile stats
 
-        // Clean up
-        closeModal('entryModal');
-        resetEditMode();
+        // Clean up and redirect to calendar
+        setTimeout(() => {
+            closeModal('entryModal');
+            resetEditMode();
+            // Redirect to calendar view
+            switchView('calendar');
+        }, 2500); // Wait for alert to fade out (2000ms) + extra time for smooth transition
     }
 
     // Stats functions
@@ -3459,6 +3486,9 @@
             <div class="modal-content custom-dialog auto-close">
                 <div class="custom-dialog-header">
                     <h3>${title}</h3>
+                    <div class="auto-close-progress">
+                        <div class="progress-bar"></div>
+                    </div>
                 </div>
                 <div class="custom-dialog-body">
                     <p>${message}</p>
@@ -3471,6 +3501,15 @@
 
         document.body.appendChild(modal);
         document.body.style.overflow = 'hidden';
+
+        // Animar la barra de progreso
+        const progressBar = modal.querySelector('.progress-bar');
+        if (progressBar) {
+            progressBar.style.transition = `width ${autoCloseDelay}ms linear`;
+            setTimeout(() => {
+                progressBar.style.width = '0%';
+            }, 100);
+        }
 
         // Cerrar automáticamente después del tiempo especificado
         setTimeout(() => {
