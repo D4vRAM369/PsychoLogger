@@ -1849,7 +1849,7 @@
     <div class="modal-content">
         <button class="close-btn" onclick="closeModal('substanceModal')">×</button>
         <h3>Añadir Nueva Sustancia</h3>
-        <form id="substanceForm" onsubmit="addSubstance(); return false;">
+        <form id="substanceForm" onsubmit="return false;">
             <div class="form-group">
                 <label>Nombre</label>
                 <input type="text" id="substanceName" placeholder="LSD, MDMA, Psilocibina..." required>
@@ -1895,7 +1895,7 @@
             <div class="color-option" data-color="#607D8B" style="background: #607D8B"></div>
         </div>
             </div>
-            <button type="submit" class="btn-primary">Añadir Sustancia</button>
+            <button type="button" class="btn-primary" onclick="addSubstance()">Añadir Sustancia</button>
         </form>
     </div>
 </div>
@@ -2168,7 +2168,6 @@
 
         // Populate dropdowns when opening modals
         if (modalId === 'entryModal') {
-            console.log('Opening entry modal, populating substance dropdown...');
             populateSubstanceDropdown();
             // Reset form for new entry, or prepare for edit if already in edit mode
             if (!isEditMode) {
@@ -2531,10 +2530,25 @@
 
     // Substance functions
     function addSubstance() {
-        const name = document.getElementById('substanceName').value.trim();
+        const nameInput = document.getElementById('substanceName');
+        if (!nameInput) {
+            showCustomAlert('Error: Campo de nombre no encontrado', '❌ Error del Sistema');
+            return;
+        }
+        
+        const name = nameInput.value.trim();
+        
+        // Debug temporal para identificar el problema
+        console.log('DEBUG addSubstance:', {
+            rawValue: nameInput.value,
+            trimmedValue: name,
+            nameLength: name.length,
+            isEmpty: !name || name.length === 0
+        });
 
-        if (!name) {
+        if (!name || name.length === 0) {
             showCustomAlert('Por favor, introduce un nombre para la sustancia', '⚠️ Campo Requerido');
+            nameInput.focus();
             return;
         }
 
