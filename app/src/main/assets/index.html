@@ -1911,16 +1911,45 @@
     let selectedSubstanceColor = '#8B5CF6';
     let selectedSubstanceFilter = null;
 
+        function safeSetValue(id, value) {
+            const el = document.getElementById(id);
+            if (el) el.value = value;
+        }
+
+        function waitForElement(id, cb, retries = 30, delay = 20) {
+            const el = document.getElementById(id);
+            if (el) return cb(el);
+            if (retries <= 0) return;
+          setTimeout(() => waitForElement(id, cb, retries - 1, delay), delay);
+        }
+
+        function toLocalDateTimeString(d) {
+            const y = d.getFullYear();
+            const m = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            const h = String(d.getHours()).padStart(2, '0');
+            const min = String(d.getMinutes()).padStart(2, '0');
+          return `${y}-${m}-${day}T${h}:${min}`;
+        }
+
+
     
 
 
 
         // Función para sugerir emoji basado en el nombre de la sustancia
         function suggestEmoji() {
-            const substanceName = document.getElementById('substanceName').value.trim();
+            const substanceNameInput = document.getElementById('substanceName');
+            const substanceEmojiInput = document.getElementById('substanceEmoji');
+            
+            if (!substanceNameInput || !substanceEmojiInput) {
+                return;
+            }
+            
+            const substanceName = substanceNameInput.value.trim();
             if (substanceName) {
                 const suggestedEmoji = getSubstanceEmoji(substanceName);
-                document.getElementById('substanceEmoji').value = suggestedEmoji;
+                substanceEmojiInput.value = suggestedEmoji;
                 showCustomAlert(`💡 Emoji sugerido: ${suggestedEmoji}`, '💡 Sugerencia');
             } else {
                 showCustomAlert('⚠️ Primero escribe el nombre de la sustancia', '⚠️ Campo Requerido');
@@ -2072,8 +2101,6 @@
             generateCalendar();
             renderSubstanceList();
             renderStats();
-            loadUserProfile();
-            updateProfileCard();
 
             // Set current datetime for entry form
             const now = new Date();
@@ -2447,58 +2474,49 @@
         closeDayModal();
         resetEditMode();
         openModal('entryModal');
-        
-        // Crear la fecha y mantenerla en zona horaria local
-        const selectedDate = new Date(dateInput);
-        const year = selectedDate.getFullYear();
-        const month = String(selectedDate.getMonth() + 1).padStart(2, '0');
-        const day = String(selectedDate.getDate()).padStart(2, '0');
-        const hours = String(selectedDate.getHours()).padStart(2, '0');
-        const minutes = String(selectedDate.getMinutes()).padStart(2, '0');
-        
-        // Formato: YYYY-MM-DDTHH:MM (sin conversión a UTC)
-        const localDateTime = year + '-' + month + '-' + day + 'T' + hours + ':' + minutes;
-        document.getElementById('entryDateTime').value = localDateTime;
+
+        const d = new Date(dateInput);
+        const localDateTime = toLocalDateTimeString(d);
+
+        // Espera a que exista el input en WebView:
+        waitForElement('entryDateTime', (input) => { input.value = localDateTime; });
     }
 
+
     function editEntryFromCalendar(entryId) {
-        const entry = entries.find(e => e.id === entryId); // Use === for strict comparison
-        if (!entry) {
-            showCustomAlert('❌ Registro no encontrado', '❌ Error');
-            return;
-        }
+        const entry = entries.find(e => e.id === entryId);
+        if (!entry) { showCustomAlert('❌ Registro no encontrado', '❌ Error'); return; }
 
-        closeDayModal(); // Close the day entries modal
-
+        closeDayModal();
         isEditMode = true;
         currentEditingEntryId = entryId;
 
-        populateSubstanceDropdown(); // Ensure dropdown is populated before setting value
+        populateSubstanceDropdown();
 
-        // Populate form fields
-        // Para sustancia, usar el dropdown personalizado
         const substanceHeaderText = document.querySelector('#entrySubstanceDropdown .dropdown-text');
         const substanceHiddenInput = document.getElementById('entrySubstance');
-        substanceHiddenInput.value = entry.substance;
-        const emoji = getSubstanceEmoji(entry.substance);
-        substanceHeaderText.textContent = `${emoji} ${entry.substance}`;
-        
-        document.getElementById('entryDose').value = entry.dose;
-        document.getElementById('entryUnit').value = entry.unit;
-        document.getElementById('entryDateTime').value = entry.date;
-        document.getElementById('entrySet').value = entry.set || '';
-        document.getElementById('entrySetting').value = entry.setting || '';
-        document.getElementById('entryNotes').value = entry.notes || ''; // Notes are now stored cleanly
-
-        // Change submit button text
-        const submitBtn = document.querySelector('#entryForm button[type="submit"]');
-        if (submitBtn) {
-            submitBtn.innerHTML = '✅ Actualizar Registro';
-            submitBtn.style.background = 'linear-gradient(135deg, var(--accent-orange), var(--secondary-pink))';
+        if (substanceHeaderText && substanceHiddenInput) {
+            substanceHiddenInput.value = entry.substance;
+            substanceHeaderText.textContent = `${getSubstanceEmoji(entry.substance)} ${entry.substance}`;
         }
 
-        openModal('entryModal');
+        openModal('entryModal'); // tras esto aún puede tardar 1 frame
+
+        waitForElement('entryDose',      el => el.value = entry.dose);
+        waitForElement('entryUnit',      el => el.value = entry.unit);
+        waitForElement('entryDateTime',  el => el.value = entry.date);
+        waitForElement('entrySet',       el => el.value = entry.set || '');
+        waitForElement('entrySetting',   el => el.value = entry.setting || '');
+        waitForElement('entryNotes',     el => el.value = entry.notes || '');
+
+        const submitBtn = document.querySelector('#entryForm button[type="submit"]');
+        if (submitBtn) {
+          submitBtn.innerHTML = '✅ Actualizar Registro';
+          submitBtn.style.background = 'linear-gradient(135deg, var(--accent-orange), var(--secondary-pink))';
+        }
     }
+
+
 
     function deleteEntryFromCalendar(entryId) {
         const entry = entries.find(e => e.id === entryId); // Use === for strict comparison
@@ -2537,14 +2555,6 @@
         }
         
         const name = nameInput.value.trim();
-        
-        // Debug temporal para identificar el problema
-        console.log('DEBUG addSubstance:', {
-            rawValue: nameInput.value,
-            trimmedValue: name,
-            nameLength: name.length,
-            isEmpty: !name || name.length === 0
-        });
 
         if (!name || name.length === 0) {
             showCustomAlert('Por favor, introduce un nombre para la sustancia', '⚠️ Campo Requerido');
@@ -2590,7 +2600,8 @@
             }
         } else {
             // MODO CREACIÓN
-            const customEmoji = document.getElementById('substanceEmoji').value.trim();
+            const emojiInput = document.getElementById('substanceEmoji');
+            const customEmoji = emojiInput ? emojiInput.value.trim() : '';
             const substance = {
                 id: generateUniqueId(),
                 name: name,
@@ -2616,7 +2627,10 @@
         
         closeModal('substanceModal');
         document.getElementById('substanceForm').reset();
-        document.getElementById('substanceEmoji').value = ''; // Limpiar emoji personalizado
+        const emojiInput = document.getElementById('substanceEmoji');
+        if (emojiInput) {
+            emojiInput.value = ''; // Limpiar emoji personalizado
+        }
 
         // Reset color selection
         document.querySelectorAll('.color-option').forEach(opt => opt.classList.remove('selected'));
@@ -2724,13 +2738,20 @@
         document.getElementById('entryForm').reset();
         const now = new Date();
         const localDateTime = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
-        document.getElementById('entryDateTime').value = localDateTime;
+        
+        // Verificar que el elemento existe antes de acceder a él
+        const dateTimeInput = document.getElementById('entryDateTime');
+        if (dateTimeInput) {
+            dateTimeInput.value = localDateTime;
+        }
         
         // Resetear el dropdown de sustancia personalizado
         const substanceHeaderText = document.querySelector('#entrySubstanceDropdown .dropdown-text');
         const substanceHiddenInput = document.getElementById('entrySubstance');
-        substanceHeaderText.textContent = 'Selecciona una sustancia...';
-        substanceHiddenInput.value = ''; // Cambiar de 'placeholder' a string vacío
+        if (substanceHeaderText && substanceHiddenInput) {
+            substanceHeaderText.textContent = 'Selecciona una sustancia...';
+            substanceHiddenInput.value = ''; // Cambiar de 'placeholder' a string vacío
+        }
     }
 
     function filterBySubstance(substanceName) {
@@ -2810,7 +2831,10 @@
         openModal('substanceModal');
         
         // Configurar el modal para edición
-        document.getElementById('substanceName').value = substance.name;
+        const nameInput = document.getElementById('substanceName');
+        if (nameInput) {
+            nameInput.value = substance.name;
+        }
         selectedSubstanceColor = substance.color;
         
         // Marcar el color correcto como seleccionado
@@ -2904,13 +2928,26 @@
 
     // Entry functions - Handles both add and edit
     function addEntry() {
-        const substance = document.getElementById('entrySubstance').value;
-        const dose = parseFloat(document.getElementById('entryDose').value);
-        const unit = document.getElementById('entryUnit').value;
-        const dateTime = document.getElementById('entryDateTime').value;
-        const set = document.getElementById('entrySet').value;
-        const setting = document.getElementById('entrySetting').value;
-        const notes = document.getElementById('entryNotes').value.trim();
+        const substanceInput = document.getElementById('entrySubstance');
+        const doseInput = document.getElementById('entryDose');
+        const unitInput = document.getElementById('entryUnit');
+        const dateTimeInput = document.getElementById('entryDateTime');
+        const setInput = document.getElementById('entrySet');
+        const settingInput = document.getElementById('entrySetting');
+        const notesInput = document.getElementById('entryNotes');
+        
+        if (!substanceInput || !doseInput || !unitInput || !dateTimeInput) {
+            showCustomAlert('Error: Elementos del formulario no encontrados', '❌ Error del Sistema');
+            return;
+        }
+        
+        const substance = substanceInput.value;
+        const dose = parseFloat(doseInput.value);
+        const unit = unitInput.value;
+        const dateTime = dateTimeInput.value;
+        const set = setInput ? setInput.value : '';
+        const setting = settingInput ? settingInput.value : '';
+        const notes = notesInput ? notesInput.value.trim() : '';
 
         // Validación mejorada para el campo sustancia
         if (!substance || substance === 'placeholder' || substance === '') {
@@ -3055,223 +3092,7 @@
         `;
     }
 
-    // Profile functions
-    function saveProfile() {
-        const nickname = document.getElementById('userNickname').value.trim();
 
-        userProfile.nickname = nickname || 'Psiconáuta Anónimo';
-        localStorage.setItem('userProfile', JSON.stringify(userProfile));
-
-        updateProfileCard();
-        alert('Perfil guardado correctamente');
-    }
-
-    function loadUserProfile() {
-        if (userProfile.nickname) {
-            document.getElementById('userNickname').value = userProfile.nickname;
-        }
-    }
-
-    function updateProfileCard() {
-        // Verificar si los elementos existen antes de intentar acceder a ellos
-        const profileCardName = document.getElementById('profileCardName');
-        const substanceCountElement = document.getElementById('substanceCount');
-        const entryCountElement = document.getElementById('entryCount');
-        
-        if (profileCardName) {
-            const nickname = userProfile.nickname || 'Psiconáuta Anónimo';
-            profileCardName.textContent = nickname;
-        }
-        
-        if (substanceCountElement) {
-            substanceCountElement.textContent = substances.length;
-        }
-        
-        if (entryCountElement) {
-            entryCountElement.textContent = entries.length;
-        }
-    }
-
-    // Favorites functions
-    function populateFavoriteDropdown() {
-        const select = document.getElementById('favoriteSubstanceSelect');
-        select.innerHTML = '<option value="">Selecciona una sustancia...</option>';
-
-        substances.forEach(substance => {
-            const option = document.createElement('option');
-            option.value = substance.name;
-            option.textContent = substance.name;
-            select.appendChild(option);
-        });
-    }
-
-    function addToFavorites() {
-        const substanceName = document.getElementById('favoriteSubstanceSelect').value;
-
-        if (!substanceName) {
-            alert('Selecciona una sustancia');
-            return;
-        }
-
-        if (!userProfile.favorites) {
-            userProfile.favorites = [];
-        }
-
-        if (userProfile.favorites.includes(substanceName)) {
-            alert('Esta sustancia ya está en favoritos');
-            return;
-        }
-
-        userProfile.favorites.push(substanceName);
-        localStorage.setItem('userProfile', JSON.stringify(userProfile));
-        renderFavorites();
-        document.getElementById('favoriteSubstanceSelect').value = '';
-    }
-
-    function renderFavorites() {
-        const container = document.getElementById('favoritesList');
-
-        if (!userProfile.favorites || userProfile.favorites.length === 0) {
-            container.innerHTML = '<p>No tienes sustancias favoritas aún</p>';
-            return;
-        }
-
-        container.innerHTML = '';
-        userProfile.favorites.forEach(favorite => {
-            const item = document.createElement('div');
-            item.className = 'favorite-substance';
-            item.innerHTML = `
-                <span>${favorite}</span>
-                <button class="remove-btn" data-substance-name="${favorite}">×</button>
-            `;
-            container.appendChild(item);
-
-            item.querySelector('.remove-btn').addEventListener('click', (e) => {
-                const substanceName = e.currentTarget.dataset.substanceName;
-                removeFromFavorites(substanceName);
-            });
-        });
-    }
-
-    function removeFromFavorites(substanceName) {
-        userProfile.favorites = userProfile.favorites.filter(fav => fav !== substanceName);
-        localStorage.setItem('userProfile', JSON.stringify(userProfile));
-        renderFavorites();
-    }
-
-    // Social functions
-    function saveSocialLinks() {
-        userProfile.social = {
-            twitter: document.getElementById('socialTwitter').value.trim(),
-            instagram: document.getElementById('socialInstagram').value.trim(),
-            reddit: document.getElementById('socialReddit').value.trim(),
-            telegram: document.getElementById('socialTelegram').value.trim(),
-            discord: document.getElementById('socialDiscord').value.trim()
-        };
-
-        localStorage.setItem('userProfile', JSON.stringify(userProfile));
-        alert('Enlaces sociales guardados');
-    }
-
-    function loadSocialLinks() {
-        if (userProfile.social) {
-            document.getElementById('socialTwitter').value = userProfile.social.twitter || '';
-            document.getElementById('socialInstagram').value = userProfile.social.instagram || '';
-            document.getElementById('socialReddit').value = userProfile.social.reddit || '';
-            document.getElementById('socialTelegram').value = userProfile.social.telegram || '';
-            document.getElementById('socialDiscord').value = userProfile.social.discord || '';
-        }
-    }
-
-    // Quotes functions
-    function addQuote() {
-        const quoteText = document.getElementById('newQuote').value.trim();
-
-        if (!quoteText) {
-            alert('Escribe una frase');
-            return;
-        }
-
-        if (quoteText.length > 160) {
-            alert('La frase no puede tener más de 160 caracteres');
-            return;
-        }
-
-        if (!userProfile.quotes) {
-            userProfile.quotes = [];
-        }
-
-        const quote = {
-            id: generateUniqueId(),
-            text: quoteText,
-            date: new Date().toISOString()
-        };
-
-        userProfile.quotes.push(quote);
-        localStorage.setItem('userProfile', JSON.stringify(userProfile));
-        renderQuotes();
-        document.getElementById('newQuote').value = '';
-        document.getElementById('charCount').textContent = '0';
-    }
-
-    function renderQuotes() {
-        const container = document.getElementById('quotesList');
-
-        if (!userProfile.quotes || userProfile.quotes.length === 0) {
-            container.innerHTML = '<p>No tienes frases destacadas aún</p>';
-            return;
-        }
-
-        container.innerHTML = '';
-        userProfile.quotes.forEach(quote => {
-            const item = document.createElement('div');
-            item.className = 'quote-item';
-            item.innerHTML = `
-                <div class="quote-text">"${quote.text}"</div>
-                <div class="quote-actions">
-                    <button class="remove-btn" data-quote-id="${quote.id}">×</button>
-                </div>
-            `;
-            container.appendChild(item);
-
-            item.querySelector('.remove-btn').addEventListener('click', (e) => {
-                const quoteId = e.currentTarget.dataset.quoteId;
-                removeQuote(quoteId);
-            });
-        });
-    }
-
-    function removeQuote(quoteId) {
-        userProfile.quotes = userProfile.quotes.filter(quote => quote.id !== quoteId); // Use !== for strict comparison
-        localStorage.setItem('userProfile', JSON.stringify(userProfile));
-        renderQuotes();
-    }
-
-    // Share functions
-    function shareToTwitter() {
-        const text = `🧙‍♂️ ${userProfile.nickname || 'Psiconáuta Anónimo'} - Explorador de la conciencia\n💊 ${substances.length} sustancias exploradas\n📊 ${entries.length} experiencias documentadas\n\n#Psiconáutica #ConsciousUse`;
-        const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`;
-        openExternalURL(url);
-    }
-
-    function shareToWhatsApp() {
-        const text = `🧙‍♂️ ${userProfile.nickname || 'Psiconáuta Anónimo'} - Explorador de la conciencia\n💊 ${substances.length} sustancias exploradas\n📊 ${entries.length} experiencias documentadas`;
-        const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
-        openExternalURL(url);
-    }
-
-    function shareToTelegram() {
-        const text = `🧙‍♂️ ${userProfile.nickname || 'Psiconáuta Anónimo'} - Explorador de la conciencia\n💊 ${substances.length} sustancias exploradas\n📊 ${entries.length} experiencias documentadas`;
-        const url = `https://t.me/share/url?text=${encodeURIComponent(text)}`;
-        openExternalURL(url);
-    }
-
-    function shareToReddit() {
-        const title = `Mi perfil psiconáutico: ${userProfile.nickname || 'Psiconáuta Anónimo'}`;
-        const text = `Explorador de la conciencia con ${substances.length} sustancias exploradas y ${entries.length} experiencias documentadas`;
-        const url = `https://reddit.com/submit?title=${encodeURIComponent(title)}&text=${encodeURIComponent(text)}`;
-        openExternalURL(url);
-    }
 
     function exportToCSV() {
         if (substances.length === 0 && entries.length === 0) {
@@ -3470,12 +3291,6 @@
                 selectedSubstanceFilter = null;
 
                 localStorage.setItem('substances', JSON.stringify(substances)); // Save default substances
-
-                renderSubstanceList();
-                generateCalendar();
-                renderStats();
-                loadUserProfile();
-                updateProfileCard();
 
                 showCustomAlert('Todos los datos han sido eliminados', '🗑️ Datos Eliminados');
             }
