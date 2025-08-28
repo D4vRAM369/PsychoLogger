@@ -547,10 +547,13 @@
             margin-bottom: 0.5rem;
             color: var(--primary-purple);
             font-weight: 600;
+            font-size: 1.1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            text-shadow: 0 0 10px rgba(139, 92, 246, 0.3);
         }
 
         .form-group input,
-        .form-group select,
         .form-group textarea {
             width: 100%;
             padding: 0.75rem;
@@ -561,8 +564,134 @@
             font-size: 1rem;
         }
 
+        /* Estilos mejorados para selectores */
+        .form-group select {
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(135deg, 
+                rgba(139, 92, 246, 0.1) 0%, 
+                rgba(236, 72, 153, 0.1) 50%, 
+                rgba(6, 182, 212, 0.1) 100%);
+            border: 2px solid var(--border-color);
+            border-radius: 16px;
+            color: var(--text-light);
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: blur(10px);
+            position: relative;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%238B5CF6' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6,9 12,15 18,9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            background-size: 20px;
+            padding-right: 3rem;
+        }
+
+        .form-group select:hover {
+            border-color: var(--primary-purple);
+            box-shadow: 0 0 25px rgba(139, 92, 246, 0.4);
+            transform: translateY(-3px);
+            background: linear-gradient(135deg, 
+                rgba(139, 92, 246, 0.15) 0%, 
+                rgba(236, 72, 153, 0.15) 50%, 
+                rgba(6, 182, 212, 0.15) 100%);
+        }
+
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 30px rgba(6, 182, 212, 0.5), 
+                        0 0 60px rgba(139, 92, 246, 0.3);
+            transform: scale(1.02);
+            background: linear-gradient(135deg, 
+                rgba(139, 92, 246, 0.2) 0%, 
+                rgba(236, 72, 153, 0.2) 50%, 
+                rgba(6, 182, 212, 0.2) 100%);
+        }
+
+        /* Estilos para las opciones del selector */
+        .form-group select option {
+            background: var(--card-bg);
+            color: var(--text-light);
+            padding: 0.75rem;
+            border: none;
+            font-size: 1rem;
+        }
+
+        .form-group select option:hover {
+            background: var(--primary-purple);
+            color: white;
+        }
+
+        /* Estilos específicos para los selectores de Set y Setting */
+        .form-group select#entrySet,
+        .form-group select#entrySetting {
+            background: linear-gradient(135deg, 
+                rgba(139, 92, 246, 0.08) 0%, 
+                rgba(236, 72, 153, 0.08) 100%);
+            border: 2px solid rgba(139, 92, 246, 0.4);
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-group select#entrySet:hover,
+        .form-group select#entrySetting:hover {
+            background: linear-gradient(135deg, 
+                rgba(139, 92, 246, 0.12) 0%, 
+                rgba(236, 72, 153, 0.12) 100%);
+            border-color: var(--primary-purple);
+            box-shadow: 0 0 25px rgba(139, 92, 246, 0.4),
+                        inset 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-group select#entrySet:focus,
+        .form-group select#entrySetting:focus {
+            background: linear-gradient(135deg, 
+                rgba(139, 92, 246, 0.15) 0%, 
+                rgba(236, 72, 153, 0.15) 100%);
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 30px rgba(6, 182, 212, 0.5),
+                        0 0 60px rgba(139, 92, 246, 0.3),
+                        inset 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Animación de entrada para los selectores */
+        .form-group select {
+            animation: selectFadeIn 0.6s ease-out;
+        }
+
+        @keyframes selectFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Efecto de brillo en hover */
+        .form-group select::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, 
+                transparent, 
+                rgba(255, 255, 255, 0.1), 
+                transparent);
+            transition: left 0.5s;
+        }
+
+        .form-group select:hover::before {
+            left: 100%;
+        }
+
         .form-group input:focus,
-        .form-group select:focus,
         .form-group textarea:focus {
             outline: none;
             border-color: var(--primary-purple);
@@ -1106,32 +1235,6 @@
             </div>
         </div>
 
-        <!-- Profile View -->
-        <div id="profile-view" class="view" style="display: none;">
-            <div class="calendar-container">
-                <h2>Mi Perfil Psiconáutico</h2>
-
-                <div class="profile-section">
-                    <h4>Información Personal</h4>
-                    <div class="form-group">
-                        <label>Nickname</label>
-                        <input type="text" id="userNickname" placeholder="Tu nombre de psiconáuta...">
-                    </div>
-                    <button class="btn-primary" onclick="saveProfile()">Guardar Perfil</button>
-                </div>
-
-                <div class="profile-section">
-                    <h4>Gestionar Perfil</h4>
-                    <button class="btn-primary" onclick="openModal('favoritesModal')">Mis Sustancias Favoritas</button>
-                    <button class="btn-primary" onclick="openModal('socialModal')">Redes Sociales</button>
-                    <button class="btn-primary" onclick="openModal('quotesModal')">Frases Destacadas</button>
-                    <button class="btn-secondary" onclick="openModal('shareProfileModal')">Compartir Perfil</button>
-                </div>
-            </div>
-        </div>
-    </main>
-</div>
-
 <!-- Bottom Navigation -->
 <nav class="bottom-nav">
     <div class="nav-container">
@@ -1154,10 +1257,6 @@
         <div class="nav-item" onclick="switchView('data')">
             <div class="nav-icon">💾</div>
             <div class="nav-label">Datos</div>
-        </div>
-        <div class="nav-item" onclick="switchView('profile')">
-            <div class="nav-icon">👤</div>
-            <div class="nav-label">Perfil</div>
         </div>
     </div>
 </nav>
@@ -1344,95 +1443,6 @@
             </div>
             <button type="submit" class="btn-primary">Añadir Sustancia</button>
         </form>
-    </div>
-</div>
-
-<!-- Favorites Modal -->
-<div id="favoritesModal" class="modal">
-    <div class="modal-content">
-        <button class="close-btn" onclick="closeModal('favoritesModal')">×</button>
-        <h3>Mis Sustancias Favoritas</h3>
-        <div class="form-group">
-            <label>Añadir a Favoritos</label>
-            <select id="favoriteSubstanceSelect">
-                <option value="">Selecciona una sustancia...</option>
-            </select>
-            <button class="btn-primary" onclick="addToFavorites()">Añadir a Favoritos</button>
-        </div>
-        <div id="favoritesList">
-            <!-- Se llenarán dinámicamente -->
-        </div>
-    </div>
-</div>
-
-<!-- Social Modal -->
-<div id="socialModal" class="modal">
-    <div class="modal-content">
-        <button class="close-btn" onclick="closeModal('socialModal')">×</button>
-        <h3>Mis Redes Sociales</h3>
-        <div class="form-group">
-            <label>Twitter/X</label>
-            <input type="text" id="socialTwitter" placeholder="@usuario">
-        </div>
-        <div class="form-group">
-            <label>Instagram</label>
-            <input type="text" id="socialInstagram" placeholder="@usuario">
-        </div>
-        <div class="form-group">
-            <label>Reddit</label>
-            <input type="text" id="socialReddit" placeholder="u/usuario">
-        </div>
-        <div class="form-group">
-            <label>Telegram</label>
-            <input type="text" id="socialTelegram" placeholder="@usuario">
-        </div>
-        <div class="form-group">
-            <label>Discord</label>
-            <input type="text" id="socialDiscord" placeholder="usuario#1234">
-        </div>
-        <button class="btn-primary" onclick="saveSocialLinks()">Guardar Enlaces</button>
-    </div>
-</div>
-
-<!-- Quotes Modal -->
-<div id="quotesModal" class="modal">
-    <div class="modal-content">
-        <button class="close-btn" onclick="closeModal('quotesModal')">×</button>
-        <h3>Frases Destacadas</h3>
-        <div class="form-group">
-            <label>Nueva Frase</label>
-            <textarea id="newQuote" placeholder="Escribe una frase destacada de tus experiencias..." maxlength="160"></textarea>
-            <div class="char-counter">
-                <span id="charCount">0</span>/160
-            </div>
-            <button class="btn-primary" onclick="addQuote()">Añadir Frase</button>
-        </div>
-        <div id="quotesList">
-            <!-- Se llenarán dinámicamente -->
-        </div>
-    </div>
-</div>
-
-<!-- Share Profile Modal -->
-<div id="shareProfileModal" class="modal">
-    <div class="modal-content">
-        <button class="close-btn" onclick="closeModal('shareProfileModal')">×</button>
-        <h3>Compartir Perfil</h3>
-        <div class="profile-card" id="profileCard">
-            <div class="profile-avatar">🧙‍♂️</div>
-            <h4 id="profileCardName">Psiconáuta Anónimo</h4>
-            <p>Explorador de la conciencia</p>
-            <div id="profileCardStats">
-                <p><strong>Sustancias probadas:</strong> <span id="substanceCount">0</span></p>
-                <p><strong>Registros totales:</strong> <span id="entryCount">0</span></p>
-            </div>
-        </div>
-        <div class="social-share-grid">
-            <button class="social-share-btn twitter-btn" onclick="shareToTwitter()">Twitter</button>
-            <button class="social-share-btn whatsapp-btn" onclick="shareToWhatsApp()">WhatsApp</button>
-            <button class="social-share-btn telegram-btn" onclick="shareToTelegram()">Telegram</button>
-            <button class="social-share-btn reddit-btn" onclick="shareToReddit()">Reddit</button>
-        </div>
     </div>
 </div>
 
