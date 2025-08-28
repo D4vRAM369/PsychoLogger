@@ -2803,45 +2803,45 @@
             }
 
             function resetEntryForm() {
-                document.getElementById('entryForm').reset();
+                const form = document.getElementById('entryForm');
+                if (form) form.reset();
+
+                // Fecha por defecto (solo para modo CREAR)
                 const now = new Date();
-                const localDateTime = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
-
-                // Verificar que el elemento existe antes de acceder a él
+                const localDateTime = new Date(now.getTime() - now.getTimezoneOffset() * 60000)
+                  .toISOString()
+                  .slice(0, 16);
                 const dateTimeInput = document.getElementById('entryDateTime');
-                if (dateTimeInput) {
-                    dateTimeInput.value = localDateTime;
-                }
+                if (dateTimeInput) dateTimeInput.value = localDateTime;
 
-                // Resetear el dropdown de sustancia personalizado
-                const substanceHeaderText = document.querySelector('#entrySubstanceDropdown .dropdown-text');
-                const substanceHiddenInput = document.getElementById('entrySubstance');
-                if (substanceHeaderText && substanceHiddenInput) {
-                    substanceHeaderText.textContent = 'Selecciona una sustancia...';
-                    substanceHiddenInput.value = ''; // Cambiar de 'placeholder' a string vacío
-                }
-            }
+                // Sustancia
+                const subTxt = document.querySelector('#entrySubstanceDropdown .dropdown-text');
+                const subHid = document.getElementById('entrySubstance');
+                if (subTxt) subTxt.textContent = 'Seleccionar...';
+                if (subHid) subHid.value = '';
 
-            function filterBySubstance(substanceName) {
-                selectedSubstanceFilter = substanceName;
-                // Update active state for substances
-                document.querySelectorAll('.substance-item').forEach(item => {
-                    item.classList.remove('active');
-                });
+                // UNIDAD
+                const unitTxt = document.querySelector('#unitDropdown .dropdown-text');
+                const unitHid = document.getElementById('entryUnit');
+                if (unitTxt) unitTxt.textContent = 'Seleccionar...';
+                if (unitHid) unitHid.value = '';
 
-                if (substanceName === null) {
-                    //Mark "Experiencias registradas" as active
-                    document.querySelector('.substance-item:first-child').classList.add('active');
-                } else {
-                    // Find and mark the specific substance as active
-                    document.querySelectorAll('.substance-item').forEach(item => {
-                       const substanceText = item.querySelector('.substance-info span').textContent;
-                        if (substanceText === substanceName) {
-                            item.classList.add('active');
-                        }
-                    });
-                }
+                // SET
+                const setTxt = document.querySelector('#setDropdown .dropdown-text');
+                const setHid = document.getElementById('entrySet');
+                if (setTxt) setTxt.textContent = 'Seleccionar...';
+                if (setHid) setHid.value = '';
 
+                // SETTING
+                const settingTxt = document.querySelector('#settingDropdown .dropdown-text');
+                const settingHid = document.getElementById('entrySetting');
+                if (settingTxt) settingTxt.textContent = 'Seleccionar...';
+                if (settingHid) settingHid.value = '';
+
+                // Notas (por si el form.reset no lo vacía por algún motivo)
+                const notes = document.getElementById('entryNotes');
+                if (notes) notes.value = '';
+            
                 generateCalendar();
                 renderSubstanceList();
                 renderStats();
