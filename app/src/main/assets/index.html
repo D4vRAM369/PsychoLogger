@@ -2594,7 +2594,7 @@
                 renderStats();
                 updateProfileCard(); // Update profile stats
 
-                showCustomAlert('🗑️ Registro eliminado correctamente', '✅ Eliminado');
+                showAutoCloseAlert('🗑️ Registro eliminado correctamente', '✅ Eliminado');
             }
         );
     }
@@ -3209,6 +3209,124 @@
             return;
         }
 
+        // Función mejorada para extraer SET y SETTING de las notas existentes
+        function extractSetAndSetting(notes) {
+            if (!notes || typeof notes !== 'string') return { set: null, setting: null };
+            
+            const note = notes.toLowerCase().trim();
+            let extractedSet = null;
+            let extractedSetting = null;
+            
+            // Patrones para SET (estado mental) - más flexibles y ordenados por prioridad
+            const setPatterns = [
+                // Patrones explícitos con "set:", "estado:", etc.
+                { pattern: /(?:set|estado|mental|mood|ánimo)[:\s]+(excelente|bueno|neutral|ansioso|triste|estresado|emocionado|introspectivo|creativo|curioso|aburrido|desanimado|pain crisis|feliz|alegre|tranquilo|relajado|energético|motivado|inspirado|frustrado|irritable|confuso|claro|focalizado|distraído|abrumado|sereno|eufórico|melancólico|nostálgico|optimista|pesimista|realista|idealista|espiritual|terrenal|conectado|desconectado|presente|ausente|consciente|inconsciente|lúcido|confuso|coherente|incoherente|organizado|caótico|paciente|impaciente|tolerante|intolerante|abierto|cerrado|receptivo|defensivo|confiado|desconfiado|seguro|inseguro|estable|inestable|equilibrado|desequilibrado|armonioso|disonante|fluido|rígido|flexible|inflexible|adaptable|resistente|resiliente|vulnerable|fuerte|débil|activo|pasivo|dinámico|estático|vibrante|apagado|brillante|opaco|claro|oscuro|ligero|pesado|libre|atrapado|expansivo|contraído|abierto|cerrado|conectado|desconectado|presente|ausente|consciente|inconsciente|lúcido|confuso|coherente|incoherente|organizado|caótico|paciente|impaciente|tolerante|intolerante|abierto|cerrado|receptivo|defensivo|confiado|desconfiado|seguro|inseguro|estable|inestable|equilibrado|desequilibrado|armonioso|disonante|fluido|rígido|flexible|inflexible|adaptable|resistente|resiliente|vulnerable|fuerte|débil|activo|pasivo|dinámico|estático|vibrante|apagado|brillante|opaco|claro|oscuro|ligero|pesado|libre|atrapado|expansivo|contraído)/i, value: '$1' },
+                // Patrones de palabras clave específicas (sin contexto)
+                { pattern: /\b(excelente|bueno|neutral|ansioso|triste|estresado|emocionado|introspectivo|creativo|curioso|aburrido|desanimado|pain crisis|feliz|alegre|tranquilo|relajado|energético|motivado|inspirado|frustrado|irritable|confuso|claro|focalizado|distraído|abrumado|sereno|eufórico|melancólico|nostálgico|optimista|pesimista|realista|idealista|espiritual|terrenal|conectado|desconectado|presente|ausente|consciente|inconsciente|lúcido|confuso|coherente|incoherente|organizado|caótico|paciente|impaciente|tolerante|intolerante|abierto|cerrado|receptivo|defensivo|confiado|desconfiado|seguro|inseguro|estable|inestable|equilibrado|desequilibrado|armonioso|disonante|fluido|rígido|flexible|inflexible|adaptable|resistente|resiliente|vulnerable|fuerte|débil|activo|pasivo|dinámico|estático|vibrante|apagado|brillante|opaco|claro|oscuro|ligero|pesado|libre|atrapado|expansivo|contraído)\b/i, value: '$1' }
+            ];
+            
+            // Patrones para SETTING (entorno) - más flexibles y ordenados por prioridad
+            const settingPatterns = [
+                // Patrones explícitos con "setting:", "entorno:", etc.
+                { pattern: /(?:setting|entorno|lugar|ambiente|contexto|situación|situacion|escenario|marco|espacio|zona|área|area)[:\s]+(casa|programando|seriefilo|meditacion|paseo|naturaleza|fiesta|festival|amigos|ceremonia|trabajo|oficina|universidad|colegio|escuela|estudio|biblioteca|café|cafe|restaurante|bar|club|discoteca|gimnasio|deporte|ejercicio|yoga|pilates|running|caminata|senderismo|montaña|playa|río|rio|lago|bosque|jardín|jardin|parque|calle|avenida|plaza|centro|periferia|suburbio|rural|urbano|interior|exterior|público|publico|privado|soledad|compañía|compañia|grupo|individual|colectivo|familiar|romántico|romantico|social|profesional|académico|academico|artístico|artistico|musical|teatral|cinematográfico|cinematografico|literario|poético|poetico|filosófico|filosofico|religioso|espiritual|secular|mundano|terrenal|celestial|místico|mistico|esotérico|esoterico|tradicional|moderno|clásico|clasico|contemporáneo|contemporaneo|vintage|retro|futurista|cyberpunk|steampunk|gótico|gotico|minimalista|maximalista|colorido|monocromático|monocromatico|brillante|tenue|iluminado|oscuro|claro|tranquilo|ruidoso|silencioso|animado|calmado|estresante|relajante|estimulante|sedante|energizante|calmante|excitante|tranquilizante|estimulante|sedante|energizante|calmante|excitante|tranquilizante)/i, value: '$1' },
+                // Patrones de palabras clave específicas (sin contexto)
+                { pattern: /\b(casa|programando|seriefilo|meditacion|paseo|naturaleza|fiesta|festival|amigos|ceremonia|trabajo|oficina|universidad|colegio|escuela|estudio|biblioteca|café|cafe|restaurante|bar|club|discoteca|gimnasio|deporte|ejercicio|yoga|pilates|running|caminata|senderismo|montaña|playa|río|rio|lago|bosque|jardín|jardin|parque|calle|avenida|plaza|centro|periferia|suburbio|rural|urbano|interior|exterior|público|publico|privado|soledad|compañía|compañia|grupo|individual|colectivo|familiar|romántico|romantico|social|profesional|académico|academico|artístico|artistico|musical|teatral|cinematográfico|cinematografico|literario|poético|poetico|filosófico|filosofico|religioso|espiritual|secular|mundano|terrenal|celestial|místico|mistico|esotérico|esoterico|tradicional|moderno|clásico|clasico|contemporáneo|contemporaneo|vintage|retro|futurista|cyberpunk|steampunk|gótico|gotico|minimalista|maximalista|colorido|monocromático|monocromatico|brillante|tenue|iluminado|oscuro|claro|tranquilo|ruidoso|silencioso|animado|calmado|estresante|relajante|estimulante|sedante|energizante|calmante|excitante|tranquilizante|estimulante|sedante|energizante|calmante|excitante|tranquilizante)\b/i, value: '$1' }
+            ];
+            
+            // Extraer SET con prioridad
+            for (const setPattern of setPatterns) {
+                const match = note.match(setPattern.pattern);
+                if (match) {
+                    extractedSet = match[1] || match[0];
+                    break;
+                }
+            }
+            
+            // Extraer SETTING con prioridad
+            for (const settingPattern of settingPatterns) {
+                const match = note.match(settingPattern.pattern);
+                if (match) {
+                    extractedSetting = match[1] || match[0];
+                    break;
+                }
+            }
+            
+            // Normalizar valores extraídos
+            if (extractedSet) {
+                extractedSet = extractedSet.toLowerCase().trim();
+                // Mapear variaciones a valores estándar
+                const setMapping = {
+                    'feliz': 'excelente', 'alegre': 'bueno', 'tranquilo': 'neutral',
+                    'relajado': 'neutral', 'energético': 'bueno', 'motivado': 'bueno',
+                    'inspirado': 'creativo', 'frustrado': 'estresado', 'irritable': 'ansioso',
+                    'claro': 'bueno', 'focalizado': 'bueno', 'sereno': 'neutral',
+                    'eufórico': 'excelente', 'melancólico': 'triste', 'nostálgico': 'triste',
+                    'optimista': 'bueno', 'pesimista': 'triste', 'realista': 'neutral',
+                    'idealista': 'bueno', 'espiritual': 'introspectivo', 'terrenal': 'neutral',
+                    'conectado': 'bueno', 'desconectado': 'neutral', 'presente': 'bueno',
+                    'ausente': 'neutral', 'consciente': 'bueno', 'inconsciente': 'neutral',
+                    'lúcido': 'bueno', 'coherente': 'bueno', 'organizado': 'bueno',
+                    'paciente': 'bueno', 'tolerante': 'bueno', 'abierto': 'bueno',
+                    'receptivo': 'bueno', 'confiado': 'bueno', 'seguro': 'bueno',
+                    'estable': 'bueno', 'equilibrado': 'bueno', 'armonioso': 'bueno',
+                    'fluido': 'bueno', 'flexible': 'bueno', 'adaptable': 'bueno',
+                    'resiliente': 'bueno', 'fuerte': 'bueno', 'activo': 'bueno',
+                    'dinámico': 'bueno', 'vibrante': 'bueno', 'brillante': 'bueno',
+                    'claro': 'bueno', 'ligero': 'bueno', 'libre': 'bueno',
+                    'expansivo': 'bueno'
+                };
+                extractedSet = setMapping[extractedSet] || extractedSet;
+            }
+            
+            if (extractedSetting) {
+                extractedSetting = extractedSetting.toLowerCase().trim();
+                // Mapear variaciones a valores estándar
+                const settingMapping = {
+                    'trabajo': 'programando', 'oficina': 'programando', 'universidad': 'programando',
+                    'colegio': 'programando', 'escuela': 'programando', 'estudio': 'programando',
+                    'biblioteca': 'programando', 'café': 'casa', 'cafe': 'casa',
+                    'restaurante': 'casa', 'bar': 'fiesta', 'club': 'fiesta',
+                    'discoteca': 'fiesta', 'gimnasio': 'deporte', 'deporte': 'paseo',
+                    'ejercicio': 'paseo', 'yoga': 'meditacion', 'pilates': 'meditacion',
+                    'running': 'paseo', 'caminata': 'paseo', 'senderismo': 'naturaleza',
+                    'montaña': 'naturaleza', 'playa': 'naturaleza', 'río': 'naturaleza',
+                    'rio': 'naturaleza', 'lago': 'naturaleza', 'bosque': 'naturaleza',
+                    'jardín': 'naturaleza', 'jardin': 'naturaleza', 'parque': 'naturaleza',
+                    'calle': 'paseo', 'avenida': 'paseo', 'plaza': 'paseo',
+                    'centro': 'paseo', 'periferia': 'paseo', 'suburbio': 'casa',
+                    'rural': 'naturaleza', 'urbano': 'paseo', 'interior': 'casa',
+                    'exterior': 'naturaleza', 'público': 'paseo', 'publico': 'paseo',
+                    'privado': 'casa', 'soledad': 'casa', 'compañía': 'amigos',
+                    'compañia': 'amigos', 'grupo': 'amigos', 'individual': 'casa',
+                    'colectivo': 'amigos', 'familiar': 'amigos', 'romántico': 'casa',
+                    'romantico': 'casa', 'social': 'amigos', 'profesional': 'programando',
+                    'académico': 'programando', 'academico': 'programando', 'artístico': 'casa',
+                    'artistico': 'casa', 'musical': 'seriefilo', 'teatral': 'seriefilo',
+                    'cinematográfico': 'seriefilo', 'cinematografico': 'seriefilo',
+                    'literario': 'seriefilo', 'poético': 'seriefilo', 'poetico': 'seriefilo',
+                    'filosófico': 'introspectivo', 'filosofico': 'introspectivo',
+                    'religioso': 'ceremonia', 'espiritual': 'ceremonia', 'secular': 'casa',
+                    'mundano': 'casa', 'terrenal': 'casa', 'celestial': 'ceremonia',
+                    'místico': 'ceremonia', 'mistico': 'ceremonia', 'esotérico': 'ceremonia',
+                    'esoterico': 'ceremonia', 'tradicional': 'casa', 'moderno': 'casa',
+                    'clásico': 'casa', 'clasico': 'casa', 'contemporáneo': 'casa',
+                    'contemporaneo': 'casa', 'vintage': 'casa', 'retro': 'casa',
+                    'futurista': 'casa', 'cyberpunk': 'casa', 'steampunk': 'casa',
+                    'gótico': 'casa', 'gotico': 'casa', 'minimalista': 'casa',
+                    'maximalista': 'casa', 'colorido': 'casa', 'monocromático': 'casa',
+                    'monocromatico': 'casa', 'brillante': 'casa', 'tenue': 'casa',
+                    'iluminado': 'casa', 'oscuro': 'casa', 'tranquilo': 'casa',
+                    'ruidoso': 'fiesta', 'silencioso': 'casa', 'animado': 'fiesta',
+                    'calmado': 'casa', 'estresante': 'programando', 'relajante': 'casa',
+                    'estimulante': 'fiesta', 'sedante': 'casa', 'energizante': 'paseo',
+                    'calmante': 'casa', 'excitante': 'fiesta', 'tranquilizante': 'casa'
+                };
+                extractedSetting = settingMapping[extractedSetting] || extractedSetting;
+            }
+            
+            return { set: extractedSet, setting: extractedSetting };
+        }
+
         // Create CSV content
         const csvLines = [
             'SUSTANCIAS',
@@ -3224,7 +3342,17 @@
         csvLines.push('ID,Sustancia,Dosis,Unidad,Fecha_Hora,Set,Setting,Notas,Fecha_Creacion,Fecha_Actualizacion');
 
         entries.forEach(e => {
-            csvLines.push(`${e.id},"${e.substance}",${e.dose},"${e.unit}","${e.date}","${e.set || ''}","${e.setting || ''}","${e.notes || ''}","${e.createdAt || ''}","${e.updatedAt || ''}"`);
+            // Extraer SET y SETTING de las notas si no están ya definidos
+            let setValue = e.set;
+            let settingValue = e.setting;
+            
+            if (!setValue || !settingValue) {
+                const extracted = extractSetAndSetting(e.notes);
+                setValue = setValue || extracted.set;
+                settingValue = settingValue || extracted.setting;
+            }
+            
+            csvLines.push(`${e.id},"${e.substance}",${e.dose},"${e.unit}","${e.date}","${setValue || ''}","${settingValue || ''}","${e.notes || ''}","${e.createdAt || ''}","${e.updatedAt || ''}"`);
         });
 
         const csvContent = csvLines.join('\n');
