@@ -602,9 +602,7 @@
         .form-group select:focus {
             outline: none;
             border-color: var(--accent-cyan);
-            box-shadow: 0 0 30px rgba(6, 182, 212, 0.5), 
-                        0 0 60px rgba(139, 92, 246, 0.3);
-            transform: scale(1.02);
+            box-shadow: 0 0 30px rgba(6, 182, 212, 0.5);
             background: linear-gradient(135deg, 
                 rgba(139, 92, 246, 0.2) 0%, 
                 rgba(236, 72, 153, 0.2) 50%, 
@@ -615,123 +613,84 @@
         .form-group select option {
             background: var(--card-bg);
             color: var(--text-light);
-            padding: 0.75rem;
+            padding: 0.5rem;
             border: none;
-            font-size: 1rem;
         }
 
         .form-group select option:hover {
-            background: var(--primary-purple);
-            color: white;
-        }
-
-        /* Estilos específicos para los selectores de Set y Setting */
-        .form-group select#entrySet,
-        .form-group select#entrySetting {
             background: linear-gradient(135deg, 
-                rgba(139, 92, 246, 0.08) 0%, 
-                rgba(236, 72, 153, 0.08) 100%);
-            border: 2px solid rgba(139, 92, 246, 0.4);
-            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+                rgba(139, 92, 246, 0.2) 0%, 
+                rgba(236, 72, 153, 0.2) 100%);
         }
 
-        .form-group select#entrySet:hover,
-        .form-group select#entrySetting:hover {
+        /* Estilos para optgroup */
+        .form-group select optgroup {
             background: linear-gradient(135deg, 
-                rgba(139, 92, 246, 0.12) 0%, 
-                rgba(236, 72, 153, 0.12) 100%);
-            border-color: var(--primary-purple);
-            box-shadow: 0 0 25px rgba(139, 92, 246, 0.4),
-                        inset 0 2px 4px rgba(0, 0, 0, 0.1);
+                rgba(139, 92, 246, 0.3) 0%, 
+                rgba(6, 182, 212, 0.3) 100%);
+            color: var(--accent-cyan);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 0.5rem;
         }
 
-        .form-group select#entrySet:focus,
-        .form-group select#entrySetting:focus {
-            background: linear-gradient(135deg, 
-                rgba(139, 92, 246, 0.15) 0%, 
-                rgba(236, 72, 153, 0.15) 100%);
-            border-color: var(--accent-cyan);
-            box-shadow: 0 0 30px rgba(6, 182, 212, 0.5),
-                        0 0 60px rgba(139, 92, 246, 0.3),
-                        inset 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-
-        /* Animación de entrada para los selectores */
-        .form-group select {
-            animation: selectFadeIn 0.6s ease-out;
-        }
-
-        @keyframes selectFadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        /* Efecto de brillo en hover */
-        .form-group select::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
+        /* Estilos para input de número */
+        .form-group input[type="number"] {
             width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, 
-                transparent, 
-                rgba(255, 255, 255, 0.1), 
-                transparent);
-            transition: left 0.5s;
+            padding: 1rem;
+            background: linear-gradient(135deg, 
+                rgba(139, 92, 246, 0.1) 0%, 
+                rgba(236, 72, 153, 0.1) 50%, 
+                rgba(6, 182, 212, 0.1) 100%);
+            border: 2px solid var(--border-color);
+            border-radius: 16px;
+            color: var(--text-light);
+            font-size: 1rem;
+            font-weight: 500;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: blur(10px);
         }
 
-        .form-group select:hover::before {
-            left: 100%;
+        .form-group input[type="number"]:hover {
+            border-color: var(--primary-purple);
+            box-shadow: 0 0 25px rgba(139, 92, 246, 0.4);
+            transform: translateY(-3px);
         }
 
-        .form-group input:focus,
-        .form-group textarea:focus {
+        .form-group input[type="number"]:focus {
             outline: none;
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 30px rgba(6, 182, 212, 0.5);
+        }
+
+        /* Estilos para input de fecha y hora */
+        .form-group input[type="datetime-local"] {
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(135deg, 
+                rgba(139, 92, 246, 0.1) 0%, 
+                rgba(236, 72, 153, 0.1) 50%, 
+                rgba(6, 182, 212, 0.1) 100%);
+            border: 2px solid var(--border-color);
+            border-radius: 16px;
+            color: var(--text-light);
+            font-size: 1rem;
+            font-weight: 500;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: blur(10px);
+        }
+
+        .form-group input[type="datetime-local"]:hover {
             border-color: var(--primary-purple);
-            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+            box-shadow: 0 0 25px rgba(139, 92, 246, 0.4);
+            transform: translateY(-3px);
         }
 
-        .btn-primary {
-            background: linear-gradient(135deg, var(--primary-purple), var(--secondary-pink));
-            border: none;
-            color: white;
-            padding: 0.75rem 2rem;
-            border-radius: 12px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            width: 100%;
-            margin-bottom: 0.5rem;
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(139, 92, 246, 0.3);
-        }
-
-        .btn-secondary {
-            background: var(--accent-cyan);
-            border: none;
-            color: white;
-            padding: 0.75rem 2rem;
-            border-radius: 12px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            width: 100%;
-            margin-bottom: 0.5rem;
-        }
-
-        .btn-secondary:hover {
-            background: var(--accent-orange);
-            transform: translateY(-2px);
+        .form-group input[type="datetime-local"]:focus {
+            outline: none;
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 30px rgba(6, 182, 212, 0.5);
         }
 
         /* ===== ESTILOS PARA DIÁLOGOS PERSONALIZADOS ===== */
@@ -810,6 +769,80 @@
         .custom-dialog-actions .btn-secondary:hover {
             background: var(--border-color);
             transform: translateY(-2px);
+        }
+
+        /* ===== ESTILOS PARA BOTONES PRINCIPALES ===== */
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-purple), var(--secondary-pink));
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(139, 92, 246, 0.4);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #10B981, #059669);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+        }
+
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
+        }
+
+        .btn-success:active {
+            transform: translateY(0);
+        }
+
+        /* ===== EMOJI PICKER ===== */
+        .emoji-picker {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .emoji-picker input {
+            background: var(--card-bg);
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            padding: 0.5rem;
+            color: var(--text-light);
+            transition: all 0.3s ease;
+        }
+
+        .emoji-picker input:focus {
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.1);
+            outline: none;
+        }
+
+        .emoji-suggestion {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            text-align: center;
         }
 
         .resources-grid {
@@ -1131,6 +1164,223 @@
                 padding: 1.5rem;
             }
         }
+
+        /* ===== DROPDOWNS PERSONALIZADOS ===== */
+        
+        .custom-dropdown {
+            position: relative;
+            width: 100%;
+            margin-bottom: 0.5rem;
+        }
+
+        .dropdown-header {
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(135deg, 
+                rgba(139, 92, 246, 0.1) 0%, 
+                rgba(236, 72, 153, 0.1) 50%, 
+                rgba(6, 182, 212, 0.1) 100%);
+            border: 2px solid var(--border-color);
+            border-radius: 16px;
+            color: var(--text-light);
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: blur(10px);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .dropdown-header:hover {
+            border-color: var(--primary-purple);
+            box-shadow: 0 0 25px rgba(139, 92, 246, 0.4);
+            transform: translateY(-3px);
+            background: linear-gradient(135deg, 
+                rgba(139, 92, 246, 0.15) 0%, 
+                rgba(236, 72, 153, 0.15) 50%, 
+                rgba(6, 182, 212, 0.15) 100%);
+        }
+
+        .dropdown-header.active {
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 30px rgba(6, 182, 212, 0.5);
+            background: linear-gradient(135deg, 
+                rgba(139, 92, 246, 0.2) 0%, 
+                rgba(236, 72, 153, 0.2) 50%, 
+                rgba(6, 182, 212, 0.2) 100%);
+        }
+
+        .dropdown-text {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .dropdown-arrow {
+            font-size: 0.8rem;
+            transition: transform 0.3s ease;
+            color: var(--accent-cyan);
+        }
+
+        .dropdown-header.active .dropdown-arrow {
+            transform: rotate(180deg);
+        }
+
+        .dropdown-options {
+            position: absolute;
+            top: calc(100% + 8px);
+            left: 0;
+            right: 0;
+            background: linear-gradient(135deg, 
+                rgba(26, 26, 46, 0.95) 0%, 
+                rgba(15, 15, 35, 0.95) 100%);
+            border: 2px solid var(--border-color);
+            border-radius: 16px;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+            max-height: 250px;
+            overflow-y: auto;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: inherit;
+            scrollbar-width: thin;
+            scrollbar-color: var(--accent-cyan) rgba(139, 92, 246, 0.1);
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior: contain;
+        }
+
+        .dropdown-options.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .dropdown-option {
+            padding: 0.75rem 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-bottom: 1px solid rgba(139, 92, 246, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            min-height: 48px;
+        }
+
+        .dropdown-option:last-child {
+            border-bottom: none;
+        }
+
+        .dropdown-option:hover {
+            background: linear-gradient(135deg, 
+                rgba(139, 92, 246, 0.2) 0%, 
+                rgba(236, 72, 153, 0.2) 100%);
+            transform: translateX(5px);
+        }
+
+        .dropdown-option.selected {
+            background: linear-gradient(135deg, 
+                rgba(139, 92, 246, 0.3) 0%, 
+                rgba(6, 182, 212, 0.3) 100%);
+            border-left: 4px solid var(--accent-cyan);
+        }
+
+        .dropdown-option::before {
+            content: '';
+            width: 6px;
+            height: 6px;
+            background: var(--accent-cyan);
+            border-radius: 50%;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .dropdown-option:hover::before {
+            opacity: 1;
+        }
+
+        .option-emoji {
+            font-size: 1.2rem;
+            width: 24px;
+            text-align: center;
+        }
+
+        .option-text {
+            flex: 1;
+            color: var(--text-light);
+            font-weight: 500;
+        }
+
+        .dropdown-option.selected .option-text {
+            color: var(--accent-cyan);
+            font-weight: 600;
+        }
+
+        /* Estilos para headers de categorías */
+        .dropdown-option.category-header {
+            background: linear-gradient(135deg, 
+                rgba(139, 92, 246, 0.3) 0%, 
+                rgba(6, 182, 212, 0.3) 100%);
+            color: var(--accent-cyan);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 1rem;
+            cursor: default;
+            border-left: 4px solid var(--accent-cyan);
+        }
+
+        .dropdown-option.category-header:hover {
+            background: linear-gradient(135deg, 
+                rgba(139, 92, 246, 0.4) 0%, 
+                rgba(6, 182, 212, 0.4) 100%);
+            transform: none;
+        }
+
+        .dropdown-option.category-header .option-text {
+            color: var(--accent-cyan);
+            font-weight: 700;
+        }
+
+        .dropdown-option.category-header:first-child {
+            border-top-left-radius: 14px;
+            border-top-right-radius: 14px;
+        }
+
+        /* Scrollbar personalizado para dropdowns */
+        .dropdown-options::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .dropdown-options::-webkit-scrollbar-track {
+            background: rgba(139, 92, 246, 0.1);
+            border-radius: 4px;
+            margin: 4px 0;
+        }
+
+        .dropdown-options::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, var(--primary-purple), var(--accent-cyan));
+            border-radius: 4px;
+            border: 1px solid rgba(139, 92, 246, 0.3);
+        }
+
+        .dropdown-options::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, var(--secondary-pink), var(--accent-cyan));
+            transform: scale(1.1);
+        }
+
+        .dropdown-options::-webkit-scrollbar-corner {
+            background: transparent;
+        }
+
+        /* Z-index específico para cada dropdown en orden */
+        #entrySubstanceDropdown { z-index: 1006; }
+        #entryUnitDropdown { z-index: 1005; }
+        #entrySetDropdown { z-index: 1004; }
+        #entrySettingDropdown { z-index: 1003; }
     </style>
 </head>
 <body>
@@ -1269,75 +1519,181 @@
         <form id="entryForm">
             <div class="form-group">
                 <label>Sustancia *</label>
-                <select id="entrySubstance" required>
-                    <option value="">Selecciona una sustancia...</option>
-                    <!-- Se llenarán dinámicamente -->
-                </select>
+                <div class="custom-dropdown" id="entrySubstanceDropdown">
+                    <div class="dropdown-header" onclick="toggleDropdown('entrySubstanceDropdown')">
+                        <span class="dropdown-text">Selecciona una sustancia...</span>
+                        <span class="dropdown-arrow">▼</span>
+                    </div>
+                    <div class="dropdown-options" id="entrySubstanceOptions">
+                        <!-- Se llenarán dinámicamente -->
+                        <div class="dropdown-option" data-value="placeholder" onclick="selectOption('entrySubstanceDropdown', 'placeholder', 'Selecciona una sustancia...', '💊')">
+                            <span class="option-emoji">💊</span>
+                            <span class="option-text">Selecciona una sustancia...</span>
+                        </div>
+                    </div>
+                    <input type="hidden" id="entrySubstance" name="entrySubstance" required>
+                </div>
             </div>
 
             <div class="form-group">
                 <label>Dosis *</label>
-                <input type="number" id="entryDose" placeholder="100" step="0.01" min="0" required>
+                <input type="number" id="entryDose" value="100" placeholder="100" step="0.01" min="0" required>
             </div>
 
             <div class="form-group">
                 <label>Unidad *</label>
-                <select id="entryUnit" required>
-                    <!-- Unidades específicas para psicodélicos -->
-                    <optgroup label="Psicodélicos">
-                        <option value="ug">μg (microgramos)</option>
-                        <option value="mg">mg (miligramos)</option>
-                        <option value="tripi">tripi completo</option>
-                        <option value="medio-tripi">1/2 tripi</option>
-                        <option value="cuarto-tripi">1/4 tripi</option>
-                        <option value="octavo-tripi">1/8 tripi</option>
-                    </optgroup>
-
-                    <!-- Unidades para hongos -->
-                    <optgroup label="Hongos/Plantas">
-                        <option value="g">g (gramos)</option>
-                        <option value="mg">mg (miligramos)</option>
-                        <option value="seta">seta completa</option>
-                        <option value="media-seta">1/2 seta</option>
-                    </optgroup>
-
-                    <!-- Unidades para estimulantes -->
-                    <optgroup label="Estimulantes/MDMA">
-                        <option value="mg">mg (miligramos)</option>
-                        <option value="pastilla">pastilla completa</option>
-                        <option value="media-pastilla">1/2 pastilla</option>
-                        <option value="cuarto-pastilla">1/4 pastilla</option>
-                        <option value="punto">punto/bomba</option>
-                    </optgroup>
-
-                    <!-- Unidades para polvo -->
-                    <optgroup label="Polvo/Cristal">
-                        <option value="mg">mg (miligramos)</option>
-                        <option value="g">g (gramos)</option>
-                        <option value="raya">raya/línea</option>
-                        <option value="tirito">tirito</option>
-                        <option value="bump">bump</option>
-                        <option value="key">key bump</option>
-                    </optgroup>
-
-                    <!-- Unidades líquidas -->
-                    <optgroup label="Líquidos">
-                        <option value="ml">ml (mililitros)</option>
-                        <option value="gotas">gotas</option>
-                        <option value="vial">vial</option>
-                    </optgroup>
-
-                    <!-- Otras -->
-                    <optgroup label="Otras">
-                        <option value="calada">calada</option>
-                        <option value="inhalacion">inhalación</option>
-                        <option value="aplicacion">aplicación</option>
-                        <option value="dosis">dosis</option>
-                        <option value="cafe">Café frío</option>
-                        <option value="cookie">cookie</option>
-                        <option value="cookies">cookies</option>
-                    </optgroup>
-                </select>
+                <div class="custom-dropdown" id="entryUnitDropdown">
+                    <div class="dropdown-header" onclick="toggleDropdown('entryUnitDropdown')">
+                        <span class="dropdown-text">μg (microgramos)</span>
+                        <span class="dropdown-arrow">▼</span>
+                    </div>
+                    <div class="dropdown-options" id="entryUnitOptions">
+                        <!-- Psicodélicos -->
+                        <div class="dropdown-option category-header" data-category="psicodelicos">
+                            <span class="option-emoji">🌈</span>
+                            <span class="option-text">PSICODÉLICOS</span>
+                        </div>
+                        <div class="dropdown-option" data-value="ug" onclick="selectOption('entryUnitDropdown', 'ug', 'μg (microgramos)', '🧪')">
+                            <span class="option-emoji">🧪</span>
+                            <span class="option-text">μg (microgramos)</span>
+                        </div>
+                        <div class="dropdown-option" data-value="mg" onclick="selectOption('entryUnitDropdown', 'mg', 'mg (miligramos)', '💊')">
+                            <span class="option-emoji">💊</span>
+                            <span class="option-text">mg (miligramos)</span>
+                        </div>
+                        <div class="dropdown-option" data-value="tripi" onclick="selectOption('entryUnitDropdown', 'tripi', 'tripi completo', '🌈')">
+                            <span class="option-emoji">🌈</span>
+                            <span class="option-text">tripi completo</span>
+                        </div>
+                        <div class="dropdown-option" data-value="medio-tripi" onclick="selectOption('entryUnitDropdown', 'medio-tripi', '1/2 tripi', '🌈')">
+                            <span class="option-emoji">🌈</span>
+                            <span class="option-text">1/2 tripi</span>
+                        </div>
+                        <div class="dropdown-option" data-value="cuarto-tripi" onclick="selectOption('entryUnitDropdown', 'cuarto-tripi', '1/4 tripi', '🌈')">
+                            <span class="option-emoji">🌈</span>
+                            <span class="option-text">1/4 tripi</span>
+                        </div>
+                        <div class="dropdown-option" data-value="octavo-tripi" onclick="selectOption('entryUnitDropdown', 'octavo-tripi', '1/8 tripi', '🌈')">
+                            <span class="option-emoji">🌈</span>
+                            <span class="option-text">1/8 tripi</span>
+                        </div>
+                        
+                        <!-- Hongos/Plantas -->
+                        <div class="dropdown-option category-header" data-category="hongos">
+                            <span class="option-emoji">🍄</span>
+                            <span class="option-text">HONGOS/PLANTAS</span>
+                        </div>
+                        <div class="dropdown-option" data-value="g" onclick="selectOption('entryUnitDropdown', 'g', 'g (gramos)', '🍄')">
+                            <span class="option-emoji">🍄</span>
+                            <span class="option-text">g (gramos)</span>
+                        </div>
+                        <div class="dropdown-option" data-value="seta" onclick="selectOption('entryUnitDropdown', 'seta', 'seta completa', '🍄')">
+                            <span class="option-emoji">🍄</span>
+                            <span class="option-text">seta completa</span>
+                        </div>
+                        <div class="dropdown-option" data-value="media-seta" onclick="selectOption('entryUnitDropdown', 'media-seta', '1/2 seta', '🍄')">
+                            <span class="option-emoji">🍄</span>
+                            <span class="option-text">1/2 seta</span>
+                        </div>
+                        
+                        <!-- Estimulantes/MDMA -->
+                        <div class="dropdown-option category-header" data-category="estimulantes">
+                            <span class="option-emoji">💊</span>
+                            <span class="option-text">ESTIMULANTES/MDMA</span>
+                        </div>
+                        <div class="dropdown-option" data-value="pastilla" onclick="selectOption('entryUnitDropdown', 'pastilla', 'pastilla completa', '💊')">
+                            <span class="option-emoji">💊</span>
+                            <span class="option-text">pastilla completa</span>
+                        </div>
+                        <div class="dropdown-option" data-value="media-pastilla" onclick="selectOption('entryUnitDropdown', 'media-pastilla', '1/2 pastilla', '💊')">
+                            <span class="option-emoji">💊</span>
+                            <span class="option-text">1/2 pastilla</span>
+                        </div>
+                        <div class="dropdown-option" data-value="cuarto-pastilla" onclick="selectOption('entryUnitDropdown', 'cuarto-pastilla', '1/4 pastilla', '💊')">
+                            <span class="option-emoji">💊</span>
+                            <span class="option-text">1/4 pastilla</span>
+                        </div>
+                        <div class="dropdown-option" data-value="punto" onclick="selectOption('entryUnitDropdown', 'punto', 'punto/bomba', '💊')">
+                            <span class="option-emoji">💊</span>
+                            <span class="option-text">punto/bomba</span>
+                        </div>
+                        
+                        <!-- Polvo/Cristal -->
+                        <div class="dropdown-option category-header" data-category="polvo">
+                            <span class="option-emoji">❄️</span>
+                            <span class="option-text">POLVO/CRISTAL</span>
+                        </div>
+                        <div class="dropdown-option" data-value="raya" onclick="selectOption('entryUnitDropdown', 'raya', 'raya/línea', '❄️')">
+                            <span class="option-emoji">❄️</span>
+                            <span class="option-text">raya/línea</span>
+                        </div>
+                        <div class="dropdown-option" data-value="tirito" onclick="selectOption('entryUnitDropdown', 'tirito', 'tirito', '❄️')">
+                            <span class="option-emoji">❄️</span>
+                            <span class="option-text">tirito</span>
+                        </div>
+                        <div class="dropdown-option" data-value="bump" onclick="selectOption('entryUnitDropdown', 'bump', 'bump', '❄️')">
+                            <span class="option-emoji">❄️</span>
+                            <span class="option-text">bump</span>
+                        </div>
+                        <div class="dropdown-option" data-value="key" onclick="selectOption('entryUnitDropdown', 'key', 'key bump', '❄️')">
+                            <span class="option-emoji">❄️</span>
+                            <span class="option-text">key bump</span>
+                        </div>
+                        
+                        <!-- Líquidos -->
+                        <div class="dropdown-option category-header" data-category="liquidos">
+                            <span class="option-emoji">💧</span>
+                            <span class="option-text">LÍQUIDOS</span>
+                        </div>
+                        <div class="dropdown-option" data-value="ml" onclick="selectOption('entryUnitDropdown', 'ml', 'ml (mililitros)', '💧')">
+                            <span class="option-emoji">💧</span>
+                            <span class="option-text">ml (mililitros)</span>
+                        </div>
+                        <div class="dropdown-option" data-value="gotas" onclick="selectOption('entryUnitDropdown', 'gotas', 'gotas', '💧')">
+                            <span class="option-emoji">💧</span>
+                            <span class="option-text">gotas</span>
+                        </div>
+                        <div class="dropdown-option" data-value="vial" onclick="selectOption('entryUnitDropdown', 'vial', 'vial', '💧')">
+                            <span class="option-emoji">💧</span>
+                            <span class="option-text">vial</span>
+                        </div>
+                        
+                        <!-- Otras -->
+                        <div class="dropdown-option category-header" data-category="otras">
+                            <span class="option-emoji">🔧</span>
+                            <span class="option-text">OTRAS</span>
+                        </div>
+                        <div class="dropdown-option" data-value="calada" onclick="selectOption('entryUnitDropdown', 'calada', 'calada', '🚬')">
+                            <span class="option-emoji">🚬</span>
+                            <span class="option-text">calada</span>
+                        </div>
+                        <div class="dropdown-option" data-value="inhalacion" onclick="selectOption('entryUnitDropdown', 'inhalacion', 'inhalación', '👃')">
+                            <span class="option-emoji">👃</span>
+                            <span class="option-text">inhalación</span>
+                        </div>
+                        <div class="dropdown-option" data-value="aplicacion" onclick="selectOption('entryUnitDropdown', 'aplicacion', 'aplicación', '💉')">
+                            <span class="option-emoji">💉</span>
+                            <span class="option-text">aplicación</span>
+                        </div>
+                        <div class="dropdown-option" data-value="dosis" onclick="selectOption('entryUnitDropdown', 'dosis', 'dosis', '💊')">
+                            <span class="option-emoji">💊</span>
+                            <span class="option-text">dosis</span>
+                        </div>
+                        <div class="dropdown-option" data-value="cafe" onclick="selectOption('entryUnitDropdown', 'cafe', 'Café frío', '☕')">
+                            <span class="option-emoji">☕</span>
+                            <span class="option-text">Café frío</span>
+                        </div>
+                        <div class="dropdown-option" data-value="cookie" onclick="selectOption('entryUnitDropdown', 'cookie', 'cookie', '🍪')">
+                            <span class="option-emoji">🍪</span>
+                            <span class="option-text">cookie</span>
+                        </div>
+                        <div class="dropdown-option" data-value="cookies" onclick="selectOption('entryUnitDropdown', 'cookies', 'cookies', '🍪')">
+                            <span class="option-emoji">🍪</span>
+                            <span class="option-text">cookies</span>
+                        </div>
+                    </div>
+                    <input type="hidden" id="entryUnit" name="entryUnit" value="ug" required>
+                </div>
             </div>
 
             <div class="form-group">
@@ -1347,42 +1703,132 @@
 
             <div class="form-group">
                 <label>Set (Estado mental)</label>
-                <select id="entrySet">
-                    <option value="">Seleccionar...</option>
-                    <option value="excelente">😊 Excelente</option>
-                    <option value="bueno">🙂 Bueno</option>
-                    <option value="neutral">😐 Neutral</option>
-                    <option value="ansioso">😰 Ansioso</option>
-                    <option value="triste">😢 Triste</option>
-                    <option value="estresado">😤 Estresado</option>
-                    <option value="emocionado">🤩 Emocionado</option>
-                    <option value="introspectivo">🤔 Introspectivo</option>
-                    <option value="creativo">🎨 Creativo</option>
-                    <option value="curioso">🧐 Curioso</option>
-                    <option value="aburrido">😴 Aburrido</option>
-                    <option value="desanimado">😨 Desanimado</option>
-                    <option value="Pain crisis">🚨 Pain crisis</option>
-                </select>
+                <div class="custom-dropdown" id="entrySetDropdown">
+                    <div class="dropdown-header" onclick="toggleDropdown('entrySetDropdown')">
+                        <span class="dropdown-text">Seleccionar...</span>
+                        <span class="dropdown-arrow">▼</span>
+                    </div>
+                    <div class="dropdown-options" id="entrySetOptions">
+                        <div class="dropdown-option" data-value="excelente" onclick="selectOption('entrySetDropdown', 'excelente', 'Excelente', '😊')">
+                            <span class="option-emoji">😊</span>
+                            <span class="option-text">Excelente</span>
+                        </div>
+                        <div class="dropdown-option" data-value="bueno" onclick="selectOption('entrySetDropdown', 'bueno', 'Bueno', '🙂')">
+                            <span class="option-emoji">🙂</span>
+                            <span class="option-text">Bueno</span>
+                        </div>
+                        <div class="dropdown-option" data-value="neutral" onclick="selectOption('entrySetDropdown', 'neutral', 'Neutral', '😐')">
+                            <span class="option-emoji">😐</span>
+                            <span class="option-text">Neutral</span>
+                        </div>
+                        <div class="dropdown-option" data-value="ansioso" onclick="selectOption('entrySetDropdown', 'ansioso', 'Ansioso', '😰')">
+                            <span class="option-emoji">😰</span>
+                            <span class="option-text">Ansioso</span>
+                        </div>
+                        <div class="dropdown-option" data-value="triste" onclick="selectOption('entrySetDropdown', 'triste', 'Triste', '😢')">
+                            <span class="option-emoji">😢</span>
+                            <span class="option-text">Triste</span>
+                        </div>
+                        <div class="dropdown-option" data-value="estresado" onclick="selectOption('entrySetDropdown', 'estresado', 'Estresado', '😤')">
+                            <span class="option-emoji">😤</span>
+                            <span class="option-text">Estresado</span>
+                        </div>
+                        <div class="dropdown-option" data-value="emocionado" onclick="selectOption('entrySetDropdown', 'emocionado', 'Emocionado', '🤩')">
+                            <span class="option-emoji">🤩</span>
+                            <span class="option-text">Emocionado</span>
+                        </div>
+                        <div class="dropdown-option" data-value="introspectivo" onclick="selectOption('entrySetDropdown', 'introspectivo', 'Introspectivo', '🤔')">
+                            <span class="option-emoji">🤔</span>
+                            <span class="option-text">Introspectivo</span>
+                        </div>
+                        <div class="dropdown-option" data-value="creativo" onclick="selectOption('entrySetDropdown', 'creativo', 'Creativo', '🎨')">
+                            <span class="option-emoji">🎨</span>
+                            <span class="option-text">Creativo</span>
+                        </div>
+                        <div class="dropdown-option" data-value="curioso" onclick="selectOption('entrySetDropdown', 'curioso', 'Curioso', '🧐')">
+                            <span class="option-emoji">🧐</span>
+                            <span class="option-text">Curioso</span>
+                        </div>
+                        <div class="dropdown-option" data-value="aburrido" onclick="selectOption('entrySetDropdown', 'aburrido', 'Aburrido', '😴')">
+                            <span class="option-emoji">😴</span>
+                            <span class="option-text">Aburrido</span>
+                        </div>
+                        <div class="dropdown-option" data-value="desanimado" onclick="selectOption('entrySetDropdown', 'desanimado', 'Desanimado', '😨')">
+                            <span class="option-emoji">😨</span>
+                            <span class="option-text">Desanimado</span>
+                        </div>
+                        <div class="dropdown-option" data-value="Pain crisis" onclick="selectOption('entrySetDropdown', 'Pain crisis', 'Pain crisis', '🚨')">
+                            <span class="option-emoji">🚨</span>
+                            <span class="option-text">Pain crisis</span>
+                        </div>
+                    </div>
+                    <input type="hidden" id="entrySet" name="entrySet">
+                </div>
             </div>
 
             <div class="form-group">
                 <label>Setting (Entorno)</label>
-                <select id="entrySetting">
-                    <option value="">Seleccionar...</option>
-                    <option value="casa">🏠 En casa</option>
-                    <option value="programando">💻 Programando/Estudiando</option>
-                    <option value="seriefilo">🎬🎵 Seriefilo, pelis o música</option>
-                    <option value="meditacion">🧘 Meditación/Yoga</option>
-                    <option value="paseo">🚶 Paseo/Calle</option>
-                    <option value="naturaleza">🌲 Naturaleza</option>
-                    <option value="fiesta">🎉 Fiesta/Evento</option>
-                    <option value="festival">🎪 Festival</option>
-                    <option value="amigos">👥 Con amigos</option>
-                    <option value="solo">👤 Solo/a</option>
-                    <option value="pareja">💑 En pareja</option>
-                    <option value="concierto">🎵 Concierto</option>
-                    <option value="ceremonia">🕯️ Ceremonia</option>
-                </select>
+                <div class="custom-dropdown" id="entrySettingDropdown">
+                    <div class="dropdown-header" onclick="toggleDropdown('entrySettingDropdown')">
+                        <span class="dropdown-text">Seleccionar...</span>
+                        <span class="dropdown-arrow">▼</span>
+                    </div>
+                    <div class="dropdown-options" id="entrySettingOptions">
+                        <div class="dropdown-option" data-value="casa" onclick="selectOption('entrySettingDropdown', 'casa', 'En casa', '🏠')">
+                            <span class="option-emoji">🏠</span>
+                            <span class="option-text">En casa</span>
+                        </div>
+                        <div class="dropdown-option" data-value="programando" onclick="selectOption('entrySettingDropdown', 'programando', 'Programando/Estudiando', '💻')">
+                            <span class="option-emoji">💻</span>
+                            <span class="option-text">Programando/Estudiando</span>
+                        </div>
+                        <div class="dropdown-option" data-value="seriefilo" onclick="selectOption('entrySettingDropdown', 'seriefilo', 'Seriefilo, pelis o música', '🎬🎵')">
+                            <span class="option-emoji">🎬🎵</span>
+                            <span class="option-text">Seriefilo, pelis o música</span>
+                        </div>
+                        <div class="dropdown-option" data-value="meditacion" onclick="selectOption('entrySettingDropdown', 'meditacion', 'Meditación/Yoga', '🧘')">
+                            <span class="option-emoji">🧘</span>
+                            <span class="option-text">Meditación/Yoga</span>
+                        </div>
+                        <div class="dropdown-option" data-value="paseo" onclick="selectOption('entrySettingDropdown', 'paseo', 'Paseo/Calle', '🚶')">
+                            <span class="option-emoji">🚶</span>
+                            <span class="option-text">Paseo/Calle</span>
+                        </div>
+                        <div class="dropdown-option" data-value="naturaleza" onclick="selectOption('entrySettingDropdown', 'naturaleza', 'Naturaleza', '🌲')">
+                            <span class="option-emoji">🌲</span>
+                            <span class="option-text">Naturaleza</span>
+                        </div>
+                        <div class="dropdown-option" data-value="fiesta" onclick="selectOption('entrySettingDropdown', 'fiesta', 'Fiesta/Evento', '🎉')">
+                            <span class="option-emoji">🎉</span>
+                            <span class="option-text">Fiesta/Evento</span>
+                        </div>
+                        <div class="dropdown-option" data-value="festival" onclick="selectOption('entrySettingDropdown', 'festival', 'Festival', '🎪')">
+                            <span class="option-emoji">🎪</span>
+                            <span class="option-text">Festival</span>
+                        </div>
+                        <div class="dropdown-option" data-value="amigos" onclick="selectOption('entrySettingDropdown', 'amigos', 'Con amigos', '👥')">
+                            <span class="option-emoji">👥</span>
+                            <span class="option-text">Con amigos</span>
+                        </div>
+                        <div class="dropdown-option" data-value="solo" onclick="selectOption('entrySettingDropdown', 'solo', 'Solo/a', '👤')">
+                            <span class="option-emoji">👤</span>
+                            <span class="option-text">Solo/a</span>
+                        </div>
+                        <div class="dropdown-option" data-value="pareja" onclick="selectOption('entrySettingDropdown', 'pareja', 'En pareja', '💑')">
+                            <span class="option-emoji">💑</span>
+                            <span class="option-text">En pareja</span>
+                        </div>
+                        <div class="dropdown-option" data-value="concierto" onclick="selectOption('entrySettingDropdown', 'concierto', 'Concierto', '🎵')">
+                            <span class="option-emoji">🎵</span>
+                            <span class="option-text">Concierto</span>
+                        </div>
+                        <div class="dropdown-option" data-value="ceremonia" onclick="selectOption('entrySettingDropdown', 'ceremonia', 'Ceremonia', '🕯️')">
+                            <span class="option-emoji">🕯️</span>
+                            <span class="option-text">Ceremonia</span>
+                        </div>
+                    </div>
+                    <input type="hidden" id="entrySetting" name="entrySetting">
+                </div>
             </div>
 
             <div class="form-group">
@@ -1403,10 +1849,18 @@
     <div class="modal-content">
         <button class="close-btn" onclick="closeModal('substanceModal')">×</button>
         <h3>Añadir Nueva Sustancia</h3>
-        <form id="substanceForm">
+        <form id="substanceForm" onsubmit="addSubstance(); return false;">
             <div class="form-group">
                 <label>Nombre</label>
                 <input type="text" id="substanceName" placeholder="LSD, MDMA, Psilocibina..." required>
+            </div>
+            <div class="form-group">
+                <label>Emoji Personalizado (opcional)</label>
+                <div class="emoji-picker">
+                    <input type="text" id="substanceEmoji" placeholder="🍪" maxlength="4" style="font-size: 1.5rem; text-align: center; width: 60px;">
+                    <button type="button" onclick="suggestEmoji()" class="btn-secondary" style="padding: 0.5rem; font-size: 0.8rem;">💡 Sugerir</button>
+                    <span class="emoji-suggestion">💡 Deja vacío para auto-detectar</span>
+                </div>
             </div>
             <div class="color-picker-container">
                 <label>Color Identificativo</label>
@@ -1457,6 +1911,124 @@
     let selectedSubstanceColor = '#8B5CF6';
     let selectedSubstanceFilter = null;
 
+    
+
+
+
+        // Función para sugerir emoji basado en el nombre de la sustancia
+        function suggestEmoji() {
+            const substanceName = document.getElementById('substanceName').value.trim();
+            if (substanceName) {
+                const suggestedEmoji = getSubstanceEmoji(substanceName);
+                document.getElementById('substanceEmoji').value = suggestedEmoji;
+                showCustomAlert(`💡 Emoji sugerido: ${suggestedEmoji}`, '💡 Sugerencia');
+            } else {
+                showCustomAlert('⚠️ Primero escribe el nombre de la sustancia', '⚠️ Campo Requerido');
+            }
+        }
+
+        // Función para actualizar el dropdown de sustancias
+        function updateSubstanceDropdown() {
+            if (document.getElementById('entryModal').classList.contains('active')) {
+                populateSubstanceDropdown();
+            }
+        }
+
+        // Función para obtener el emoji apropiado para cada sustancia
+        function getSubstanceEmoji(substanceName) {
+        const emojiMap = {
+            'LSD': '🌈',
+            'Ketamina': '❄️',
+            'Opio': '🌿',
+            'MDMA': '💎',
+            'Cocaína': '❄️',
+            'Anfetamina': '⚡',
+            'Cannabis': '🌿',
+            'Psilocibina': '🍄',
+            'DMT': '👁️',
+            'Mescalina': '🌵',
+            '2C-B': '🦋',
+            'NBOMe': '💊',
+            'MDA': '💎',
+            'Meth': '⚡',
+            'Heroína': '🌿',
+            'Morfina': '🌿',
+            'Fentanilo': '💊',
+            'Codeína': '💊',
+            'Tramadol': '💊',
+            'Benzodiazepinas': '💊',
+            'Alcohol': '🍷',
+            'Nicotina': '🚬',
+            'Cafeína': '☕',
+            'Cookies': '🍪',
+            'Café': '☕',
+            'Café frío': '🧊☕',
+            'Diacetilmorfina': '🌿',
+            'Heroina': '🌿',
+            'Marihuana': '🌿',
+            'Hachís': '🌿',
+            'Crack': '💎',
+            'Speed': '⚡',
+            'Éxtasis': '💎',
+            'Píldoras': '💊',
+            'Comprimidos': '💊',
+            'Gotas': '💧',
+            'Polvo': '❄️',
+            'Cristal': '💎',
+            'Líquido': '💧',
+            'Vapor': '💨',
+            'Inhalado': '💨',
+            'Inyectado': '💉',
+            'Oral': '👄',
+            'Nasal': '👃',
+            'Sublingual': '👅'
+        };
+        
+        // Buscar coincidencia exacta primero
+        if (emojiMap[substanceName]) {
+            return emojiMap[substanceName];
+        }
+        
+        // Buscar coincidencias parciales más inteligentes
+        const lowerName = substanceName.toLowerCase();
+        
+        // Buscar por palabras clave específicas
+        if (lowerName.includes('lsd') || lowerName.includes('ácido')) return '🌈';
+        if (lowerName.includes('ketamina') || lowerName.includes('ket')) return '❄️';
+        if (lowerName.includes('opio') || lowerName.includes('heroína') || lowerName.includes('morfina') || lowerName.includes('diacetilmorfina')) return '🌿';
+        if (lowerName.includes('mdma') || lowerName.includes('éxtasis')) return '💎';
+        if (lowerName.includes('cocaína') || lowerName.includes('coca')) return '❄️';
+        if (lowerName.includes('anfetamina') || lowerName.includes('speed') || lowerName.includes('meth')) return '⚡';
+        if (lowerName.includes('cannabis') || lowerName.includes('marihuana') || lowerName.includes('hachís')) return '🌿';
+        if (lowerName.includes('psilocibina') || lowerName.includes('hongos')) return '🍄';
+        if (lowerName.includes('dmt')) return '👁️';
+        if (lowerName.includes('mescalina') || lowerName.includes('peyote')) return '🌵';
+        if (lowerName.includes('2c-b') || lowerName.includes('2cb')) return '🦋';
+        if (lowerName.includes('alcohol') || lowerName.includes('vino') || lowerName.includes('cerveza')) return '🍷';
+        if (lowerName.includes('nicotina') || lowerName.includes('tabaco')) return '🚬';
+        if (lowerName.includes('cafeína') || lowerName.includes('café') || lowerName.includes('té')) return '☕';
+        
+        // Emojis por categorías generales
+        if (lowerName.includes('cookie') || lowerName.includes('galleta') || lowerName.includes('cookies')) return '🍪';
+        if (lowerName.includes('píldora') || lowerName.includes('comprimido') || lowerName.includes('tableta')) return '💊';
+        if (lowerName.includes('polvo') || lowerName.includes('cristal')) return '❄️';
+        if (lowerName.includes('líquido') || lowerName.includes('gotas')) return '💧';
+        if (lowerName.includes('vapor') || lowerName.includes('inhalado')) return '💨';
+        if (lowerName.includes('inyectado')) return '💉';
+        if (lowerName.includes('oral') || lowerName.includes('sublingual')) return '👄';
+        if (lowerName.includes('nasal')) return '👃';
+        
+        // Buscar en el mapa de emojis por coincidencias parciales
+        for (const [key, emoji] of Object.entries(emojiMap)) {
+            if (lowerName.includes(key.toLowerCase()) || key.toLowerCase().includes(lowerName)) {
+                return emoji;
+            }
+        }
+        
+        // Emoji por defecto
+        return '💊';
+    }
+
     // Default substances
     function getDefaultSubstances() {
         return [
@@ -1488,28 +2060,39 @@
     });
 
     function initializeApp() {
-        // Save default substances if first time
-        if (!localStorage.getItem('substances')) {
-            localStorage.setItem('substances', JSON.stringify(substances));
+        try {
+            // Save default substances if first time
+            if (!localStorage.getItem('substances')) {
+                localStorage.setItem('substances', JSON.stringify(substances));
+            } else {
+                substances = JSON.parse(localStorage.getItem('substances'));
+            }
+
+            // Initialize UI components
+            generateCalendar();
+            renderSubstanceList();
+            renderStats();
+            loadUserProfile();
+            updateProfileCard();
+
+            // Set current datetime for entry form
+            const now = new Date();
+            const localDateTime = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+            const dateTimeInput = document.getElementById('entryDateTime');
+            if (dateTimeInput) {
+                dateTimeInput.value = localDateTime;
+            }
+        } catch (error) {
+            console.error('Error initializing app:', error);
+            showCustomAlert(`Error al inicializar la aplicación: ${error.message}`, '❌ Error de Inicialización');
         }
-
-        generateCalendar();
-        renderSubstanceList();
-        renderStats();
-        loadUserProfile();
-        updateProfileCard();
-
-        // Set current datetime for entry form
-        const now = new Date();
-        const localDateTime = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
-        document.getElementById('entryDateTime').value = localDateTime;
     }
 
     function setupEventListeners() {
         // Entry form
         document.getElementById('entryForm').addEventListener('submit', function(e) {
             e.preventDefault();
-            addEntry(); // This function now handles both add and edit
+            addEntry();
         });
 
         // Substance form
@@ -1585,6 +2168,7 @@
 
         // Populate dropdowns when opening modals
         if (modalId === 'entryModal') {
+            console.log('Opening entry modal, populating substance dropdown...');
             populateSubstanceDropdown();
             // Reset form for new entry, or prepare for edit if already in edit mode
             if (!isEditMode) {
@@ -1618,6 +2202,7 @@
 
     // Calendar functions
     function generateCalendar() {
+        console.log('generateCalendar called. Total entries:', entries.length);
         const grid = document.getElementById('calendar-grid');
         const monthName = currentDate.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' });
         document.getElementById('current-month').textContent = monthName.charAt(0).toUpperCase() + monthName.slice(1);
@@ -1892,7 +2477,13 @@
         populateSubstanceDropdown(); // Ensure dropdown is populated before setting value
 
         // Populate form fields
-        document.getElementById('entrySubstance').value = entry.substance;
+        // Para sustancia, usar el dropdown personalizado
+        const substanceHeaderText = document.querySelector('#entrySubstanceDropdown .dropdown-text');
+        const substanceHiddenInput = document.getElementById('entrySubstance');
+        substanceHiddenInput.value = entry.substance;
+        const emoji = getSubstanceEmoji(entry.substance);
+        substanceHeaderText.textContent = `${emoji} ${entry.substance}`;
+        
         document.getElementById('entryDose').value = entry.dose;
         document.getElementById('entryUnit').value = entry.unit;
         document.getElementById('entryDateTime').value = entry.date;
@@ -1985,10 +2576,12 @@
             }
         } else {
             // MODO CREACIÓN
+            const customEmoji = document.getElementById('substanceEmoji').value.trim();
             const substance = {
                 id: generateUniqueId(),
                 name: name,
                 color: selectedSubstanceColor,
+                emoji: customEmoji || getSubstanceEmoji(name), // Usar emoji personalizado o auto-detectar
                 createdAt: new Date().toISOString()
             };
 
@@ -2003,8 +2596,13 @@
         generateCalendar();
         renderStats();
         updateProfileCard();
+        
+        // Actualizar el dropdown de sustancias si está abierto
+        updateSubstanceDropdown();
+        
         closeModal('substanceModal');
         document.getElementById('substanceForm').reset();
+        document.getElementById('substanceEmoji').value = ''; // Limpiar emoji personalizado
 
         // Reset color selection
         document.querySelectorAll('.color-option').forEach(opt => opt.classList.remove('selected'));
@@ -2113,6 +2711,12 @@
         const now = new Date();
         const localDateTime = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
         document.getElementById('entryDateTime').value = localDateTime;
+        
+        // Resetear el dropdown de sustancia personalizado
+        const substanceHeaderText = document.querySelector('#entrySubstanceDropdown .dropdown-text');
+        const substanceHiddenInput = document.getElementById('entrySubstance');
+        substanceHeaderText.textContent = 'Selecciona una sustancia...';
+        substanceHiddenInput.value = ''; // Cambiar de 'placeholder' a string vacío
     }
 
     function filterBySubstance(substanceName) {
@@ -2222,21 +2826,60 @@
     }
 
     function populateSubstanceDropdown() {
-        const select = document.getElementById('entrySubstance');
-        const currentValue = select.value; // Guardar el valor actual
-        
-        select.innerHTML = '<option value="">Selecciona una sustancia...</option>';
 
+        
+        const dropdownOptions = document.getElementById('entrySubstanceOptions');
+        const hiddenInput = document.getElementById('entrySubstance');
+        const headerText = document.querySelector('#entrySubstanceDropdown .dropdown-text');
+        const currentValue = hiddenInput.value; // Guardar el valor actual
+        
+        // Limpiar opciones existentes (excepto la primera placeholder)
+        dropdownOptions.innerHTML = '';
+        
+        // Añadir opción placeholder (no seleccionable)
+        const placeholderOption = document.createElement('div');
+        placeholderOption.className = 'dropdown-option';
+        placeholderOption.setAttribute('data-value', '');
+        placeholderOption.style.opacity = '0.6';
+        placeholderOption.style.cursor = 'default';
+        placeholderOption.innerHTML = `
+            <span class="option-emoji">💊</span>
+            <span class="option-text">Selecciona una sustancia...</span>
+        `;
+        dropdownOptions.appendChild(placeholderOption);
+
+        // Añadir opciones de sustancias
         substances.forEach(substance => {
-            const option = document.createElement('option');
-            option.value = substance.name;
-            option.textContent = substance.name;
-            select.appendChild(option);
+            const option = document.createElement('div');
+            option.className = 'dropdown-option';
+            option.setAttribute('data-value', substance.name);
+            const emoji = substance.emoji || getSubstanceEmoji(substance.name);
+            option.onclick = function() {
+                selectOption('entrySubstanceDropdown', substance.name, substance.name, emoji);
+            };
+            option.innerHTML = `
+                <span class="option-emoji">${emoji}</span>
+                <span class="option-text">${substance.name}</span>
+            `;
+            dropdownOptions.appendChild(option);
         });
+        
+        // Forzar reflow para asegurar que el scroll funcione
+        dropdownOptions.style.display = 'none';
+        dropdownOptions.offsetHeight; // Trigger reflow
+        dropdownOptions.style.display = '';
         
         // Restaurar el valor si estamos en modo edición
         if (currentValue && isEditMode) {
-            select.value = currentValue;
+            hiddenInput.value = currentValue;
+            // Buscar y marcar la opción correspondiente
+            const optionToSelect = dropdownOptions.querySelector(`[data-value="${currentValue}"]`);
+            if (optionToSelect) {
+                const emoji = optionToSelect.querySelector('.option-emoji').textContent;
+                headerText.textContent = `${emoji} ${currentValue}`;
+                // Marcar la opción como seleccionada
+                optionToSelect.classList.add('selected');
+            }
         }
     }
 
@@ -2255,9 +2898,24 @@
         const setting = document.getElementById('entrySetting').value;
         const notes = document.getElementById('entryNotes').value.trim();
 
-        // Improved validation
-        if (!substance || isNaN(dose) || dose <= 0 || !unit || !dateTime) {
-            showCustomAlert('Por favor, completa todos los campos obligatorios (Sustancia, Dosis, Unidad, Fecha y Hora) y asegúrate que la dosis sea mayor que 0.', '⚠️ Campos Requeridos');
+        // Validación mejorada para el campo sustancia
+        if (!substance || substance === 'placeholder' || substance === '') {
+            showCustomAlert('Por favor, selecciona una sustancia válida', '⚠️ Sustancia Requerida');
+            return;
+        }
+
+        if (!dose || isNaN(dose) || dose <= 0) {
+            showCustomAlert('Por favor, introduce una dosis válida mayor a 0', '⚠️ Dosis Inválida');
+            return;
+        }
+
+        if (!unit || unit === '') {
+            showCustomAlert('Por favor, selecciona una unidad válida', '⚠️ Unidad Requerida');
+            return;
+        }
+
+        if (!dateTime) {
+            showCustomAlert('Por favor, selecciona una fecha y hora válida', '⚠️ Fecha Requerida');
             return;
         }
 
@@ -2298,13 +2956,13 @@
                notes: notes || null,
                createdAt: new Date().toISOString()
            };
-
            entries.push(entry);
            showCustomAlert(`✅ Registro guardado: ${dose} ${unit} de ${substance}`, '✅ Registro Guardado');
         }
 
         // Save and update
         localStorage.setItem('entries', JSON.stringify(entries));
+        
         generateCalendar();
         renderSubstanceList();
         renderStats();
@@ -2312,7 +2970,7 @@
 
         // Clean up
         closeModal('entryModal');
-        resetEditMode(); // Reset form and edit mode state
+        resetEditMode();
     }
 
     // Stats functions
@@ -2401,10 +3059,23 @@
     }
 
     function updateProfileCard() {
-        const nickname = userProfile.nickname || 'Psiconáuta Anónimo';
-        document.getElementById('profileCardName').textContent = nickname;
-        document.getElementById('substanceCount').textContent = substances.length;
-        document.getElementById('entryCount').textContent = entries.length;
+        // Verificar si los elementos existen antes de intentar acceder a ellos
+        const profileCardName = document.getElementById('profileCardName');
+        const substanceCountElement = document.getElementById('substanceCount');
+        const entryCountElement = document.getElementById('entryCount');
+        
+        if (profileCardName) {
+            const nickname = userProfile.nickname || 'Psiconáuta Anónimo';
+            profileCardName.textContent = nickname;
+        }
+        
+        if (substanceCountElement) {
+            substanceCountElement.textContent = substances.length;
+        }
+        
+        if (entryCountElement) {
+            entryCountElement.textContent = entries.length;
+        }
     }
 
     // Favorites functions
@@ -2935,7 +3606,98 @@
             window.pendingConfirmAction();
         }
         closeCustomConfirm();
-    }
+            }
+
+        // ===== FUNCIONES PARA DROPDOWNS PERSONALIZADOS =====
+        
+        // Variable global para controlar qué dropdown está abierto
+        let openDropdown = null;
+
+        // Función para abrir/cerrar dropdowns
+        function toggleDropdown(dropdownId) {
+            console.log('toggleDropdown called for:', dropdownId);
+            const dropdown = document.getElementById(dropdownId);
+            const options = dropdown.querySelector('.dropdown-options');
+            const header = dropdown.querySelector('.dropdown-header');
+            
+            // Si hay otro dropdown abierto, cerrarlo
+            if (openDropdown && openDropdown !== dropdown) {
+                const otherOptions = openDropdown.querySelector('.dropdown-options');
+                const otherHeader = openDropdown.querySelector('.dropdown-header');
+                otherOptions.classList.remove('show');
+                otherHeader.classList.remove('active');
+            }
+            
+            // Toggle del dropdown actual
+            if (options.classList.contains('show')) {
+                console.log('Closing dropdown');
+                options.classList.remove('show');
+                header.classList.remove('active');
+                openDropdown = null;
+            } else {
+                console.log('Opening dropdown');
+                options.classList.add('show');
+                header.classList.add('active');
+                openDropdown = dropdown;
+            }
+        }
+
+        // Función para seleccionar una opción
+        function selectOption(dropdownId, value, text, emoji) {
+            const dropdown = document.getElementById(dropdownId);
+            const headerText = dropdown.querySelector('.dropdown-text');
+            const hiddenInput = dropdown.querySelector('input[type="hidden"]');
+            
+            // Actualizar el texto mostrado
+            headerText.textContent = `${emoji} ${text}`;
+            
+            // Actualizar el input hidden
+            hiddenInput.value = value;
+            
+            // Cerrar el dropdown
+            const options = dropdown.querySelector('.dropdown-options');
+            const header = dropdown.querySelector('.dropdown-header');
+            options.classList.remove('show');
+            header.classList.remove('active');
+            openDropdown = null;
+            
+            // Marcar la opción como seleccionada
+            const allOptions = dropdown.querySelectorAll('.dropdown-option');
+            allOptions.forEach(option => {
+                option.classList.remove('selected');
+                if (option.dataset.value === value) {
+                    option.classList.add('selected');
+                }
+            });
+            
+            // Validar que se haya seleccionado una sustancia válida
+            if (dropdownId === 'entrySubstanceDropdown' && (!value || value === '')) {
+                headerText.textContent = 'Selecciona una sustancia...';
+                hiddenInput.value = '';
+            }
+        }
+
+        // Cerrar dropdowns al hacer clic fuera
+        document.addEventListener('click', function(e) {
+            if (openDropdown && !openDropdown.contains(e.target)) {
+                const options = openDropdown.querySelector('.dropdown-options');
+                const header = openDropdown.querySelector('.dropdown-header');
+                options.classList.remove('show');
+                header.classList.remove('active');
+                openDropdown = null;
+            }
+        });
+
+        // Cerrar dropdowns con la tecla Escape
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && openDropdown) {
+                const options = openDropdown.querySelector('.dropdown-options');
+                const header = openDropdown.querySelector('.dropdown-header');
+                options.classList.remove('show');
+                header.classList.remove('active');
+                openDropdown = null;
+            }
+        });
 
 </script>
 
