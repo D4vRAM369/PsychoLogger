@@ -766,11 +766,6 @@
             box-shadow: 0 8px 20px rgba(139, 92, 246, 0.3);
         }
 
-        .custom-dialog-actions .btn-secondary:hover {
-            background: var(--border-color);
-            transform: translateY(-2px);
-        }
-
         /* Estilos para el modal de auto-cierre */
         .custom-dialog.auto-close {
             animation: slideInUp 0.3s ease-out;
@@ -1148,6 +1143,30 @@
             background: #dc2626;
             transform: translateY(-1px);
         }
+
+         .btn-danger {
+            background: linear-gradient(135deg, #dc2626, #ef4444);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(220, 38, 38, 0.3);
+            width: 100%;
+         }
+
+         .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(220, 38, 38, 0.4);
+            background: linear-gradient(135deg, #ef4444, #f87171);
+         }
+
+         .btn-danger:active {
+            transform: translateY(0);
+         }
 
         .entry-actions {
             display: flex;
@@ -1535,7 +1554,7 @@
                     <div class="resource-card">
                         <h4>Limpiar Datos</h4>
                         <p>Eliminar todos los datos almacenados</p>
-                        <button class="btn-secondary" onclick="clearAllData()">Limpiar Todo</button>
+                        <button class="btn-danger" onclick="clearAllData()">Limpiar Todo</button>
                     </div>
                 </div>
             </div>
@@ -1705,7 +1724,7 @@
                                 </div>
                                 <div class="dropdown-option" data-value="tirito"
                                      onclick="selectOption('entryUnitDropdown', 'tirito', 'tirito', '👃')">
-                                    <span class="option-emoji">👃</span>
+                                    <span class="option-emoji">➖</span>
                                     <span class="option-text">tirito</span>
                                 </div>
                                 <div class="dropdown-option" data-value="bump"
@@ -1859,6 +1878,11 @@
                                      onclick="selectOption('entrySetDropdown', 'desanimado', 'Desanimado', '😨')">
                                     <span class="option-emoji">😨</span>
                                     <span class="option-text">Desanimado</span>
+                                </div>
+                                <div class="dropdown-option" data-value="Pain crisis"
+                                     onclick="selectOption('entrySetDropdown', 'Pain crisis', 'Pain crisis', '🚨')">
+                                    <span class="option-emoji">😵‍💫</span>
+                                    <span class="option-text">Colocado</span>
                                 </div>
                                 <div class="dropdown-option" data-value="Pain crisis"
                                      onclick="selectOption('entrySetDropdown', 'Pain crisis', 'Pain crisis', '🚨')">
@@ -2054,6 +2078,7 @@
             </div>
         </div>
 
+
         <script>
             // Global variables
             let currentDate = new Date();
@@ -2152,10 +2177,6 @@
                 const min = String(d.getMinutes()).padStart(2, '0');
               return `${y}-${m}-${day}T${h}:${min}`;
             }
-
-
-
-
 
 
             // Función para sugerir emoji basado en el nombre de la sustancia
@@ -3860,33 +3881,7 @@
         }
 
 
-        // ===== Perfil / Tarjeta de perfil =====
-        // Función segura para refrescar la tarjeta de perfil si existe. Evita errores en vistas donde no esté presente.
-        function updateProfileCard() {
-            try {
-                const profileCard = document.getElementById('profile-card');
-                if (!profileCard) return; // No hay tarjeta de perfil en esta vista
-
-                const profile = JSON.parse(localStorage.getItem('userProfile') || '{}');
-
-                // Datos agregados a partir de entries
-                const totalEntries = entries.length;
-                const uniqueSubstances = [...new Set(entries.map(e => e.substance))].length;
-
-                profileCard.innerHTML = `
-                    <div class="profile-section">
-                        <h4>${profile.name || 'Psiconauta'}</h4>
-                        <p>${profile.bio || ''}</p>
-                        <p><strong>Registros:</strong> ${totalEntries}</p>
-                        <p><strong>Sustancias:</strong> ${uniqueSubstances}</p>
-                    </div>
-                `;
-            } catch (err) {
-                console.error('updateProfileCard error:', err);
-            }
-        }
-
-
+        // ===== FUNCIONES DE MODALES =====
 
         // Close modals when clicking outside
         document.addEventListener('click', function(e) {
@@ -4187,5 +4182,6 @@
 
         </script>
 
-    </main></body>
+    </main>
+</body>
 </html>
