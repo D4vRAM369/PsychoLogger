@@ -693,7 +693,7 @@ fun WebViewScreen(
                     allowFileAccessFromFileURLs = true
                     @Suppress("DEPRECATION")
                     allowUniversalAccessFromFileURLs = true
-                } 
+                }
 
                 addJavascriptInterface(WebAppInterface(context, context as MainActivity), "Android")
 
