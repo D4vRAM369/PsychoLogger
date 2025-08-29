@@ -2,11 +2,14 @@ package com.d4vram.psychologger
 
 import android.annotation.SuppressLint
 import android.app.DownloadManager
+import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.os.Environment
+import android.provider.MediaStore
 import android.webkit.ConsoleMessage
 import android.webkit.JavascriptInterface
 import android.webkit.URLUtil
@@ -308,21 +311,43 @@ class WebAppInterface(private val context: Context, private val activity: MainAc
             val timestamp = SimpleDateFormat("yyyy-MM-dd_HH-mm-ss", Locale.getDefault()).format(Date())
             val finalFilename = if (filename.isBlank()) "bitacora_psiconáutica_$timestamp.csv" else filename
 
-            val downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
-            val file = File(downloadsDir, finalFilename)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                // Android 10+ - usar MediaStore
+                val resolver = context.contentResolver
+                val contentValues = ContentValues().apply {
+                    put(MediaStore.MediaColumns.DISPLAY_NAME, finalFilename)
+                    put(MediaStore.MediaColumns.MIME_TYPE, "text/csv")
+                    put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS)
+                }
 
-            FileOutputStream(file).use { fos ->
-                fos.write(csvContent.toByteArray(Charsets.UTF_8))
+                val uri = resolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, contentValues)
+                uri?.let { fileUri ->
+                    resolver.openOutputStream(fileUri)?.use { outputStream ->
+                        outputStream.write(csvContent.toByteArray(Charsets.UTF_8))
+                    }
+                    Toast.makeText(context, "✅ CSV exportado: $finalFilename", Toast.LENGTH_LONG).show()
+                } ?: run {
+                    Toast.makeText(context, "❌ Error al crear archivo", Toast.LENGTH_LONG).show()
+                }
+            } else {
+                // Android 9 y anteriores - método tradicional
+                val downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+                val file = File(downloadsDir, finalFilename)
+
+                FileOutputStream(file).use { fos ->
+                    fos.write(csvContent.toByteArray(Charsets.UTF_8))
+                }
+
+                val intent = Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE).apply {
+                    data = Uri.fromFile(file)
+                }
+                context.sendBroadcast(intent)
+
+                Toast.makeText(context, "✅ CSV exportado: $finalFilename", Toast.LENGTH_LONG).show()
             }
-
-            val intent = Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE).apply {
-                data = Uri.fromFile(file)
-            }
-            context.sendBroadcast(intent)
-
-            Toast.makeText(context, "✅ CSV exportado: $finalFilename", Toast.LENGTH_LONG).show()
         } catch (e: Exception) {
             Toast.makeText(context, "❌ Error al exportar CSV: ${e.message}", Toast.LENGTH_LONG).show()
+            e.printStackTrace()
         }
     }
 
@@ -445,8 +470,10 @@ class WebAppInterface(private val context: Context, private val activity: MainAc
                                     "dose"      to parts[2],
                                     "unit"      to parts[3].replace("\"", ""),
                                     "date"      to parts[4].replace("\"", ""),
-                                    "notes"     to (if (parts.size > 5) parts[5].replace("\"", "") else ""),
-                                    "createdAt" to (if (parts.size > 6) parts[6].replace("\"", "") else "")
+                                    "set"       to (if (parts.size > 5) parts[5].replace("\"", "") else ""),
+                                    "setting"   to (if (parts.size > 6) parts[6].replace("\"", "") else ""),
+                                    "notes"     to (if (parts.size > 7) parts[7].replace("\"", "") else ""),
+                                    "createdAt" to (if (parts.size > 8) parts[8].replace("\"", "") else "")
                                 )
                             }
                         }
@@ -466,7 +493,7 @@ class WebAppInterface(private val context: Context, private val activity: MainAc
                     substancesToImport.forEach { s ->
                         appendLine("""
                             (function(){
-                              var newSub = { id: ${s["id"]}, name: "${s["name"]}", color: "${s["color"]}", createdAt: "${s["createdAt"]}" };
+                              var newSub = { id: "${s["id"]}", name: "${s["name"]}", color: "${s["color"]}", createdAt: "${s["createdAt"]}" };
                               var exists = (substances || []).some(function(ex){ return ex.name.toLowerCase() === newSub.name.toLowerCase(); });
                               if (!exists) { substances.push(newSub); importedSub++; }
                             })();
@@ -477,13 +504,15 @@ class WebAppInterface(private val context: Context, private val activity: MainAc
                         appendLine("""
                             (function(){
                               entries.push({
-                                id: ${e["id"]},
+                                id: "${e["id"]}",
                                 substance: "${e["substance"]}",
                                 dose: ${e["dose"]},
                                 unit: "${e["unit"]}",
                                 date: "${e["date"]}",
-                                notes: "${e["notes"]}",
-                                createdAt: "${e["createdAt"]}"
+                                set: "${e["set"] ?: ""}",
+                                setting: "${e["setting"] ?: ""}",
+                                notes: "${e["notes"] ?: ""}",
+                                createdAt: "${e["createdAt"] ?: ""}"
                               });
                               importedEnt++;
                             })();
@@ -493,7 +522,20 @@ class WebAppInterface(private val context: Context, private val activity: MainAc
                     appendLine("""
                         localStorage.setItem('substances', JSON.stringify(substances));
                         localStorage.setItem('entries', JSON.stringify(entries));
-                        renderSubstanceList(); generateCalendar(); renderStats();
+                        
+                        // Usar función específica para después de importación
+                        if (typeof refreshAfterImport === 'function') {
+                            refreshAfterImport();
+                        } else if (typeof syncDataFromStorage === 'function') {
+                            syncDataFromStorage();
+                            renderSubstanceList(); generateCalendar(); renderStats();
+                        } else {
+                            // Fallback manual si las funciones no existen
+                            window.substances = substances;
+                            window.entries = entries;
+                            renderSubstanceList(); generateCalendar(); renderStats();
+                        }
+                        
                         Android.showToast('✅ Importado: ' + importedSub + ' sustancias, ' + importedEnt + ' registros');
                     """.trimIndent())
                     appendLine("} catch (error) { console.error(error); Android.showToast('❌ Error: ' + error.message); }")
@@ -549,19 +591,25 @@ fun WebViewScreen(
                             // Función de exportación
                             window.exportToCSV = function() {
                                 try {
+                                    // Migrar entradas antiguas antes de exportar
+                                    if (typeof migrateOldEntries === 'function') {
+                                        migrateOldEntries();
+                                    }
+                                    
                                     let csvContent = "";
                                     csvContent += "SUSTANCIAS\n";
-                                    csvContent += "ID,Nombre,Color,Fecha_Creacion\n";
+                                    csvContent += "ID,Nombre,Color,Emoji,Fecha_Creacion,Fecha_Actualizacion\n";
                                     if (typeof substances !== 'undefined') {
                                         substances.forEach(substance => {
-                                            csvContent += substance.id + ',"' + substance.name + '","' + substance.color + '","' + substance.createdAt + '"\n';
+                                            var emoji = substance.emoji || (typeof getSubstanceEmoji === 'function' ? getSubstanceEmoji(substance.name) : '💊');
+                                            csvContent += substance.id + ',"' + substance.name + '","' + substance.color + '","' + emoji + '","' + substance.createdAt + '","' + (substance.updatedAt || '') + '"\n';
                                         });
                                     }
                                     csvContent += "\nREGISTROS\n";
-                                    csvContent += "ID,Sustancia,Dosis,Unidad,Fecha_Hora,Notas,Fecha_Creacion\n";
+                                    csvContent += "ID,Sustancia,Dosis,Unidad,Fecha_Hora,Set,Setting,Notas,Fecha_Creacion,Fecha_Actualizacion\n";
                                     if (typeof entries !== 'undefined') {
                                         entries.forEach(entry => {
-                                            csvContent += entry.id + ',"' + entry.substance + '",' + entry.dose + ',"' + entry.unit + '","' + entry.date + '","' + (entry.notes || '') + '","' + entry.createdAt + '"\n';
+                                            csvContent += entry.id + ',"' + entry.substance + '",' + entry.dose + ',"' + entry.unit + '","' + entry.date + '","' + (entry.set || '') + '","' + (entry.setting || '') + '","' + (entry.notes || '') + '","' + entry.createdAt + '","' + (entry.updatedAt || '') + '"\n';
                                         });
                                     }
                                     const today = new Date().toISOString().split('T')[0];

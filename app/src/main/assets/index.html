@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -1584,11 +1583,6 @@
                             </div>
                             <div class="dropdown-options" id="entrySubstanceOptions">
                                 <!-- Se llenarán dinámicamente -->
-                                <div class="dropdown-option" data-value="placeholder"
-                                     onclick="selectOption('entrySubstanceDropdown', 'placeholder', 'Selecciona una sustancia...', '💊')">
-                                    <span class="option-emoji">💊</span>
-                                    <span class="option-text">Selecciona una sustancia...</span>
-                                </div>
                             </div>
                             <input type="hidden" id="entrySubstance" name="entrySubstance" required>
                         </div>
@@ -2065,479 +2059,588 @@
             let currentDate = new Date();
             let isEditMode = false;
             let currentEditingEntryId = null;
-            let substances = JSON.parse(localStorage.getItem('substances')) || getDefaultSubstances();
-            let entries = JSON.parse(localStorage.getItem('entries') || '[]');
-            let userProfile = JSON.parse(localStorage.getItem('userProfile') || '{}');
+            let substances = [];
+            let entries = [];
+            let userProfile = {};
             let selectedSubstanceColor = '#8B5CF6';
             let selectedSubstanceFilter = null;
 
-                function safeSetValue(id, value) {
-                    const el = document.getElementById(id);
-                    if (el) el.value = value;
-                }
-
-                function waitForElement(id, cb, retries = 30, delay = 20) {
-                    const el = document.getElementById(id);
-                    if (el) return cb(el);
-                    if (retries <= 0) return;
-                  setTimeout(() => waitForElement(id, cb, retries - 1, delay), delay);
-                }
-
-                function toLocalDateTimeString(d) {
-                    const y = d.getFullYear();
-                    const m = String(d.getMonth() + 1).padStart(2, '0');
-                    const day = String(d.getDate()).padStart(2, '0');
-                    const h = String(d.getHours()).padStart(2, '0');
-                    const min = String(d.getMinutes()).padStart(2, '0');
-                  return `${y}-${m}-${day}T${h}:${min}`;
-                }
-
-
-
-
-
-
-                // Función para sugerir emoji basado en el nombre de la sustancia
-                function suggestEmoji() {
-                    const substanceNameInput = document.getElementById('substanceName');
-                    const substanceEmojiInput = document.getElementById('substanceEmoji');
-
-                    if (!substanceNameInput || !substanceEmojiInput) {
-                        return;
-                    }
-
-                    const substanceName = substanceNameInput.value.trim();
-                    if (substanceName) {
-                        const suggestedEmoji = getSubstanceEmoji(substanceName);
-                        substanceEmojiInput.value = suggestedEmoji;
-                        showCustomAlert(`💡 Emoji sugerido: ${suggestedEmoji}`, '💡 Sugerencia');
-                    } else {
-                        showCustomAlert('⚠️ Primero escribe el nombre de la sustancia', '⚠️ Campo Requerido');
-                    }
-                }
-
-                // Función para actualizar el dropdown de sustancias
-                function updateSubstanceDropdown() {
-                    if (document.getElementById('entryModal').classList.contains('active')) {
-                        populateSubstanceDropdown();
-                    }
-                }
-
-                // Función para obtener el emoji apropiado para cada sustancia
-                function getSubstanceEmoji(substanceName) {
-                const emojiMap = {
-                    'LSD': '🌈',
-                    'Ketamina': '❄️',
-                    'Opio': '🌿',
-                    'MDMA': '💎',
-                    'Cocaína': '❄️',
-                    'Anfetamina': '⚡',
-                    'Cannabis': '🌿',
-                    'Psilocibina': '🍄',
-                    'DMT': '👁️',
-                    'Mescalina': '🌵',
-                    '2C-B': '🦋',
-                    'NBOMe': '💊',
-                    'MDA': '💎',
-                    'Meth': '⚡',
-                    'Heroína': '🌿',
-                    'Morfina': '🌿',
-                    'Fentanilo': '💊',
-                    'Codeína': '💊',
-                    'Tramadol': '💊',
-                    'Benzodiazepinas': '💊',
-                    'Alcohol': '🍷',
-                    'Nicotina': '🚬',
-                    'Cafeína': '☕',
-                    'Cookies': '🍪',
-                    'Café': '☕',
-                    'Café frío': '🧊☕',
-                    'Diacetilmorfina': '🌿',
-                    'Heroina': '🌿',
-                    'Marihuana': '🌿',
-                    'Hachís': '🌿',
-                    'Crack': '💎',
-                    'Speed': '⚡',
-                    'Éxtasis': '💎',
-                    'Píldoras': '💊',
-                    'Comprimidos': '💊',
-                    'Gotas': '💧',
-                    'Polvo': '❄️',
-                    'Cristal': '💎',
-                    'Líquido': '💧',
-                    'Vapor': '💨',
-                    'Inhalado': '💨',
-                    'Inyectado': '💉',
-                    'Oral': '👄',
-                    'Nasal': '👃',
-                    'Sublingual': '👅'
-                };
-
-                // Buscar coincidencia exacta primero
-                if (emojiMap[substanceName]) {
-                    return emojiMap[substanceName];
-                }
-
-                // Buscar coincidencias parciales más inteligentes
-                const lowerName = substanceName.toLowerCase();
-
-                // Buscar por palabras clave específicas
-                if (lowerName.includes('lsd') || lowerName.includes('ácido')) return '🌈';
-                if (lowerName.includes('ketamina') || lowerName.includes('ket')) return '❄️';
-                if (lowerName.includes('opio') || lowerName.includes('heroína') || lowerName.includes('morfina') || lowerName.includes('diacetilmorfina')) return '🌿';
-                if (lowerName.includes('mdma') || lowerName.includes('éxtasis')) return '💎';
-                if (lowerName.includes('cocaína') || lowerName.includes('coca')) return '❄️';
-                if (lowerName.includes('anfetamina') || lowerName.includes('speed') || lowerName.includes('meth')) return '⚡';
-                if (lowerName.includes('cannabis') || lowerName.includes('marihuana') || lowerName.includes('hachís')) return '🌿';
-                if (lowerName.includes('psilocibina') || lowerName.includes('hongos')) return '🍄';
-                if (lowerName.includes('dmt')) return '👁️';
-                if (lowerName.includes('mescalina') || lowerName.includes('peyote')) return '🌵';
-                if (lowerName.includes('2c-b') || lowerName.includes('2cb')) return '🦋';
-                if (lowerName.includes('alcohol') || lowerName.includes('vino') || lowerName.includes('cerveza')) return '🍷';
-                if (lowerName.includes('nicotina') || lowerName.includes('tabaco')) return '🚬';
-                if (lowerName.includes('cafeína') || lowerName.includes('café') || lowerName.includes('té')) return '☕';
-
-                // Emojis por categorías generales
-                if (lowerName.includes('cookie') || lowerName.includes('galleta') || lowerName.includes('cookies')) return '🍪';
-                if (lowerName.includes('píldora') || lowerName.includes('comprimido') || lowerName.includes('tableta')) return '💊';
-                if (lowerName.includes('polvo') || lowerName.includes('cristal')) return '❄️';
-                if (lowerName.includes('líquido') || lowerName.includes('gotas')) return '💧';
-                if (lowerName.includes('vapor') || lowerName.includes('inhalado')) return '💨';
-                if (lowerName.includes('inyectado')) return '💉';
-                if (lowerName.includes('oral') || lowerName.includes('sublingual')) return '👄';
-                if (lowerName.includes('nasal')) return '👃';
-
-                // Buscar en el mapa de emojis por coincidencias parciales
-                for (const [key, emoji] of Object.entries(emojiMap)) {
-                    if (lowerName.includes(key.toLowerCase()) || key.toLowerCase().includes(lowerName)) {
-                        return emoji;
-                    }
-                }
-
-                // Emoji por defecto
-                return '💊';
-            }
-
-            // Default substances
-            function getDefaultSubstances() {
-                return [
-                    {
-                        id: generateUniqueId(),
-                        name: 'LSD',
-                        color: '#8B5CF6',
-                        createdAt: new Date().toISOString()
-                    },
-                    {
-                        id: generateUniqueId(),
-                        name: 'Ketamina',
-                        color: '#06B6D4',
-                        createdAt: new Date().toISOString()
-                    },
-                    {
-                        id: generateUniqueId(),
-                        name: 'Opio',
-                        color: '#8B5A2B',
-                        createdAt: new Date().toISOString()
-                    }
-                ];
-            }
-
-            // Initialize app
-            document.addEventListener('DOMContentLoaded', function() {
-                initializeApp();
-                setupEventListeners();
-            });
-
-            function initializeApp() {
+            // Función para sincronizar datos desde localStorage
+            function syncDataFromStorage() {
                 try {
-                    // Save default substances if first time
-                    if (!localStorage.getItem('substances')) {
-                        localStorage.setItem('substances', JSON.stringify(substances));
+                    // Cargar sustancias
+                    const storedSubstances = localStorage.getItem('substances');
+                    if (storedSubstances) {
+                        substances = JSON.parse(storedSubstances);
                     } else {
-                        substances = JSON.parse(localStorage.getItem('substances'));
+                        substances = getDefaultSubstances();
+                        localStorage.setItem('substances', JSON.stringify(substances));
                     }
 
-                    // Initialize UI components
-                    generateCalendar();
-                    renderSubstanceList();
-                    renderStats();
-
-                    // Set current datetime for entry form
-                    const now = new Date();
-                    const localDateTime = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
-                    const dateTimeInput = document.getElementById('entryDateTime');
-                    if (dateTimeInput) {
-                        dateTimeInput.value = localDateTime;
+                    // Cargar entradas
+                    const storedEntries = localStorage.getItem('entries');
+                    if (storedEntries) {
+                        entries = JSON.parse(storedEntries);
+                        // Asegurar que todos los registros tengan la estructura completa
+                        entries = entries.map(entry => ({
+                            id: entry.id || generateUniqueId(),
+                            substance: entry.substance || '',
+                            dose: entry.dose || 0,
+                            unit: entry.unit || '',
+                            date: entry.date || new Date().toISOString(),
+                            set: entry.set || '',
+                            setting: entry.setting || '',
+                            notes: entry.notes || '',
+                            createdAt: entry.createdAt || new Date().toISOString(),
+                            updatedAt: entry.updatedAt || ''
+                        }));
+                    } else {
+                        entries = [];
+                        localStorage.setItem('entries', JSON.stringify(entries));
                     }
+
+                    // Cargar perfil de usuario
+                    const storedProfile = localStorage.getItem('userProfile');
+                    if (storedProfile) {
+                        userProfile = JSON.parse(storedProfile);
+                    } else {
+                        userProfile = {};
+                        localStorage.setItem('userProfile', JSON.stringify(userProfile));
+                    }
+
+
                 } catch (error) {
-                    console.error('Error initializing app:', error);
-                    showCustomAlert(`Error al inicializar la aplicación: ${error.message}`, '❌ Error de Inicialización');
+                    console.error('Error sincronizando datos:', error);
+                    // En caso de error, resetear a valores por defecto
+                    substances = getDefaultSubstances();
+                    entries = [];
+                    userProfile = {};
+                    localStorage.setItem('substances', JSON.stringify(substances));
+                    localStorage.setItem('entries', JSON.stringify(entries));
+                    localStorage.setItem('userProfile', JSON.stringify(userProfile));
                 }
             }
 
-            function setupEventListeners() {
-                // Entry form
-                document.getElementById('entryForm').addEventListener('submit', function(e) {
-                    e.preventDefault();
-                    addEntry();
-                });
-
-                // Substance form
-                document.getElementById('substanceForm').addEventListener('submit', function(e) {
-                    e.preventDefault();
-                    addSubstance();
-                });
-
-                // Color picker
-                document.querySelectorAll('.color-option').forEach(option => {
-                    option.addEventListener('click', function() {
-                        document.querySelectorAll('.color-option').forEach(opt => opt.classList.remove('selected'));
-                        this.classList.add('selected');
-                        selectedSubstanceColor = this.dataset.color;
-                    });
-                });
-
-                // Quote character counter
-                const quoteTextarea = document.getElementById('newQuote');
-                if (quoteTextarea) {
-                    quoteTextarea.addEventListener('input', function() {
-                        document.getElementById('charCount').textContent = this.value.length;
-                    });
+            // Función para guardar datos en localStorage
+            function saveDataToStorage() {
+                try {
+                    localStorage.setItem('substances', JSON.stringify(substances));
+                    localStorage.setItem('entries', JSON.stringify(entries));
+                    localStorage.setItem('userProfile', JSON.stringify(userProfile));
+                } catch (error) {
+                    console.error('Error guardando datos:', error);
                 }
             }
 
-            // Navigation functions
-            function switchView(viewName) {
-                // Hide all views
-                document.querySelectorAll('.view').forEach(view => {
-                    view.style.display = 'none';
-                });
+            function safeSetValue(id, value) {
+                const el = document.getElementById(id);
+                if (el) el.value = value;
+            }
 
-                // Show selected view
-                const targetView = document.getElementById(viewName + '-view');
-                if (targetView) {
-                    targetView.style.display = 'grid';
-                } else {
-                    console.error('View not found:', viewName + '-view');
+            function waitForElement(id, cb, retries = 30, delay = 20) {
+                const el = document.getElementById(id);
+                if (el) return cb(el);
+                if (retries <= 0) return;
+              setTimeout(() => waitForElement(id, cb, retries - 1, delay), delay);
+            }
+
+            function toLocalDateTimeString(d) {
+                const y = d.getFullYear();
+                const m = String(d.getMonth() + 1).padStart(2, '0');
+                const day = String(d.getDate()).padStart(2, '0');
+                const h = String(d.getHours()).padStart(2, '0');
+                const min = String(d.getMinutes()).padStart(2, '0');
+              return `${y}-${m}-${day}T${h}:${min}`;
+            }
+
+
+
+
+
+
+            // Función para sugerir emoji basado en el nombre de la sustancia
+            function suggestEmoji() {
+                const substanceNameInput = document.getElementById('substanceName');
+                const substanceEmojiInput = document.getElementById('substanceEmoji');
+
+                if (!substanceNameInput || !substanceEmojiInput) {
                     return;
                 }
 
-                // Update navigation active state
-                document.querySelectorAll('.nav-item').forEach(item => {
-                    item.classList.remove('active');
-                });
-
-                const navMapping = {
-                    'calendar': 0,
-                    'stats': 2,
-                    'resources': 3,
-                    'data': 4,
-                    'profile': 5
-                };
-
-                const navItems = document.querySelectorAll('.nav-item');
-                const navIndex = navMapping[viewName];
-                if (navItems[navIndex]) {
-                    navItems[navIndex].classList.add('active');
-                }
-
-                // Regenerate content for specific views
-                if (viewName === 'stats') {
-                    renderStats();
+                const substanceName = substanceNameInput.value.trim();
+                if (substanceName) {
+                    const suggestedEmoji = getSubstanceEmoji(substanceName);
+                    substanceEmojiInput.value = suggestedEmoji;
+                    showCustomAlert(`💡 Emoji sugerido: ${suggestedEmoji}`, '💡 Sugerencia');
+                } else {
+                    showCustomAlert('⚠️ Primero escribe el nombre de la sustancia', '⚠️ Campo Requerido');
                 }
             }
 
-            // Modal functions
-            function openModal(modalId) {
-                const modal = document.getElementById(modalId);
-                modal.classList.add('active');
-                document.body.style.overflow = 'hidden'; // Prevent background scrolling
-
-                // Populate dropdowns when opening modals
-                if (modalId === 'entryModal') {
+            // Función para actualizar el dropdown de sustancias
+            function updateSubstanceDropdown() {
+                if (document.getElementById('entryModal').classList.contains('active')) {
                     populateSubstanceDropdown();
-                    // Reset form for new entry, or prepare for edit if already in edit mode
-                    if (!isEditMode) {
-                        resetEntryForm();
-                    }
-                } else if (modalId === 'substanceModal') {
-                    // Reset color selection when opening substance modal
+                }
+            }
+
+            // Función para obtener el emoji apropiado para cada sustancia
+            function getSubstanceEmoji(substanceName) {
+            const emojiMap = {
+                'LSD': '🌈',
+                'Ketamina': '❄️',
+                'Opio': '🌿',
+                'MDMA': '💎',
+                'Cocaína': '❄️',
+                'Anfetamina': '⚡',
+                'Cannabis': '🌿',
+                'Psilocibina': '🍄',
+                'DMT': '👁️',
+                'Mescalina': '🌵',
+                '2C-B': '🦋',
+                'NBOMe': '💊',
+                'MDA': '💎',
+                'Meth': '⚡',
+                'Heroína': '🌿',
+                'Morfina': '🌿',
+                'Fentanilo': '💊',
+                'Codeína': '💊',
+                'Tramadol': '💊',
+                'Benzodiazepinas': '💊',
+                'Alcohol': '🍷',
+                'Nicotina': '🚬',
+                'Cafeína': '☕',
+                'Cookies': '🍪',
+                'Café': '☕',
+                'Café frío': '🧊☕',
+                'Diacetilmorfina': '🌿',
+                'Heroina': '🌿',
+                'Marihuana': '🌿',
+                'Hachís': '🌿',
+                'Crack': '💎',
+                'Speed': '⚡',
+                'Éxtasis': '💎',
+                'Píldoras': '💊',
+                'Comprimidos': '💊',
+                'Gotas': '💧',
+                'Polvo': '❄️',
+                'Cristal': '💎',
+                'Líquido': '💧',
+                'Vapor': '💨',
+                'Inhalado': '💨',
+                'Inyectado': '💉',
+                'Oral': '👄',
+                'Nasal': '👃',
+                'Sublingual': '👅'
+            };
+
+            // Buscar coincidencia exacta primero
+            if (emojiMap[substanceName]) {
+                return emojiMap[substanceName];
+            }
+
+            // Buscar coincidencias parciales más inteligentes
+            const lowerName = substanceName.toLowerCase();
+
+            // Buscar por palabras clave específicas
+            if (lowerName.includes('lsd') || lowerName.includes('ácido')) return '🌈';
+            if (lowerName.includes('ketamina') || lowerName.includes('ket')) return '❄️';
+            if (lowerName.includes('opio') || lowerName.includes('heroína') || lowerName.includes('morfina') || lowerName.includes('diacetilmorfina')) return '🌿';
+            if (lowerName.includes('mdma') || lowerName.includes('éxtasis')) return '💎';
+            if (lowerName.includes('cocaína') || lowerName.includes('coca')) return '❄️';
+            if (lowerName.includes('anfetamina') || lowerName.includes('speed') || lowerName.includes('meth')) return '⚡';
+            if (lowerName.includes('cannabis') || lowerName.includes('marihuana') || lowerName.includes('hachís')) return '🌿';
+            if (lowerName.includes('psilocibina') || lowerName.includes('hongos')) return '🍄';
+            if (lowerName.includes('dmt')) return '👁️';
+            if (lowerName.includes('mescalina') || lowerName.includes('peyote')) return '🌵';
+            if (lowerName.includes('2c-b') || lowerName.includes('2cb')) return '🦋';
+            if (lowerName.includes('alcohol') || lowerName.includes('vino') || lowerName.includes('cerveza')) return '🍷';
+            if (lowerName.includes('nicotina') || lowerName.includes('tabaco')) return '🚬';
+            if (lowerName.includes('cafeína') || lowerName.includes('café') || lowerName.includes('té')) return '☕';
+
+            // Emojis por categorías generales
+            if (lowerName.includes('cookie') || lowerName.includes('galleta') || lowerName.includes('cookies')) return '🍪';
+            if (lowerName.includes('píldora') || lowerName.includes('comprimido') || lowerName.includes('tableta')) return '💊';
+            if (lowerName.includes('polvo') || lowerName.includes('cristal')) return '❄️';
+            if (lowerName.includes('líquido') || lowerName.includes('gotas')) return '💧';
+            if (lowerName.includes('vapor') || lowerName.includes('inhalado')) return '💨';
+            if (lowerName.includes('inyectado')) return '💉';
+            if (lowerName.includes('oral') || lowerName.includes('sublingual')) return '👄';
+            if (lowerName.includes('nasal')) return '👃';
+
+            // Buscar en el mapa de emojis por coincidencias parciales
+            for (const [key, emoji] of Object.entries(emojiMap)) {
+                if (lowerName.includes(key.toLowerCase()) || key.toLowerCase().includes(lowerName)) {
+                    return emoji;
+                }
+            }
+
+            // Emoji por defecto
+            return '💊';
+        }
+
+        // Default substances
+        function getDefaultSubstances() {
+            return [
+                {
+                    id: generateUniqueId(),
+                    name: 'LSD',
+                    color: '#8B5CF6',
+                    createdAt: new Date().toISOString()
+                },
+                {
+                    id: generateUniqueId(),
+                    name: 'Ketamina',
+                    color: '#06B6D4',
+                    createdAt: new Date().toISOString()
+                },
+                {
+                    id: generateUniqueId(),
+                    name: 'Opio',
+                    color: '#8B5A2B',
+                    createdAt: new Date().toISOString()
+                }
+            ];
+        }
+
+
+
+        // Función para sincronizar datos desde localStorage (para importación)
+        function syncDataFromStorage() {
+            try {
+                const storedSubstances = localStorage.getItem('substances');
+                const storedEntries = localStorage.getItem('entries');
+                const storedProfile = localStorage.getItem('userProfile');
+                
+                if (storedSubstances) {
+                    substances = JSON.parse(storedSubstances);
+                }
+                
+                if (storedEntries) {
+                    entries = JSON.parse(storedEntries);
+                }
+                
+                if (storedProfile) {
+                    userProfile = JSON.parse(storedProfile);
+                }
+            } catch (error) {
+                console.error('Error sincronizando datos:', error);
+            }
+        }
+
+        // Función específica para después de importación
+        function refreshAfterImport() {
+            try {
+                // Forzar recarga desde localStorage
+                syncDataFromStorage();
+                
+                // Regenerar toda la interfaz
+                generateCalendar();
+                renderSubstanceList();
+                renderStats();
+                
+                // Si hay un modal abierto con entradas, cerrarlo para evitar problemas
+                const dayModal = document.getElementById('day-entries-modal');
+                if (dayModal) {
+                    dayModal.remove();
+                }
+            } catch (error) {
+                console.error('Error refrescando después de importar:', error);
+            }
+        }
+
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeApp();
+            setupEventListeners();
+        });
+
+                 function initializeApp() {
+             try {
+                 // Sincronizar datos desde localStorage
+                 syncDataFromStorage();
+                 
+                 // Initialize UI components
+                 generateCalendar();
+                 renderSubstanceList();
+                 renderStats();
+
+                 // Set current datetime for entry form
+                 const now = new Date();
+                 const localDateTime = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+                 const dateTimeInput = document.getElementById('entryDateTime');
+                 if (dateTimeInput) {
+                     dateTimeInput.value = localDateTime;
+                 }
+             } catch (error) {
+                 console.error('Error initializing app:', error);
+                 showCustomAlert(`Error al inicializar la aplicación: ${error.message}`, '❌ Error de Inicialización');
+             }
+         }
+
+        function setupEventListeners() {
+            // Entry form
+            document.getElementById('entryForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                addEntry();
+            });
+
+            // Substance form
+            document.getElementById('substanceForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                addSubstance();
+            });
+
+            // Color picker
+            document.querySelectorAll('.color-option').forEach(option => {
+                option.addEventListener('click', function() {
                     document.querySelectorAll('.color-option').forEach(opt => opt.classList.remove('selected'));
-                    const firstColorOption = document.querySelector('.color-option');
-                    if (firstColorOption) {
-                        firstColorOption.classList.add('selected');
-                        selectedSubstanceColor = firstColorOption.dataset.color;
-                    }
-                } else if (modalId === 'favoritesModal') {
-                    populateFavoriteDropdown();
-                    renderFavorites();
-                } else if (modalId === 'quotesModal') {
-                    renderQuotes();
-                } else if (modalId === 'socialModal') {
-                    loadSocialLinks();
-                } else if (modalId === 'shareProfileModal') {
-                    updateProfileCard();
-                }
-            }
-
-            function closeModal(modalId) {
-                document.getElementById(modalId).classList.remove('active');
-                document.body.style.overflow = ''; // Restore background scrolling
-                resetEditMode(); // Always reset edit mode when closing entry modal
-            }
-
-            // Calendar functions
-            function generateCalendar() {
-                console.log('generateCalendar called. Total entries:', entries.length);
-                const grid = document.getElementById('calendar-grid');
-                const monthName = currentDate.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' });
-                document.getElementById('current-month').textContent = monthName.charAt(0).toUpperCase() + monthName.slice(1);
-
-                // Clear grid
-                grid.innerHTML = '';
-
-                // Add day headers
-                const dayHeaders = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
-                dayHeaders.forEach(day => {
-                    const dayElement = document.createElement('div');
-                    dayElement.className = 'calendar-day day-header';
-                    dayElement.textContent = day;
-                    grid.appendChild(dayElement);
+                    this.classList.add('selected');
+                    selectedSubstanceColor = this.dataset.color;
                 });
+            });
 
-                // Get first day of month and number of days
-                const firstDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
-                const startDate = new Date(firstDay);
-                startDate.setDate(startDate.getDate() - firstDay.getDay());
+            // Quote character counter
+            const quoteTextarea = document.getElementById('newQuote');
+            if (quoteTextarea) {
+                quoteTextarea.addEventListener('input', function() {
+                    document.getElementById('charCount').textContent = this.value.length;
+                });
+            }
+        }
 
-                // Generate calendar days
-                for (let i = 0; i < 42; i++) {
-                    const day = new Date(startDate);
-                    day.setDate(startDate.getDate() + i);
+        // Navigation functions
+        function switchView(viewName) {
+            // Hide all views
+            document.querySelectorAll('.view').forEach(view => {
+                view.style.display = 'none';
+            });
 
-                    const dayElement = document.createElement('div');
-                    dayElement.className = 'calendar-day';
-                    dayElement.textContent = day.getDate();
+            // Show selected view
+            const targetView = document.getElementById(viewName + '-view');
+            if (targetView) {
+                targetView.style.display = 'grid';
+            } else {
+                console.error('View not found:', viewName + '-view');
+                return;
+            }
 
-                    // Check if day has entries
-                    let dayEntries = entries.filter(entry => {
-                        const entryDate = new Date(entry.date);
-                        return entryDate.toDateString() === day.toDateString();
-                    });
+            // Update navigation active state
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
 
-                    // Apply substance filter if one selected
-                    if (selectedSubstanceFilter) {
-                        dayEntries = dayEntries.filter(entry => entry.substance === selectedSubstanceFilter);
-                    }
+            const navMapping = {
+                'calendar': 0,
+                'stats': 2,
+                'resources': 3,
+                'data': 4,
+                'profile': 5
+            };
 
-                    if (dayEntries.length > 0) {
-                        dayElement.classList.add('has-entry');
+            const navItems = document.querySelectorAll('.nav-item');
+            const navIndex = navMapping[viewName];
+            if (navItems[navIndex]) {
+                navItems[navIndex].classList.add('active');
+            }
 
-                        // Get unique substances for this day
-                        const uniqueSubstances = [...new Set(dayEntries.map(entry => entry.substance))];
+            // Regenerate content for specific views
+            if (viewName === 'stats') {
+                renderStats();
+            }
+        }
 
-                        if (uniqueSubstances.length === 1) {
-                            // Single substance - use solid color
-                            const substance = substances.find(s => s.name === uniqueSubstances[0]);
-                            const color = substance ? substance.color : '#8B5CF6';
-                            dayElement.classList.add('single-substance');
-                            dayElement.style.background = color;
-                            dayElement.style.boxShadow = `0 0 10px ${color}50`;
-                        } else if (uniqueSubstances.length > 1) {
-                            // Multiple substances - create gradient
-                            const colors = uniqueSubstances.map(substanceName => {
-                                const substance = substances.find(s => s.name === substanceName);
-                                return substance ? substance.color : '#8B5CF6';
-                            });
+        // Modal functions
+        function openModal(modalId) {
+            const modal = document.getElementById(modalId);
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden'; // Prevent background scrolling
 
-                            dayElement.classList.add('multiple-substances');
-
-                            if (colors.length === 2) {
-                                dayElement.style.background = `linear-gradient(135deg, ${colors[0]} 0%, ${colors[1]} 100%)`;
-                            } else if (colors.length === 3) {
-                                dayElement.style.background = `linear-gradient(135deg, ${colors[0]} 0%, ${colors[1]} 50%, ${colors[2]} 100%)`;
-                            } else {
-                                // More than 3 colors - create a more complex gradient
-                                const step = 100 / colors.length;
-                                const gradientStops = colors.map((color, index) => `${color} ${index * step}%`).join(', ');
-                                dayElement.style.background = `linear-gradient(135deg, ${gradientStops})`;
-                            }
-
-                            // Add subtle animation for multiple substances
-                            dayElement.style.animation = 'colorShift 3s ease-in-out infinite';
-                        }
-
-                        // Add substance indicators (small dots)
-                        const indicators = document.createElement('div');
-                        indicators.className = 'substance-indicators';
-
-                        uniqueSubstances.slice(0, 4).forEach(substanceName => {
-                            const substance = substances.find(s => s.name === substanceName);
-                            const dot = document.createElement('div');
-                            dot.className = 'substance-dot';
-                            dot.style.backgroundColor = substance ? substance.color : '#8B5CF6';
-                            dot.title = substanceName; // Tooltip
-                            indicators.appendChild(dot);
-                        });
-
-                        dayElement.appendChild(indicators);
-                    }
-
-                    // Dim days from other months
-                    if (day.getMonth() !== currentDate.getMonth()) {
-                        dayElement.style.opacity = '0.3';
-                    }
-
-                    // Add click event
-                    dayElement.addEventListener('click', () => showDayEntries(day));
-
-                    grid.appendChild(dayElement);
+            // Populate dropdowns when opening modals
+            if (modalId === 'entryModal') {
+                populateSubstanceDropdown();
+                // Reset form for new entry, or prepare for edit if already in edit mode
+                if (!isEditMode) {
+                    resetEntryForm();
                 }
+            } else if (modalId === 'substanceModal') {
+                // Reset color selection when opening substance modal
+                document.querySelectorAll('.color-option').forEach(opt => opt.classList.remove('selected'));
+                const firstColorOption = document.querySelector('.color-option');
+                if (firstColorOption) {
+                    firstColorOption.classList.add('selected');
+                    selectedSubstanceColor = firstColorOption.dataset.color;
+                }
+            } else if (modalId === 'favoritesModal') {
+                populateFavoriteDropdown();
+                renderFavorites();
+            } else if (modalId === 'quotesModal') {
+                renderQuotes();
+            } else if (modalId === 'socialModal') {
+                loadSocialLinks();
+            } else if (modalId === 'shareProfileModal') {
+                updateProfileCard();
             }
+        }
 
-            function previousMonth() {
-                currentDate.setMonth(currentDate.getMonth() - 1);
-                generateCalendar();
-            }
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+            document.body.style.overflow = ''; // Restore background scrolling
+            resetEditMode(); // Always reset edit mode when closing entry modal
+        }
 
-            function nextMonth() {
-                currentDate.setMonth(currentDate.getMonth() + 1);
-                generateCalendar();
-            }
+        // Calendar functions
+        function generateCalendar() {
 
-            // Function to show entries for a specific day
-            function showDayEntries(date) {
+            const grid = document.getElementById('calendar-grid');
+            const monthName = currentDate.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' });
+            document.getElementById('current-month').textContent = monthName.charAt(0).toUpperCase() + monthName.slice(1);
+
+            // Clear grid
+            grid.innerHTML = '';
+
+            // Add day headers
+            const dayHeaders = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+            dayHeaders.forEach(day => {
+                const dayElement = document.createElement('div');
+                dayElement.className = 'calendar-day day-header';
+                dayElement.textContent = day;
+                grid.appendChild(dayElement);
+            });
+
+            // Get first day of month and number of days
+            const firstDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+            const startDate = new Date(firstDay);
+            startDate.setDate(startDate.getDate() - firstDay.getDay());
+
+            // Generate calendar days
+            for (let i = 0; i < 42; i++) {
+                const day = new Date(startDate);
+                day.setDate(startDate.getDate() + i);
+
+                const dayElement = document.createElement('div');
+                dayElement.className = 'calendar-day';
+                dayElement.textContent = day.getDate();
+
+                // Check if day has entries
                 let dayEntries = entries.filter(entry => {
                     const entryDate = new Date(entry.date);
-                    return entryDate.toDateString() === date.toDateString();
+                    return entryDate.toDateString() === day.toDateString();
                 });
 
-                // Apply substance filter if selected
+                // Apply substance filter if one selected
                 if (selectedSubstanceFilter) {
                     dayEntries = dayEntries.filter(entry => entry.substance === selectedSubstanceFilter);
                 }
 
-                if (dayEntries.length === 0) {
-                    showCustomConfirm(
-                        'No hay registros para este día. ¿Quieres añadir uno?',
-                        '📅 Día sin Registros',
-                        () => addNewEntryForDate(date)
-                    );
-                    return;
+                if (dayEntries.length > 0) {
+                    dayElement.classList.add('has-entry');
+
+                    // Get unique substances for this day
+                    const uniqueSubstances = [...new Set(dayEntries.map(entry => entry.substance))];
+
+                    if (uniqueSubstances.length === 1) {
+                        // Single substance - use solid color
+                        const substance = substances.find(s => s.name === uniqueSubstances[0]);
+                        const color = substance ? substance.color : '#8B5CF6';
+                        dayElement.classList.add('single-substance');
+                        dayElement.style.background = color;
+                        dayElement.style.boxShadow = `0 0 10px ${color}50`;
+                    } else if (uniqueSubstances.length > 1) {
+                        // Multiple substances - create gradient
+                        const colors = uniqueSubstances.map(substanceName => {
+                            const substance = substances.find(s => s.name === substanceName);
+                            return substance ? substance.color : '#8B5CF6';
+                        });
+
+                        dayElement.classList.add('multiple-substances');
+
+                        if (colors.length === 2) {
+                            dayElement.style.background = `linear-gradient(135deg, ${colors[0]} 0%, ${colors[1]} 100%)`;
+                        } else if (colors.length === 3) {
+                            dayElement.style.background = `linear-gradient(135deg, ${colors[0]} 0%, ${colors[1]} 50%, ${colors[2]} 100%)`;
+                        } else {
+                            // More than 3 colors - create a more complex gradient
+                            const step = 100 / colors.length;
+                            const gradientStops = colors.map((color, index) => `${color} ${index * step}%`).join(', ');
+                            dayElement.style.background = `linear-gradient(135deg, ${gradientStops})`;
+                        }
+
+                        // Add subtle animation for multiple substances
+                        dayElement.style.animation = 'colorShift 3s ease-in-out infinite';
+                    }
+
+                    // Add substance indicators (small dots)
+                    const indicators = document.createElement('div');
+                    indicators.className = 'substance-indicators';
+
+                    uniqueSubstances.slice(0, 4).forEach(substanceName => {
+                        const substance = substances.find(s => s.name === substanceName);
+                        const dot = document.createElement('div');
+                        dot.className = 'substance-dot';
+                        dot.style.backgroundColor = substance ? substance.color : '#8B5CF6';
+                        dot.title = substanceName; // Tooltip
+                        indicators.appendChild(dot);
+                    });
+
+                    dayElement.appendChild(indicators);
                 }
 
-                let content = `<h3>📅 Registros del ${date.toLocaleDateString('es-ES', {
-                    weekday: 'long',
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric'
-                })}</h3>`;
-
-                if (selectedSubstanceFilter) {
-                    content += `<p style="color: var(--accent-cyan); margin-bottom: 1rem;">Filtrado por: ${selectedSubstanceFilter}</p>`;
+                // Dim days from other months
+                if (day.getMonth() !== currentDate.getMonth()) {
+                    dayElement.style.opacity = '0.3';
                 }
 
-                dayEntries.forEach((entry) => {
+                // Add click event
+                dayElement.addEventListener('click', () => showDayEntries(day));
+
+                grid.appendChild(dayElement);
+            }
+        }
+
+        function previousMonth() {
+            currentDate.setMonth(currentDate.getMonth() - 1);
+            generateCalendar();
+        }
+
+        function nextMonth() {
+            currentDate.setMonth(currentDate.getMonth() + 1);
+            generateCalendar();
+        }
+
+        // Function to show entries for a specific day
+        function showDayEntries(date) {
+            let dayEntries = entries.filter(entry => {
+                const entryDate = new Date(entry.date);
+                return entryDate.toDateString() === date.toDateString();
+            });
+
+            // Apply substance filter if selected
+            if (selectedSubstanceFilter) {
+                dayEntries = dayEntries.filter(entry => entry.substance === selectedSubstanceFilter);
+            }
+
+            if (dayEntries.length === 0) {
+                showCustomConfirm(
+                    'No hay registros para este día. ¿Quieres añadir uno?',
+                    '📅 Día sin Registros',
+                    () => addNewEntryForDate(date)
+                );
+                return;
+            }
+
+            let content = `<h3>📅 Registros del ${date.toLocaleDateString('es-ES', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            })}</h3>`;
+
+            if (selectedSubstanceFilter) {
+                content += `<p style="color: var(--accent-cyan); margin-bottom: 1rem;">Filtrado por: ${selectedSubstanceFilter}</p>`;
+            }
+
+                            dayEntries.forEach((entry) => {
                     const time = new Date(entry.date).toLocaleTimeString('es-ES', {
                         hour: '2-digit',
                         minute: '2-digit'
@@ -2564,1514 +2667,1523 @@
                     `;
                 });
 
-                content += `
-                    <div style="margin-top: 1rem; text-align: center;">
-                        <button id="add-entry-for-date-btn" class="btn-primary" data-date="${date.getTime()}" style="padding: 0.5rem 1rem; font-size: 1rem;">
-                            ➕ Añadir Registro para este Día
-                        </button>
-                    </div>
-                `;
+            content += `
+                <div style="margin-top: 1rem; text-align: center;">
+                    <button id="add-entry-for-date-btn" class="btn-primary" data-date="${date.getTime()}" style="padding: 0.5rem 1rem; font-size: 1rem;">
+                        ➕ Añadir Registro para este Día
+                    </button>
+                </div>
+            `;
 
-                const modalId = 'day-entries-modal';
-                const existingModal = document.getElementById(modalId);
-                if (existingModal) {
-                    existingModal.remove();
-                }
+            const modalId = 'day-entries-modal';
+            const existingModal = document.getElementById(modalId);
+            if (existingModal) {
+                existingModal.remove();
+            }
 
-                const modal = document.createElement('div');
-                modal.id = modalId;
-                modal.className = 'modal active';
-                modal.innerHTML = `
-                    <div class="modal-content">
-                        <button class="close-btn" id="close-day-modal">×</button>
-                        ${content}
-                    </div>
-                `;
+            const modal = document.createElement('div');
+            modal.id = modalId;
+            modal.className = 'modal active';
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <button class="close-btn" id="close-day-modal">×</button>
+                    ${content}
+                </div>
+            `;
 
-                document.body.appendChild(modal);
-                document.body.style.overflow = 'hidden';
+            document.body.appendChild(modal);
+            document.body.style.overflow = 'hidden';
 
-                // Attach event listeners AFTER the modal is in the DOM
-                setTimeout(() => {
-                    document.getElementById('close-day-modal').addEventListener('click', closeDayModal);
+            // Attach event listeners AFTER the modal is in the DOM
+            setTimeout(() => {
+                document.getElementById('close-day-modal').addEventListener('click', closeDayModal);
 
-                    document.querySelectorAll(`#${modalId} .btn-edit`).forEach(button => {
-                        button.addEventListener('click', (e) => {
-                            const entryId = e.currentTarget.dataset.entryId;
-                            editEntryFromCalendar(entryId);
-                        });
+                document.querySelectorAll(`#${modalId} .btn-edit`).forEach(button => {
+                    button.addEventListener('click', (e) => {
+                        const entryId = e.currentTarget.dataset.entryId;
+                        editEntryFromCalendar(entryId);
                     });
-
-                    document.querySelectorAll(`#${modalId} .btn-delete`).forEach(button => {
-                        button.addEventListener('click', (e) => {
-                            const entryId = e.currentTarget.dataset.entryId;
-                            deleteEntryFromCalendar(entryId);
-                        });
-                    });
-
-                    document.getElementById('add-entry-for-date-btn').addEventListener('click', (e) => {
-                        const dateString = e.currentTarget.dataset.date;
-                        addNewEntryForDate(dateString);
-                    });
-                }, 50); // Small delay to ensure DOM is ready
-
-                modal.addEventListener('click', (e) => {
-                    if (e.target === modal) {
-                        closeDayModal();
-                    }
                 });
+
+                document.querySelectorAll(`#${modalId} .btn-delete`).forEach(button => {
+                    button.addEventListener('click', (e) => {
+                        const entryId = e.currentTarget.dataset.entryId;
+                        deleteEntryFromCalendar(entryId);
+                    });
+                });
+
+                document.getElementById('add-entry-for-date-btn').addEventListener('click', (e) => {
+                    const dateString = e.currentTarget.dataset.date;
+                    addNewEntryForDate(dateString);
+                });
+            }, 50); // Small delay to ensure DOM is ready
+
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    closeDayModal();
+                }
+            });
+        }
+
+        function closeDayModal() {
+            const modal = document.getElementById('day-entries-modal');
+            if (modal) {
+                modal.remove();
+            }
+            document.body.style.overflow = '';
+        }
+
+        function addNewEntryForDate(dateInput) {
+            closeDayModal();
+            resetEditMode();
+            openModal('entryModal');
+
+            const d = new Date(dateInput);
+            const localDateTime = toLocalDateTimeString(d);
+
+            // Espera a que exista el input en WebView:
+            waitForElement('entryDateTime', (input) => { input.value = localDateTime; });
+        }
+
+
+        function editEntryFromCalendar(entryId) {
+            const entry = entries.find(e => e.id === entryId);
+            if (!entry) { showCustomAlert('❌ Registro no encontrado', '❌ Error'); return; }
+
+            closeDayModal();
+            isEditMode = true;
+            currentEditingEntryId = entryId;
+
+            populateSubstanceDropdown();
+
+            const substanceHeaderText = document.querySelector('#entrySubstanceDropdown .dropdown-text');
+            const substanceHiddenInput = document.getElementById('entrySubstance');
+            if (substanceHeaderText && substanceHiddenInput) {
+                substanceHiddenInput.value = entry.substance;
+                substanceHeaderText.textContent = `${getSubstanceEmoji(entry.substance)} ${entry.substance}`;
             }
 
-            function closeDayModal() {
-                const modal = document.getElementById('day-entries-modal');
-                if (modal) {
-                    modal.remove();
-                }
-                document.body.style.overflow = '';
+            openModal('entryModal'); // tras esto aún puede tardar 1 frame
+
+            waitForElement('entryDose',      el => el.value = entry.dose);
+            waitForElement('entryUnit',      el => el.value = entry.unit);
+            waitForElement('entryDateTime',  el => el.value = entry.date);
+            waitForElement('entrySet',       el => el.value = entry.set || '');
+            waitForElement('entrySetting',   el => el.value = entry.setting || '');
+            waitForElement('entryNotes',     el => el.value = entry.notes || '');
+
+            const submitBtn = document.querySelector('#entryForm button[type="submit"]');
+            if (submitBtn) {
+              submitBtn.innerHTML = '✅ Actualizar Registro';
+              submitBtn.style.background = 'linear-gradient(135deg, var(--accent-orange), var(--secondary-pink))';
+            }
+        }
+
+
+
+        function deleteEntryFromCalendar(entryId) {
+            const entry = entries.find(e => e.id === entryId); // Use === for strict comparison
+            if (!entry) {
+                alert('❌ Registro no encontrado');
+                return;
             }
 
-            function addNewEntryForDate(dateInput) {
-                closeDayModal();
-                resetEditMode();
-                openModal('entryModal');
+            const confirmMessage = `¿Estás seguro de que quieres eliminar este registro?\n\n${entry.substance} - ${entry.dose} ${entry.unit}\n${new Date(entry.date).toLocaleString('es-ES')}`;
 
-                const d = new Date(dateInput);
-                const localDateTime = toLocalDateTimeString(d);
+            showCustomConfirm(
+                confirmMessage,
+                '🗑️ Confirmar Eliminación',
+                                 () => {
+                     entries = entries.filter(e => e.id !== entryId); // Use !== for strict comparison
+                     saveDataToStorage();
 
-                // Espera a que exista el input en WebView:
-                waitForElement('entryDateTime', (input) => { input.value = localDateTime; });
+                     closeDayModal(); // Close the day entries modal
+
+                    generateCalendar();
+                    renderSubstanceList();
+                    renderStats();
+                    updateProfileCard(); // Update profile stats
+
+                    showAutoCloseAlert('🗑️ Registro eliminado correctamente', '✅ Eliminado');
+                }
+            );
+        }
+
+        // Substance functions
+        function addSubstance() {
+            const nameInput = document.getElementById('substanceName');
+            if (!nameInput) {
+                showCustomAlert('Error: Campo de nombre no encontrado', '❌ Error del Sistema');
+                return;
             }
 
+            const name = nameInput.value.trim();
 
-            function editEntryFromCalendar(entryId) {
-                const entry = entries.find(e => e.id === entryId);
-                if (!entry) { showCustomAlert('❌ Registro no encontrado', '❌ Error'); return; }
-
-                closeDayModal();
-                isEditMode = true;
-                currentEditingEntryId = entryId;
-
-                populateSubstanceDropdown();
-
-                const substanceHeaderText = document.querySelector('#entrySubstanceDropdown .dropdown-text');
-                const substanceHiddenInput = document.getElementById('entrySubstance');
-                if (substanceHeaderText && substanceHiddenInput) {
-                    substanceHiddenInput.value = entry.substance;
-                    substanceHeaderText.textContent = `${getSubstanceEmoji(entry.substance)} ${entry.substance}`;
-                }
-
-                openModal('entryModal'); // tras esto aún puede tardar 1 frame
-
-                waitForElement('entryDose',      el => el.value = entry.dose);
-                waitForElement('entryUnit',      el => el.value = entry.unit);
-                waitForElement('entryDateTime',  el => el.value = entry.date);
-                waitForElement('entrySet',       el => el.value = entry.set || '');
-                waitForElement('entrySetting',   el => el.value = entry.setting || '');
-                waitForElement('entryNotes',     el => el.value = entry.notes || '');
-
-                const submitBtn = document.querySelector('#entryForm button[type="submit"]');
-                if (submitBtn) {
-                  submitBtn.innerHTML = '✅ Actualizar Registro';
-                  submitBtn.style.background = 'linear-gradient(135deg, var(--accent-orange), var(--secondary-pink))';
-                }
+            if (!name || name.length === 0) {
+                showCustomAlert('Por favor, introduce un nombre para la sustancia', '⚠️ Campo Requerido');
+                nameInput.focus();
+                return;
             }
 
+            // Verificar si ya existe una sustancia con el mismo nombre (excluyendo la que estamos editando)
+            const existingSubstance = substances.find(s =>
+                s.name.toLowerCase() === name.toLowerCase() &&
+                (!window.isEditingSubstance || s.id !== window.editingSubstanceId)
+            );
 
-
-            function deleteEntryFromCalendar(entryId) {
-                const entry = entries.find(e => e.id === entryId); // Use === for strict comparison
-                if (!entry) {
-                    alert('❌ Registro no encontrado');
-                    return;
-                }
-
-                const confirmMessage = `¿Estás seguro de que quieres eliminar este registro?\n\n${entry.substance} - ${entry.dose} ${entry.unit}\n${new Date(entry.date).toLocaleString('es-ES')}`;
-
-                showCustomConfirm(
-                    confirmMessage,
-                    '🗑️ Confirmar Eliminación',
-                    () => {
-                        entries = entries.filter(e => e.id !== entryId); // Use !== for strict comparison
-                        localStorage.setItem('entries', JSON.stringify(entries));
-
-                        closeDayModal(); // Close the day entries modal
-
-                        generateCalendar();
-                        renderSubstanceList();
-                        renderStats();
-                        updateProfileCard(); // Update profile stats
-
-                        showAutoCloseAlert('🗑️ Registro eliminado correctamente', '✅ Eliminado');
-                    }
-                );
+            if (existingSubstance) {
+                showCustomAlert('Esta sustancia ya existe', '⚠️ Sustancia Duplicada');
+                return;
             }
 
-            // Substance functions
-            function addSubstance() {
-                const nameInput = document.getElementById('substanceName');
-                if (!nameInput) {
-                    showCustomAlert('Error: Campo de nombre no encontrado', '❌ Error del Sistema');
-                    return;
-                }
-
-                const name = nameInput.value.trim();
-
-                if (!name || name.length === 0) {
-                    showCustomAlert('Por favor, introduce un nombre para la sustancia', '⚠️ Campo Requerido');
-                    nameInput.focus();
-                    return;
-                }
-
-                // Verificar si ya existe una sustancia con el mismo nombre (excluyendo la que estamos editando)
-                const existingSubstance = substances.find(s =>
-                    s.name.toLowerCase() === name.toLowerCase() &&
-                    (!window.isEditingSubstance || s.id !== window.editingSubstanceId)
-                );
-
-                if (existingSubstance) {
-                    showCustomAlert('Esta sustancia ya existe', '⚠️ Sustancia Duplicada');
-                    return;
-                }
-
-                if (window.isEditingSubstance && window.editingSubstanceId) {
-                    // MODO EDICIÓN
-                    const substanceIndex = substances.findIndex(s => s.id === window.editingSubstanceId);
-                    if (substanceIndex !== -1) {
-                        substances[substanceIndex] = {
-                            ...substances[substanceIndex],
-                            name: name,
-                            color: selectedSubstanceColor,
-                            updatedAt: new Date().toISOString()
-                        };
-
-                        // Actualizar registros existentes si cambió el nombre
-                        if (substances[substanceIndex].name !== name) {
-                            entries.forEach(entry => {
-                                if (entry.substance === substances[substanceIndex].name) {
-                                    entry.substance = name;
-                                }
-                            });
-                            localStorage.setItem('entries', JSON.stringify(entries));
-                        }
-
-                        localStorage.setItem('substances', JSON.stringify(substances));
-
-                        showAutoCloseAlert(`✅ Sustancia "${name}" actualizada correctamente`, '✅ Sustancia Actualizada', 2000);
-                    }
-                } else {
-                    // MODO CREACIÓN
-                    const emojiInput = document.getElementById('substanceEmoji');
-                    const customEmoji = emojiInput ? emojiInput.value.trim() : '';
-                    const substance = {
-                        id: generateUniqueId(),
+            if (window.isEditingSubstance && window.editingSubstanceId) {
+                // MODO EDICIÓN
+                const substanceIndex = substances.findIndex(s => s.id === window.editingSubstanceId);
+                if (substanceIndex !== -1) {
+                    substances[substanceIndex] = {
+                        ...substances[substanceIndex],
                         name: name,
                         color: selectedSubstanceColor,
-                        emoji: customEmoji || getSubstanceEmoji(name), // Usar emoji personalizado o auto-detectar
-                        createdAt: new Date().toISOString()
-                    };
-
-                    substances.push(substance);
-                    localStorage.setItem('substances', JSON.stringify(substances));
-
-                    showAutoCloseAlert(`✅ Sustancia "${name}" añadida correctamente`, '✅ Sustancia Añadida', 2000);
-                }
-
-                // Limpiar y actualizar
-                renderSubstanceList();
-                generateCalendar();
-                renderStats();
-                updateProfileCard();
-
-                // Actualizar el dropdown de sustancias si está abierto
-                updateSubstanceDropdown();
-
-                // Cerrar modal y redirigir al calendario después del alert
-                setTimeout(() => {
-                    closeModal('substanceModal');
-                    // Redirect to calendar view
-                    switchView('calendar');
-                }, 2500); // Wait for alert to fade out (2000ms) + extra time for smooth transition
-                document.getElementById('substanceForm').reset();
-                const emojiInput = document.getElementById('substanceEmoji');
-                if (emojiInput) {
-                    emojiInput.value = ''; // Limpiar emoji personalizado
-                }
-
-                // Reset color selection
-                document.querySelectorAll('.color-option').forEach(opt => opt.classList.remove('selected'));
-                selectedSubstanceColor = '#8B5CF6'; // Reset to default
-
-                // Limpiar modo edición
-                window.isEditingSubstance = false;
-                window.editingSubstanceId = null;
-
-                // Restaurar botón y título originales
-                const submitBtn = document.querySelector('#substanceModal button[type="submit"]');
-                if (submitBtn) {
-                    submitBtn.innerHTML = 'Añadir Sustancia';
-                    submitBtn.style.background = 'linear-gradient(135deg, var(--primary-purple), var(--secondary-pink))';
-                }
-
-                const modalTitle = document.querySelector('#substanceModal h3');
-                if (modalTitle) {
-                    modalTitle.innerHTML = '➕ Añadir Nueva Sustancia';
-                }
-            }
-
-            function renderSubstanceList() {
-                const list = document.getElementById('substance-list');
-                list.innerHTML = '';
-
-                // Add "All substances" option first
-                const allItem = document.createElement('li');
-                allItem.className = 'substance-item';
-                if (!selectedSubstanceFilter) {
-                    allItem.classList.add('active');
-                }
-                allItem.innerHTML = `
-                    <div class="substance-info">
-                        <span>📋 Experiencias registradas</span>
-                    </div>
-                    <div class="substance-actions">
-                        <span class="substance-count">${entries.length}</span>
-                    </div>
-                `;
-                allItem.querySelector('.substance-info').addEventListener('click', () => {
-                    filterBySubstance(null);
-                });
-                list.appendChild(allItem);
-
-                substances.forEach(substance => {
-                    const count = entries.filter(entry => entry.substance === substance.name).length;
-
-                    const item = document.createElement('li');
-                    item.className = 'substance-item';
-
-                    // Add active class if this substance is selected
-                    if (selectedSubstanceFilter === substance.name) {
-                        item.classList.add('active');
-                    }
-
-                    item.innerHTML = `
-                        <div class="substance-info">
-                            <span>${substance.name}</span>
-                        </div>
-                        <div class="substance-actions">
-                            <span class="substance-count">${count}</span>
-                            <button class="edit-substance-btn" data-substance-id="${substance.id}" title="Editar sustancia">✏️</button>
-                            <button class="delete-substance-btn" data-substance-id="${substance.id}" title="Eliminar sustancia">×</button>
-                        </div>
-                    `;
-                    item.style.borderLeft = `4px solid ${substance.color}`;
-                    item.style.backgroundColor = `${substance.color}15`; // Lighten color for background
-
-                    // Add click event for filtering (exclude the delete button)
-                    item.querySelector('.substance-info').addEventListener('click', () => {
-                        filterBySubstance(substance.name);
-                    });
-
-                    // Attach event listener for edit button
-                    item.querySelector('.edit-substance-btn').addEventListener('click', (e) => {
-                        e.stopPropagation(); // Prevent filtering when clicking edit
-                        const substanceId = e.currentTarget.dataset.substanceId;
-                        editSubstance(substanceId);
-                    });
-
-                    // Attach event listener for delete button
-                    item.querySelector('.delete-substance-btn').addEventListener('click', (e) => {
-                        const substanceId = e.currentTarget.dataset.substanceId;
-                        deleteSubstance(substanceId);
-                    });
-
-                    list.appendChild(item);
-                });
-            }
-
-            function resetEditMode() {
-                isEditMode = false;
-                currentEditingEntryId = null;
-
-                const submitBtn = document.querySelector('#entryForm button[type="submit"]');
-                if (submitBtn) {
-                    submitBtn.innerHTML = '💾 Guardar Registro';
-                    submitBtn.style.background = 'linear-gradient(135deg, var(--primary-purple), var(--secondary-pink))';
-                }
-                resetEntryForm(); // Also reset the form fields
-            }
-
-            function resetEntryForm() {
-                const form = document.getElementById('entryForm');
-                if (form) form.reset();
-
-                // Fecha y hora por defecto: ahora (local)
-                const now = new Date();
-                const localDateTime = new Date(now.getTime() - now.getTimezoneOffset() * 60000)
-                    .toISOString()
-                    .slice(0, 16);
-                const dateTimeInput = document.getElementById('entryDateTime');
-                if (dateTimeInput) {
-                    dateTimeInput.value = localDateTime;
-                }
-
-                // Sustancia
-                const substanceHeaderText = document.querySelector('#entrySubstanceDropdown .dropdown-text');
-                const substanceHiddenInput = document.getElementById('entrySubstance');
-                if (substanceHeaderText && substanceHiddenInput) {
-                    substanceHeaderText.textContent = 'Selecciona una sustancia...';
-                    substanceHiddenInput.value = '';
-                    document.querySelectorAll('#entrySubstanceDropdown .dropdown-option').forEach(opt => opt.classList.remove('selected'));
-                }
-
-                // Unidad (volver a placeholder "Seleccionar unidad...")
-                const unitHeaderText = document.querySelector('#entryUnitDropdown .dropdown-text');
-                const unitHiddenInput = document.getElementById('entryUnit');
-                if (unitHeaderText && unitHiddenInput) {
-                    unitHeaderText.textContent = 'Seleccionar unidad...';
-                    unitHiddenInput.value = '';
-                    document.querySelectorAll('#entryUnitDropdown .dropdown-option').forEach(opt => opt.classList.remove('selected'));
-                }
-
-                // Set (estado mental)
-                const setHeaderText = document.querySelector('#entrySetDropdown .dropdown-text');
-                const setHiddenInput = document.getElementById('entrySet');
-                if (setHeaderText && setHiddenInput) {
-                    setHeaderText.textContent = 'Seleccionar...';
-                    setHiddenInput.value = '';
-                    document.querySelectorAll('#entrySetDropdown .dropdown-option').forEach(opt => opt.classList.remove('selected'));
-                }
-
-                // Setting (entorno)
-                const settingHeaderText = document.querySelector('#entrySettingDropdown .dropdown-text');
-                const settingHiddenInput = document.getElementById('entrySetting');
-                if (settingHeaderText && settingHiddenInput) {
-                    settingHeaderText.textContent = 'Seleccionar...';
-                    settingHiddenInput.value = '';
-                    document.querySelectorAll('#entrySettingDropdown .dropdown-option').forEach(opt => opt.classList.remove('selected'));
-                }
-
-                // Notas
-                const notesInput = document.getElementById('entryNotes');
-                if (notesInput) notesInput.value = '';
-            }
-
-            function filterBySubstance(substanceName) {
-                selectedSubstanceFilter = substanceName;
-                // Update active state for substances
-                document.querySelectorAll('.substance-item').forEach(item => {
-                    item.classList.remove('active');
-                });
-
-                if (substanceName === null) {
-                    //Mark "Experiencias registradas" as active
-                    document.querySelector('.substance-item:first-child').classList.add('active');
-                } else {
-                    // Find and mark the specific substance as active
-                    document.querySelectorAll('.substance-item').forEach(item => {
-                       const substanceText = item.querySelector('.substance-info span').textContent;
-                        if (substanceText === substanceName) {
-                            item.classList.add('active');
-                        }
-                    });
-                }
-
-                generateCalendar();
-                renderSubstanceList();
-                renderStats();
-            }
-
-            function deleteSubstance(substanceId) {
-                const substance = substances.find(s => s.id === substanceId); // Use === for strict comparison
-                if (!substance) return;
-
-                const hasEntries = entries.some(entry => entry.substance === substance.name);
-
-                let confirmMessage = `¿Estás seguro de que quieres eliminar "${substance.name}"?`;
-                if (hasEntries) {
-                    confirmMessage += '\n\n⚠️ Esta sustancia tiene registros asociados. Si la eliminas, también se eliminarán todos sus registros.';
-                }
-
-                showCustomConfirm(
-                    confirmMessage,
-                    '🗑️ Confirmar Eliminación',
-                    () => {
-                        // Remove substance
-                        substances = substances.filter(s => s.id !== substanceId); // Use !== for strict comparison
-
-                        // Remove related entries if any
-                        if (hasEntries) {
-                            entries = entries.filter(entry => entry.substance !== substance.name);
-                            localStorage.setItem('entries', JSON.stringify(entries));
-                        }
-
-                        // Clear filter if we're filtering by this substance
-                        if (selectedSubstanceFilter === substance.name) {
-                            selectedSubstanceFilter = null;
-                        }
-
-                        localStorage.setItem('substances', JSON.stringify(substances));
-
-                        renderSubstanceList();
-                        generateCalendar();
-                        renderStats();
-                        updateProfileCard(); // Update profile stats
-
-                        showCustomAlert(`"${substance.name}" ha sido eliminada${hasEntries ? ' junto con sus registros' : ''}.`, '✅ Sustancia Eliminada');
-                    }
-                );
-            }
-
-            function editSubstance(substanceId) {
-                const substance = substances.find(s => s.id === substanceId);
-                if (!substance) {
-                    showCustomAlert('❌ Sustancia no encontrada', '❌ Error');
-                    return;
-                }
-
-                // Abrir el modal de sustancia en modo edición
-                openModal('substanceModal');
-
-                // Configurar el modal para edición
-                const nameInput = document.getElementById('substanceName');
-                if (nameInput) {
-                    nameInput.value = substance.name;
-                }
-                selectedSubstanceColor = substance.color;
-
-                // Marcar el color correcto como seleccionado
-                document.querySelectorAll('.color-option').forEach(opt => {
-                    opt.classList.remove('selected');
-                    if (opt.dataset.color === substance.color) {
-                        opt.classList.add('selected');
-                    }
-                });
-
-                // Cambiar el botón y título
-                const submitBtn = document.querySelector('#substanceModal button[type="submit"]');
-                if (submitBtn) {
-                    submitBtn.innerHTML = '✅ Actualizar Sustancia';
-                    submitBtn.style.background = 'linear-gradient(135deg, var(--accent-orange), var(--secondary-pink))';
-                }
-
-                // Cambiar el título del modal
-                const modalTitle = document.querySelector('#substanceModal h3');
-                if (modalTitle) {
-                    modalTitle.innerHTML = '✏️ Editar Sustancia';
-                }
-
-                // Configurar el modal para actualizar en lugar de crear
-                window.editingSubstanceId = substanceId;
-                window.isEditingSubstance = true;
-            }
-
-            function populateSubstanceDropdown() {
-
-
-                const dropdownOptions = document.getElementById('entrySubstanceOptions');
-                const hiddenInput = document.getElementById('entrySubstance');
-                const headerText = document.querySelector('#entrySubstanceDropdown .dropdown-text');
-                const currentValue = hiddenInput.value; // Guardar el valor actual
-
-                // Limpiar opciones existentes (excepto la primera placeholder)
-                dropdownOptions.innerHTML = '';
-
-                // Añadir opción placeholder (no seleccionable)
-                const placeholderOption = document.createElement('div');
-                placeholderOption.className = 'dropdown-option';
-                placeholderOption.setAttribute('data-value', '');
-                placeholderOption.style.opacity = '0.6';
-                placeholderOption.style.cursor = 'default';
-                placeholderOption.innerHTML = `
-                    <span class="option-emoji">💊</span>
-                    <span class="option-text">Selecciona una sustancia...</span>
-                `;
-                dropdownOptions.appendChild(placeholderOption);
-
-                // Añadir opciones de sustancias
-                substances.forEach(substance => {
-                    const option = document.createElement('div');
-                    option.className = 'dropdown-option';
-                    option.setAttribute('data-value', substance.name);
-                    const emoji = substance.emoji || getSubstanceEmoji(substance.name);
-                    option.onclick = function() {
-                        selectOption('entrySubstanceDropdown', substance.name, substance.name, emoji);
-                    };
-                    option.innerHTML = `
-                        <span class="option-emoji">${emoji}</span>
-                        <span class="option-text">${substance.name}</span>
-                    `;
-                    dropdownOptions.appendChild(option);
-                });
-
-                // Forzar reflow para asegurar que el scroll funcione
-                dropdownOptions.style.display = 'none';
-                dropdownOptions.offsetHeight; // Trigger reflow
-                dropdownOptions.style.display = '';
-
-                // Restaurar el valor si estamos en modo edición
-                if (currentValue && isEditMode) {
-                    hiddenInput.value = currentValue;
-                    // Buscar y marcar la opción correspondiente
-                    const optionToSelect = dropdownOptions.querySelector(`[data-value="${currentValue}"]`);
-                    if (optionToSelect) {
-                        const emoji = optionToSelect.querySelector('.option-emoji').textContent;
-                        headerText.textContent = `${emoji} ${currentValue}`;
-                        // Marcar la opción como seleccionada
-                        optionToSelect.classList.add('selected');
-                    }
-                }
-            }
-
-            // Function to generate truly unique IDs
-            function generateUniqueId() {
-                return Date.now().toString(36) + Math.random().toString(36).substr(2, 9);
-            }
-
-            // Entry functions - Handles both add and edit
-            function addEntry() {
-                const substanceInput = document.getElementById('entrySubstance');
-                const doseInput = document.getElementById('entryDose');
-                const unitInput = document.getElementById('entryUnit');
-                const dateTimeInput = document.getElementById('entryDateTime');
-                const setInput = document.getElementById('entrySet');
-                const settingInput = document.getElementById('entrySetting');
-                const notesInput = document.getElementById('entryNotes');
-
-                if (!substanceInput || !doseInput || !unitInput || !dateTimeInput) {
-                    showCustomAlert('Error: Elementos del formulario no encontrados', '❌ Error del Sistema');
-                    return;
-                }
-
-                const substance = substanceInput.value;
-                const dose = parseFloat(doseInput.value);
-                const unit = unitInput.value;
-                const dateTime = dateTimeInput.value;
-                const set = setInput ? setInput.value : '';
-                const setting = settingInput ? settingInput.value : '';
-                const notes = notesInput ? notesInput.value.trim() : '';
-
-                // Validación mejorada para el campo sustancia
-                if (!substance || substance === 'placeholder' || substance === '') {
-                    showCustomAlert('Por favor, selecciona una sustancia válida', '⚠️ Sustancia Requerida');
-                    return;
-                }
-
-                if (!dose || isNaN(dose) || dose <= 0) {
-                    showCustomAlert('Por favor, introduce una dosis válida mayor a 0', '⚠️ Dosis Inválida');
-                    return;
-                }
-
-                if (!unit || unit === '') {
-                    showCustomAlert('Por favor, selecciona una unidad válida', '⚠️ Unidad Requerida');
-                    return;
-                }
-
-                if (!dateTime) {
-                    showCustomAlert('Por favor, selecciona una fecha y hora válida', '⚠️ Fecha Requerida');
-                    return;
-                }
-
-                if (isEditMode && currentEditingEntryId) {
-                    // EDIT MODE
-                    const existingEntryIndex = entries.findIndex(e => e.id === currentEditingEntryId); // Use === for strict comparison
-                    if (existingEntryIndex === -1) {
-                        showCustomAlert('❌ Error: Registro no encontrado para actualizar.', '❌ Error');
-                        resetEditMode();
-                        return;
-                    }
-
-                    // Update existing entry
-                    entries[existingEntryIndex] = {
-                        ...entries[existingEntryIndex], // Keep original properties like createdAt
-                        substance: substance,
-                        dose: dose,
-                        unit: unit,
-                        date: dateTime,
-                        set: set || null, // Store null if empty
-                        setting: setting || null, // Store null if empty
-                        notes: notes || null, // Store null if empty
                         updatedAt: new Date().toISOString()
                     };
 
-                    showAutoCloseAlert(`✅ Registro actualizado: ${dose} ${unit} de ${substance}`, '✅ Registro Actualizado', 2000);
-                    closeModal('entryModal');
-                    // Redirect to calendar view
-                    switchView('calendar');
-                    generateCalendar();
-                    renderStats();
-                    renderSubstanceList();
+                                             // Actualizar registros existentes si cambió el nombre
+                         if (substances[substanceIndex].name !== name) {
+                             entries.forEach(entry => {
+                                 if (entry.substance === substances[substanceIndex].name) {
+                                     entry.substance = name;
+                                 }
+                             });
+                         }
 
-                } else {
-                   // CREATION MODE
-                   const entry = {
-                       id: generateUniqueId(),
-                       substance: substance,
-                       dose: dose,
-                       unit: unit,
-                       date: dateTime,
-                       set: set || null,
-                       setting: setting || null,
-                       notes: notes || null,
-                       createdAt: new Date().toISOString()
-                   };
-                   entries.push(entry);
-                   showAutoCloseAlert(`✅ Registro guardado: ${dose} ${unit} de ${substance}`, '✅ Registro Guardado', 2000);
+                         saveDataToStorage();
 
-                   closeModal('entryModal');
-                    // Redirect to calendar view
-                    switchView('calendar');
-                    generateCalendar();
-                    renderStats();
-                    renderSubstanceList();
+                    showAutoCloseAlert(`✅ Sustancia "${name}" actualizada correctamente`, '✅ Sustancia Actualizada', 2000);
+                }
+            } else {
+                // MODO CREACIÓN
+                const emojiInput = document.getElementById('substanceEmoji');
+                const customEmoji = emojiInput ? emojiInput.value.trim() : '';
+                const substance = {
+                    id: generateUniqueId(),
+                    name: name,
+                    color: selectedSubstanceColor,
+                    emoji: customEmoji || getSubstanceEmoji(name), // Usar emoji personalizado o auto-detectar
+                    createdAt: new Date().toISOString()
+                };
+
+                                     substances.push(substance);
+                     saveDataToStorage();
+
+                showAutoCloseAlert(`✅ Sustancia "${name}" añadida correctamente`, '✅ Sustancia Añadida', 2000);
+            }
+
+            // Limpiar y actualizar
+            renderSubstanceList();
+            generateCalendar();
+            renderStats();
+            updateProfileCard();
+
+            // Actualizar el dropdown de sustancias si está abierto
+            updateSubstanceDropdown();
+
+            // Cerrar modal y redirigir al calendario después del alert
+            setTimeout(() => {
+                closeModal('substanceModal');
+                // Redirect to calendar view
+                switchView('calendar');
+            }, 2500); // Wait for alert to fade out (2000ms) + extra time for smooth transition
+            document.getElementById('substanceForm').reset();
+            const emojiInput = document.getElementById('substanceEmoji');
+            if (emojiInput) {
+                emojiInput.value = ''; // Limpiar emoji personalizado
+            }
+
+            // Reset color selection
+            document.querySelectorAll('.color-option').forEach(opt => opt.classList.remove('selected'));
+            selectedSubstanceColor = '#8B5CF6'; // Reset to default
+
+            // Limpiar modo edición
+            window.isEditingSubstance = false;
+            window.editingSubstanceId = null;
+
+            // Restaurar botón y título originales
+            const submitBtn = document.querySelector('#substanceModal button[type="submit"]');
+            if (submitBtn) {
+                submitBtn.innerHTML = 'Añadir Sustancia';
+                submitBtn.style.background = 'linear-gradient(135deg, var(--primary-purple), var(--secondary-pink))';
+            }
+
+            const modalTitle = document.querySelector('#substanceModal h3');
+            if (modalTitle) {
+                modalTitle.innerHTML = '➕ Añadir Nueva Sustancia';
+            }
+        }
+
+        function renderSubstanceList() {
+            const list = document.getElementById('substance-list');
+            list.innerHTML = '';
+
+            // Add "All substances" option first
+            const allItem = document.createElement('li');
+            allItem.className = 'substance-item';
+            if (!selectedSubstanceFilter) {
+                allItem.classList.add('active');
+            }
+            allItem.innerHTML = `
+                <div class="substance-info">
+                    <span>📋 Experiencias registradas</span>
+                </div>
+                <div class="substance-actions">
+                    <span class="substance-count">${entries.length}</span>
+                </div>
+            `;
+            allItem.querySelector('.substance-info').addEventListener('click', () => {
+                filterBySubstance(null);
+            });
+            list.appendChild(allItem);
+
+            substances.forEach(substance => {
+                const count = entries.filter(entry => entry.substance === substance.name).length;
+
+                const item = document.createElement('li');
+                item.className = 'substance-item';
+
+                // Add active class if this substance is selected
+                if (selectedSubstanceFilter === substance.name) {
+                    item.classList.add('active');
                 }
 
-                // Save and update
-                localStorage.setItem('entries', JSON.stringify(entries));
+                item.innerHTML = `
+                    <div class="substance-info">
+                        <span>${substance.name}</span>
+                    </div>
+                    <div class="substance-actions">
+                        <span class="substance-count">${count}</span>
+                        <button class="edit-substance-btn" data-substance-id="${substance.id}" title="Editar sustancia">✏️</button>
+                        <button class="delete-substance-btn" data-substance-id="${substance.id}" title="Eliminar sustancia">×</button>
+                    </div>
+                `;
+                item.style.borderLeft = `4px solid ${substance.color}`;
+                item.style.backgroundColor = `${substance.color}15`; // Lighten color for background
 
-                generateCalendar();
-                renderSubstanceList();
-                renderStats();
+                // Add click event for filtering (exclude the delete button)
+                item.querySelector('.substance-info').addEventListener('click', () => {
+                    filterBySubstance(substance.name);
+                });
 
-                // Clean up and redirect to calendar
-                setTimeout(() => {
-                    closeModal('entryModal');
+                // Attach event listener for edit button
+                item.querySelector('.edit-substance-btn').addEventListener('click', (e) => {
+                    e.stopPropagation(); // Prevent filtering when clicking edit
+                    const substanceId = e.currentTarget.dataset.substanceId;
+                    editSubstance(substanceId);
+                });
+
+                // Attach event listener for delete button
+                item.querySelector('.delete-substance-btn').addEventListener('click', (e) => {
+                    const substanceId = e.currentTarget.dataset.substanceId;
+                    deleteSubstance(substanceId);
+                });
+
+                list.appendChild(item);
+            });
+        }
+
+        function resetEditMode() {
+            isEditMode = false;
+            currentEditingEntryId = null;
+
+            const submitBtn = document.querySelector('#entryForm button[type="submit"]');
+            if (submitBtn) {
+                submitBtn.innerHTML = '💾 Guardar Registro';
+                submitBtn.style.background = 'linear-gradient(135deg, var(--primary-purple), var(--secondary-pink))';
+            }
+            resetEntryForm(); // Also reset the form fields
+        }
+
+        function resetEntryForm() {
+            const form = document.getElementById('entryForm');
+            if (form) form.reset();
+
+            // Fecha y hora por defecto: ahora (local)
+            const now = new Date();
+            const localDateTime = new Date(now.getTime() - now.getTimezoneOffset() * 60000)
+                .toISOString()
+                .slice(0, 16);
+            const dateTimeInput = document.getElementById('entryDateTime');
+            if (dateTimeInput) {
+                dateTimeInput.value = localDateTime;
+            }
+
+            // Sustancia
+            const substanceHeaderText = document.querySelector('#entrySubstanceDropdown .dropdown-text');
+            const substanceHiddenInput = document.getElementById('entrySubstance');
+            if (substanceHeaderText && substanceHiddenInput) {
+                substanceHeaderText.textContent = 'Selecciona una sustancia...';
+                substanceHiddenInput.value = '';
+                document.querySelectorAll('#entrySubstanceDropdown .dropdown-option').forEach(opt => opt.classList.remove('selected'));
+            }
+
+            // Unidad (volver a placeholder "Seleccionar unidad...")
+            const unitHeaderText = document.querySelector('#entryUnitDropdown .dropdown-text');
+            const unitHiddenInput = document.getElementById('entryUnit');
+            if (unitHeaderText && unitHiddenInput) {
+                unitHeaderText.textContent = 'Seleccionar unidad...';
+                unitHiddenInput.value = '';
+                document.querySelectorAll('#entryUnitDropdown .dropdown-option').forEach(opt => opt.classList.remove('selected'));
+            }
+
+            // Set (estado mental)
+            const setHeaderText = document.querySelector('#entrySetDropdown .dropdown-text');
+            const setHiddenInput = document.getElementById('entrySet');
+            if (setHeaderText && setHiddenInput) {
+                setHeaderText.textContent = 'Seleccionar...';
+                setHiddenInput.value = '';
+                document.querySelectorAll('#entrySetDropdown .dropdown-option').forEach(opt => opt.classList.remove('selected'));
+            }
+
+            // Setting (entorno)
+            const settingHeaderText = document.querySelector('#entrySettingDropdown .dropdown-text');
+            const settingHiddenInput = document.getElementById('entrySetting');
+            if (settingHeaderText && settingHiddenInput) {
+                settingHeaderText.textContent = 'Seleccionar...';
+                settingHiddenInput.value = '';
+                document.querySelectorAll('#entrySettingDropdown .dropdown-option').forEach(opt => opt.classList.remove('selected'));
+            }
+
+            // Notas
+            const notesInput = document.getElementById('entryNotes');
+            if (notesInput) notesInput.value = '';
+        }
+
+        function filterBySubstance(substanceName) {
+            selectedSubstanceFilter = substanceName;
+            // Update active state for substances
+            document.querySelectorAll('.substance-item').forEach(item => {
+                item.classList.remove('active');
+            });
+
+            if (substanceName === null) {
+                //Mark "Experiencias registradas" as active
+                document.querySelector('.substance-item:first-child').classList.add('active');
+            } else {
+                // Find and mark the specific substance as active
+                document.querySelectorAll('.substance-item').forEach(item => {
+                   const substanceText = item.querySelector('.substance-info span').textContent;
+                    if (substanceText === substanceName) {
+                        item.classList.add('active');
+                    }
+                });
+            }
+
+            generateCalendar();
+            renderSubstanceList();
+            renderStats();
+        }
+
+        function deleteSubstance(substanceId) {
+            const substance = substances.find(s => s.id === substanceId); // Use === for strict comparison
+            if (!substance) return;
+
+            const hasEntries = entries.some(entry => entry.substance === substance.name);
+
+            let confirmMessage = `¿Estás seguro de que quieres eliminar "${substance.name}"?`;
+            if (hasEntries) {
+                confirmMessage += '\n\n⚠️ Esta sustancia tiene registros asociados. Si la eliminas, también se eliminarán todos sus registros.';
+            }
+
+            showCustomConfirm(
+                confirmMessage,
+                '🗑️ Confirmar Eliminación',
+                () => {
+                    // Remove substance
+                    substances = substances.filter(s => s.id !== substanceId); // Use !== for strict comparison
+
+                                         // Remove related entries if any
+                     if (hasEntries) {
+                         entries = entries.filter(entry => entry.substance !== substance.name);
+                     }
+
+                     // Clear filter if we're filtering by this substance
+                     if (selectedSubstanceFilter === substance.name) {
+                         selectedSubstanceFilter = null;
+                     }
+
+                     // Guardar todos los datos
+                     saveDataToStorage();
+
+                    renderSubstanceList();
+                    generateCalendar();
+                    renderStats();
+                    updateProfileCard(); // Update profile stats
+
+                    showCustomAlert(`"${substance.name}" ha sido eliminada${hasEntries ? ' junto con sus registros' : ''}.`, '✅ Sustancia Eliminada');
+                }
+            );
+        }
+
+        function editSubstance(substanceId) {
+            const substance = substances.find(s => s.id === substanceId);
+            if (!substance) {
+                showCustomAlert('❌ Sustancia no encontrada', '❌ Error');
+                return;
+            }
+
+            // Abrir el modal de sustancia en modo edición
+            openModal('substanceModal');
+
+            // Configurar el modal para edición
+            const nameInput = document.getElementById('substanceName');
+            if (nameInput) {
+                nameInput.value = substance.name;
+            }
+            selectedSubstanceColor = substance.color;
+
+            // Marcar el color correcto como seleccionado
+            document.querySelectorAll('.color-option').forEach(opt => {
+                opt.classList.remove('selected');
+                if (opt.dataset.color === substance.color) {
+                    opt.classList.add('selected');
+                }
+            });
+
+            // Cambiar el botón y título
+            const submitBtn = document.querySelector('#substanceModal button[type="submit"]');
+            if (submitBtn) {
+                submitBtn.innerHTML = '✅ Actualizar Sustancia';
+                submitBtn.style.background = 'linear-gradient(135deg, var(--accent-orange), var(--secondary-pink))';
+            }
+
+            // Cambiar el título del modal
+            const modalTitle = document.querySelector('#substanceModal h3');
+            if (modalTitle) {
+                modalTitle.innerHTML = '✏️ Editar Sustancia';
+            }
+
+            // Configurar el modal para actualizar en lugar de crear
+            window.editingSubstanceId = substanceId;
+            window.isEditingSubstance = true;
+        }
+
+        function populateSubstanceDropdown() {
+
+
+            const dropdownOptions = document.getElementById('entrySubstanceOptions');
+            const hiddenInput = document.getElementById('entrySubstance');
+            const headerText = document.querySelector('#entrySubstanceDropdown .dropdown-text');
+            const currentValue = hiddenInput.value; // Guardar el valor actual
+
+            // Limpiar opciones existentes (excepto la primera placeholder)
+            dropdownOptions.innerHTML = '';
+
+            // Añadir opción placeholder (no seleccionable)
+            const placeholderOption = document.createElement('div');
+            placeholderOption.className = 'dropdown-option';
+            placeholderOption.setAttribute('data-value', '');
+            placeholderOption.style.opacity = '0.6';
+            placeholderOption.style.cursor = 'default';
+            placeholderOption.innerHTML = `
+                <span class="option-emoji">💊</span>
+                <span class="option-text">Selecciona una sustancia...</span>
+            `;
+            dropdownOptions.appendChild(placeholderOption);
+
+            // Añadir opciones de sustancias
+            substances.forEach(substance => {
+                const option = document.createElement('div');
+                option.className = 'dropdown-option';
+                option.setAttribute('data-value', substance.name);
+                const emoji = substance.emoji || getSubstanceEmoji(substance.name);
+                option.onclick = function() {
+                    selectOption('entrySubstanceDropdown', substance.name, substance.name, emoji);
+                };
+                option.innerHTML = `
+                    <span class="option-emoji">${emoji}</span>
+                    <span class="option-text">${substance.name}</span>
+                `;
+                dropdownOptions.appendChild(option);
+            });
+
+            // Forzar reflow para asegurar que el scroll funcione
+            dropdownOptions.style.display = 'none';
+            dropdownOptions.offsetHeight; // Trigger reflow
+            dropdownOptions.style.display = '';
+
+            // Restaurar el valor si estamos en modo edición
+            if (currentValue && isEditMode) {
+                hiddenInput.value = currentValue;
+                // Buscar y marcar la opción correspondiente
+                const optionToSelect = dropdownOptions.querySelector(`[data-value="${currentValue}"]`);
+                if (optionToSelect) {
+                    const emoji = optionToSelect.querySelector('.option-emoji').textContent;
+                    headerText.textContent = `${emoji} ${currentValue}`;
+                    // Marcar la opción como seleccionada
+                    optionToSelect.classList.add('selected');
+                }
+            }
+        }
+
+        // Function to generate truly unique IDs
+        function generateUniqueId() {
+            return Date.now().toString(36) + Math.random().toString(36).substr(2, 9);
+        }
+
+        // Entry functions - Handles both add and edit
+        function addEntry() {
+            const substanceInput = document.getElementById('entrySubstance');
+            const doseInput = document.getElementById('entryDose');
+            const unitInput = document.getElementById('entryUnit');
+            const dateTimeInput = document.getElementById('entryDateTime');
+            const setInput = document.getElementById('entrySet');
+            const settingInput = document.getElementById('entrySetting');
+            const notesInput = document.getElementById('entryNotes');
+
+            if (!substanceInput || !doseInput || !unitInput || !dateTimeInput) {
+                showCustomAlert('Error: Elementos del formulario no encontrados', '❌ Error del Sistema');
+                return;
+            }
+
+            const substance = substanceInput.value;
+            const dose = parseFloat(doseInput.value);
+            const unit = unitInput.value;
+            const dateTime = dateTimeInput.value;
+            const set = setInput ? setInput.value : '';
+            const setting = settingInput ? settingInput.value : '';
+            const notes = notesInput ? notesInput.value.trim() : '';
+
+            // Validación mejorada para el campo sustancia
+            if (!substance || substance === 'placeholder' || substance === '') {
+                showCustomAlert('Por favor, selecciona una sustancia válida', '⚠️ Sustancia Requerida');
+                return;
+            }
+
+            if (!dose || isNaN(dose) || dose <= 0) {
+                showCustomAlert('Por favor, introduce una dosis válida mayor a 0', '⚠️ Dosis Inválida');
+                return;
+            }
+
+            if (!unit || unit === '') {
+                showCustomAlert('Por favor, selecciona una unidad válida', '⚠️ Unidad Requerida');
+                return;
+            }
+
+            if (!dateTime) {
+                showCustomAlert('Por favor, selecciona una fecha y hora válida', '⚠️ Fecha Requerida');
+                return;
+            }
+
+            if (isEditMode && currentEditingEntryId) {
+                // EDIT MODE
+                // Buscar usando comparación flexible
+                let existingEntryIndex = entries.findIndex(e => e.id === currentEditingEntryId);
+                if (existingEntryIndex === -1) {
+                    existingEntryIndex = entries.findIndex(e => e.id == currentEditingEntryId);
+                }
+                if (existingEntryIndex === -1) {
+                    existingEntryIndex = entries.findIndex(e => String(e.id) === String(currentEditingEntryId));
+                }
+                if (existingEntryIndex === -1) {
+                    existingEntryIndex = entries.findIndex(e => Number(e.id) === Number(currentEditingEntryId));
+                }
+                
+                if (existingEntryIndex === -1) {
+                    showCustomAlert('❌ Error: Registro no encontrado para actualizar.', '❌ Error');
                     resetEditMode();
-                    // Redirect to calendar view
-                    switchView('calendar');
-                }, 2500); // Wait for alert to fade out (2000ms) + extra time for smooth transition
-            }
-
-            // Stats functions
-            function renderStats() {
-                const statsContainer = document.getElementById('stats-content');
-
-                if (entries.length === 0) {
-                    statsContainer.innerHTML = '<div class="resource-card"><h4>No hay datos</h4><p>Añade algunos registros para ver estadísticas</p></div>';
                     return;
                 }
 
-                const totalEntries = entries.length;
-                const uniqueSubstances = [...new Set(entries.map(entry => entry.substance))];
-
-                // Calculate average per month based on the span of entries
-                let firstEntryDate = entries.length > 0 ? new Date(Math.min(...entries.map(e => new Date(e.date)))) : null;
-                let lastEntryDate = entries.length > 0 ? new Date(Math.max(...entries.map(e => new Date(e.date)))) : null;
-
-                let monthsSpan = 0;
-                if (firstEntryDate && lastEntryDate) {
-                    monthsSpan = (lastEntryDate.getFullYear() - firstEntryDate.getFullYear()) * 12;
-                    monthsSpan -= firstEntryDate.getMonth();
-                    monthsSpan += lastEntryDate.getMonth();
-                    monthsSpan = Math.max(1, monthsSpan + 1); // Ensure at least 1 month
-                } else {
-                    monthsSpan = 1; // Default to 1 month if no entries
-                }
-
-                const averagePerMonth = (totalEntries / monthsSpan).toFixed(1);
-
-
-                // Most used substance
-                const substanceCount = {};
-                entries.forEach(entry => {
-                    substanceCount[entry.substance] = (substanceCount[entry.substance] || 0) + 1;
-                });
-                const mostUsed = Object.keys(substanceCount).length > 0 ? Object.keys(substanceCount).reduce((a, b) => substanceCount[a] > substanceCount[b] ? a : b) : 'N/A';
-
-                // Recent activity
-                const lastWeek = new Date();
-                lastWeek.setDate(lastWeek.getDate() - 7);
-                const recentEntries = entries.filter(entry => new Date(entry.date) > lastWeek).length;
-
-                statsContainer.innerHTML = `
-                    <div class="resource-card">
-                        <h4>Registros Totales</h4>
-                        <p style="font-size: 2rem; color: var(--accent-cyan); font-weight: bold;">${totalEntries}</p>
-                    </div>
-                    <div class="resource-card">
-                        <h4>Sustancias Únicas</h4>
-                        <p style="font-size: 2rem; color: var(--secondary-pink); font-weight: bold;">${uniqueSubstances.length}</p>
-                    </div>
-                    <div class="resource-card">
-                        <h4>Más Utilizada</h4>
-                        <p style="font-size: 1.5rem; color: var(--primary-purple); font-weight: bold;">${mostUsed}</p>
-                        <p>${substanceCount[mostUsed] || 0} veces</p>
-                    </div>
-                    <div class="resource-card">
-                        <h4>Actividad Reciente</h4>
-                        <p style="font-size: 2rem; color: var(--accent-orange); font-weight: bold;">${recentEntries}</p>
-                        <p>Últimos 7 días</p>
-                    </div>
-                    <div class="resource-card">
-                        <h4>Promedio Mensual</h4>
-                        <p style="font-size: 2rem; color: var(--accent-cyan); font-weight: bold;">${averagePerMonth}</p>
-                        <p>Registros por mes</p>
-                    </div>
-                `;
-            }
-
-            // FUNCIÓN DE MIGRACIÓN MEJORADA - Añade esto al principio de tu script
-            function migrateOldEntries() {
-                let updatedCount = 0;
-
-                entries.forEach(entry => {
-                    let updated = false;
-
-                    // Asegurar que todos los campos existan
-                    if (!entry.hasOwnProperty('set')) {
-                        entry.set = '';
-                        updated = true;
-                    }
-
-                    if (!entry.hasOwnProperty('setting')) {
-                        entry.setting = '';
-                        updated = true;
-                    }
-
-                    if (!entry.hasOwnProperty('unit')) {
-                        entry.unit = '';
-                        updated = true;
-                    }
-
-                    if (!entry.hasOwnProperty('notes')) {
-                        entry.notes = '';
-                        updated = true;
-                    }
-
-                    if (!entry.hasOwnProperty('createdAt')) {
-                        entry.createdAt = new Date().toISOString();
-                        updated = true;
-                    }
-
-                    if (!entry.hasOwnProperty('updatedAt')) {
-                        entry.updatedAt = '';
-                        updated = true;
-                    }
-
-                    if (updated) {
-                        updatedCount++;
-                    }
-                });
-
-                if (updatedCount > 0) {
-                    localStorage.setItem('entries', JSON.stringify(entries));
-                    return updatedCount;
-                }
-                return 0;
-            }
-
-            // FUNCIÓN DE VALIDACIÓN ACTUALIZADA - Reemplaza la existente
-            function validateDataBeforeExport() {
-                // Primero migrar registros antiguos
-                const migratedCount = migrateOldEntries();
-
-                if (migratedCount > 0) {
-                    showCustomAlert(
-                        `Se han actualizado ${migratedCount} registros con la nueva estructura. ` +
-                        'Ahora puedes exportar correctamente con todos los campos (Set, Setting, etc.).',
-                        '✅ Migración completada'
-                    );
-                    return;
-                }
-
-                // Verificar que todos los registros tengan la estructura correcta
-                const invalidEntries = entries.filter(entry =>
-                    !entry.hasOwnProperty('set') || !entry.hasOwnProperty('setting')
-                );
-
-                if (invalidEntries.length > 0) {
-                    showCustomConfirm(
-                        `Se encontraron ${invalidEntries.length} registros con estructura incompleta. ` +
-                        '¿Desea corregirlos antes de exportar?',
-                        'Estructura de datos incompleta',
-                        () => {
-                            // Redirigir a la vista de calendario para corregir los registros
-                            switchView('calendar');
-                        },
-                        () => {
-                            // Exportar de todos modos
-                            exportToCSV();
-                        }
-                    );
-                } else {
-                    exportToCSV();
-                }
-            }
-
-            // FUNCIÓN DE EXPORTACIÓN ACTUALIZADA - Reemplaza la existente
-            function exportToCSV() {
-                // Primero asegurarnos de que todos los registros están migrados
-                migrateOldEntries();
-
-                if (substances.length === 0 && entries.length === 0) {
-                    alert('No hay datos para exportar');
-                    return;
-                }
-
-                // Crear contenido CSV con formato consistente
-                const csvLines = [];
-
-                // Agregar BOM (Byte Order Mark) para UTF-8
-                let csvContent = '\uFEFF';
-
-                // Sección de SUSTANCIAS
-                csvLines.push('SUSTANCIAS');
-                csvLines.push('ID;Nombre;Color;Emoji;Fecha_Creacion;Fecha_Actualizacion');
-
-                substances.forEach(s => {
-                    const emoji = s.emoji || getSubstanceEmoji(s.name);
-                    const updatedAt = s.updatedAt || '';
-
-                    csvLines.push(
-                        `${s.id};"${s.name.replace(/"/g, '""')}";"${s.color}";"${emoji}";` +
-                        `"${s.createdAt}";"${updatedAt}"`
-                    );
-                });
-
-                csvLines.push('');
-                csvLines.push('REGISTROS');
-                // Asegurar el orden correcto de columnas
-                csvLines.push('ID;Sustancia;Dosis;Unidad;Fecha_Hora;Set;Setting;Notas;Fecha_Creacion;Fecha_Actualizacion');
-
-                // Exportar registros - CON MANEJO MEJORADO DE CAMPOS
-                entries.forEach(e => {
-                    const row = [
-                        e.id,
-                        `"${e.substance.replace(/"/g, '""')}"`,
-                        e.dose,
-                        `"${(e.unit || '').replace(/"/g, '""')}"`,
-                        `"${e.date}"`,
-                        `"${(e.set || '').replace(/"/g, '""')}"`,
-                        `"${(e.setting || '').replace(/"/g, '""')}"`,
-                        `"${(e.notes || '').replace(/"/g, '""')}"`,
-                        `"${e.createdAt || ''}"`,
-                        `"${e.updatedAt || ''}"`
-                    ];
-
-                    csvLines.push(row.join(';'));
-                });
-
-                csvContent += csvLines.join('\n');
-                const fileName = `bitacora_psiconautica_${new Date().toISOString().split('T')[0]}.csv`;
-
-                // Crear blob con tipo específico para CSV
-                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-                const url = URL.createObjectURL(blob);
-
-                const link = document.createElement('a');
-                link.href = url;
-                link.download = fileName;
-                link.style.display = 'none';
-
-                document.body.appendChild(link);
-                link.click();
-
-                // Limpiar después de descargar
-                setTimeout(() => {
-                    document.body.removeChild(link);
-                    URL.revokeObjectURL(url);
-                }, 100);
-
-                showCustomAlert(`✅ Archivo exportado correctamente\n\n📁 ${fileName}\n\nRevisa tu carpeta de Descargas`);
-            }
-
-            // FUNCIÓN DE IMPORTACIÓN ACTUALIZADA - Reemplaza la existente
-            function importFromCSV(input) {
-                const file = input.files[0];
-
-                if (!file) {
-                    showCustomAlert('❌ No se seleccionó ningún archivo');
-                    return;
-                }
-
-                if (!file.name.toLowerCase().endsWith('.csv')) {
-                    showCustomAlert('❌ Solo se permiten archivos .csv');
-                    input.value = '';
-                    return;
-                }
-
-                const replaceData = confirm(
-                    '¿Qué hacer con los datos actuales?\n\n' +
-                    'ACEPTAR = Reemplazar todos los datos\n' +
-                    'CANCELAR = Agregar datos nuevos'
-                );
-
-                const reader = new FileReader();
-
-                reader.onload = function(e) {
-                    try {
-                        const csv = e.target.result;
-                        // Normalizar saltos de línea
-                        let lines = csv.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n');
-
-                        let currentSection = '';
-                        let substancesImported = 0;
-                        let entriesImported = 0;
-
-                        if (replaceData) {
-                            substances = [];
-                            entries = [];
-                        }
-
-                        for (let i = 0; i < lines.length; i++) {
-                            const line = lines[i].replace(/^\uFEFF/, '').trim();
-
-                            // Detectar secciones (case-insensitive)
-                            if (line.toUpperCase() === 'SUSTANCIAS') {
-                                currentSection = 'substances';
-                                continue;
-                            } else if (line.toUpperCase() === 'REGISTROS') {
-                                currentSection = 'entries';
-                                continue;
-                            }
-
-                            if (line.length === 0) {
-                                continue;
-                            }
-
-                            const columns = parseCSVLine(line);
-
-                            // Si no hay secciones definidas, asumir formato antiguo
-                            if (currentSection === '' && columns.length >= 4) {
-                                // Formato antiguo: intentar detectar automáticamente
-                                if (isSubstanceLine(columns)) {
-                                    currentSection = 'substances';
-                                } else if (isEntryLine(columns)) {
-                                    currentSection = 'entries';
-                                }
-                            }
-
-                            if (currentSection === 'substances' && columns.length >= 4) {
-                                const substance = {
-                                    id: columns[0].replace(/"/g, '') || generateUniqueId(),
-                                    name: columns[1].replace(/"/g, ''),
-                                    color: columns[2].replace(/"/g, ''),
-                                    emoji: columns[3] ? columns[3].replace(/"/g, '') : getSubstanceEmoji(columns[1]),
-                                    createdAt: columns[4] ? columns[4].replace(/"/g, '') : new Date().toISOString()
-                                };
-
-                                if (replaceData || !substances.find(s => s.name.toLowerCase() === substance.name.toLowerCase())) {
-                                    substances.push(substance);
-                                    substancesImported++;
-                                }
-                            } else if (currentSection === 'entries' && columns.length >= 5) {
-                                // Formato nuevo con más campos
-                                const entry = {
-                                    id: columns[0].replace(/"/g, '') || generateUniqueId(),
-                                    substance: columns[1].replace(/"/g, ''),
-                                    dose: parseFloat(columns[2].replace(/"/g, '').replace(',', '.')) || 0,
-                                    unit: columns[3].replace(/"/g, ''),
-                                    date: columns[4].replace(/"/g, ''),
-                                    set: columns[5] ? columns[5].replace(/"/g, '') : null,
-                                    setting: columns[6] ? columns[6].replace(/"/g, '') : null,
-                                    notes: columns[7] ? columns[7].replace(/"/g, '') : null,
-                                    createdAt: columns[8] ? columns[8].replace(/"/g, '') : new Date().toISOString(),
-                                    updatedAt: columns[9] ? columns[9].replace(/"/g, '') : null
-                                };
-
-                                entries.push(entry);
-                                entriesImported++;
-                            }
-                        }
-
-                        localStorage.setItem('substances', JSON.stringify(substances));
-                        localStorage.setItem('entries', JSON.stringify(entries));
-
-                        renderSubstanceList();
-                        generateCalendar();
-                        renderStats();
-
-                        showCustomAlert(
-                            `✅ Importación completada\n\n` +
-                            `📋 ${substancesImported} sustancias\n` +
-                            `📊 ${entriesImported} registros\n\n` +
-                            `${replaceData ? '🔄 Datos reemplazados' : '➕ Datos agregados'}`
-                        );
-
-                    } catch (error) {
-                        console.error('Error al importar:', error);
-                        showCustomAlert(`❌ Error al procesar archivo:\n\n${error.message}`);
-                    }
+                // Update existing entry
+                entries[existingEntryIndex] = {
+                    ...entries[existingEntryIndex], // Keep original properties like createdAt
+                    substance: substance,
+                    dose: dose,
+                    unit: unit,
+                    date: dateTime,
+                    set: set || null, // Store null if empty
+                    setting: setting || null, // Store null if empty
+                    notes: notes || null, // Store null if empty
+                    updatedAt: new Date().toISOString()
                 };
 
-                reader.onerror = function() {
-                    showCustomAlert('❌ Error al leer el archivo');
-                };
+                showAutoCloseAlert(`✅ Registro actualizado: ${dose} ${unit} de ${substance}`, '✅ Registro Actualizado', 2000);
+                closeModal('entryModal');
+                // Redirect to calendar view
+                switchView('calendar');
+                generateCalendar();
+                renderStats();
+                renderSubstanceList();
 
-                reader.readAsText(file, 'UTF-8');
+            } else {
+               // CREATION MODE
+               const entry = {
+                   id: generateUniqueId(),
+                   substance: substance,
+                   dose: dose,
+                   unit: unit,
+                   date: dateTime,
+                   set: set || null,
+                   setting: setting || null,
+                   notes: notes || null,
+                   createdAt: new Date().toISOString()
+               };
+               entries.push(entry);
+               showAutoCloseAlert(`✅ Registro guardado: ${dose} ${unit} de ${substance}`, '✅ Registro Guardado', 2000);
 
-                setTimeout(() => {
-                    input.value = '';
-                }, 1000);
+               closeModal('entryModal');
+                // Redirect to calendar view
+                switchView('calendar');
+                generateCalendar();
+                renderStats();
+                renderSubstanceList();
             }
 
-            // Funciones auxiliares para detectar el tipo de línea
-            function isSubstanceLine(columns) {
-                // Una línea de sustancia típicamente tiene: ID, Nombre, Color, Emoji
-                return columns.length >= 3 &&
-                       !isNaN(columns[0]) && // ID es numérico
-                       columns[2].startsWith('#'); // Color empieza con #
+                             // Save and update
+                 saveDataToStorage();
+
+                 generateCalendar();
+                 renderSubstanceList();
+                 renderStats();
+
+            // Clean up and redirect to calendar
+            setTimeout(() => {
+                closeModal('entryModal');
+                resetEditMode();
+                // Redirect to calendar view
+                switchView('calendar');
+            }, 2500); // Wait for alert to fade out (2000ms) + extra time for smooth transition
+        }
+
+        // Stats functions
+        function renderStats() {
+            const statsContainer = document.getElementById('stats-content');
+
+            if (entries.length === 0) {
+                statsContainer.innerHTML = '<div class="resource-card"><h4>No hay datos</h4><p>Añade algunos registros para ver estadísticas</p></div>';
+                return;
             }
 
-            function isEntryLine(columns) {
-                // Una línea de entrada típicamente tiene: ID, Sustancia, Dosis, Unidad, Fecha
-                return columns.length >= 5 &&
-                       !isNaN(columns[0]) && // ID es numérico
-                       !isNaN(columns[2]); // Dosis es numérica
+            const totalEntries = entries.length;
+            const uniqueSubstances = [...new Set(entries.map(entry => entry.substance))];
+
+            // Calculate average per month based on the span of entries
+            let firstEntryDate = entries.length > 0 ? new Date(Math.min(...entries.map(e => new Date(e.date)))) : null;
+            let lastEntryDate = entries.length > 0 ? new Date(Math.max(...entries.map(e => new Date(e.date)))) : null;
+
+            let monthsSpan = 0;
+            if (firstEntryDate && lastEntryDate) {
+                monthsSpan = (lastEntryDate.getFullYear() - firstEntryDate.getFullYear()) * 12;
+                monthsSpan -= firstEntryDate.getMonth();
+                monthsSpan += lastEntryDate.getMonth();
+                monthsSpan = Math.max(1, monthsSpan + 1); // Ensure at least 1 month
+            } else {
+                monthsSpan = 1; // Default to 1 month if no entries
             }
 
-            // Función para parsear líneas CSV (mejorada)
-            function parseCSVLine(line) {
-                const result = [];
-                let current = '';
-                let inQuotes = false;
-                let quoteChar = '';
+            const averagePerMonth = (totalEntries / monthsSpan).toFixed(1);
 
-                for (let i = 0; i < line.length; i++) {
-                    const char = line[i];
 
-                    if ((char === '"' || char === "'") && !inQuotes) {
-                        inQuotes = true;
-                        quoteChar = char;
-                    } else if (char === quoteChar && inQuotes) {
-                        inQuotes = false;
-                    } else if (char === ';' && !inQuotes) {
-                        result.push(current);
-                        current = '';
-                    } else {
-                        current += char;
-                    }
+            // Most used substance
+            const substanceCount = {};
+            entries.forEach(entry => {
+                substanceCount[entry.substance] = (substanceCount[entry.substance] || 0) + 1;
+            });
+            const mostUsed = Object.keys(substanceCount).length > 0 ? Object.keys(substanceCount).reduce((a, b) => substanceCount[a] > substanceCount[b] ? a : b) : 'N/A';
+
+            // Recent activity
+            const lastWeek = new Date();
+            lastWeek.setDate(lastWeek.getDate() - 7);
+            const recentEntries = entries.filter(entry => new Date(entry.date) > lastWeek).length;
+
+            statsContainer.innerHTML = `
+                <div class="resource-card">
+                    <h4>Registros Totales</h4>
+                    <p style="font-size: 2rem; color: var(--accent-cyan); font-weight: bold;">${totalEntries}</p>
+                </div>
+                <div class="resource-card">
+                    <h4>Sustancias Únicas</h4>
+                    <p style="font-size: 2rem; color: var(--secondary-pink); font-weight: bold;">${uniqueSubstances.length}</p>
+                </div>
+                <div class="resource-card">
+                    <h4>Más Utilizada</h4>
+                    <p style="font-size: 1.5rem; color: var(--primary-purple); font-weight: bold;">${mostUsed}</p>
+                    <p>${substanceCount[mostUsed] || 0} veces</p>
+                </div>
+                <div class="resource-card">
+                    <h4>Actividad Reciente</h4>
+                    <p style="font-size: 2rem; color: var(--accent-orange); font-weight: bold;">${recentEntries}</p>
+                    <p>Últimos 7 días</p>
+                </div>
+                <div class="resource-card">
+                    <h4>Promedio Mensual</h4>
+                    <p style="font-size: 2rem; color: var(--accent-cyan); font-weight: bold;">${averagePerMonth}</p>
+                    <p>Registros por mes</p>
+                </div>
+            `;
+        }
+
+        // FUNCIÓN DE MIGRACIÓN MEJORADA - Añade esto al principio de tu script
+        function migrateOldEntries() {
+            let updatedCount = 0;
+
+            entries.forEach(entry => {
+                let updated = false;
+
+                // Asegurar que todos los campos existan
+                if (!entry.hasOwnProperty('set')) {
+                    entry.set = '';
+                    updated = true;
                 }
 
-                result.push(current);
-                return result;
-            }
-
-            // Función para generar IDs únicos (necesaria para la importación)
-            function generateUniqueId() {
-                return Date.now().toString(36) + Math.random().toString(36).substr(2, 9);
-            }
-
-
-            // AÑADE ESTA FUNCIÓN PARA AÑADIR UN BOTÓN DE MIGRACIÓN
-            function addMigrationButton() {
-                const dataView = document.getElementById('data-view');
-                if (dataView) {
-                    // Crear contenedor para botones
-                    const buttonContainer = document.createElement('div');
-                    buttonContainer.style.marginTop = '2rem';
-                    buttonContainer.style.padding = '1rem';
-                    buttonContainer.style.backgroundColor = 'var(--darker-bg)';
-                    buttonContainer.style.borderRadius = '12px';
-                    buttonContainer.style.border = '1px solid var(--border-color)';
-
-                    // Título
-                    const title = document.createElement('h4');
-                    title.textContent = 'Migración de Datos';
-                    title.style.color = 'var(--accent-cyan)';
-                    title.style.marginBottom = '1rem';
-                    buttonContainer.appendChild(title);
-
-                    // Descripción
-                    const description = document.createElement('p');
-                    description.textContent = 'Si tienes registros antiguos, migra primero para incluir todos los campos (Set, Setting, etc.) en las exportaciones.';
-                    description.style.color = 'var(--text-muted)';
-                    description.style.marginBottom = '1rem';
-                    buttonContainer.appendChild(description);
-
-                    // Botón de migración
-                    const migrateButton = document.createElement('button');
-                    migrateButton.className = 'btn-primary';
-                    migrateButton.textContent = '🔄 Migrar registros antiguos';
-                    migrateButton.onclick = function() {
-                        const migratedCount = migrateOldEntries();
-                        if (migratedCount > 0) {
-                            showCustomAlert(`✅ ${migratedCount} registros actualizados con la nueva estructura`);
-                        } else {
-                            showCustomAlert('ℹ️ Todos los registros ya tienen la estructura completa');
-                        }
-                    };
-                    migrateButton.style.marginRight = '1rem';
-                    buttonContainer.appendChild(migrateButton);
-
-                    // Añadir al DOM
-                    dataView.querySelector('.calendar-container').appendChild(buttonContainer);
+                if (!entry.hasOwnProperty('setting')) {
+                    entry.setting = '';
+                    updated = true;
                 }
-            }
 
-            // AÑADE ESTO AL FINAL DE TU ARCHIVO, DESPUÉS DE TODAS LAS FUNCIONES
-            document.addEventListener('DOMContentLoaded', function() {
-                // Añadir el botón de migración después de que se cargue la página
-                setTimeout(addMigrationButton, 2000);
+                if (!entry.hasOwnProperty('unit')) {
+                    entry.unit = '';
+                    updated = true;
+                }
 
-                // Verificar si hay registros que necesiten migración
-                const needsMigration = entries.some(entry =>
-                    !entry.hasOwnProperty('set') || !entry.hasOwnProperty('setting')
-                );
+                if (!entry.hasOwnProperty('notes')) {
+                    entry.notes = '';
+                    updated = true;
+                }
 
-                if (needsMigration) {
-                    setTimeout(() => {
-                        showCustomAlert(
-                            '📋 Se han detectado registros antiguos.\n\n' +
-                            'Para exportar correctamente con todos los campos (Set, Setting, etc.), ' +
-                            'por favor ve a la pestaña "Datos" y haz clic en "Migrar registros antiguos" ' +
-                            'antes de exportar.',
-                            'Migración Requerida'
-                        );
-                    }, 3000);
+                if (!entry.hasOwnProperty('createdAt')) {
+                    entry.createdAt = new Date().toISOString();
+                    updated = true;
+                }
+
+                if (!entry.hasOwnProperty('updatedAt')) {
+                    entry.updatedAt = '';
+                    updated = true;
+                }
+
+                if (updated) {
+                    updatedCount++;
                 }
             });
 
+                             if (updatedCount > 0) {
+                     saveDataToStorage();
+                     return updatedCount;
+                 }
+            return 0;
+        }
 
-            function clearAllData() {
+        // FUNCIÓN DE VALIDACIÓN ACTUALIZADA - Reemplaza la existente
+        function validateDataBeforeExport() {
+            // Primero migrar registros antiguos
+            const migratedCount = migrateOldEntries();
+
+            if (migratedCount > 0) {
+                showCustomAlert(
+                    `Se han actualizado ${migratedCount} registros con la nueva estructura. ` +
+                    'Ahora puedes exportar correctamente con todos los campos (Set, Setting, etc.).',
+                    '✅ Migración completada'
+                );
+                return;
+            }
+
+            // Verificar que todos los registros tengan la estructura correcta
+            const invalidEntries = entries.filter(entry =>
+                !entry.hasOwnProperty('set') || !entry.hasOwnProperty('setting')
+            );
+
+            if (invalidEntries.length > 0) {
                 showCustomConfirm(
-                    '¿Estás seguro de que quieres eliminar todos los datos? Esta acción no se puede deshacer.',
-                    '🗑️ Eliminar Todos los Datos',
+                    `Se encontraron ${invalidEntries.length} registros con estructura incompleta. ` +
+                    '¿Desea corregirlos antes de exportar?',
+                    'Estructura de datos incompleta',
                     () => {
-                        localStorage.removeItem('substances');
-                        localStorage.removeItem('entries');
-                        localStorage.removeItem('userProfile');
-
-                        substances = getDefaultSubstances(); // Reset to default substances
-                        entries = [];
-                        userProfile = {};
-                        selectedSubstanceFilter = null;
-
-                        localStorage.setItem('substances', JSON.stringify(substances)); // Save default substances
-
-                        showCustomAlert('Todos los datos han sido eliminados', '🗑️ Datos Eliminados');
+                        // Redirigir a la vista de calendario para corregir los registros
+                        switchView('calendar');
+                    },
+                    () => {
+                        // Exportar de todos modos
+                        exportToCSV();
                     }
                 );
+            } else {
+                exportToCSV();
+            }
+        }
+
+        // FUNCIÓN DE EXPORTACIÓN ACTUALIZADA - Reemplaza la existente
+        function exportToCSV() {
+            // Primero asegurarnos de que todos los registros están migrados
+            migrateOldEntries();
+
+            if (substances.length === 0 && entries.length === 0) {
+                alert('No hay datos para exportar');
+                return;
             }
 
-            function openExternalURL(url) {
-                // Attempt to open in a new window/tab, which is generally handled by the system browser on mobile
-                window.open(url, '_blank', 'noopener,noreferrer');
+            // Crear contenido CSV con formato consistente
+            const csvLines = [];
+
+            // Agregar BOM (Byte Order Mark) para UTF-8
+            let csvContent = '\uFEFF';
+
+            // Sección de SUSTANCIAS
+            csvLines.push('SUSTANCIAS');
+            csvLines.push('ID;Nombre;Color;Emoji;Fecha_Creacion;Fecha_Actualizacion');
+
+            substances.forEach(s => {
+                const emoji = s.emoji || getSubstanceEmoji(s.name);
+                const updatedAt = s.updatedAt || '';
+
+                csvLines.push(
+                    `${s.id};"${s.name.replace(/"/g, '""')}";"${s.color}";"${emoji}";` +
+                    `"${s.createdAt}";"${updatedAt}"`
+                );
+            });
+
+            csvLines.push('');
+            csvLines.push('REGISTROS');
+            // Asegurar el orden correcto de columnas
+            csvLines.push('ID;Sustancia;Dosis;Unidad;Fecha_Hora;Set;Setting;Notas;Fecha_Creacion;Fecha_Actualizacion');
+
+            // Exportar registros - CON MANEJO MEJORADO DE CAMPOS
+            entries.forEach(e => {
+                const row = [
+                    e.id,
+                    `"${e.substance.replace(/"/g, '""')}"`,
+                    e.dose,
+                    `"${(e.unit || '').replace(/"/g, '""')}"`,
+                    `"${e.date}"`,
+                    `"${(e.set || '').replace(/"/g, '""')}"`,
+                    `"${(e.setting || '').replace(/"/g, '""')}"`,
+                    `"${(e.notes || '').replace(/"/g, '""')}"`,
+                    `"${e.createdAt || ''}"`,
+                    `"${e.updatedAt || ''}"`
+                ];
+
+                csvLines.push(row.join(';'));
+            });
+
+            csvContent += csvLines.join('\n');
+            const fileName = `bitacora_psiconautica_${new Date().toISOString().split('T')[0]}.csv`;
+
+            // Crear blob con tipo específico para CSV
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = fileName;
+            link.style.display = 'none';
+
+            document.body.appendChild(link);
+            link.click();
+
+            // Limpiar después de descargar
+            setTimeout(() => {
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+            }, 100);
+
+            showCustomAlert(`✅ Archivo exportado correctamente\n\n📁 ${fileName}\n\nRevisa tu carpeta de Descargas`);
+        }
+
+        // FUNCIÓN DE IMPORTACIÓN ACTUALIZADA - Reemplaza la existente
+        function importFromCSV(input) {
+            const file = input.files[0];
+
+            if (!file) {
+                showCustomAlert('❌ No se seleccionó ningún archivo');
+                return;
             }
 
+            if (!file.name.toLowerCase().endsWith('.csv')) {
+                showCustomAlert('❌ Solo se permiten archivos .csv');
+                input.value = '';
+                return;
+            }
 
-            // ===== Perfil / Tarjeta de perfil =====
-            // Función segura para refrescar la tarjeta de perfil si existe. Evita errores en vistas donde no esté presente.
-            function updateProfileCard() {
+            const replaceData = confirm(
+                '¿Qué hacer con los datos actuales?\n\n' +
+                'ACEPTAR = Reemplazar todos los datos\n' +
+                'CANCELAR = Agregar datos nuevos'
+            );
+
+            const reader = new FileReader();
+
+            reader.onload = function(e) {
                 try {
-                    const profileCard = document.getElementById('profile-card');
-                    if (!profileCard) return; // No hay tarjeta de perfil en esta vista
+                    const csv = e.target.result;
+                    // Normalizar saltos de línea
+                    let lines = csv.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n');
 
-                    const profile = JSON.parse(localStorage.getItem('userProfile') || '{}');
+                    let currentSection = '';
+                    let substancesImported = 0;
+                    let entriesImported = 0;
 
-                    // Datos agregados a partir de entries
-                    const totalEntries = entries.length;
-                    const uniqueSubstances = [...new Set(entries.map(e => e.substance))].length;
-
-                    profileCard.innerHTML = `
-                        <div class="profile-section">
-                            <h4>${profile.name || 'Psiconauta'}</h4>
-                            <p>${profile.bio || ''}</p>
-                            <p><strong>Registros:</strong> ${totalEntries}</p>
-                            <p><strong>Sustancias:</strong> ${uniqueSubstances}</p>
-                        </div>
-                    `;
-                } catch (err) {
-                    console.error('updateProfileCard error:', err);
-                }
-            }
-
-
-
-            // Close modals when clicking outside
-            document.addEventListener('click', function(e) {
-                if (e.target.classList.contains('modal')) {
-                    e.target.classList.remove('active');
-                    document.body.style.overflow = '';
-                    resetEditMode(); // Reset edit mode when any modal is closed by clicking outside
-                }
-            });
-
-            // Initialize color picker
-            document.addEventListener('DOMContentLoaded', function() {
-                // Set default color selection for substance modal
-                const firstColorOption = document.querySelector('#substanceModal .color-option');
-                if (firstColorOption) {
-                    firstColorOption.classList.add('selected');
-                    selectedSubstanceColor = firstColorOption.dataset.color;
-                }
-            });
-
-            // Prevent modal close when clicking inside modal content
-            document.addEventListener('click', function(e) {
-                if (e.target.closest('.modal-content')) {
-                    e.stopPropagation();
-                }
-            });
-
-            function forceFileSelect() {
-                const input = document.getElementById('csvFileInput');
-                if (input) {
-                    input.click();
-                } else {
-                    showCustomAlert('Error: Input de archivo no encontrado.', '❌ Error');
-                }
-            }
-
-            // ===== DIÁLOGOS PERSONALIZADOS =====
-
-            function showCustomConfirm(message, title, onConfirm) {
-                const modalId = 'custom-confirm-modal';
-                const existingModal = document.getElementById(modalId);
-                if (existingModal) {
-                    existingModal.remove();
-                }
-
-                const modal = document.createElement('div');
-                modal.id = modalId;
-                modal.className = 'modal active';
-                modal.innerHTML = `
-                    <div class="modal-content custom-dialog">
-                        <div class="custom-dialog-header">
-                            <h3>${title}</h3>
-                        </div>
-                        <div class="custom-dialog-body">
-                            <p>${message}</p>
-                        </div>
-                        <div class="custom-dialog-actions">
-                            <button class="btn-secondary" onclick="closeCustomConfirm()">Cancelar</button>
-                            <button class="btn-primary" onclick="confirmAndClose()">Aceptar</button>
-                        </div>
-                    </div>
-                `;
-
-                document.body.appendChild(modal);
-                document.body.style.overflow = 'hidden';
-
-                // Guardar la función de confirmación globalmente
-                window.pendingConfirmAction = onConfirm;
-
-                modal.addEventListener('click', (e) => {
-                    if (e.target === modal) {
-                        closeCustomConfirm();
+                    if (replaceData) {
+                        substances = [];
+                        entries = [];
                     }
-                });
-            }
 
-            function showCustomAlert(message, title) {
-                const modalId = 'custom-alert-modal';
-                const existingModal = document.getElementById(modalId);
-                if (existingModal) {
-                    existingModal.remove();
-                }
+                    for (let i = 0; i < lines.length; i++) {
+                        const line = lines[i].replace(/^\uFEFF/, '').trim();
 
-                const modal = document.createElement('div');
-                modal.id = modalId;
-                modal.className = 'modal active';
-                modal.innerHTML = `
-                    <div class="modal-content custom-dialog">
-                        <div class="custom-dialog-header">
-                            <h3>${title}</h3>
-                        </div>
-                        <div class="custom-dialog-body">
-                            <p>${message}</p>
-                        </div>
-                        <div class="custom-dialog-actions">
-                            <button class="btn-primary" onclick="closeCustomAlert()">Aceptar</button>
-                        </div>
-                    </div>
-                `;
+                        // Detectar secciones (case-insensitive)
+                        if (line.toUpperCase() === 'SUSTANCIAS') {
+                            currentSection = 'substances';
+                            continue;
+                        } else if (line.toUpperCase() === 'REGISTROS') {
+                            currentSection = 'entries';
+                            continue;
+                        }
 
-                document.body.appendChild(modal);
-                document.body.style.overflow = 'hidden';
+                        if (line.length === 0) {
+                            continue;
+                        }
 
-                modal.addEventListener('click', (e) => {
-                    if (e.target === modal) {
-                        closeCustomAlert();
-                    }
-                });
-            }
+                        const columns = parseCSVLine(line);
 
-            // Nueva función para alertas que se cierran automáticamente
-            function showAutoCloseAlert(message, title, autoCloseDelay = 2000) {
-                const modalId = 'auto-close-alert-modal';
-                const existingModal = document.getElementById(modalId);
-                if (existingModal) {
-                    existingModal.remove();
-                }
-
-                const modal = document.createElement('div');
-                modal.id = modalId;
-                modal.className = 'modal active';
-                modal.innerHTML = `
-                    <div class="modal-content custom-dialog auto-close">
-                        <div class="custom-dialog-header">
-                            <h3>${title}</h3>
-                            <div class="auto-close-progress">
-                                <div class="progress-bar"></div>
-                            </div>
-                        </div>
-                        <div class="custom-dialog-body">
-                            <p>${message}</p>
-                        </div>
-                        <div class="custom-dialog-actions">
-                            <button class="btn-primary" onclick="closeAutoCloseAlert()">Aceptar</button>
-                        </div>
-                    </div>
-                `;
-
-                document.body.appendChild(modal);
-                document.body.style.overflow = 'hidden';
-
-                // Animar la barra de progreso
-                const progressBar = modal.querySelector('.progress-bar');
-                if (progressBar) {
-                    progressBar.style.transition = `width ${autoCloseDelay}ms linear`;
-                    setTimeout(() => {
-                        progressBar.style.width = '0%';
-                    }, 100);
-                }
-
-                // Cerrar automáticamente después del tiempo especificado
-                setTimeout(() => {
-                    closeAutoCloseAlert();
-                }, autoCloseDelay);
-
-                modal.addEventListener('click', (e) => {
-                    if (e.target === modal) {
-                        closeAutoCloseAlert();
-                    }
-                });
-            }
-
-            function closeCustomConfirm() {
-                const modal = document.getElementById('custom-confirm-modal');
-                if (modal) {
-                    modal.remove();
-                }
-                document.body.style.overflow = '';
-                window.pendingConfirmAction = null;
-            }
-
-            function closeCustomAlert() {
-                const modal = document.getElementById('custom-alert-modal');
-                if (modal) {
-                    modal.remove();
-                }
-                document.body.style.overflow = '';
-            }
-
-            function closeAutoCloseAlert() {
-                const modal = document.getElementById('auto-close-alert-modal');
-                if (modal) {
-                    const dialog = modal.querySelector('.custom-dialog');
-                    if (dialog) {
-                        // Agregar clase de fade-out para la animación
-                        dialog.classList.add('fade-out');
-                        // Esperar a que termine la animación antes de cerrar
-                        setTimeout(() => {
-                            if (modal && modal.parentNode) {
-                                modal.remove();
+                        // Si no hay secciones definidas, asumir formato antiguo
+                        if (currentSection === '' && columns.length >= 4) {
+                            // Formato antiguo: intentar detectar automáticamente
+                            if (isSubstanceLine(columns)) {
+                                currentSection = 'substances';
+                            } else if (isEntryLine(columns)) {
+                                currentSection = 'entries';
                             }
-                            document.body.style.overflow = '';
-                        }, 300); // 300ms = duración de la animación
-                    } else {
-                        modal.remove();
-                        document.body.style.overflow = '';
-                    }
+                        }
+
+                        if (currentSection === 'substances' && columns.length >= 4) {
+                            const substance = {
+                                id: columns[0].replace(/"/g, '') || generateUniqueId(),
+                                name: columns[1].replace(/"/g, ''),
+                                color: columns[2].replace(/"/g, ''),
+                                emoji: columns[3] ? columns[3].replace(/"/g, '') : getSubstanceEmoji(columns[1]),
+                                createdAt: columns[4] ? columns[4].replace(/"/g, '') : new Date().toISOString()
+                            };
+
+                            if (replaceData || !substances.find(s => s.name.toLowerCase() === substance.name.toLowerCase())) {
+                                substances.push(substance);
+                                substancesImported++;
+                            }
+                        } else if (currentSection === 'entries' && columns.length >= 5) {
+                            // Formato nuevo con más campos
+                            const entry = {
+                                id: columns[0].replace(/"/g, '') || generateUniqueId(),
+                                substance: columns[1].replace(/"/g, ''),
+                                dose: parseFloat(columns[2].replace(/"/g, '').replace(',', '.')) || 0,
+                                unit: columns[3].replace(/"/g, ''),
+                                date: columns[4].replace(/"/g, ''),
+                                set: columns[5] ? columns[5].replace(/"/g, '') : null,
+                                setting: columns[6] ? columns[6].replace(/"/g, '') : null,
+                                notes: columns[7] ? columns[7].replace(/"/g, '') : null,
+                                createdAt: columns[8] ? columns[8].replace(/"/g, '') : new Date().toISOString(),
+                                updatedAt: columns[9] ? columns[9].replace(/"/g, '') : null
+                            };
+
+                            entries.push(entry);
+                            entriesImported++;
+                        }
+                                            }
+
+                    saveDataToStorage();
+
+                    renderSubstanceList();
+                    generateCalendar();
+                    renderStats();
+
+                    showCustomAlert(
+                        `✅ Importación completada\n\n` +
+                        `📋 ${substancesImported} sustancias\n` +
+                        `📊 ${entriesImported} registros\n\n` +
+                        `${replaceData ? '🔄 Datos reemplazados' : '➕ Datos agregados'}`
+                    );
+
+                } catch (error) {
+                    console.error('Error al importar:', error);
+                    showCustomAlert(`❌ Error al procesar archivo:\n\n${error.message}`);
+                }
+            };
+
+            reader.onerror = function() {
+                showCustomAlert('❌ Error al leer el archivo');
+            };
+
+            reader.readAsText(file, 'UTF-8');
+
+            setTimeout(() => {
+                input.value = '';
+            }, 1000);
+        }
+
+        // Funciones auxiliares para detectar el tipo de línea
+        function isSubstanceLine(columns) {
+            // Una línea de sustancia típicamente tiene: ID, Nombre, Color, Emoji
+            return columns.length >= 3 &&
+                   !isNaN(columns[0]) && // ID es numérico
+                   columns[2].startsWith('#'); // Color empieza con #
+        }
+
+        function isEntryLine(columns) {
+            // Una línea de entrada típicamente tiene: ID, Sustancia, Dosis, Unidad, Fecha
+            return columns.length >= 5 &&
+                   !isNaN(columns[0]) && // ID es numérico
+                   !isNaN(columns[2]); // Dosis es numérica
+        }
+
+        // Función para parsear líneas CSV (mejorada)
+        function parseCSVLine(line) {
+            const result = [];
+            let current = '';
+            let inQuotes = false;
+            let quoteChar = '';
+
+            for (let i = 0; i < line.length; i++) {
+                const char = line[i];
+
+                if ((char === '"' || char === "'") && !inQuotes) {
+                    inQuotes = true;
+                    quoteChar = char;
+                } else if (char === quoteChar && inQuotes) {
+                    inQuotes = false;
+                } else if (char === ';' && !inQuotes) {
+                    result.push(current);
+                    current = '';
+                } else {
+                    current += char;
                 }
             }
 
-            function confirmAndClose() {
-                if (window.pendingConfirmAction) {
-                    window.pendingConfirmAction();
-                }
-                closeCustomConfirm();
-                    }
+            result.push(current);
+            return result;
+        }
 
-                // ===== FUNCIONES PARA DROPDOWNS PERSONALIZADOS =====
+        // Función para generar IDs únicos (necesaria para la importación)
+        function generateUniqueId() {
+            return Date.now().toString(36) + Math.random().toString(36).substr(2, 9);
+        }
 
-                // Variable global para controlar qué dropdown está abierto
-                let openDropdown = null;
 
-                // Función para abrir/cerrar dropdowns
-                function toggleDropdown(dropdownId) {
-                    console.log('toggleDropdown called for:', dropdownId);
-                    const dropdown = document.getElementById(dropdownId);
-                    const options = dropdown.querySelector('.dropdown-options');
-                    const header = dropdown.querySelector('.dropdown-header');
+        // AÑADE ESTA FUNCIÓN PARA AÑADIR UN BOTÓN DE MIGRACIÓN
+        function addMigrationButton() {
+            const dataView = document.getElementById('data-view');
+            if (dataView) {
+                // Crear contenedor para botones
+                const buttonContainer = document.createElement('div');
+                buttonContainer.style.marginTop = '2rem';
+                buttonContainer.style.padding = '1rem';
+                buttonContainer.style.backgroundColor = 'var(--darker-bg)';
+                buttonContainer.style.borderRadius = '12px';
+                buttonContainer.style.border = '1px solid var(--border-color)';
 
-                    // Si hay otro dropdown abierto, cerrarlo
-                    if (openDropdown && openDropdown !== dropdown) {
-                        const otherOptions = openDropdown.querySelector('.dropdown-options');
-                        const otherHeader = openDropdown.querySelector('.dropdown-header');
-                        otherOptions.classList.remove('show');
-                        otherHeader.classList.remove('active');
-                    }
+                // Título
+                const title = document.createElement('h4');
+                title.textContent = 'Migración de Datos';
+                title.style.color = 'var(--accent-cyan)';
+                title.style.marginBottom = '1rem';
+                buttonContainer.appendChild(title);
 
-                    // Toggle del dropdown actual
-                    if (options.classList.contains('show')) {
-                        console.log('Closing dropdown');
-                        options.classList.remove('show');
-                        header.classList.remove('active');
-                        openDropdown = null;
+                // Descripción
+                const description = document.createElement('p');
+                description.textContent = 'Si tienes registros antiguos, migra primero para incluir todos los campos (Set, Setting, etc.) en las exportaciones.';
+                description.style.color = 'var(--text-muted)';
+                description.style.marginBottom = '1rem';
+                buttonContainer.appendChild(description);
+
+                // Botón de migración
+                const migrateButton = document.createElement('button');
+                migrateButton.className = 'btn-primary';
+                migrateButton.textContent = '🔄 Migrar registros antiguos';
+                migrateButton.onclick = function() {
+                    const migratedCount = migrateOldEntries();
+                    if (migratedCount > 0) {
+                        showCustomAlert(`✅ ${migratedCount} registros actualizados con la nueva estructura`);
                     } else {
-                        console.log('Opening dropdown');
-                        options.classList.add('show');
-                        header.classList.add('active');
-                        openDropdown = dropdown;
+                        showCustomAlert('ℹ️ Todos los registros ya tienen la estructura completa');
                     }
+                };
+                migrateButton.style.marginRight = '1rem';
+                buttonContainer.appendChild(migrateButton);
+
+                // Añadir al DOM
+                dataView.querySelector('.calendar-container').appendChild(buttonContainer);
+            }
+        }
+
+        // AÑADE ESTO AL FINAL DE TU ARCHIVO, DESPUÉS DE TODAS LAS FUNCIONES
+        document.addEventListener('DOMContentLoaded', function() {
+            // Añadir el botón de migración después de que se cargue la página
+            setTimeout(addMigrationButton, 2000);
+
+            // Verificar si hay registros que necesiten migración
+            const needsMigration = entries.some(entry =>
+                !entry.hasOwnProperty('set') || !entry.hasOwnProperty('setting')
+            );
+
+            if (needsMigration) {
+                setTimeout(() => {
+                    showCustomAlert(
+                        '📋 Se han detectado registros antiguos.\n\n' +
+                        'Para exportar correctamente con todos los campos (Set, Setting, etc.), ' +
+                        'por favor ve a la pestaña "Datos" y haz clic en "Migrar registros antiguos" ' +
+                        'antes de exportar.',
+                        'Migración Requerida'
+                    );
+                }, 3000);
+            }
+        });
+
+
+        function clearAllData() {
+            showCustomConfirm(
+                '¿Estás seguro de que quieres eliminar todos los datos? Esta acción no se puede deshacer.',
+                '🗑️ Eliminar Todos los Datos',
+                () => {
+                    localStorage.removeItem('substances');
+                    localStorage.removeItem('entries');
+                    localStorage.removeItem('userProfile');
+
+                    substances = getDefaultSubstances(); // Reset to default substances
+                    entries = [];
+                    userProfile = {};
+                    selectedSubstanceFilter = null;
+
+                                             saveDataToStorage(); // Save default substances
+
+                    showCustomAlert('Todos los datos han sido eliminados', '🗑️ Datos Eliminados');
+                }
+            );
+        }
+
+        function openExternalURL(url) {
+            // Attempt to open in a new window/tab, which is generally handled by the system browser on mobile
+            window.open(url, '_blank', 'noopener,noreferrer');
+        }
+
+
+        // ===== Perfil / Tarjeta de perfil =====
+        // Función segura para refrescar la tarjeta de perfil si existe. Evita errores en vistas donde no esté presente.
+        function updateProfileCard() {
+            try {
+                const profileCard = document.getElementById('profile-card');
+                if (!profileCard) return; // No hay tarjeta de perfil en esta vista
+
+                const profile = JSON.parse(localStorage.getItem('userProfile') || '{}');
+
+                // Datos agregados a partir de entries
+                const totalEntries = entries.length;
+                const uniqueSubstances = [...new Set(entries.map(e => e.substance))].length;
+
+                profileCard.innerHTML = `
+                    <div class="profile-section">
+                        <h4>${profile.name || 'Psiconauta'}</h4>
+                        <p>${profile.bio || ''}</p>
+                        <p><strong>Registros:</strong> ${totalEntries}</p>
+                        <p><strong>Sustancias:</strong> ${uniqueSubstances}</p>
+                    </div>
+                `;
+            } catch (err) {
+                console.error('updateProfileCard error:', err);
+            }
+        }
+
+
+
+        // Close modals when clicking outside
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('modal')) {
+                e.target.classList.remove('active');
+                document.body.style.overflow = '';
+                resetEditMode(); // Reset edit mode when any modal is closed by clicking outside
+            }
+        });
+
+        // Initialize color picker
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set default color selection for substance modal
+            const firstColorOption = document.querySelector('#substanceModal .color-option');
+            if (firstColorOption) {
+                firstColorOption.classList.add('selected');
+                selectedSubstanceColor = firstColorOption.dataset.color;
+            }
+        });
+
+        // Prevent modal close when clicking inside modal content
+        document.addEventListener('click', function(e) {
+            if (e.target.closest('.modal-content')) {
+                e.stopPropagation();
+            }
+        });
+
+        function forceFileSelect() {
+            const input = document.getElementById('csvFileInput');
+            if (input) {
+                input.click();
+            } else {
+                showCustomAlert('Error: Input de archivo no encontrado.', '❌ Error');
+            }
+        }
+
+        // ===== DIÁLOGOS PERSONALIZADOS =====
+
+        function showCustomConfirm(message, title, onConfirm) {
+            const modalId = 'custom-confirm-modal';
+            const existingModal = document.getElementById(modalId);
+            if (existingModal) {
+                existingModal.remove();
+            }
+
+            const modal = document.createElement('div');
+            modal.id = modalId;
+            modal.className = 'modal active';
+            modal.innerHTML = `
+                <div class="modal-content custom-dialog">
+                    <div class="custom-dialog-header">
+                        <h3>${title}</h3>
+                    </div>
+                    <div class="custom-dialog-body">
+                        <p>${message}</p>
+                    </div>
+                    <div class="custom-dialog-actions">
+                        <button class="btn-secondary" onclick="closeCustomConfirm()">Cancelar</button>
+                        <button class="btn-primary" onclick="confirmAndClose()">Aceptar</button>
+                    </div>
+                </div>
+            `;
+
+            document.body.appendChild(modal);
+            document.body.style.overflow = 'hidden';
+
+            // Guardar la función de confirmación globalmente
+            window.pendingConfirmAction = onConfirm;
+
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    closeCustomConfirm();
+                }
+            });
+        }
+
+        function showCustomAlert(message, title) {
+            const modalId = 'custom-alert-modal';
+            const existingModal = document.getElementById(modalId);
+            if (existingModal) {
+                existingModal.remove();
+            }
+
+            const modal = document.createElement('div');
+            modal.id = modalId;
+            modal.className = 'modal active';
+            modal.innerHTML = `
+                <div class="modal-content custom-dialog">
+                    <div class="custom-dialog-header">
+                        <h3>${title}</h3>
+                    </div>
+                    <div class="custom-dialog-body">
+                        <p>${message}</p>
+                    </div>
+                    <div class="custom-dialog-actions">
+                        <button class="btn-primary" onclick="closeCustomAlert()">Aceptar</button>
+                    </div>
+                </div>
+            `;
+
+            document.body.appendChild(modal);
+            document.body.style.overflow = 'hidden';
+
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    closeCustomAlert();
+                }
+            });
+        }
+
+        // Nueva función para alertas que se cierran automáticamente
+        function showAutoCloseAlert(message, title, autoCloseDelay = 2000) {
+            const modalId = 'auto-close-alert-modal';
+            const existingModal = document.getElementById(modalId);
+            if (existingModal) {
+                existingModal.remove();
+            }
+
+            const modal = document.createElement('div');
+            modal.id = modalId;
+            modal.className = 'modal active';
+            modal.innerHTML = `
+                <div class="modal-content custom-dialog auto-close">
+                    <div class="custom-dialog-header">
+                        <h3>${title}</h3>
+                        <div class="auto-close-progress">
+                            <div class="progress-bar"></div>
+                        </div>
+                    </div>
+                    <div class="custom-dialog-body">
+                        <p>${message}</p>
+                    </div>
+                    <div class="custom-dialog-actions">
+                        <button class="btn-primary" onclick="closeAutoCloseAlert()">Aceptar</button>
+                    </div>
+                </div>
+            `;
+
+            document.body.appendChild(modal);
+            document.body.style.overflow = 'hidden';
+
+            // Animar la barra de progreso
+            const progressBar = modal.querySelector('.progress-bar');
+            if (progressBar) {
+                progressBar.style.transition = `width ${autoCloseDelay}ms linear`;
+                setTimeout(() => {
+                    progressBar.style.width = '0%';
+                }, 100);
+            }
+
+            // Cerrar automáticamente después del tiempo especificado
+            setTimeout(() => {
+                closeAutoCloseAlert();
+            }, autoCloseDelay);
+
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    closeAutoCloseAlert();
+                }
+            });
+        }
+
+        function closeCustomConfirm() {
+            const modal = document.getElementById('custom-confirm-modal');
+            if (modal) {
+                modal.remove();
+            }
+            document.body.style.overflow = '';
+            window.pendingConfirmAction = null;
+        }
+
+        function closeCustomAlert() {
+            const modal = document.getElementById('custom-alert-modal');
+            if (modal) {
+                modal.remove();
+            }
+            document.body.style.overflow = '';
+        }
+
+        function closeAutoCloseAlert() {
+            const modal = document.getElementById('auto-close-alert-modal');
+            if (modal) {
+                const dialog = modal.querySelector('.custom-dialog');
+                if (dialog) {
+                    // Agregar clase de fade-out para la animación
+                    dialog.classList.add('fade-out');
+                    // Esperar a que termine la animación antes de cerrar
+                    setTimeout(() => {
+                        if (modal && modal.parentNode) {
+                            modal.remove();
+                        }
+                        document.body.style.overflow = '';
+                    }, 300); // 300ms = duración de la animación
+                } else {
+                    modal.remove();
+                    document.body.style.overflow = '';
+                }
+            }
+        }
+
+        function confirmAndClose() {
+            if (window.pendingConfirmAction) {
+                window.pendingConfirmAction();
+            }
+            closeCustomConfirm();
                 }
 
-                // Función para seleccionar una opción
-                function selectOption(dropdownId, value, text, emoji) {
-                    const dropdown = document.getElementById(dropdownId);
-                    const headerText = dropdown.querySelector('.dropdown-text');
-                    const hiddenInput = dropdown.querySelector('input[type="hidden"]');
+            // ===== FUNCIONES PARA DROPDOWNS PERSONALIZADOS =====
 
-                    // Actualizar el texto mostrado
-                    headerText.textContent = `${emoji} ${text}`;
+            // Variable global para controlar qué dropdown está abierto
+            let openDropdown = null;
 
-                    // Actualizar el input hidden
-                    hiddenInput.value = value;
+            // Función para abrir/cerrar dropdowns
+            function toggleDropdown(dropdownId) {
 
-                    // Cerrar el dropdown
-                    const options = dropdown.querySelector('.dropdown-options');
-                    const header = dropdown.querySelector('.dropdown-header');
+                const dropdown = document.getElementById(dropdownId);
+                const options = dropdown.querySelector('.dropdown-options');
+                const header = dropdown.querySelector('.dropdown-header');
+
+                // Si hay otro dropdown abierto, cerrarlo
+                if (openDropdown && openDropdown !== dropdown) {
+                    const otherOptions = openDropdown.querySelector('.dropdown-options');
+                    const otherHeader = openDropdown.querySelector('.dropdown-header');
+                    otherOptions.classList.remove('show');
+                    otherHeader.classList.remove('active');
+                }
+
+                // Toggle del dropdown actual
+                if (options.classList.contains('show')) {
+
                     options.classList.remove('show');
                     header.classList.remove('active');
                     openDropdown = null;
+                } else {
 
-                    // Marcar la opción como seleccionada
-                    const allOptions = dropdown.querySelectorAll('.dropdown-option');
-                    allOptions.forEach(option => {
-                        option.classList.remove('selected');
-                        if (option.dataset.value === value) {
-                            option.classList.add('selected');
-                        }
-                    });
-
-                    // Validar que se haya seleccionado una sustancia válida
-                    if (dropdownId === 'entrySubstanceDropdown' && (!value || value === '')) {
-                        headerText.textContent = 'Selecciona una sustancia...';
-                        hiddenInput.value = '';
-                    }
+                    options.classList.add('show');
+                    header.classList.add('active');
+                    openDropdown = dropdown;
                 }
+            }
 
-                // Cerrar dropdowns al hacer clic fuera
-                document.addEventListener('click', function(e) {
-                    if (openDropdown && !openDropdown.contains(e.target)) {
-                        const options = openDropdown.querySelector('.dropdown-options');
-                        const header = openDropdown.querySelector('.dropdown-header');
-                        options.classList.remove('show');
-                        header.classList.remove('active');
-                        openDropdown = null;
+            // Función para seleccionar una opción
+            function selectOption(dropdownId, value, text, emoji) {
+                const dropdown = document.getElementById(dropdownId);
+                const headerText = dropdown.querySelector('.dropdown-text');
+                const hiddenInput = dropdown.querySelector('input[type="hidden"]');
+
+                // Actualizar el texto mostrado
+                headerText.textContent = `${emoji} ${text}`;
+
+                // Actualizar el input hidden
+                hiddenInput.value = value;
+
+                // Cerrar el dropdown
+                const options = dropdown.querySelector('.dropdown-options');
+                const header = dropdown.querySelector('.dropdown-header');
+                options.classList.remove('show');
+                header.classList.remove('active');
+                openDropdown = null;
+
+                // Marcar la opción como seleccionada
+                const allOptions = dropdown.querySelectorAll('.dropdown-option');
+                allOptions.forEach(option => {
+                    option.classList.remove('selected');
+                    if (option.dataset.value === value) {
+                        option.classList.add('selected');
                     }
                 });
 
-                // Cerrar dropdowns con la tecla Escape
-                document.addEventListener('keydown', function(e) {
-                    if (e.key === 'Escape' && openDropdown) {
-                        const options = openDropdown.querySelector('.dropdown-options');
-                        const header = openDropdown.querySelector('.dropdown-header');
-                        options.classList.remove('show');
-                        header.classList.remove('active');
-                        openDropdown = null;
-                    }
-                });
+                // Validar que se haya seleccionado una sustancia válida
+                if (dropdownId === 'entrySubstanceDropdown' && (!value || value === '')) {
+                    headerText.textContent = 'Selecciona una sustancia...';
+                    hiddenInput.value = '';
+                }
+            }
+
+            // Cerrar dropdowns al hacer clic fuera
+            document.addEventListener('click', function(e) {
+                if (openDropdown && !openDropdown.contains(e.target)) {
+                    const options = openDropdown.querySelector('.dropdown-options');
+                    const header = openDropdown.querySelector('.dropdown-header');
+                    options.classList.remove('show');
+                    header.classList.remove('active');
+                    openDropdown = null;
+                }
+            });
+
+            // Cerrar dropdowns con la tecla Escape
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && openDropdown) {
+                    const options = openDropdown.querySelector('.dropdown-options');
+                    const header = openDropdown.querySelector('.dropdown-header');
+                    options.classList.remove('show');
+                    header.classList.remove('active');
+                    openDropdown = null;
+                }
+            });
 
         </script>
 
