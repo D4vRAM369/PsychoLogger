@@ -1,26 +1,40 @@
 package com.d4vram.psychologger
 
 import android.content.Context
+import android.util.Base64
 import androidx.biometric.BiometricManager
 import androidx.biometric.BiometricPrompt
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.FragmentActivity
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.CoroutineScope
 import java.security.MessageDigest
 
+/**
+ * AppLockManager - Gestión de bloqueo con biometría / PIN del sistema
+ *
+ * Regla única y determinista:
+ *   needsAuth = appLockEnabled && (lastUnlockTime == 0L || now - lastUnlockTime >= autoLockDelayMs) || isAppLocked
+ *
+ * Recomendación de uso desde Activity:
+ *   - En onResume(): if (appLockManager.needsAuth()) { appLockManager.showBiometricPrompt(...) }
+ *   - Llamar a appLockManager.onAppBackgrounded() / onAppForegrounded() en los eventos de lifecycle apropiados si usas auto-lock diferido.
+ */
 class AppLockManager(private val context: Context) {
-    
+
+    // --- Almacenamiento seguro ---
     private val masterKey = MasterKey.Builder(context)
         .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
         .build()
-    
+
     private val encryptedPrefs = EncryptedSharedPreferences.create(
         context,
         "app_lock_prefs",
@@ -28,291 +42,250 @@ class AppLockManager(private val context: Context) {
         EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
         EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
     )
-    
+
+    // --- State ---
     private val _isAppLockEnabled = MutableStateFlow(
         encryptedPrefs.getBoolean(KEY_APP_LOCK_ENABLED, false)
     )
     val isAppLockEnabled: StateFlow<Boolean> = _isAppLockEnabled.asStateFlow()
-    
+
     private val _isAppLocked = MutableStateFlow(false)
     val isAppLocked: StateFlow<Boolean> = _isAppLocked.asStateFlow()
-    
+
     private val _autoLockDelay = MutableStateFlow(
-        encryptedPrefs.getInt(KEY_AUTO_LOCK_DELAY, 0)
+        encryptedPrefs.getInt(KEY_AUTO_LOCK_DELAY, 0) // segundos (0 = inmediato)
     )
     val autoLockDelay: StateFlow<Int> = _autoLockDelay.asStateFlow()
-    
-    private var lastBackgroundTime: Long = 0
-    private var autoLockJob: kotlinx.coroutines.Job? = null
-    
+
+    // --- Control interno ---
+    private var lastBackgroundTime: Long = 0L
+    private var autoLockJob: Job? = null
+
+    // Evita mostrar múltiples diálogos si llaman varias veces seguido.
+    @Volatile
+    private var isPromptShowing: Boolean = false
+
     companion object {
-        private const val KEY_APP_LOCK_ENABLED = "app_lock_enabled"
-        private const val KEY_AUTO_LOCK_DELAY = "auto_lock_delay"
-        private const val KEY_PIN_HASH = "pin_hash"
-        private const val KEY_LAST_UNLOCK_TIME = "last_unlock_time"
-        private const val KEY_APP_INITIALIZED = "app_initialized"
+        private const val KEY_APP_LOCK_ENABLED   = "app_lock_enabled"
+        private const val KEY_AUTO_LOCK_DELAY    = "auto_lock_delay"   // en segundos
+        private const val KEY_PIN_HASH           = "pin_hash"
+        private const val KEY_LAST_UNLOCK_TIME   = "last_unlock_time"
+        private const val KEY_APP_INITIALIZED    = "app_initialized"
     }
-    
+
+    // -------------------------------
+    // Configuración
+    // -------------------------------
+
     fun setAppLockEnabled(enabled: Boolean) {
         encryptedPrefs.edit().putBoolean(KEY_APP_LOCK_ENABLED, enabled).apply()
         _isAppLockEnabled.value = enabled
-        
         if (!enabled) {
             _isAppLocked.value = false
+        } else {
+            // Marca la app como inicializada a partir de ahora
+            encryptedPrefs.edit().putBoolean(KEY_APP_INITIALIZED, true).apply()
         }
     }
-    
+
+    fun setAutoLockDelay(delaySeconds: Int) {
+        val safe = delaySeconds.coerceAtLeast(0)
+        encryptedPrefs.edit().putInt(KEY_AUTO_LOCK_DELAY, safe).apply()
+        _autoLockDelay.value = safe
+    }
+
+    // -------------------------------
+    // Lógica unificada de bloqueo
+    // -------------------------------
+
     /**
-     * Inicializa el estado de bloqueo de la aplicación
-     * Esta función debe llamarse al iniciar la app para verificar si debe estar bloqueada
-     * RETORNA: true si la app debe estar bloqueada, false si no
+     * Política determinista del bloqueo.
+     * - Si el bloqueo no está habilitado -> false
+     * - Si nunca se ha desbloqueado -> true
+     * - Si el tiempo desde el último unlock >= delay -> true
+     * - Si isAppLocked ya está en true -> true
+     */
+    fun needsAuth(now: Long = System.currentTimeMillis()): Boolean {
+        val enabled = encryptedPrefs.getBoolean(KEY_APP_LOCK_ENABLED, false)
+        if (!enabled) return false
+
+        if (_isAppLocked.value) return true
+
+        val last = encryptedPrefs.getLong(KEY_LAST_UNLOCK_TIME, 0L)
+        val delaySec = encryptedPrefs.getInt(KEY_AUTO_LOCK_DELAY, 0).coerceAtLeast(0)
+        val delayMs = delaySec * 1000L
+
+        return (last == 0L) || (now - last >= delayMs)
+    }
+
+    /**
+     * Compat: inicializa estado al arrancar.
+     * Devuelve true si debe iniciar bloqueada, false si no.
      */
     fun initializeAppLock(): Boolean {
-        val isEnabled = encryptedPrefs.getBoolean(KEY_APP_LOCK_ENABLED, false)
-        val wasInitialized = encryptedPrefs.getBoolean(KEY_APP_INITIALIZED, false)
-        
-        var shouldBeLocked = false
-        
-        if (isEnabled && wasInitialized) {
-            // Si el bloqueo está habilitado y la app ya fue inicializada antes,
-            // verificar si debe estar bloqueada basándose en el tiempo transcurrido
-            val lastUnlockTime = encryptedPrefs.getLong(KEY_LAST_UNLOCK_TIME, 0L)
-            val currentTime = System.currentTimeMillis()
-            val timeSinceUnlock = currentTime - lastUnlockTime
-            
-            // Si han pasado más de 5 minutos desde el último desbloqueo, bloquear la app
-            if (timeSinceUnlock > 5 * 60 * 1000) { // 5 minutos en milisegundos
-                shouldBeLocked = true
-                _isAppLocked.value = true
-            }
-            
-            // SIEMPRE bloquear si la app fue forzada a detenerse
-            if (timeSinceUnlock < 1000) { // Menos de 1 segundo = forzada a detener
-                shouldBeLocked = true
-                _isAppLocked.value = true
-            }
-        }
-        
-        // Marcar que la app ha sido inicializada
+        val lock = needsAuth()
+        _isAppLocked.value = lock
         encryptedPrefs.edit().putBoolean(KEY_APP_INITIALIZED, true).apply()
-        
-        return shouldBeLocked
+        return lock
     }
-    
+
     /**
-     * Verifica si la app debe estar bloqueada basándose en el estado actual
-     * Esta función se puede llamar en cualquier momento para verificar la seguridad
+     * Compat: consulta si debe estar bloqueada (redirige a needsAuth()).
      */
-    fun shouldAppBeLocked(): Boolean {
-        val isEnabled = encryptedPrefs.getBoolean(KEY_APP_LOCK_ENABLED, false)
-        if (!isEnabled) return false
-        
-        val wasInitialized = encryptedPrefs.getBoolean(KEY_APP_INITIALIZED, false)
-        if (!wasInitialized) return false
-        
-        val lastUnlockTime = encryptedPrefs.getLong(KEY_LAST_UNLOCK_TIME, 0L)
-        if (lastUnlockTime == 0L) return true // Nunca se ha desbloqueado
-        
-        val currentTime = System.currentTimeMillis()
-        val timeSinceUnlock = currentTime - lastUnlockTime
-        
-        // Si han pasado más de 5 minutos, debe estar bloqueada
-        // También si la app fue forzada a detenerse (tiempo muy corto)
-        if (timeSinceUnlock < 1000) return true // Menos de 1 segundo = forzada a detener
-        
-        return timeSinceUnlock > 5 * 60 * 1000
-    }
-    
+    fun shouldAppBeLocked(): Boolean = needsAuth()
+
     /**
-     * Verificación de seguridad CRÍTICA que debe ejecutarse ANTES de cualquier renderizado
-     * Esta función garantiza que la app esté bloqueada si debe estarlo
+     * Compat: ejecuta seguridad en arranque (solo aplica needsAuth).
      */
     fun enforceSecurityOnStartup(): Boolean {
-        val shouldBeLocked = shouldAppBeLocked()
-        if (shouldBeLocked) {
-            _isAppLocked.value = true
+        val lock = needsAuth()
+        if (lock) _isAppLocked.value = true
+        return lock
+    }
+
+    // -------------------------------
+    // Transiciones foreground/background
+    // -------------------------------
+
+    fun onAppBackgrounded() {
+        if (_isAppLockEnabled.value) {
+            lastBackgroundTime = System.currentTimeMillis()
+
+            autoLockJob?.cancel()
+            val delaySec = _autoLockDelay.value.coerceAtLeast(0)
+
+            if (delaySec == 0) {
+                // Bloqueo inmediato al ir a background
+                lockApp()
+            } else {
+                // Programa el bloqueo tras el delay
+                autoLockJob = CoroutineScope(Dispatchers.Main).launch {
+                    delay(delaySec * 1000L)
+                    // Solo bloquea si realmente ha pasado el tiempo fuera
+                    val passed = System.currentTimeMillis() - lastBackgroundTime
+                    if (passed >= delaySec * 1000L) {
+                        lockApp()
+                    }
+                }
+            }
         }
-        return shouldBeLocked
     }
-    
-    /**
-     * Verificación de seguridad ABSOLUTA que se ejecuta ANTES de cualquier renderizado
-     * Esta función es la última línea de defensa contra bypass de seguridad
-     */
-    fun isSecurityBypassAttempt(): Boolean {
-        val isEnabled = encryptedPrefs.getBoolean(KEY_APP_LOCK_ENABLED, false)
-        if (!isEnabled) return false
-        
-        val wasInitialized = encryptedPrefs.getBoolean(KEY_APP_INITIALIZED, false)
-        if (!wasInitialized) return false
-        
-        val lastUnlockTime = encryptedPrefs.getLong(KEY_LAST_UNLOCK_TIME, 0L)
-        if (lastUnlockTime == 0L) return true // Nunca se ha desbloqueado
-        
-        val currentTime = System.currentTimeMillis()
-        val timeSinceUnlock = currentTime - lastUnlockTime
-        
-        // Cualquier intento de bypass debe ser bloqueado
-        return timeSinceUnlock < 1000 || timeSinceUnlock > 5 * 60 * 1000
+
+    fun onAppForegrounded() {
+        // Cancelar cualquier bloqueo programado
+        autoLockJob?.cancel()
+        // Si ya está bloqueada, el UI decidirá mostrar prompt
     }
-    
-    /**
-     * Verificación de seguridad específica para Android 16+
-     * Esta función es más agresiva y detecta mejor los intentos de bypass
-     */
-    fun shouldForceLockOnStartup(): Boolean {
-        val isEnabled = encryptedPrefs.getBoolean(KEY_APP_LOCK_ENABLED, false)
-        if (!isEnabled) return false
-        
-        val wasInitialized = encryptedPrefs.getBoolean(KEY_APP_INITIALIZED, false)
-        if (!wasInitialized) return false
-        
-        val lastUnlockTime = encryptedPrefs.getLong(KEY_LAST_UNLOCK_TIME, 0L)
-        if (lastUnlockTime == 0L) return true // Nunca se ha desbloqueado
-        
-        val currentTime = System.currentTimeMillis()
-        val timeSinceUnlock = currentTime - lastUnlockTime
-        
-        // En Android 16, ser más agresivo con la detección
-        // Cualquier tiempo menor a 2 segundos se considera bypass
-        if (timeSinceUnlock < 2000) return true // 2 segundos = forzada a detener
-        
-        // También bloquear si han pasado más de 1 minuto (más estricto)
-        if (timeSinceUnlock > 60 * 1000) return true // 1 minuto
-        
-        return false
-    }
-    
-    /**
-     * Detección AGRESIVA de primer lanzamiento después de forzar detención
-     * Esta función es la última línea de defensa para Android 16
-     */
-    fun isFirstLaunchAfterForceStop(): Boolean {
-        val isEnabled = encryptedPrefs.getBoolean(KEY_APP_LOCK_ENABLED, false)
-        if (!isEnabled) return false
-        
-        val wasInitialized = encryptedPrefs.getBoolean(KEY_APP_INITIALIZED, false)
-        if (!wasInitialized) return false
-        
-        val lastUnlockTime = encryptedPrefs.getLong(KEY_LAST_UNLOCK_TIME, 0L)
-        if (lastUnlockTime == 0L) return true // Nunca se ha desbloqueado
-        
-        val currentTime = System.currentTimeMillis()
-        val timeSinceUnlock = currentTime - lastUnlockTime
-        
-        // En Android 16, ser EXTREMADAMENTE agresivo
-        // Cualquier tiempo menor a 5 segundos se considera forzar detención
-        if (timeSinceUnlock < 5000) return true // 5 segundos = forzada a detener
-        
-        // También bloquear si han pasado más de 30 segundos (muy estricto)
-        if (timeSinceUnlock > 30 * 1000) return true // 30 segundos
-        
-        return false
-    }
-    
+
+    // -------------------------------
+    // Estado de bloqueo
+    // -------------------------------
+
     fun lockApp() {
         if (_isAppLockEnabled.value) {
             _isAppLocked.value = true
         }
     }
-    
+
     fun unlockApp() {
         _isAppLocked.value = false
         // Registrar el tiempo de desbloqueo
-        encryptedPrefs.edit().putLong(KEY_LAST_UNLOCK_TIME, System.currentTimeMillis()).apply()
+        encryptedPrefs.edit()
+            .putLong(KEY_LAST_UNLOCK_TIME, System.currentTimeMillis())
+            .putBoolean(KEY_APP_INITIALIZED, true)
+            .apply()
     }
-    
-    fun setAutoLockDelay(delaySeconds: Int) {
-        encryptedPrefs.edit().putInt(KEY_AUTO_LOCK_DELAY, delaySeconds).apply()
-        _autoLockDelay.value = delaySeconds
-    }
-    
-    fun onAppBackgrounded() {
-        if (_isAppLockEnabled.value && _autoLockDelay.value > 0) {
-            lastBackgroundTime = System.currentTimeMillis()
-            // Programar el bloqueo automático
-            autoLockJob?.cancel()
-            autoLockJob = kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.Main).launch {
-                kotlinx.coroutines.delay(_autoLockDelay.value * 1000L)
-                if (System.currentTimeMillis() - lastBackgroundTime >= _autoLockDelay.value * 1000L) {
-                    lockApp()
-                }
-            }
-        } else if (_isAppLockEnabled.value && _autoLockDelay.value == 0) {
-            // Bloqueo inmediato
-            lockApp()
-        }
-    }
-    
-    fun onAppForegrounded() {
-        autoLockJob?.cancel()
-        if (_isAppLockEnabled.value && _isAppLocked.value) {
-            // La app está bloqueada, no hacer nada
-        }
-    }
-    
-    // Métodos para gestión del PIN
+
+    // -------------------------------
+    // PIN (opcional, almacenamiento seguro)
+    // -------------------------------
+
     fun setPin(pin: String) {
         val hashedPin = hashPin(pin)
         encryptedPrefs.edit().putString(KEY_PIN_HASH, hashedPin).apply()
     }
-    
+
     fun verifyPin(pin: String): Boolean {
         val storedHash = encryptedPrefs.getString(KEY_PIN_HASH, null)
         return storedHash != null && storedHash == hashPin(pin)
     }
-    
+
     fun hasPinSet(): Boolean {
         return encryptedPrefs.getString(KEY_PIN_HASH, null) != null
     }
-    
+
     private fun hashPin(pin: String): String {
-        return android.util.Base64.encodeToString(
-            MessageDigest.getInstance("SHA-256")
-                .digest(pin.toByteArray()),
-            android.util.Base64.NO_WRAP
-        )
+        val sha = MessageDigest.getInstance("SHA-256").digest(pin.toByteArray())
+        return Base64.encodeToString(sha, Base64.NO_WRAP)
     }
-    
+
+    // -------------------------------
+    // Biometría
+    // -------------------------------
+
     fun isBiometricAvailable(): Boolean {
-        val biometricManager = BiometricManager.from(context)
-        return when (biometricManager.canAuthenticate(BiometricManager.Authenticators.BIOMETRIC_WEAK)) {
+        val bm = BiometricManager.from(context)
+        val authenticators =
+            BiometricManager.Authenticators.BIOMETRIC_WEAK or
+                    BiometricManager.Authenticators.DEVICE_CREDENTIAL
+        return when (bm.canAuthenticate(authenticators)) {
             BiometricManager.BIOMETRIC_SUCCESS -> true
             else -> false
         }
     }
-    
+
+    /**
+     * Muestra el prompt biométrico (con fallback a credencial del dispositivo).
+     * onSuccess: desbloquea y notifica
+     * onError: no desbloquea y devuelve el motivo
+     */
     fun showBiometricPrompt(
         activity: FragmentActivity,
         onSuccess: () -> Unit,
         onError: (String) -> Unit
     ) {
+        if (isPromptShowing) return
+        isPromptShowing = true
+
         val executor = ContextCompat.getMainExecutor(context)
-        
-        val biometricPrompt = BiometricPrompt(activity, executor,
+        val prompt = BiometricPrompt(activity, executor,
             object : BiometricPrompt.AuthenticationCallback() {
-                override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
-                    super.onAuthenticationError(errorCode, errString)
-                    onError("Error de autenticación: $errString")
-                }
-                
+
                 override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
                     super.onAuthenticationSucceeded(result)
+                    isPromptShowing = false
+                    unlockApp()
                     onSuccess()
                 }
-                
+
                 override fun onAuthenticationFailed() {
                     super.onAuthenticationFailed()
-                    onError("Autenticación fallida. Inténtalo de nuevo.")
+                    // Intento no reconocido (dedo erróneo, etc.)
+                    // No desbloquea, pero dejamos que el sistema siga mostrando el prompt
+                    // Si quieres avisar, puedes notificar:
+                    // onError("Autenticación fallida, inténtalo de nuevo.")
                 }
-            })
-        
+
+                override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
+                    super.onAuthenticationError(errorCode, errString)
+                    isPromptShowing = false
+                    // No desbloquea, propaga el error
+                    onError(errString.toString())
+                }
+            }
+        )
+
+        // Biometría + credencial del dispositivo (PIN/patrón del sistema) como fallback
+        val authenticators =
+            BiometricManager.Authenticators.BIOMETRIC_WEAK or
+                    BiometricManager.Authenticators.DEVICE_CREDENTIAL
+
         val promptInfo = BiometricPrompt.PromptInfo.Builder()
-            .setTitle("🔒 Desbloquear Aplicación")
-            .setSubtitle("Usa tu huella dactilar para acceder")
-            .setNegativeButtonText("Cancelar")
+            .setTitle("🔒 Desbloquear aplicación")
+            .setSubtitle("Usa biometría o tu bloqueo del sistema")
+            .setAllowedAuthenticators(authenticators)
             .build()
-        
-        biometricPrompt.authenticate(promptInfo)
+
+        prompt.authenticate(promptInfo)
     }
 }

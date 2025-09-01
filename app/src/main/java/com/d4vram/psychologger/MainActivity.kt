@@ -20,7 +20,6 @@ import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.Toast
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.fragment.app.FragmentActivity
@@ -33,7 +32,9 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material3.*
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -44,7 +45,6 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
-import androidx.lifecycle.LifecycleOwner
 import com.d4vram.psychologger.ui.screens.LockScreen
 import com.d4vram.psychologger.ui.screens.SettingsScreen
 import com.d4vram.psychologger.ui.screens.AdvancedSettingsScreen
@@ -68,10 +68,10 @@ class MainActivity : FragmentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        
+
         // Inicializar el gestor de bloqueo de aplicación
         appLockManager = AppLockManager(this)
-        
+
         // Deja que Compose gestione los insets (barra de estado / teclado)
         WindowCompat.setDecorFitsSystemWindows(window, false)
 
@@ -87,75 +87,81 @@ class MainActivity : FragmentActivity() {
 
         setContent {
             PsychoLoggerTheme {
-                // Estado local para garantizar bloqueo inmediato
+                // Estado local opcional por si quieres forzar cubierta visual
                 var forceLocked by remember { mutableStateOf(false) }
-                
-                // Verificación adicional de seguridad al renderizar
+
+                val context = LocalContext.current
+                val lifecycleOwner = LocalLifecycleOwner.current
+
+                // --- ÚNICO bloqueo en render: si debe estar bloqueada, bloquea ---
                 LaunchedEffect(Unit) {
-                    if (appLockManager.shouldAppBeLocked() && !forceLocked) {
-                        forceLocked = true
+                    if (appLockManager.shouldAppBeLocked()) {
                         appLockManager.lockApp()
+                        // forceLocked = true // (opcional si quieres usarlo como cubierta visual adicional)
                     }
                 }
-                
+
+                // Observa ciclo de vida para gestionar autolock y cancelar jobs
+                DisposableEffect(lifecycleOwner) {
+                    val observer = LifecycleEventObserver { _, event ->
+                        when (event) {
+                            Lifecycle.Event.ON_PAUSE -> appLockManager.onAppBackgrounded()
+                            Lifecycle.Event.ON_RESUME -> appLockManager.onAppForegrounded()
+                            else -> {}
+                        }
+                    }
+                    lifecycleOwner.lifecycle.addObserver(observer)
+                    onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+                }
+
+                // Estado de pantallas
+                var showSettings by remember { mutableStateOf(false) }
+                var showAdvancedSettings by remember { mutableStateOf(false) }
+                var showPinSetup by remember { mutableStateOf(false) }
+                var showPinEntry by remember { mutableStateOf(false) }
+
+                // Observa el estado de bloqueo y configuración
+                val isAppLocked by appLockManager.isAppLocked.collectAsState()
+                val isAppLockEnabled by appLockManager.isAppLockEnabled.collectAsState()
+                val autoLockDelay by appLockManager.autoLockDelay.collectAsState()
+
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
                         .statusBarsPadding()
                         .imePadding()
                 ) {
-                    val context = LocalContext.current
-                    val lifecycleOwner = LocalLifecycleOwner.current
-                    
-                    // Observar el ciclo de vida para bloquear la app cuando pase a segundo plano
-                    DisposableEffect(lifecycleOwner) {
-                        val observer = LifecycleEventObserver { _, event ->
-                            when (event) {
-                                Lifecycle.Event.ON_PAUSE -> {
-                                    appLockManager.onAppBackgrounded()
-                                }
-                                Lifecycle.Event.ON_RESUME -> {
-                                    appLockManager.onAppForegrounded()
-                                }
-                                else -> {}
+                    // --- LOCKSCREEN + auto-prompt UNA VEZ al mostrarse ---
+                    if ((isAppLockEnabled && isAppLocked) || forceLocked) {
+
+                        // Auto-lanzar el prompt una sola vez cuando aparece LockScreen.
+                        // Si el usuario cancela o hay error, NO reintentamos solos:
+                        LaunchedEffect(isAppLocked) {
+                            if (isAppLocked && appLockManager.isBiometricAvailable() && appLockManager.needsAuth()) {
+                                appLockManager.showBiometricPrompt(
+                                    activity = this@MainActivity,
+                                    onSuccess = {
+                                        // AppLockManager ya hace unlockApp() internamente
+                                        forceLocked = false
+                                        Toast.makeText(context, "✅ Aplicación desbloqueada", Toast.LENGTH_SHORT).show()
+                                    },
+                                    onError = {
+                                        // No reintentamos automáticamente; el usuario puede pulsar botones en LockScreen
+                                        // Puedes mostrar un aviso si quieres:
+                                        // Toast.makeText(context, "🔒 Bloqueada por inactividad", Toast.LENGTH_SHORT).show()
+                                    }
+                                )
                             }
                         }
-                        
-                        lifecycleOwner.lifecycle.addObserver(observer)
-                        
-                        onDispose {
-                            lifecycleOwner.lifecycle.removeObserver(observer)
-                        }
-                    }
-                    
-                    // Estado para mostrar/ocultar pantallas
-                    var showSettings by remember { mutableStateOf(false) }
-                    var showAdvancedSettings by remember { mutableStateOf(false) }
-                    var showPinSetup by remember { mutableStateOf(false) }
-                    var showPinEntry by remember { mutableStateOf(false) }
-                    
-                    // Observar el estado de bloqueo
-                    val isAppLocked by appLockManager.isAppLocked.collectAsState()
-                    val isAppLockEnabled by appLockManager.isAppLockEnabled.collectAsState()
-                    val autoLockDelay by appLockManager.autoLockDelay.collectAsState()
-                    
-                    // Verificación adicional de seguridad al renderizar
-                    LaunchedEffect(Unit) {
-                        if (appLockManager.shouldAppBeLocked() && !isAppLocked) {
-                            appLockManager.lockApp()
-                        }
-                    }
-                    
-                    // Mostrar pantalla de bloqueo si está habilitado y bloqueado
-                    if ((isAppLockEnabled && isAppLocked) || forceLocked) {
+
                         LockScreen(
                             onUnlockWithBiometric = {
                                 if (appLockManager.isBiometricAvailable()) {
                                     appLockManager.showBiometricPrompt(
                                         activity = this@MainActivity,
                                         onSuccess = {
-                                            appLockManager.unlockApp()
-                                            forceLocked = false // Resetear estado local
+                                            // AppLockManager ya hace unlockApp()
+                                            forceLocked = false
                                             Toast.makeText(context, "✅ Aplicación desbloqueada", Toast.LENGTH_SHORT).show()
                                         },
                                         onError = { error ->
@@ -175,7 +181,7 @@ class MainActivity : FragmentActivity() {
                             }
                         )
                     } else {
-                        // Contenido principal de la aplicación
+                        // --- Contenido principal de la aplicación ---
                         Box(modifier = Modifier.fillMaxSize()) {
                             WebViewScreen(
                                 context = context,
@@ -187,7 +193,7 @@ class MainActivity : FragmentActivity() {
                                     this@MainActivity.webView = webView
                                 }
                             )
-                            
+
                             // Botón de configuración flotante
                             FloatingActionButton(
                                 onClick = { showSettings = true },
@@ -204,14 +210,16 @@ class MainActivity : FragmentActivity() {
                             }
                         }
                     }
-                    
-                    // Mostrar pantalla de ajustes si está solicitada
+
+                    // --- Pantalla de ajustes ---
                     if (showSettings) {
                         SettingsScreen(
                             isAppLockEnabled = isAppLockEnabled,
                             onAppLockToggle = { enabled ->
                                 appLockManager.setAppLockEnabled(enabled)
                                 if (enabled) {
+                                    // Recomendación: bloquear en el acto para dejar claro el nuevo estado
+                                    appLockManager.lockApp()
                                     Toast.makeText(context, "🔒 Bloqueo de aplicación activado", Toast.LENGTH_SHORT).show()
                                 } else {
                                     Toast.makeText(context, "🔓 Bloqueo de aplicación desactivado", Toast.LENGTH_SHORT).show()
@@ -222,8 +230,8 @@ class MainActivity : FragmentActivity() {
                             onClose = { showSettings = false }
                         )
                     }
-                    
-                    // Mostrar pantalla de configuraciones avanzadas
+
+                    // --- Ajustes avanzados ---
                     if (showAdvancedSettings) {
                         AdvancedSettingsScreen(
                             autoLockDelay = autoLockDelay,
@@ -234,8 +242,8 @@ class MainActivity : FragmentActivity() {
                             onBack = { showAdvancedSettings = false }
                         )
                     }
-                    
-                    // Mostrar pantalla de configuración de PIN
+
+                    // --- Configuración de PIN ---
                     if (showPinSetup) {
                         PinSetupScreen(
                             onPinSet = { pin ->
@@ -246,14 +254,14 @@ class MainActivity : FragmentActivity() {
                             onCancel = { showPinSetup = false }
                         )
                     }
-                    
-                    // Mostrar pantalla de entrada de PIN
+
+                    // --- Entrada de PIN ---
                     if (showPinEntry) {
                         PinEntryScreen(
                             onPinCorrect = { pin ->
                                 if (appLockManager.verifyPin(pin)) {
                                     appLockManager.unlockApp()
-                                    forceLocked = false // Resetear estado local
+                                    forceLocked = false
                                     showPinEntry = false
                                     Toast.makeText(context, "✅ PIN correcto", Toast.LENGTH_SHORT).show()
                                 } else {
@@ -522,20 +530,18 @@ class WebAppInterface(private val context: Context, private val activity: MainAc
                     appendLine("""
                         localStorage.setItem('substances', JSON.stringify(substances));
                         localStorage.setItem('entries', JSON.stringify(entries));
-                        
-                        // Usar función específica para después de importación
+
                         if (typeof refreshAfterImport === 'function') {
                             refreshAfterImport();
                         } else if (typeof syncDataFromStorage === 'function') {
                             syncDataFromStorage();
                             renderSubstanceList(); generateCalendar(); renderStats();
                         } else {
-                            // Fallback manual si las funciones no existen
                             window.substances = substances;
                             window.entries = entries;
                             renderSubstanceList(); generateCalendar(); renderStats();
                         }
-                        
+
                         Android.showToast('✅ Importado: ' + importedSub + ' sustancias, ' + importedEnt + ' registros');
                     """.trimIndent())
                     appendLine("} catch (error) { console.error(error); Android.showToast('❌ Error: ' + error.message); }")
@@ -591,11 +597,10 @@ fun WebViewScreen(
                             // Función de exportación
                             window.exportToCSV = function() {
                                 try {
-                                    // Migrar entradas antiguas antes de exportar
                                     if (typeof migrateOldEntries === 'function') {
                                         migrateOldEntries();
                                     }
-                                    
+
                                     let csvContent = "";
                                     csvContent += "SUSTANCIAS\n";
                                     csvContent += "ID,Nombre,Color,Emoji,Fecha_Creacion,Fecha_Actualizacion\n";
