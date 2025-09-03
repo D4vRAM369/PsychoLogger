@@ -706,20 +706,103 @@
             }
         }
 
-        /* Tablet adjustments */
-        @media (min-width: 481px) and (max-width: 768px) {
-            .books-modal-content {
-                width: 90% !important;
-                max-width: 500px !important;
-            }
+        /* ==== MODAL DE LIBROS (GPT-5 SOLUTION) ==== */
+        .hidden { display: none !important; }
+        body.modal-open { overflow: hidden; }
 
-            .modal-book-item {
-                padding: 0.9rem;
-            }
+        /* contenedor general */
+        .books-modal:not(.hidden) {
+          display: block;
+          position: fixed;
+          inset: 0;
+          z-index: 99999; /* por encima de cualquier barra/nav */
+        }
 
-            .modal-book-info h5 {
-                font-size: 1.05rem;
-            }
+        /* fondo oscurecido con blur */
+        .modal__backdrop {
+          position: absolute;
+          inset: 0;
+          background: rgba(8, 8, 19, 0.6);
+          backdrop-filter: blur(4px);
+        }
+
+        /* panel */
+        .modal__panel {
+          position: relative;
+          z-index: 100000;
+          margin: 6vh auto 4vh;
+          width: min(92vw, 680px);
+          min-height: 400px;
+          max-height: 86vh;
+          background: #111327;
+          color: #fff;
+          border-radius: 20px;
+          box-shadow: 0 20px 60px rgba(0,0,0,.55);
+          border: 1px solid rgba(255,255,255,0.08);
+          display: flex;
+          flex-direction: column;
+          overflow: hidden;
+        }
+
+        /* cabecera */
+        .modal__header {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 12px;
+          padding: 16px 18px;
+          background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,0));
+        }
+        .modal__title {
+          display: flex; align-items: center; gap: 10px;
+        }
+        .modal__emoji { font-size: 22px; }
+        .modal__header h3 {
+          font-size: 18px; font-weight: 700; margin: 0;
+        }
+        .modal__close {
+          appearance: none; border: 0; background: #e7e7ff; color: #0c0f25;
+          font-weight: 700; border-radius: 12px; width: 40px; height: 40px;
+          cursor: pointer;
+        }
+
+        /* subtítulo */
+        .modal__subtitle {
+          margin: 0 18px 8px 18px;
+          color: rgba(255,255,255,.75);
+          font-size: 14px;
+        }
+
+        /* grid scrollable */
+        .books-grid {
+          padding: 8px 18px 16px 18px;
+          overflow: auto;
+          -webkit-overflow-scrolling: touch;
+          display: grid;
+          gap: 12px;
+        }
+        .book {
+          background: #1a1a2e;
+          border: 1px solid rgba(255,255,255,0.06);
+          border-radius: 16px;
+          padding: 14px;
+        }
+        .book__title { margin: 0 0 6px 0; font-size: 16px; font-weight: 700; }
+        .book__meta  { margin: 0 0 6px 0; font-size: 13px; opacity: .9; }
+        .book__desc  { margin: 0; font-size: 14px; opacity: .8; }
+
+        /* nota final */
+        .modal__note {
+          margin: 8px 18px 18px;
+          font-size: 12px;
+          color: rgba(255,255,255,.75);
+        }
+
+        /* Responsive fino para móviles pequeños */
+        @media (max-width: 380px) {
+          .modal__panel { width: 94vw; }
+          .book__title { font-size: 15px; }
+          .book__desc  { font-size: 13px; }
         }
 
         /* Ensure modal content is centered on small screens */
@@ -2034,62 +2117,12 @@
                         <h4>DrugsScience</h4>
                         <p>Organización independiente líder en información y educación científica sobre drogas, que ofrece recursos y datos basados en evidencia para promover decisiones informadas y políticas sensatas</p>
                     </div>
-                    <div class="resource-card" onclick="openBooksAlert()">
+                    <div class="resource-card" onclick="openBooksModal()">
                         <h4>📚 Libros Recomendados</h4>
                         <p>Bibliografía esencial sobre psiconáuticos, neurociencia y reducción de riesgos</p>
                     </div>
                 </div>
 
-                <!-- Subsección desplegable de libros -->
-                <div id="books-section" class="books-expandable" style="display: none;">
-                    <div class="books-container">
-                        <div class="books-header">
-                            <h3>📚 Biblioteca Recomendada</h3>
-                            <button class="close-books-btn" onclick="toggleBooksSection()">✕</button>
-                        </div>
-                        <div class="books-grid">
-                            <!-- Ejemplo de libros básicos -->
-                            <div class="book-item">
-                                <h5>PiHKAL: A Chemical Love Story</h5>
-                                <p class="book-author">Alexander & Ann Shulgin</p>
-                                <p class="book-desc">Obra fundamental sobre feniletilaminas y experiencias psicodélicas.</p>
-                            </div>
-                            <div class="book-item">
-                                <h5>TiHKAL: The Continuation</h5>
-                                <p class="book-author">Alexander & Ann Shulgin</p>
-                                <p class="book-desc">Segunda parte dedicada a triptaminas y sus efectos.</p>
-                            </div>
-                            <div class="book-item">
-                                <h5>Food of the Gods</h5>
-                                <p class="book-author">Terence McKenna</p>
-                                <p class="book-desc">Exploración de las plantas psicoactivas y la evolución humana.</p>
-                            </div>
-                            <div class="book-item">
-                                <h5>Ketamina: el nuevo milagro médico</h5>
-                                <p class="book-author">Dr. Manuel Sánchez</p>
-                                <p class="book-desc">Descubre cómo puede ayudarte a superar la Depresión Resistente</p>
-                            </div>
-                            <div class="book-item">
-                                <h5>Guía del explorador psicodélico</h5>
-                                <p class="book-author">James Fadiman</p>
-                                <p class="book-desc">Como realizar viajes sagrados de modo seguro y terapéutico.</p>
-                            </div>
-                            <div class="book-item">
-                                <h5>No todas las drogas son iguales</h5>
-                                <p class="book-author">David Nutt</p>
-                                <p class="book-desc">Análisis científico objetivo sobre drogas y políticas.</p>
-                            </div>
-                            <div class="book-item">
-                                <h5>Pharmacotheon: Drogas enteogénicas, sus fuentes vegetales y su historia.</h5>
-                                <p class="book-author">Jonathan Ott</p>
-                                <p class="book-desc">Estudio multidisciplinar sobre drogas enteógenas, sus fuentes naturales y su historia.</p>
-                            </div>
-                        </div>
-                        <div class="books-note">
-                            <p><em>💡 Estos libros son recomendaciones educativas para comprender mejor el tema desde una perspectiva científica, objetiva y de conocimiento, abogando por la reducción de riesgos. A su vez, quiero romper con el molde señalando algo importante y con otro objetivo más: romper estigmas y dogmas ridículos desde la "guerra contra las drogas", declarada por Richard Nixon en 1970 junto a la estúpida e incongruente Controlled Substances Act (Ley de Sustancias controladas) que dieron lugar a las ridículas, tergiversadas y desfasadas listas Schedule I, II, III, IV y V, para desgracia de la libertad humana.</em></p>
-                        </div>
-                    </div>
-                </div>
             </div>
         </div>
 
@@ -4800,172 +4833,6 @@
             }
         }
 
-        // Función para abrir modal de libros recomendados
-        function openBooksModal() {
-            try {
-                const modalId = 'books-modal';
-                const existingModal = document.getElementById(modalId);
-                if (existingModal) {
-                    existingModal.remove();
-                }
-
-            const booksData = [
-                {
-                    title: "PiHKAL: A Chemical Love Story",
-                    author: "Alexander & Ann Shulgin",
-                    description: "Obra fundamental sobre feniletilaminas y experiencias psicodélicas."
-                },
-                {
-                    title: "TiHKAL: The Continuation",
-                    author: "Alexander & Ann Shulgin",
-                    description: "Segunda parte dedicada a triptaminas y sus efectos."
-                },
-                {
-                    title: "Food of the Gods",
-                    author: "Terence McKenna",
-                    description: "Exploración de las plantas psicoactivas y la evolución humana."
-                },
-                {
-                    title: "Ketamina: el nuevo milagro médico",
-                    author: "Dr. Manuel Sánchez",
-                    description: "Descubre cómo puede ayudarte a superar la Depresión Resistente"
-                },
-                {
-                    title: "Guía del explorador psicodélico",
-                    author: "James Fadiman",
-                    description: "Como realizar viajes sagrados de modo seguro y terapéutico."
-                },
-                {
-                    title: "No todas las drogas son iguales",
-                    author: "David Nutt",
-                    description: "Análisis científico objetivo sobre drogas y políticas."
-                },
-                {
-                    title: "Pharmacotheon: Drogas enteogénicas, sus fuentes vegetales y su historia.",
-                    author: "Jonathan Ott",
-                    description: "Estudio multidisciplinar sobre drogas enteógenas, sus fuentes naturales y su historia."
-                }
-            ];
-
-            let booksHTML = '';
-            booksData.forEach((book, index) => {
-                const safeTitle = book.title.replace(/'/g, "\\'").replace(/"/g, '\\"');
-                const safeAuthor = book.author.replace(/'/g, "\\'").replace(/"/g, '\\"');
-                const safeDescription = book.description.replace(/'/g, "\\'").replace(/"/g, '\\"');
-                
-                booksHTML += `
-                    <div class="modal-book-item" onclick="showBookModalSafe(${index})">
-                        <div class="modal-book-info">
-                            <h5>${book.title}</h5>
-                            <p class="modal-book-author">${book.author}</p>
-                            <p class="modal-book-desc">${book.description}</p>
-                        </div>
-                        <div class="modal-book-arrow">→</div>
-                    </div>
-                `;
-            });
-
-            const modal = document.createElement('div');
-            modal.id = modalId;
-            modal.className = 'modal active';
-            modal.innerHTML = `
-                <div class="modal-content books-modal-content">
-                    <div class="custom-dialog-header">
-                        <h3>📚 Biblioteca Recomendada</h3>
-                        <button class="close-btn" onclick="closeBooksModal()">×</button>
-                    </div>
-                    <div class="books-modal-body">
-                        <p class="books-modal-subtitle">Bibliografía esencial sobre psiconáuticos, neurociencia y reducción de riesgos</p>
-                        <div class="books-modal-grid">
-                            ${booksHTML}
-                        </div>
-                    </div>
-                </div>
-            `;
-
-            document.body.appendChild(modal);
-            document.body.style.overflow = 'hidden';
-
-            // Guardar los datos de libros globalmente para acceso seguro
-            window.currentBooksData = booksData;
-
-            modal.addEventListener('click', (e) => {
-                if (e.target === modal) {
-                    closeBooksModal();
-                }
-            });
-            
-            } catch (error) {
-                console.error('Error al abrir modal de libros:', error);
-                // Fallback: mostrar alerta simple
-                showCustomAlert('Error al cargar la biblioteca de libros. Por favor, inténtelo de nuevo.', 'Error');
-            }
-        }
-
-        // Función segura para mostrar modal de libro individual
-        function showBookModalSafe(index) {
-            if (window.currentBooksData && window.currentBooksData[index]) {
-                const book = window.currentBooksData[index];
-                showBookModal(book.title, book.author, book.description);
-            }
-        }
-
-        function closeBooksModal() {
-            const modal = document.getElementById('books-modal');
-            if (modal) {
-                modal.remove();
-                document.body.style.overflow = '';
-            }
-        }
-
-        // Función simple mejorada para libros
-        function openBooksModalSimple() {
-            try {
-                const books = [
-                    '📖 PiHKAL: A Chemical Love Story',
-                    '   👤 Alexander & Ann Shulgin',
-                    '   💡 Obra fundamental sobre feniletilaminas',
-                    '',
-                    '📖 TiHKAL: The Continuation', 
-                    '   👤 Alexander & Ann Shulgin',
-                    '   💡 Segunda parte sobre triptaminas',
-                    '',
-                    '📖 Food of the Gods',
-                    '   👤 Terence McKenna',
-                    '   💡 Plantas psicoactivas y evolucion humana',
-                    '',
-                    '📖 Ketamina: el nuevo milagro medico',
-                    '   👤 Dr. Manuel Sanchez',
-                    '   💡 Tratamiento para depresion resistente',
-                    '',
-                    '📖 Guia del explorador psicodelico',
-                    '   👤 James Fadiman',
-                    '   💡 Viajes seguros y terapeuticos',
-                    '',
-                    '📖 No todas las drogas son iguales',
-                    '   👤 David Nutt',
-                    '   💡 Analisis cientifico sobre drogas',
-                    '',
-                    '📖 Pharmacotheon',
-                    '   👤 Jonathan Ott',
-                    '   💡 Estudio sobre drogas enteogenas'
-                ];
-                
-                let message = 'Bibliografia esencial sobre psiconauticos, neurociencia y reduccion de riesgos.\n\n';
-                
-                for (let i = 0; i < books.length; i++) {
-                    message += books[i] + '\n';
-                }
-                
-                message += '\n💡 Toca "OK" y luego ve a Recursos para mas funciones.';
-                
-                alert(message);
-                
-            } catch (error) {
-                console.error('Error:', error);
-                alert('📚 Biblioteca Recomendada:\n\n• PiHKAL - Alexander Shulgin\n• TiHKAL - Alexander Shulgin\n• Food of the Gods - Terence McKenna\n• Ketamina - Dr. Manuel Sanchez\n• Guia del explorador - James Fadiman\n• No todas las drogas - David Nutt\n• Pharmacotheon - Jonathan Ott');
-            }
-        }
 
         function closeBooksElegantModal() {
             const modal = document.getElementById('books-elegant-modal');
@@ -4986,9 +4853,29 @@
             }
         }
 
-        // Función definitiva simple para libros
-        function openBooksAlert() {
-            alert('📚 BIBLIOTECA RECOMENDADA\n\n📖 PiHKAL: A Chemical Love Story\n   👤 Alexander & Ann Shulgin\n   💡 Obra fundamental sobre feniletilaminas\n\n📖 TiHKAL: The Continuation\n   👤 Alexander & Ann Shulgin\n   💡 Segunda parte sobre triptaminas\n\n📖 Food of the Gods\n   👤 Terence McKenna\n   💡 Plantas psicoactivas y evolucion humana\n\n📖 Ketamina: el nuevo milagro medico\n   👤 Dr. Manuel Sanchez\n   💡 Tratamiento para depresion resistente\n\n📖 Guia del explorador psicodelico\n   👤 James Fadiman\n   💡 Viajes seguros y terapeuticos\n\n📖 No todas las drogas son iguales\n   👤 David Nutt\n   💡 Analisis cientifico sobre drogas\n\n📖 Pharmacotheon\n   👤 Jonathan Ott\n   💡 Estudio sobre drogas enteogenas');
+        // NUEVAS funciones del modal
+        function openBooksModal() {
+            console.log('openBooksModal called');
+            const modal = document.getElementById('books-modal');
+            console.log('Modal element:', modal);
+            if (!modal) return;
+            modal.classList.remove('hidden');
+            document.body.classList.add('modal-open');
+            console.log('Modal should be visible now');
+
+            // cerrar con Esc
+            const onKey = (e) => {
+              if (e.key === 'Escape') closeBooksModal();
+            };
+            modal.dataset.esc = '1';
+            window.addEventListener('keydown', onKey, { once: true });
+        }
+
+        function closeBooksModal() {
+            const modal = document.getElementById('books-modal');
+            if (!modal) return;
+            modal.classList.add('hidden');
+            document.body.classList.remove('modal-open');
         }
 
             // ===== FUNCIONES PARA DROPDOWNS PERSONALIZADOS =====
@@ -5198,5 +5085,77 @@
         </script>
 
     </main>
+
+    <!-- Modal de Libros -->
+    <div id="books-modal" class="books-modal hidden" role="dialog" aria-modal="true" aria-labelledby="books-title">
+      <div class="modal__backdrop" onclick="closeBooksModal()"></div>
+
+      <div class="modal__panel" role="document">
+        <div class="modal__header">
+          <div class="modal__title">
+            <span class="modal__emoji">📚</span>
+            <h3 id="books-title">Biblioteca Recomendada</h3>
+          </div>
+          <button class="modal__close" type="button" aria-label="Cerrar" onclick="closeBooksModal()">✕</button>
+        </div>
+
+        <p class="modal__subtitle">
+          Bibliografía para comprender desde la ciencia, la historia y la reducción de riesgos.
+        </p>
+
+        <div class="books-grid">
+          <article class="book">
+            <h4 class="book__title">PiHKAL: A Chemical Love Story</h4>
+            <p class="book__meta">👤 Alexander & Ann Shulgin</p>
+            <p class="book__desc">Obra fundamental sobre feniletilaminas y experiencias psicodélicas.</p>
+          </article>
+
+          <article class="book">
+            <h4 class="book__title">TiHKAL: The Continuation</h4>
+            <p class="book__meta">👤 Alexander & Ann Shulgin</p>
+            <p class="book__desc">Segunda parte dedicada a triptaminas y sus efectos.</p>
+          </article>
+
+          <article class="book">
+            <h4 class="book__title">Food of the Gods</h4>
+            <p class="book__meta">👤 Terence McKenna</p>
+            <p class="book__desc">Plantas psicoactivas y evolución humana.</p>
+          </article>
+
+          <article class="book">
+            <h4 class="book__title">Ketamina: el nuevo milagro médico</h4>
+            <p class="book__meta">👤 Dr. Manuel Sánchez</p>
+            <p class="book__desc">Tratamiento para depresión resistente.</p>
+          </article>
+
+          <article class="book">
+            <h4 class="book__title">Guía del explorador psicodélico</h4>
+            <p class="book__meta">👤 James Fadiman</p>
+            <p class="book__desc">Viajes seguros y terapéuticos.</p>
+          </article>
+
+          <article class="book">
+            <h4 class="book__title">No todas las drogas son iguales</h4>
+            <p class="book__meta">👤 David Nutt</p>
+            <p class="book__desc">Análisis científico objetivo sobre drogas y políticas.</p>
+          </article>
+
+          <article class="book">
+            <h4 class="book__title">Pharmacotheon</h4>
+            <p class="book__meta">👤 Jonathan Ott</p>
+            <p class="book__desc">Drogas enteógenas, fuentes vegetales e historia.</p>
+          </article>
+        </div>
+
+        <div class="modal__note">
+          💡 Estos libros son recomendaciones educativas para comprender mejor el tema desde una perspectiva
+            - científica, objetiva y de conocimiento, abogando por la reducción de riesgos. A su vez, quiero romper con el molde señalando algo
+            - importante y con otro objetivo más: romper estigmas y dogmas ridículos desde la "guerra contra las drogas", declarada por Richard Nixon
+            - en 1970 junto a la estúpida e incongruente Controlled Substances Act (Ley de Sustancias controladas) que dieron lugar a las ridículas,
+            - tergiversadas y desfasadas listas Schedule I, II, III, IV y V, para desgracia de la libertad humana.
+        </div>
+      </div>
+    </div>
+
 </body>
 </html>
