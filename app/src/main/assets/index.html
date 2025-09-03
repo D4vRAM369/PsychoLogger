@@ -1555,6 +1555,117 @@
             border-top-left-radius: 14px;
             border-top-right-radius: 14px;
         }
+        
+        /* === ESTILOS PARA CAMPOS PERSONALIZADOS DE UNIDADES === */
+        .dropdown-option.custom-input-container {
+            background: rgba(139, 92, 246, 0.15);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            border-radius: 8px;
+            margin: 0.5rem;
+            padding: 0.75rem;
+            cursor: default;
+            flex-direction: column;
+            gap: 0.5rem;
+            min-height: auto;
+        }
+        
+        .dropdown-option.custom-input-container:hover {
+            background: rgba(139, 92, 246, 0.2);
+            transform: none;
+            border-color: var(--accent-cyan);
+        }
+        
+        .dropdown-option.custom-input-container:hover::before {
+            opacity: 0;
+        }
+        
+        .custom-unit-input {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+            width: 100%;
+        }
+        
+        .custom-unit-field {
+            flex: 1;
+            background: var(--darker-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 0.5rem;
+            color: var(--text-light);
+            font-size: 0.9rem;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+        
+        .custom-unit-field::placeholder {
+            color: var(--text-muted);
+            font-style: italic;
+        }
+        
+        .custom-unit-field:focus {
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 0 2px rgba(6, 182, 212, 0.2);
+        }
+        
+        .add-custom-unit-btn {
+            background: linear-gradient(135deg, var(--primary-purple), var(--accent-cyan));
+            border: none;
+            color: white;
+            padding: 0.5rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+        
+        .add-custom-unit-btn:hover {
+            background: linear-gradient(135deg, var(--secondary-pink), var(--accent-cyan));
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4);
+        }
+        
+        .add-custom-unit-btn:active {
+            transform: translateY(0);
+        }
+        
+        /* Estilos para unidades personalizadas una vez agregadas */
+        .dropdown-option.custom-unit {
+            background: rgba(6, 182, 212, 0.1);
+            border-left: 3px solid var(--accent-cyan);
+            position: relative;
+        }
+        
+        .dropdown-option.custom-unit::after {
+            content: '✨';
+            position: absolute;
+            right: 1rem;
+            opacity: 0.7;
+            font-size: 0.9rem;
+        }
+        
+        .dropdown-option.custom-unit:hover::after {
+            opacity: 1;
+        }
+        
+        /* Responsive para móvil */
+        @media (max-width: 768px) {
+            .custom-unit-input {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .custom-unit-field {
+                width: 100%;
+            }
+            
+            .add-custom-unit-btn {
+                width: 100%;
+                padding: 0.6rem;
+            }
+        }
 
         /* Scrollbar personalizado para dropdowns */
         .dropdown-options::-webkit-scrollbar {
@@ -1882,15 +1993,16 @@
                                     <span class="option-emoji">🌈</span>
                                     <span class="option-text">1/8 tripi</span>
                                 </div>
-
-                                <div class="dropdown-option" data-value="custom" onclick="event.stopPropagation();">
-                                    <span class="option-emoji">
-                                        <input type="text" id="customEmoji" maxlength="2" placeholder="🌟" style="width:2em;">
-                                    </span>
-                                                                    <span class="option-text">
-                                        <input type="text" id="customUnit" placeholder="Unidad personalizada">
-                                    </span>
-                                    <button type="button" onclick="selectCustomUnit()">Aceptar</button>
+                                
+                                <!-- Campo personalizado para PSICODÉLICOS -->
+                                <div class="dropdown-option custom-input-container" data-category="psicodelicos">
+                                    <span class="option-emoji">➕</span>
+                                    <div class="custom-unit-input">
+                                        <input type="text" placeholder="Añadir unidad personalizada..." 
+                                               class="custom-unit-field" data-category="psicodelicos">
+                                        <button type="button" class="add-custom-unit-btn" 
+                                                onclick="addCustomUnit('psicodelicos', this)">Añadir</button>
+                                    </div>
                                 </div>
 
                                 <!-- Hongos/Plantas -->
@@ -1918,7 +2030,29 @@
                                     <span class="option-emoji">🍄</span>
                                     <span class="option-text">1/2 seta</span>
                                 </div>
+                                
+                                <!-- Campo personalizado para HONGOS/PLANTAS -->
+                                <div class="dropdown-option custom-input-container" data-category="hongos">
+                                    <span class="option-emoji">➕</span>
+                                    <div class="custom-unit-input">
+                                        <input type="text" placeholder="Añadir unidad personalizada..." 
+                                               class="custom-unit-field" data-category="hongos">
+                                        <button type="button" class="add-custom-unit-btn" 
+                                                onclick="addCustomUnit('hongos', this)">Añadir</button>
+                                    </div>
+                                </div>
 
+                                <!-- Campo personalizado para ESTIMULANTES/MDMA -->
+                                <div class="dropdown-option custom-input-container" data-category="estimulantes">
+                                    <span class="option-emoji">➕</span>
+                                    <div class="custom-unit-input">
+                                        <input type="text" placeholder="Añadir unidad personalizada..." 
+                                               class="custom-unit-field" data-category="estimulantes">
+                                        <button type="button" class="add-custom-unit-btn" 
+                                                onclick="addCustomUnit('estimulantes', this)">Añadir</button>
+                                    </div>
+                                </div>
+                                
                                 <!-- Estimulantes/MDMA -->
                                 <div class="dropdown-option category-header"
                                      data-category="estimulantes">
@@ -1946,6 +2080,17 @@
                                     <span class="option-text">punto/bomba</span>
                                 </div>
 
+                                <!-- Campo personalizado para POLVO/CRISTAL -->
+                                <div class="dropdown-option custom-input-container" data-category="polvo">
+                                    <span class="option-emoji">➕</span>
+                                    <div class="custom-unit-input">
+                                        <input type="text" placeholder="Añadir unidad personalizada..." 
+                                               class="custom-unit-field" data-category="polvo">
+                                        <button type="button" class="add-custom-unit-btn" 
+                                                onclick="addCustomUnit('polvo', this)">Añadir</button>
+                                    </div>
+                                </div>
+                                
                                 <!-- Polvo/Cristal -->
                                 <div class="dropdown-option category-header" data-category="polvo">
                                     <span class="option-emoji">❄️</span>
@@ -1972,6 +2117,17 @@
                                     <span class="option-text">key bump</span>
                                 </div>
 
+                                <!-- Campo personalizado para LÍQUIDOS -->
+                                <div class="dropdown-option custom-input-container" data-category="liquidos">
+                                    <span class="option-emoji">➕</span>
+                                    <div class="custom-unit-input">
+                                        <input type="text" placeholder="Añadir unidad personalizada..." 
+                                               class="custom-unit-field" data-category="liquidos">
+                                        <button type="button" class="add-custom-unit-btn" 
+                                                onclick="addCustomUnit('liquidos', this)">Añadir</button>
+                                    </div>
+                                </div>
+                                
                                 <!-- Líquidos -->
                                 <div class="dropdown-option category-header"
                                      data-category="liquidos">
@@ -1994,6 +2150,17 @@
                                     <span class="option-text">vial</span>
                                 </div>
 
+                                <!-- Campo personalizado para OTRAS -->
+                                <div class="dropdown-option custom-input-container" data-category="otras">
+                                    <span class="option-emoji">➕</span>
+                                    <div class="custom-unit-input">
+                                        <input type="text" placeholder="Añadir unidad personalizada..." 
+                                               class="custom-unit-field" data-category="otras">
+                                        <button type="button" class="add-custom-unit-btn" 
+                                                onclick="addCustomUnit('otras', this)">Añadir</button>
+                                    </div>
+                                </div>
+                                
                                 <!-- Otras -->
                                 <div class="dropdown-option category-header" data-category="otras">
                                     <span class="option-emoji">🔧</span>
@@ -2619,6 +2786,9 @@
                  generateCalendar();
                  renderSubstanceList();
                  renderStats();
+                 
+                 // Cargar unidades personalizadas
+                 loadCustomUnits();
 
                  // Set current datetime for entry form
                  const now = new Date();
@@ -4414,6 +4584,119 @@
                     headerText.textContent = 'Selecciona una sustancia...';
                     hiddenInput.value = '';
                 }
+            }
+
+            // === FUNCIONES PARA UNIDADES PERSONALIZADAS ===
+            
+            // Función para agregar unidad personalizada
+            function addCustomUnit(category, buttonElement) {
+                const container = buttonElement.closest('.custom-input-container');
+                const input = container.querySelector('.custom-unit-field');
+                const unitName = input.value.trim();
+                
+                // Validar que no esté vacío
+                if (!unitName) {
+                    showAlert('⚠️ Error', 'Por favor ingresa el nombre de la unidad personalizada.');
+                    input.focus();
+                    return;
+                }
+                
+                // Validar longitud máxima
+                if (unitName.length > 25) {
+                    showAlert('⚠️ Error', 'El nombre de la unidad no puede exceder 25 caracteres.');
+                    input.focus();
+                    return;
+                }
+                
+                // Verificar si ya existe
+                if (customUnitExists(category, unitName)) {
+                    showAlert('⚠️ Error', 'Esta unidad personalizada ya existe en esta categoría.');
+                    input.focus();
+                    return;
+                }
+                
+                // Crear la nueva opción
+                const newOption = createCustomUnitOption(category, unitName);
+                
+                // Insertar antes del campo personalizado
+                container.parentNode.insertBefore(newOption, container);
+                
+                // Guardar en localStorage
+                saveCustomUnit(category, unitName);
+                
+                // Limpiar campo y mostrar éxito
+                input.value = '';
+                showAlert('✅ Éxito', `Unidad "${unitName}" agregada correctamente a ${getCategoryDisplayName(category)}.`);
+                
+                // Seleccionar automáticamente la nueva unidad
+                selectOption('entryUnitDropdown', `custom_${category}_${unitName}`, unitName, '✨');
+            }
+            
+            // Crear elemento HTML para unidad personalizada
+            function createCustomUnitOption(category, unitName) {
+                const option = document.createElement('div');
+                option.className = 'dropdown-option custom-unit';
+                option.setAttribute('data-value', `custom_${category}_${unitName}`);
+                option.setAttribute('data-category', category);
+                option.onclick = () => selectOption('entryUnitDropdown', `custom_${category}_${unitName}`, unitName, '✨');
+                
+                option.innerHTML = `
+                    <span class="option-emoji">✨</span>
+                    <span class="option-text">${unitName}</span>
+                `;
+                
+                return option;
+            }
+            
+            // Verificar si una unidad personalizada ya existe
+            function customUnitExists(category, unitName) {
+                const existingOptions = document.querySelectorAll(`[data-value="custom_${category}_${unitName}"]`);
+                return existingOptions.length > 0;
+            }
+            
+            // Obtener nombre de categoría para mostrar
+            function getCategoryDisplayName(category) {
+                const categoryNames = {
+                    'psicodelicos': 'PSICODÉLICOS',
+                    'hongos': 'HONGOS/PLANTAS', 
+                    'estimulantes': 'ESTIMULANTES/MDMA',
+                    'polvo': 'POLVO/CRISTAL',
+                    'liquidos': 'LÍQUIDOS',
+                    'otras': 'OTRAS'
+                };
+                return categoryNames[category] || category.toUpperCase();
+            }
+            
+            // Guardar unidad personalizada en localStorage
+            function saveCustomUnit(category, unitName) {
+                let customUnits = JSON.parse(localStorage.getItem('psychologger_custom_units') || '{}');
+                if (!customUnits[category]) {
+                    customUnits[category] = [];
+                }
+                if (!customUnits[category].includes(unitName)) {
+                    customUnits[category].push(unitName);
+                    localStorage.setItem('psychologger_custom_units', JSON.stringify(customUnits));
+                }
+            }
+            
+            // Cargar unidades personalizadas al inicializar
+            function loadCustomUnits() {
+                const customUnits = JSON.parse(localStorage.getItem('psychologger_custom_units') || '{}');
+                
+                Object.keys(customUnits).forEach(category => {
+                    customUnits[category].forEach(unitName => {
+                        // Verificar que no exista ya
+                        if (!customUnitExists(category, unitName)) {
+                            const newOption = createCustomUnitOption(category, unitName);
+                            
+                            // Buscar el contenedor de input de la categoría
+                            const inputContainer = document.querySelector(`[data-category="${category}"].custom-input-container`);
+                            if (inputContainer) {
+                                inputContainer.parentNode.insertBefore(newOption, inputContainer);
+                            }
+                        }
+                    });
+                });
             }
 
             // Cerrar dropdowns al hacer clic fuera
