@@ -309,6 +309,12 @@ class MainActivity : FragmentActivity() {
             }
         }
     }
+    
+    override fun onResume() {
+        super.onResume()
+        // ⚠️ FIX CRÍTICO: Resetear estado biométrico al volver del background
+        appLockManager.resetBiometricState()
+    }
 }
 
 // ==== INTERFAZ ANDROID-JS ====
@@ -578,14 +584,21 @@ fun WebViewScreen(
                 requestFocus()
 
                 webViewClient = object : WebViewClient() {
-                    override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
+                    override fun shouldOverrideUrlLoading(
+                        view: WebView?,
+                        request: WebResourceRequest?
+                    ): Boolean {
                         val url = request?.url.toString()
                         if (url.startsWith("http://") || url.startsWith("https://")) {
                             return try {
                                 context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
                                 true
                             } catch (e: Exception) {
-                                Toast.makeText(context, "No se puede abrir: $url", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(
+                                    context,
+                                    "No se puede abrir: $url",
+                                    Toast.LENGTH_SHORT
+                                ).show()
                                 true
                             }
                         }
@@ -594,7 +607,8 @@ fun WebViewScreen(
 
                     override fun onPageFinished(view: WebView?, url: String?) {
                         super.onPageFinished(view, url)
-                        view?.evaluateJavascript("""
+                        view?.evaluateJavascript(
+                            """
                             // Función de exportación
                             window.exportToCSV = function() {
                                 try {
@@ -655,7 +669,8 @@ fun WebViewScreen(
                             };
 
                             console.log('Funciones CSV configuradas');
-                        """.trimIndent(), null)
+                        """.trimIndent(), null
+                        )
                     }
                 }
 
@@ -711,15 +726,24 @@ fun WebViewScreen(
                             fileName = fileName.substringBeforeLast(".") + ".csv"
                         }
                         request.setMimeType(mimetype)
-                        request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, fileName)
+                        request.setDestinationInExternalPublicDir(
+                            Environment.DIRECTORY_DOWNLOADS,
+                            fileName
+                        )
                         request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
                         request.setAllowedOverMetered(true)
                         request.setAllowedOverRoaming(true)
-                        val downloadManager = context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
+                        val downloadManager =
+                            context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
                         downloadManager.enqueue(request)
-                        Toast.makeText(context, "Descargando $fileName...", Toast.LENGTH_LONG).show()
+                        Toast.makeText(context, "Descargando $fileName...", Toast.LENGTH_LONG)
+                            .show()
                     } catch (e: Exception) {
-                        Toast.makeText(context, "Error al descargar: ${e.message}", Toast.LENGTH_LONG).show()
+                        Toast.makeText(
+                            context,
+                            "Error al descargar: ${e.message}",
+                            Toast.LENGTH_LONG
+                        ).show()
                     }
                 }
 
@@ -727,10 +751,4 @@ fun WebViewScreen(
             }
         }
     )
-    
-    override fun onResume() {
-        super.onResume()
-        // ⚠️ FIX CRÍTICO: Resetear estado biométrico al volver del background
-        appLockManager.resetBiometricState()
-    }
 }
