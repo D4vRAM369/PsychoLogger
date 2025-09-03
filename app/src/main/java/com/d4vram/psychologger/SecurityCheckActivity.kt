@@ -44,6 +44,7 @@ class SecurityCheckActivity : FragmentActivity() {
 
                 // Lanzar biometría 1 sola vez al entrar (si está disponible)
                 LaunchedEffect(Unit) {
+                    kotlinx.coroutines.delay(300) // Pequeño delay para evitar glitches visuales
                     if (appLockManager.isBiometricAvailable()) {
                         appLockManager.showBiometricPrompt(
                             activity = this@SecurityCheckActivity,
