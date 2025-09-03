@@ -469,7 +469,7 @@
             width: 100%;
             height: 100%;
             background: rgba(0, 0, 0, 0.8);
-            z-index: 999999 !important;
+            z-index: 9999;
             backdrop-filter: blur(5px);
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
@@ -495,44 +495,10 @@
             position: relative;
             animation: modalSlideIn 0.3s ease;
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
-            z-index: 1000000 !important;
+            z-index: 1000;
         }
 
-        /* Ensure all modal variants have proper z-index */
-        .modal.active,
-        #day-entries-modal,
-        #custom-confirm-modal,
-        #custom-alert-modal,
-        #auto-close-alert-modal,
-        #book-info-modal,
-        #books-modal,
-        #books-elegant-modal {
-            z-index: 999999 !important;
-            position: fixed !important;
-            top: 0 !important;
-            left: 0 !important;
-            width: 100% !important;
-            height: 100% !important;
-            display: flex !important;
-            align-items: flex-start !important;
-            justify-content: center !important;
-            padding: 0.5rem !important;
-        }
 
-        /* Force modal content to be visible */
-        .modal.active .modal-content,
-        #day-entries-modal .modal-content,
-        #custom-confirm-modal .modal-content,
-        #custom-alert-modal .modal-content,
-        #auto-close-alert-modal .modal-content,
-        #book-info-modal .modal-content,
-        #books-modal .modal-content,
-        #books-elegant-modal .modal-content {
-            position: relative !important;
-            z-index: 1000001 !important;
-            max-height: 90vh !important;
-            overflow-y: auto !important;
-        }
 
         /* Book modal specific styles */
         .book-author-modal {
@@ -550,6 +516,48 @@
         .book-actions {
             text-align: center;
             margin-top: 1.5rem;
+        }
+
+        /* Books modal styles */
+        .books-list {
+            max-height: 60vh;
+            overflow-y: auto;
+            padding-right: 0.5rem;
+        }
+
+        .book-entry {
+            background: rgba(139, 92, 246, 0.05);
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            transition: all 0.2s ease;
+        }
+
+        .book-entry:hover {
+            background: rgba(139, 92, 246, 0.1);
+            border-color: rgba(139, 92, 246, 0.3);
+        }
+
+        .book-entry h4 {
+            color: var(--accent-cyan);
+            margin: 0 0 0.25rem 0;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        .book-author {
+            color: var(--primary-purple);
+            font-size: 0.9rem;
+            margin: 0 0 0.5rem 0;
+            font-weight: 500;
+        }
+
+        .book-desc {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            line-height: 1.4;
+            margin: 0;
         }
 
         /* Books modal specific styles */
@@ -2026,7 +2034,7 @@
                         <h4>DrugsScience</h4>
                         <p>Organización independiente líder en información y educación científica sobre drogas, que ofrece recursos y datos basados en evidencia para promover decisiones informadas y políticas sensatas</p>
                     </div>
-                    <div class="resource-card" onclick="openBooksModalSimple()">
+                    <div class="resource-card" onclick="openBooksAlert()">
                         <h4>📚 Libros Recomendados</h4>
                         <p>Bibliografía esencial sobre psiconáuticos, neurociencia y reducción de riesgos</p>
                     </div>
@@ -4978,9 +4986,9 @@
             }
         }
 
-        // Función de test súper simple
-        function testFunction() {
-            alert('Test funciona!');
+        // Función definitiva simple para libros
+        function openBooksAlert() {
+            alert('📚 BIBLIOTECA RECOMENDADA\n\n📖 PiHKAL: A Chemical Love Story\n   👤 Alexander & Ann Shulgin\n   💡 Obra fundamental sobre feniletilaminas\n\n📖 TiHKAL: The Continuation\n   👤 Alexander & Ann Shulgin\n   💡 Segunda parte sobre triptaminas\n\n📖 Food of the Gods\n   👤 Terence McKenna\n   💡 Plantas psicoactivas y evolucion humana\n\n📖 Ketamina: el nuevo milagro medico\n   👤 Dr. Manuel Sanchez\n   💡 Tratamiento para depresion resistente\n\n📖 Guia del explorador psicodelico\n   👤 James Fadiman\n   💡 Viajes seguros y terapeuticos\n\n📖 No todas las drogas son iguales\n   👤 David Nutt\n   💡 Analisis cientifico sobre drogas\n\n📖 Pharmacotheon\n   👤 Jonathan Ott\n   💡 Estudio sobre drogas enteogenas');
         }
 
             // ===== FUNCIONES PARA DROPDOWNS PERSONALIZADOS =====
