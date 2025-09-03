@@ -917,6 +917,144 @@
             color: var(--accent-cyan);
             margin-bottom: 0.5rem;
         }
+        
+        /* === ESTILOS PARA LA SECCIÓN DE LIBROS === */
+        .books-expandable {
+            margin-top: 2rem;
+            animation: slideDown 0.3s ease-out;
+        }
+        
+        .books-container {
+            background: rgba(26, 26, 46, 0.95);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 1.5rem;
+            max-height: 70vh;
+            overflow-y: auto;
+            backdrop-filter: blur(10px);
+        }
+        
+        .books-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .books-header h3 {
+            color: var(--accent-cyan);
+            margin: 0;
+            font-size: 1.25rem;
+        }
+        
+        .close-books-btn {
+            background: var(--primary-purple);
+            border: none;
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        
+        .close-books-btn:hover {
+            background: var(--secondary-pink);
+            transform: scale(1.1);
+        }
+        
+        .books-grid {
+            display: grid;
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+        
+        .book-item {
+            background: rgba(139, 92, 246, 0.1);
+            padding: 1.2rem;
+            border-radius: 12px;
+            border-left: 4px solid var(--accent-cyan);
+            transition: all 0.3s ease;
+        }
+        
+        .book-item:hover {
+            background: rgba(139, 92, 246, 0.2);
+            transform: translateX(5px);
+        }
+        
+        .book-item h5 {
+            color: var(--accent-cyan);
+            margin: 0 0 0.5rem 0;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+        
+        .book-author {
+            color: var(--accent-orange);
+            font-size: 0.9rem;
+            font-weight: 500;
+            margin: 0 0 0.5rem 0;
+        }
+        
+        .book-desc {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            line-height: 1.4;
+            margin: 0;
+        }
+        
+        .books-note {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            background: rgba(6, 182, 212, 0.1);
+            border-radius: 8px;
+            border: 1px solid rgba(6, 182, 212, 0.3);
+        }
+        
+        .books-note p {
+            margin: 0;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            line-height: 1.4;
+        }
+        
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* Responsive para móvil */
+        @media (max-width: 768px) {
+            .books-container {
+                max-height: 75vh;
+                padding: 1rem;
+            }
+            
+            .books-header {
+                margin-bottom: 1rem;
+            }
+            
+            .book-item {
+                padding: 1rem;
+            }
+            
+            .book-item h5 {
+                font-size: 1rem;
+            }
+        }
 
         .entry-item {
             background: var(--darker-bg);
@@ -1558,6 +1696,61 @@
                         <h4>DrugsScience</h4>
                         <p>Organización independiente líder en información y educación científica sobre drogas, que ofrece recursos y datos basados en evidencia para promover decisiones informadas y políticas sensatas</p>
                     </div>
+                    <div class="resource-card" onclick="toggleBooksSection()">
+                        <h4>📚 Libros Recomendados</h4>
+                        <p>Bibliografía esencial sobre psiconáuticos, neurociencia y reducción de riesgos</p>
+                    </div>
+                </div>
+                
+                <!-- Subsección desplegable de libros -->
+                <div id="books-section" class="books-expandable" style="display: none;">
+                    <div class="books-container">
+                        <div class="books-header">
+                            <h3>📚 Biblioteca Recomendada</h3>
+                            <button class="close-books-btn" onclick="toggleBooksSection()">✕</button>
+                        </div>
+                        <div class="books-grid">
+                            <!-- Ejemplo de libros básicos -->
+                            <div class="book-item">
+                                <h5>PiHKAL: A Chemical Love Story</h5>
+                                <p class="book-author">Alexander & Ann Shulgin</p>
+                                <p class="book-desc">Obra fundamental sobre feniletilaminas y experiencias psicodélicas.</p>
+                            </div>
+                            <div class="book-item">
+                                <h5>TiHKAL: The Continuation</h5>
+                                <p class="book-author">Alexander & Ann Shulgin</p>
+                                <p class="book-desc">Segunda parte dedicada a triptaminas y sus efectos.</p>
+                            </div>
+                            <div class="book-item">
+                                <h5>Food of the Gods</h5>
+                                <p class="book-author">Terence McKenna</p>
+                                <p class="book-desc">Exploración de las plantas psicoactivas y la evolución humana.</p>
+                            </div>
+                            <div class="book-item">
+                                <h5>Ketamina: el nuevo milagro médico</h5>
+                                <p class="book-author">Dr. Manuel Sánchez</p>
+                                <p class="book-desc">Descubre cómo puede ayudarte a superar la Depresión Resistente</p>
+                            </div>
+                            <div class="book-item">
+                                <h5>Guía del explorador psicodélico</h5>
+                                <p class="book-author">James Fadiman</p>
+                                <p class="book-desc">Como realizar viajes sagrados de modo seguro y terapéutico.</p>
+                            </div>
+                            <div class="book-item">
+                                <h5>No todas las drogas son iguales</h5>
+                                <p class="book-author">David Nutt</p>
+                                <p class="book-desc">Análisis científico objetivo sobre drogas y políticas.</p>
+                            </div>
+                            <div class="book-item">
+                                <h5>Pharmacotheon: Drogas enteogénicas, sus fuentes vegetales y su historia.</h5>
+                                <p class="book-author">Jonathan Ott</p>
+                                <p class="book-desc">Estudio multidisciplinar sobre drogas enteógenas, sus fuentes naturales y su historia.</p>
+                            </div>
+                        </div>
+                        <div class="books-note">
+                            <p><em>💡 Estos libros son recomendaciones educativas para comprender mejor el tema desde una perspectiva científica, objetiva y de conocimiento, abogando por la reducción de riesgos. A su vez, quiero romper con el molde señalando algo importante y con otro objetivo más: romper estigmas y dogmas ridículos desde la "guerra contra las drogas", declarada por Richard Nixon en 1970 junto a la estúpida e incongruente Controlled Substances Act (Ley de Sustancias controladas) que dieron lugar a las ridículas, tergiversadas y desfasadas listas Schedule I, II, III, IV y V, para desgracia de la libertad humana.</em></p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1688,6 +1881,16 @@
                                      onclick="selectOption('entryUnitDropdown', 'octavo-tripi', '1/8 tripi', '🌈')">
                                     <span class="option-emoji">🌈</span>
                                     <span class="option-text">1/8 tripi</span>
+                                </div>
+
+                                <div class="dropdown-option" data-value="custom" onclick="event.stopPropagation();">
+                                    <span class="option-emoji">
+                                        <input type="text" id="customEmoji" maxlength="2" placeholder="🌟" style="width:2em;">
+                                    </span>
+                                                                    <span class="option-text">
+                                        <input type="text" id="customUnit" placeholder="Unidad personalizada">
+                                    </span>
+                                    <button type="button" onclick="selectCustomUnit()">Aceptar</button>
                                 </div>
 
                                 <!-- Hongos/Plantas -->
@@ -3911,6 +4114,28 @@
         function openExternalURL(url) {
             // Attempt to open in a new window/tab, which is generally handled by the system browser on mobile
             window.open(url, '_blank', 'noopener,noreferrer');
+        }
+
+        function toggleBooksSection() {
+            const section = document.getElementById('books-section');
+            const isVisible = section.style.display !== 'none';
+            
+            if (isVisible) {
+                // Cerrar sección
+                section.style.display = 'none';
+            } else {
+                // Abrir sección  
+                section.style.display = 'block';
+                
+                // Scroll suave hacia la sección después de un pequeño delay
+                // para que la animación se vea bien
+                setTimeout(() => {
+                    section.scrollIntoView({ 
+                        behavior: 'smooth', 
+                        block: 'start' 
+                    });
+                }, 100);
+            }
         }
 
 
