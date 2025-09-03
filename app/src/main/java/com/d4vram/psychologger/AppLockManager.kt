@@ -1,6 +1,7 @@
 package com.d4vram.psychologger
 
 import android.content.Context
+import android.os.SystemClock
 import android.util.Base64
 import androidx.biometric.BiometricManager
 import androidx.biometric.BiometricPrompt
@@ -64,6 +65,10 @@ class AppLockManager(private val context: Context) {
     // Evita mostrar múltiples diálogos si llaman varias veces seguido.
     @Volatile
     private var isPromptShowing: Boolean = false
+    
+    // Debounce para evitar relanzar prompt en bucle si el usuario minimiza/maximiza rápido
+    private var lastPromptAt = 0L
+    private val MIN_PROMPT_INTERVAL_MS = 800L
 
     companion object {
         private const val KEY_APP_LOCK_ENABLED   = "app_lock_enabled"
@@ -73,6 +78,34 @@ class AppLockManager(private val context: Context) {
         private const val KEY_APP_INITIALIZED    = "app_initialized"
     }
 
+    // -------------------------------
+    // Control de estado biométrico
+    // -------------------------------
+    
+    /**
+     * Resetea el estado del prompt biométrico.
+     * Útil cuando la app vuelve del background para evitar estado "colgado".
+     */
+    fun resetBiometricState() {
+        isPromptShowing = false
+    }
+    
+    /**
+     * Marca que se va a mostrar un prompt y registra el timestamp.
+     */
+    private fun markPromptShown() {
+        isPromptShowing = true
+        lastPromptAt = SystemClock.elapsedRealtime()
+    }
+    
+    /**
+     * Verifica si se puede mostrar un prompt ahora (evita spam).
+     */
+    fun canShowPromptNow(): Boolean {
+        return !isPromptShowing && 
+               (SystemClock.elapsedRealtime() - lastPromptAt) > MIN_PROMPT_INTERVAL_MS
+    }
+    
     // -------------------------------
     // Configuración
     // -------------------------------
@@ -244,8 +277,8 @@ class AppLockManager(private val context: Context) {
         onSuccess: () -> Unit,
         onError: (String) -> Unit
     ) {
-        if (isPromptShowing) return
-        isPromptShowing = true
+        if (!canShowPromptNow()) return
+        markPromptShown()
 
         val executor = ContextCompat.getMainExecutor(context)
         val prompt = BiometricPrompt(activity, executor,

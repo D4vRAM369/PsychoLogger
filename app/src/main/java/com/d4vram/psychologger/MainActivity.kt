@@ -137,7 +137,7 @@ class MainActivity : FragmentActivity() {
                         // Auto-lanzar el prompt una sola vez cuando aparece LockScreen.
                         // Si el usuario cancela o hay error, NO reintentamos solos:
                         LaunchedEffect(isAppLocked) {
-                            if (isAppLocked && appLockManager.isBiometricAvailable() && appLockManager.needsAuth()) {
+                            if (isAppLocked && appLockManager.isBiometricAvailable() && appLockManager.needsAuth() && appLockManager.canShowPromptNow()) {
                                 appLockManager.showBiometricPrompt(
                                     activity = this@MainActivity,
                                     onSuccess = {
@@ -156,7 +156,7 @@ class MainActivity : FragmentActivity() {
 
                         LockScreen(
                             onUnlockWithBiometric = {
-                                if (appLockManager.isBiometricAvailable()) {
+                                if (appLockManager.isBiometricAvailable() && appLockManager.canShowPromptNow()) {
                                     appLockManager.showBiometricPrompt(
                                         activity = this@MainActivity,
                                         onSuccess = {
@@ -168,9 +168,10 @@ class MainActivity : FragmentActivity() {
                                             Toast.makeText(context, error, Toast.LENGTH_LONG).show()
                                         }
                                     )
-                                } else {
+                                } else if (!appLockManager.isBiometricAvailable()) {
                                     Toast.makeText(context, "❌ Biometría no disponible", Toast.LENGTH_LONG).show()
                                 }
+                                // Si no canShowPromptNow(), simplemente no hace nada (evita spam)
                             },
                             onUnlockWithPin = {
                                 if (appLockManager.hasPinSet()) {
@@ -726,4 +727,10 @@ fun WebViewScreen(
             }
         }
     )
+    
+    override fun onResume() {
+        super.onResume()
+        // ⚠️ FIX CRÍTICO: Resetear estado biométrico al volver del background
+        appLockManager.resetBiometricState()
+    }
 }
