@@ -469,7 +469,7 @@
             width: 100%;
             height: 100%;
             background: rgba(0, 0, 0, 0.8);
-            z-index: 9999;
+            z-index: 999999 !important;
             backdrop-filter: blur(5px);
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
@@ -495,6 +495,223 @@
             position: relative;
             animation: modalSlideIn 0.3s ease;
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+            z-index: 1000000 !important;
+        }
+
+        /* Ensure all modal variants have proper z-index */
+        .modal.active,
+        #day-entries-modal,
+        #custom-confirm-modal,
+        #custom-alert-modal,
+        #auto-close-alert-modal,
+        #book-info-modal,
+        #books-modal,
+        #books-elegant-modal {
+            z-index: 999999 !important;
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100% !important;
+            height: 100% !important;
+            display: flex !important;
+            align-items: flex-start !important;
+            justify-content: center !important;
+            padding: 0.5rem !important;
+        }
+
+        /* Force modal content to be visible */
+        .modal.active .modal-content,
+        #day-entries-modal .modal-content,
+        #custom-confirm-modal .modal-content,
+        #custom-alert-modal .modal-content,
+        #auto-close-alert-modal .modal-content,
+        #book-info-modal .modal-content,
+        #books-modal .modal-content,
+        #books-elegant-modal .modal-content {
+            position: relative !important;
+            z-index: 1000001 !important;
+            max-height: 90vh !important;
+            overflow-y: auto !important;
+        }
+
+        /* Book modal specific styles */
+        .book-author-modal {
+            color: var(--accent-cyan);
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+        }
+
+        .book-desc-modal {
+            color: var(--text-muted);
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+        }
+
+        .book-actions {
+            text-align: center;
+            margin-top: 1.5rem;
+        }
+
+        /* Books modal specific styles */
+        .books-modal-content {
+            max-width: 600px !important;
+            width: 95% !important;
+            max-height: 85vh !important;
+        }
+
+        .books-modal-body {
+            padding: 0;
+        }
+
+        .books-modal-subtitle {
+            color: var(--text-muted);
+            text-align: center;
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+
+        .books-modal-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            max-height: 60vh;
+            overflow-y: auto;
+            padding-right: 0.5rem;
+        }
+
+        .modal-book-item {
+            background: rgba(139, 92, 246, 0.08);
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            border-radius: 12px;
+            padding: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+        }
+
+        .modal-book-item:hover {
+            background: rgba(139, 92, 246, 0.15);
+            border-color: rgba(139, 92, 246, 0.4);
+            transform: translateX(3px);
+        }
+
+        .modal-book-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .modal-book-info h5 {
+            color: var(--accent-cyan);
+            margin: 0 0 0.25rem 0;
+            font-size: 1rem;
+            font-weight: 600;
+            line-height: 1.3;
+        }
+
+        .modal-book-author {
+            color: var(--primary-purple);
+            font-size: 0.85rem;
+            margin: 0 0 0.5rem 0;
+            font-weight: 500;
+        }
+
+        .modal-book-desc {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            line-height: 1.4;
+            margin: 0;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .modal-book-arrow {
+            color: var(--accent-cyan);
+            font-size: 1.2rem;
+            font-weight: bold;
+            opacity: 0.7;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+        }
+
+        .modal-book-item:hover .modal-book-arrow {
+            opacity: 1;
+            transform: translateX(3px);
+        }
+
+        /* Mobile responsive adjustments */
+        @media (max-width: 480px) {
+            .books-modal-content {
+                width: 98% !important;
+                margin: 0.5rem auto !important;
+                max-height: 90vh !important;
+                padding: 1.5rem !important;
+            }
+
+            .modal-book-item {
+                padding: 0.75rem;
+                flex-direction: column;
+                align-items: flex-start;
+                text-align: left;
+                gap: 0.5rem;
+            }
+
+            .modal-book-arrow {
+                align-self: flex-end;
+                margin-top: 0.5rem;
+                font-size: 1rem;
+            }
+
+            .modal-book-info h5 {
+                font-size: 0.95rem;
+                line-height: 1.2;
+            }
+
+            .modal-book-author {
+                font-size: 0.8rem;
+                margin-bottom: 0.25rem;
+            }
+
+            .modal-book-desc {
+                font-size: 0.75rem;
+                -webkit-line-clamp: 3;
+                line-height: 1.3;
+            }
+
+            .books-modal-grid {
+                max-height: 65vh;
+                gap: 0.5rem;
+            }
+
+            .books-modal-subtitle {
+                font-size: 0.85rem;
+                margin-bottom: 1rem;
+            }
+
+            .custom-dialog-header h3 {
+                font-size: 1.1rem;
+            }
+        }
+
+        /* Tablet adjustments */
+        @media (min-width: 481px) and (max-width: 768px) {
+            .books-modal-content {
+                width: 90% !important;
+                max-width: 500px !important;
+            }
+
+            .modal-book-item {
+                padding: 0.9rem;
+            }
+
+            .modal-book-info h5 {
+                font-size: 1.05rem;
+            }
         }
 
         /* Ensure modal content is centered on small screens */
@@ -982,11 +1199,13 @@
             border-radius: 12px;
             border-left: 4px solid var(--accent-cyan);
             transition: all 0.3s ease;
+            cursor: pointer;
         }
         
         .book-item:hover {
             background: rgba(139, 92, 246, 0.2);
             transform: translateX(5px);
+            box-shadow: 0 4px 8px rgba(139, 92, 246, 0.3);
         }
         
         .book-item h5 {
@@ -1807,7 +2026,7 @@
                         <h4>DrugsScience</h4>
                         <p>Organización independiente líder en información y educación científica sobre drogas, que ofrece recursos y datos basados en evidencia para promover decisiones informadas y políticas sensatas</p>
                     </div>
-                    <div class="resource-card" onclick="toggleBooksSection()">
+                    <div class="resource-card" onclick="openBooksModalSimple()">
                         <h4>📚 Libros Recomendados</h4>
                         <p>Bibliografía esencial sobre psiconáuticos, neurociencia y reducción de riesgos</p>
                     </div>
@@ -2832,6 +3051,17 @@
                     document.getElementById('charCount').textContent = this.value.length;
                 });
             }
+
+            // Book items click handlers
+            document.querySelectorAll('.book-item').forEach(bookItem => {
+                bookItem.addEventListener('click', function() {
+                    const title = this.querySelector('h5').textContent;
+                    const author = this.querySelector('.book-author').textContent;
+                    const description = this.querySelector('.book-desc').textContent;
+                    
+                    showBookModal(title, author, description);
+                });
+            });
         }
 
         // Navigation functions
@@ -4516,6 +4746,242 @@
             }
             closeCustomConfirm();
                 }
+
+        // Función para mostrar modal de libro
+        function showBookModal(title, author, description) {
+            const modalId = 'book-info-modal';
+            const existingModal = document.getElementById(modalId);
+            if (existingModal) {
+                existingModal.remove();
+            }
+
+            const modal = document.createElement('div');
+            modal.id = modalId;
+            modal.className = 'modal active';
+            modal.innerHTML = `
+                <div class="modal-content custom-dialog">
+                    <div class="custom-dialog-header">
+                        <h3>📚 ${title}</h3>
+                        <button class="close-btn" onclick="closeBookModal()">×</button>
+                    </div>
+                    <div class="custom-dialog-body">
+                        <p class="book-author-modal"><strong>Autor:</strong> ${author}</p>
+                        <p class="book-desc-modal">${description}</p>
+                        <div class="book-actions">
+                            <button class="btn-primary" onclick="closeBookModal()">Cerrar</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            document.body.appendChild(modal);
+            document.body.style.overflow = 'hidden';
+
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    closeBookModal();
+                }
+            });
+        }
+
+        function closeBookModal() {
+            const modal = document.getElementById('book-info-modal');
+            if (modal) {
+                modal.remove();
+                document.body.style.overflow = '';
+            }
+        }
+
+        // Función para abrir modal de libros recomendados
+        function openBooksModal() {
+            try {
+                const modalId = 'books-modal';
+                const existingModal = document.getElementById(modalId);
+                if (existingModal) {
+                    existingModal.remove();
+                }
+
+            const booksData = [
+                {
+                    title: "PiHKAL: A Chemical Love Story",
+                    author: "Alexander & Ann Shulgin",
+                    description: "Obra fundamental sobre feniletilaminas y experiencias psicodélicas."
+                },
+                {
+                    title: "TiHKAL: The Continuation",
+                    author: "Alexander & Ann Shulgin",
+                    description: "Segunda parte dedicada a triptaminas y sus efectos."
+                },
+                {
+                    title: "Food of the Gods",
+                    author: "Terence McKenna",
+                    description: "Exploración de las plantas psicoactivas y la evolución humana."
+                },
+                {
+                    title: "Ketamina: el nuevo milagro médico",
+                    author: "Dr. Manuel Sánchez",
+                    description: "Descubre cómo puede ayudarte a superar la Depresión Resistente"
+                },
+                {
+                    title: "Guía del explorador psicodélico",
+                    author: "James Fadiman",
+                    description: "Como realizar viajes sagrados de modo seguro y terapéutico."
+                },
+                {
+                    title: "No todas las drogas son iguales",
+                    author: "David Nutt",
+                    description: "Análisis científico objetivo sobre drogas y políticas."
+                },
+                {
+                    title: "Pharmacotheon: Drogas enteogénicas, sus fuentes vegetales y su historia.",
+                    author: "Jonathan Ott",
+                    description: "Estudio multidisciplinar sobre drogas enteógenas, sus fuentes naturales y su historia."
+                }
+            ];
+
+            let booksHTML = '';
+            booksData.forEach((book, index) => {
+                const safeTitle = book.title.replace(/'/g, "\\'").replace(/"/g, '\\"');
+                const safeAuthor = book.author.replace(/'/g, "\\'").replace(/"/g, '\\"');
+                const safeDescription = book.description.replace(/'/g, "\\'").replace(/"/g, '\\"');
+                
+                booksHTML += `
+                    <div class="modal-book-item" onclick="showBookModalSafe(${index})">
+                        <div class="modal-book-info">
+                            <h5>${book.title}</h5>
+                            <p class="modal-book-author">${book.author}</p>
+                            <p class="modal-book-desc">${book.description}</p>
+                        </div>
+                        <div class="modal-book-arrow">→</div>
+                    </div>
+                `;
+            });
+
+            const modal = document.createElement('div');
+            modal.id = modalId;
+            modal.className = 'modal active';
+            modal.innerHTML = `
+                <div class="modal-content books-modal-content">
+                    <div class="custom-dialog-header">
+                        <h3>📚 Biblioteca Recomendada</h3>
+                        <button class="close-btn" onclick="closeBooksModal()">×</button>
+                    </div>
+                    <div class="books-modal-body">
+                        <p class="books-modal-subtitle">Bibliografía esencial sobre psiconáuticos, neurociencia y reducción de riesgos</p>
+                        <div class="books-modal-grid">
+                            ${booksHTML}
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            document.body.appendChild(modal);
+            document.body.style.overflow = 'hidden';
+
+            // Guardar los datos de libros globalmente para acceso seguro
+            window.currentBooksData = booksData;
+
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    closeBooksModal();
+                }
+            });
+            
+            } catch (error) {
+                console.error('Error al abrir modal de libros:', error);
+                // Fallback: mostrar alerta simple
+                showCustomAlert('Error al cargar la biblioteca de libros. Por favor, inténtelo de nuevo.', 'Error');
+            }
+        }
+
+        // Función segura para mostrar modal de libro individual
+        function showBookModalSafe(index) {
+            if (window.currentBooksData && window.currentBooksData[index]) {
+                const book = window.currentBooksData[index];
+                showBookModal(book.title, book.author, book.description);
+            }
+        }
+
+        function closeBooksModal() {
+            const modal = document.getElementById('books-modal');
+            if (modal) {
+                modal.remove();
+                document.body.style.overflow = '';
+            }
+        }
+
+        // Función simple mejorada para libros
+        function openBooksModalSimple() {
+            try {
+                const books = [
+                    '📖 PiHKAL: A Chemical Love Story',
+                    '   👤 Alexander & Ann Shulgin',
+                    '   💡 Obra fundamental sobre feniletilaminas',
+                    '',
+                    '📖 TiHKAL: The Continuation', 
+                    '   👤 Alexander & Ann Shulgin',
+                    '   💡 Segunda parte sobre triptaminas',
+                    '',
+                    '📖 Food of the Gods',
+                    '   👤 Terence McKenna',
+                    '   💡 Plantas psicoactivas y evolucion humana',
+                    '',
+                    '📖 Ketamina: el nuevo milagro medico',
+                    '   👤 Dr. Manuel Sanchez',
+                    '   💡 Tratamiento para depresion resistente',
+                    '',
+                    '📖 Guia del explorador psicodelico',
+                    '   👤 James Fadiman',
+                    '   💡 Viajes seguros y terapeuticos',
+                    '',
+                    '📖 No todas las drogas son iguales',
+                    '   👤 David Nutt',
+                    '   💡 Analisis cientifico sobre drogas',
+                    '',
+                    '📖 Pharmacotheon',
+                    '   👤 Jonathan Ott',
+                    '   💡 Estudio sobre drogas enteogenas'
+                ];
+                
+                let message = 'Bibliografia esencial sobre psiconauticos, neurociencia y reduccion de riesgos.\n\n';
+                
+                for (let i = 0; i < books.length; i++) {
+                    message += books[i] + '\n';
+                }
+                
+                message += '\n💡 Toca "OK" y luego ve a Recursos para mas funciones.';
+                
+                alert(message);
+                
+            } catch (error) {
+                console.error('Error:', error);
+                alert('📚 Biblioteca Recomendada:\n\n• PiHKAL - Alexander Shulgin\n• TiHKAL - Alexander Shulgin\n• Food of the Gods - Terence McKenna\n• Ketamina - Dr. Manuel Sanchez\n• Guia del explorador - James Fadiman\n• No todas las drogas - David Nutt\n• Pharmacotheon - Jonathan Ott');
+            }
+        }
+
+        function closeBooksElegantModal() {
+            const modal = document.getElementById('books-elegant-modal');
+            if (modal) {
+                modal.remove();
+                document.body.style.overflow = '';
+            }
+        }
+
+        function showBookDetails(index) {
+            try {
+                if (window.currentBooksDataElegant && window.currentBooksDataElegant[index]) {
+                    const book = window.currentBooksDataElegant[index];
+                    showBookModal(book[0], book[1], book[2]);
+                }
+            } catch (error) {
+                console.error('Error mostrando detalles:', error);
+            }
+        }
+
+        // Función de test súper simple
+        function testFunction() {
+            alert('Test funciona!');
+        }
 
             // ===== FUNCIONES PARA DROPDOWNS PERSONALIZADOS =====
 
