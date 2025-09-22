@@ -1946,16 +1946,78 @@
             background: rgba(6, 182, 212, 0.1);
             border-left: 3px solid var(--accent-cyan);
             position: relative;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-right: 50px;
         }
-        
+
+        .custom-unit-content {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            flex: 1;
+        }
+
+        .custom-unit-actions {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            position: absolute;
+            right: 30px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        .dropdown-option.custom-unit:hover .custom-unit-actions {
+            opacity: 1;
+        }
+
+        .custom-unit-btn {
+            width: 18px;
+            height: 18px;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            transition: all 0.3s ease;
+            margin: 0 1px;
+        }
+
+        .edit-custom-unit-btn {
+            background: var(--accent-cyan);
+            color: white;
+        }
+
+        .edit-custom-unit-btn:hover {
+            background: var(--primary-purple);
+            transform: scale(1.1);
+        }
+
+        .delete-custom-unit-btn {
+            background: var(--secondary-pink);
+            color: white;
+        }
+
+        .delete-custom-unit-btn:hover {
+            background: #dc2626;
+            transform: scale(1.1);
+        }
+
         .dropdown-option.custom-unit::after {
             content: '✨';
             position: absolute;
             right: 1rem;
             opacity: 0.7;
             font-size: 0.9rem;
+            pointer-events: none;
         }
-        
+
         .dropdown-option.custom-unit:hover::after {
             opacity: 1;
         }
@@ -4999,13 +5061,23 @@
                 option.className = 'dropdown-option custom-unit';
                 option.setAttribute('data-value', `custom_${category}_${unitName}`);
                 option.setAttribute('data-category', category);
-                option.onclick = () => selectOption('entryUnitDropdown', `custom_${category}_${unitName}`, unitName, '✨');
-                
+                option.setAttribute('data-unit-name', unitName);
+
                 option.innerHTML = `
-                    <span class="option-emoji">✨</span>
-                    <span class="option-text">${unitName}</span>
+                    <div class="custom-unit-content" onclick="selectOption('entryUnitDropdown', 'custom_${category}_${unitName}', '${unitName}', '✨')">
+                        <span class="option-emoji">✨</span>
+                        <span class="option-text">${unitName}</span>
+                    </div>
+                    <div class="custom-unit-actions">
+                        <button class="custom-unit-btn edit-custom-unit-btn" onclick="editCustomUnit('${category}', '${unitName}', this)" title="Editar unidad">
+                            ✏️
+                        </button>
+                        <button class="custom-unit-btn delete-custom-unit-btn" onclick="deleteCustomUnit('${category}', '${unitName}', this)" title="Eliminar unidad">
+                            🗑️
+                        </button>
+                    </div>
                 `;
-                
+
                 return option;
             }
             
@@ -5043,13 +5115,13 @@
             // Cargar unidades personalizadas al inicializar
             function loadCustomUnits() {
                 const customUnits = JSON.parse(localStorage.getItem('psychologger_custom_units') || '{}');
-                
+
                 Object.keys(customUnits).forEach(category => {
                     customUnits[category].forEach(unitName => {
                         // Verificar que no exista ya
                         if (!customUnitExists(category, unitName)) {
                             const newOption = createCustomUnitOption(category, unitName);
-                            
+
                             // Buscar el contenedor de input de la categoría
                             const inputContainer = document.querySelector(`[data-category="${category}"].custom-input-container`);
                             if (inputContainer) {
@@ -5058,6 +5130,109 @@
                         }
                     });
                 });
+            }
+
+            // Función para editar unidad personalizada
+            function editCustomUnit(category, oldUnitName, buttonElement) {
+                // Prevenir que se cierre el dropdown
+                event.stopPropagation();
+
+                const newName = prompt(`Editar nombre de la unidad en ${getCategoryDisplayName(category)}:`, oldUnitName);
+
+                if (newName === null || newName.trim() === '') {
+                    return; // Usuario canceló o no ingresó nada
+                }
+
+                const trimmedName = newName.trim();
+
+                // Validar longitud
+                if (trimmedName.length > 25) {
+                    showAlert('⚠️ Error', 'El nombre de la unidad no puede exceder 25 caracteres.');
+                    return;
+                }
+
+                // Verificar que el nuevo nombre no exista (excepto si es el mismo)
+                if (trimmedName !== oldUnitName && customUnitExists(category, trimmedName)) {
+                    showAlert('⚠️ Error', 'Ya existe una unidad con ese nombre en esta categoría.');
+                    return;
+                }
+
+                // Si el nombre no cambió, no hacer nada
+                if (trimmedName === oldUnitName) {
+                    return;
+                }
+
+                // Actualizar en localStorage
+                let customUnits = JSON.parse(localStorage.getItem('psychologger_custom_units') || '{}');
+                if (customUnits[category]) {
+                    const index = customUnits[category].indexOf(oldUnitName);
+                    if (index !== -1) {
+                        customUnits[category][index] = trimmedName;
+                        localStorage.setItem('psychologger_custom_units', JSON.stringify(customUnits));
+                    }
+                }
+
+                // Actualizar la opción en el DOM
+                const optionElement = buttonElement.closest('.dropdown-option.custom-unit');
+                optionElement.setAttribute('data-value', `custom_${category}_${trimmedName}`);
+                optionElement.setAttribute('data-unit-name', trimmedName);
+
+                // Actualizar contenido
+                const textSpan = optionElement.querySelector('.option-text');
+                textSpan.textContent = trimmedName;
+
+                // Actualizar eventos de los botones
+                const editBtn = optionElement.querySelector('.edit-custom-unit-btn');
+                const deleteBtn = optionElement.querySelector('.delete-custom-unit-btn');
+                const content = optionElement.querySelector('.custom-unit-content');
+
+                editBtn.setAttribute('onclick', `editCustomUnit('${category}', '${trimmedName}', this)`);
+                deleteBtn.setAttribute('onclick', `deleteCustomUnit('${category}', '${trimmedName}', this)`);
+                content.setAttribute('onclick', `selectOption('entryUnitDropdown', 'custom_${category}_${trimmedName}', '${trimmedName}', '✨')`);
+
+                showAlert('✅ Éxito', `Unidad renombrada a "${trimmedName}" correctamente.`);
+            }
+
+            // Función para eliminar unidad personalizada
+            function deleteCustomUnit(category, unitName, buttonElement) {
+                // Prevenir que se cierre el dropdown
+                event.stopPropagation();
+
+                const confirmed = confirm(`¿Estás seguro de que deseas eliminar la unidad "${unitName}" de ${getCategoryDisplayName(category)}?\n\nEsta acción no se puede deshacer.`);
+
+                if (!confirmed) {
+                    return;
+                }
+
+                // Eliminar del localStorage
+                let customUnits = JSON.parse(localStorage.getItem('psychologger_custom_units') || '{}');
+                if (customUnits[category]) {
+                    const index = customUnits[category].indexOf(unitName);
+                    if (index !== -1) {
+                        customUnits[category].splice(index, 1);
+                        localStorage.setItem('psychologger_custom_units', JSON.stringify(customUnits));
+                    }
+                }
+
+                // Eliminar del DOM
+                const optionElement = buttonElement.closest('.dropdown-option.custom-unit');
+                optionElement.remove();
+
+                showAlert('✅ Unidad Eliminada', `La unidad "${unitName}" ha sido eliminada correctamente.`);
+            }
+
+            // Función para eliminar unidad personalizada del localStorage
+            function removeCustomUnitFromStorage(category, unitName) {
+                let customUnits = JSON.parse(localStorage.getItem('psychologger_custom_units') || '{}');
+                if (customUnits[category]) {
+                    const index = customUnits[category].indexOf(unitName);
+                    if (index !== -1) {
+                        customUnits[category].splice(index, 1);
+                        localStorage.setItem('psychologger_custom_units', JSON.stringify(customUnits));
+                        return true;
+                    }
+                }
+                return false;
             }
 
             // Cerrar dropdowns al hacer clic fuera
