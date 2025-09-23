@@ -4984,7 +4984,12 @@
                 headerText.textContent = `${emoji} ${text}`;
 
                 // Actualizar el input hidden
-                hiddenInput.value = value;
+                // Para unidades personalizadas, guardar solo el nombre, no el ID interno
+                if (value.startsWith('custom_')) {
+                    hiddenInput.value = text; // Guardar "Viaje" en lugar de "custom_psicodelicos_Viaje"
+                } else {
+                    hiddenInput.value = value; // Para unidades normales (mg, ug, etc.)
+                }
 
                 // Cerrar el dropdown
                 const options = dropdown.querySelector('.dropdown-options');
@@ -5010,7 +5015,7 @@
             }
 
             // === FUNCIONES PARA UNIDADES PERSONALIZADAS ===
-            
+
             // Función para agregar unidad personalizada
             function addCustomUnit(category, buttonElement) {
                 const container = buttonElement.closest('.custom-input-container');
