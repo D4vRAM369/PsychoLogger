@@ -1,0 +1,559 @@
+[33mcommit 017414d2b21ac75584a368bb033822a72e8955a0[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mGithub[m[33m)[m
+Author: D4vRAM <d4vram369@proton.me>
+Date:   Tue Sep 23 18:58:26 2025 +0100
+
+    Fixeado custom unit
+
+[33mcommit 19b5da2a848d7b42b4bce07d3232da217b7f4c3a[m
+Author: D4vRAM <d4vram369@proton.me>
+Date:   Mon Sep 22 22:37:09 2025 +0100
+
+    Función de eliminar y editar las unidades personalizadas introducidas en UNIDAD en Agregar entrada, implementadas. Mejorar la UI y quitar lo de file:// dice.. antes de cada tarea, lo mismo que sucedía cuanto estaba al principio de la app con el Artifact de Claude como base
+
+[33mcommit bb3490ee71b50aeb711427fc403207fa7aa966bd[m
+Author: D4vRAM <d4vram369@proton.me>
+Date:   Wed Sep 3 22:11:44 2025 +0100
+
+    Corrección del tamaño y modificación de la nota a final del Modal que se abre al clickar en Libros Recomendandos, en el Panel de Recursos
+
+[33mcommit 9c137e764a0274b07d102fbb761ffba6cced416e[m
+Author: D4vRAM <d4vram369@proton.me>
+Date:   Wed Sep 3 21:30:17 2025 +0100
+
+    Al fin Modal de Libros recomendados desplegable con buen diseño sin mal responsive, aunque el resize debería ser un poquito más grande quizás
+
+[33mcommit 46ce6b7287e68f414665cc48ef7eb2e4ab700f08[m
+Author: D4vRAM <d4vram369@proton.me>
+Date:   Wed Sep 3 20:50:28 2025 +0100
+
+    Modales de Añadir registro funcional, y unidades de medida personalizables como Inputs añadidos, PERO tengo que implementar función para poder borrar métodos de unidad personalizados creados, y mejorar el panel de libros que funciona gracias a openBooksAlert, pero en mal diseño
+
+[33mcommit 5d34170a748fb7969ab0368ece109432138f310e[m
+Author: D4vRAM <d4vram369@proton.me>
+Date:   Wed Sep 3 20:31:17 2025 +0100
+
+    Modales de Agregar registro vueltos a poner correctamente, se destrozó el Responsive. Revertidos z-index a valores normales, se eliminaron las reglas CSS problemáticas
+
+[33mcommit 92f8eb3edfce1e92514fb2567efca1550a4e724e[m
+Author: D4vRAM <d4vram369@proton.me>
+Date:   Wed Sep 3 19:54:47 2025 +0100
+
+    Panel de Libros recomendados añadido en Recursos pero en recuadro blanco con el mensaje de The page at file:// says: y los libros. Intenté con Claude Code mejorar el modal, para verse bonito, pero siempre termina fallando el Reponsive y se quedaba en una minibarra sin responsive funcional, aunque si el scroll dentro de ella, pero no era funcional. Trabajar desde este punto para ésta implementación. DESTACO EN EL COMMIT QUE ESTO ES UN PROPYECTO BASADO EN PROJECT-BASED LEARNING (PBL), y mis conocimientos actuales no corresponden a hacer por mi mismo una app como esta desde 0 en estos momentos: soy consciente de ello, y esto es un método de aprendizaje distinto al convencional, que combino con éste para sacar mejores resultados y no dispersarme tanto entre tanta teoría
+
+[33mcommit 4012c1c27b111257a0fcd6f537a092e41d1dc099[m
+Author: D4vRAM <d4vram369@proton.me>
+Date:   Wed Sep 3 19:01:46 2025 +0100
+
+    Añadida la feature de que al Agregar entrada en Nuevo Registro, en el campo de UNIDAD para seleccionar la unidad, haya un Input al final de cada grupo, para introducir una personalizada
+
+[33mcommit 9f846a531df07a8a151095bf9cbc1bfe8c36192c[m
+Author: D4vRAM <d4vram369@proton.me>
+Date:   Wed Sep 3 18:21:51 2025 +0100
+
+    Añadido en el Panel de Recursos, un menú desplegable de Libros recomendados con su descripción y un disclaimer personalizado que refleja mi postura respecto a algunas preguntas sobre mi inclinación ideológica acerca de ciertas cuestiones
+
+[33mcommit 5e4ba6b38922b98db116eadf6082433613fc2696[m
+Author: D4vRAM <d4vram369@proton.me>
+Date:   Wed Sep 3 17:28:33 2025 +0100
+
+    Solventado pequeño error de compilación y añadido en commit previo en el Panel de Recursos enlace a DrugScience
+
+[33mcommit 4e2fa8e7df944011d8f3d48ca175767d2b08366a[m
+Author: D4vRAM <d4vram369@proton.me>
+Date:   Wed Sep 3 17:18:31 2025 +0100
+
+    Pequeño bug de primera pantalla biométrica, a veces atascada (solo la parte de la huella y no del PIN), que se solventaba con cerrar y abrir la apk
+
+[33mcommit c7dc001de70b11966468d99828d0d78a41755991[m
+Author: D4vRAM <d4vram369@proton.me>
+Date:   Wed Sep 3 15:26:49 2025 +0100
+
+    Preparación para push a Github
+
+[33mcommit df11ed46d145d1b87590dd9ad8a47c1614666c4e[m[33m ([m[1;32mmaster[m[33m)[m
+Author: D4vRAM <d4vram369@proton.me>
+Date:   Mon Sep 1 21:00:03 2025 +0100
+
+    ### 🚀 refactor: simplificar SecurityCheckActivity y AppLockManager
+    
+    - Unificada lógica de seguridad en  → eliminados métodos agresivos (, , ).
+    - Reducida duplicación: una sola pantalla de bloqueo en Compose (antes 3 versiones en , , ).
+    - Añadido auto-prompt de biometría controlado (se lanza una vez al entrar, sin bucles).
+    - Limpieza de callbacks: eliminado  redundante (ya gestionado en ).
+    - UX más clara y consistente: bloqueo siempre explica el motivo y permite huella o PIN.
+    - Código reducido en SecurityCheckActivity.kt (319 → 183 líneas) sin perder seguridad.
+
+[33mcommit 85af17758ba73449a6345ca7a02c85d53873af4d[m
+Author: D4vRAM <d4vram369@proton.me>
+Date:   Sat Aug 30 01:28:49 2025 +0100
+
+    Botón de Limpiar estilizado (cambiada class -btn-secondary por class .btn-danger y añadido los estilos antes de finalizar el bloque </styles>
+
+[33mcommit d4594096434a9714d41237814f6689689ecc8ab8[m
+Author: D4vRAM <d4vram369@proton.me>
+Date:   Fri Aug 29 22:25:34 2025 +0100
+
+    .btn-secondary cambiando por .btn-danger (class=btn-danger) en index.html: para darle un diseño más representativo a la opción Limpiar todo en el panel de Datos
+
+[33mcommit de9d79b8dcdeca857f9a25ad0d13948b03cd35fe[m
+Author: D4vRAM <d4vram369@proton.me>
+Date:   Fri Aug 29 21:58:03 2025 +0100
+
+    Punto de control
+
+[33mcommit 848bda61603d0688b78689efa6503c6fa54d73ad[m
+Author: D4vRAM <d4vram369@proton.me>
+Date:   Fri Aug 29 03:41:10 2025 +0100
+
+    Los valores antiguos están mal, pero una vez los modifique si los sustituyo uno a uno, se verán los valores como deben verse, pero la fecha de actualización ya no corresponderá a cuando hice a las entradas. Sería algo así como un Backup. Descubrir donde está la diferencia principal que hace funcionar eso así entre este commit y algunos anteriores, entre demás información y notas que tomar estudiando a nivel teórico, reforzando conceptos
+
+[33mcommit bb58dc8f763e06cb9f3872191b06575e1497da96[m
+Author: D4vRAM <d4vram369@proton.me>
+Date:   Fri Aug 29 03:32:18 2025 +0100
+
+    Importar CSV ya permite Editar y Eliminar entradas sin que diga no existe registro, y Exportar CSV exporta correctamente pero no en el orden correcto, aunque ya exporta valores Set y Settings, no aparecen ninguno de dichos valores en ellos, sino las que son las notas encima. Al menos es funcional, para dejarlo en un punto estable antes de terminar por ahora
+
+[33mcommit 478e483361fd3cc0013ba35a60aa54b88ca32a50[m
+Author: D4vRAM <d4vram369@proton.me>
+Date:   Fri Aug 29 00:19:31 2025 +0100
+
+    Función exportToCSV y importFromCSV corregidas para que Importación también importe de forma correcta, archivos CSV con menos tablas de las que genera ahora con Set y Setting. Antes solo admitía la importación de archivos CSV creados sin las tablas nuevas de Set y Setting, sino importaba 0. Ahora eso está solucionado
+
+[33mcommit 9fc86180ee3b020d7c5d2b4248a95dfa4685c8e6[m
+Author: D4vRAM <d4vram369@proton.me>
+Date:   Thu Aug 28 23:06:23 2025 +0100
+
+    La función Exportación a CSV funciona con Sets y Settings SOLO si se crean desde cero. No funciona si exporto los datos ya creados en mi móvil usando la apk desde hace 1 mes aprox
+
+[33mcommit 3e6d69ac6e08c492fa44c613cda2d66104635aed[m
+Author: D4vRAM <d4vram369@proton.me>
+Date:   Thu Aug 28 21:08:37 2025 +0100
+
+    showCustomAlert cambiado por showAutoCloseAlert en line 2597 para que al eliminar entrada, el Modal se cierre automáticamente por sí solo
+
+[33mcommit 6a6df6b49842580f35b71ca0a32209ab042f4500[m
+Author: D4vRAM <d4vram369@proton.me>
+Date:   Thu Aug 28 20:44:43 2025 +0100
+
+    Corregidos los emojis que no se seleccionaban tal cual se veían porqué no eran los mismos los de las clases dropdown-option con la class option-emoji, desde line 1599 a 1744
+
+[33mcommit 9b4a934887334d8e2971cc2467a6a4764235a6ef[m
+Author: D4vRAM <d4vram369@proton.me>
+Date:   Thu Aug 28 20:13:02 2025 +0100
+
+    Importación corregida, ya importa de nuevo el CSV con todos los valores y no solo las sustancias, también las experiencias
+
+[33mcommit 3fb75fde5a611894999928ead842c163dcc980dd[m
+Author: D4vRAM <d4vram369@proton.me>
+Date:   Thu Aug 28 19:13:57 2025 +0100
+
+    Símbolos de parámetros mejor establecidos, no sé porqué se borraron si los puse antes
+
+[33mcommit 51378e1bdc4d0b1a4c4b60ed33d3b6349779ebdb[m[33m ([m[1;32mexperimental[m[33m)[m
+Author: D4vRAM <d4vram369@proton.me>
+Date:   Thu Aug 28 18:50:00 2025 +0100
+
+    Punto de control. No podría concretar los cambios pues llevo varias horas en ello y leyendo conceptos y aprendiendo cosas mientras voy creando
+
+[33mcommit 264fe71131bfc9dab43a289d4e99aca2adf6436d[m
+Author: D4vRAM <d4vram369@proton.me>
+Date:   Thu Aug 28 16:50:48 2025 +0100
+
+    Modificados los emojis del bloque de Unidad para hacerlos más representativos
+
+[33mcommit 58f94386568dd3de4dfb1734d31e8e64b2274f51[m
+Author: D4vRAM <d4vram369@proton.me>
+Date:   Thu Aug 28 16:42:07 2025 +0100
+
+    Solucionado el problema de que el recuadro de Eliminar registro no se cerraba solo, ni redirigía al calendario, con la función showAutoCloseAlert
+
+[33mcommit 6744ea47e6459b48c813a9380f02ca50f4d6b080[m
+Author: D4vRAM <d4vram369@proton.me>
+Date:   Thu Aug 28 15:28:34 2025 +0100
+
+    Cambio para que tras click en función Edit se desvanezca el cuadro de ShowAutoCloseAlert() y vuelva al calendario con showCalendarView(). También añadido filo en Unidades.
+
+[33mcommit dae2ec97257e8add026a41918e7b4dbf6d28b98a[m
+Author: D4vRAM <d4vram369@proton.me>
+Date:   Thu Aug 28 06:29:00 2025 +0100
+
+    Falta solo que tras Editar o Agregar entrada y Guardar registro, salga del panel tras la confirmación y el 'fade out visual' al Calendario en lugar de volver a la entrada ya creada y confirmada por showAutoCloseAlert()
+
+[33mcommit 5aa8b5559bde8ac72a415346510d1130783a04e6[m
+Author: D4vRAM <d4vram369@proton.me>
+Date:   Thu Aug 28 06:20:25 2025 +0100
+
+    Transición de fading out visual gradual tras confirmación de Editar o Agregar entrada. Falta que se cierre la entrada después y vaya al calendario
+
+[33mcommit 35ecd19a932ec5767e0919bd98ea2d5cd5b1a4ed[m
+Author: D4vRAM <d4vram369@proton.me>
+Date:   Thu Aug 28 06:14:26 2025 +0100
+
+    Errores por qué quedaban partes del código del Panel eliminado de Pérfil del cual intentaba cargar unos valores que no existían
+
+[33mcommit 173d8f2cbf7a31f76b90eeaeff71457d92593fd9[m
+Author: D4vRAM <d4vram369@proton.me>
+Date:   Thu Aug 28 05:35:40 2025 +0100
+
+    Error solucionado, funcional con las nuevas implementaciones. Empieza proceso de testing personal.
+
+[33mcommit ce77d5572ac7deaf0ad1869cfb12b3ea3b98d97c[m
+Author: D4vRAM <d4vram369@proton.me>
+Date:   Thu Aug 28 05:30:01 2025 +0100
+
+    Mejoras de UI implementadas, así como emojis para las sustancias y parámetros. Falta por eliminar un bug
+
+[33mcommit a09223b4006a5e31903dfe4571331f40d1544dd3[m
+Author: D4vRAM <d4vram369@proton.me>
+Date:   Thu Aug 28 03:07:05 2025 +0100
+
+    Diseños de selectores de set and setting cambiados, creo que el de dosificaciones también
+
+[33mcommit c84bbebe5ad0a74f19646d6a948755ddd766c6ed[m
+Author: D4vRAM <d4vram369@proton.me>
+Date:   Thu Aug 28 02:59:14 2025 +0100
+
+    Eliminado el panel de Perfil con todas sus funciones, ya que no aportaba nada a la app y puede inspirar desconfianza a usuarios de por sí ya precavidos, al ser los primeros testers conocidos de grupos de Telegram o algunos colegas
+
+[33mcommit fd4016c83253b162ebfbd080991332faab9123cc[m
+Author: D4vRAM <d4vram369@proton.me>
+Date:   Thu Aug 28 02:48:02 2025 +0100
+
+    Más parámetros de sets y settings incluídos
+
+[33mcommit f7722685a46df66c4cf5bf0fbfe3d0b9e3b2192b[m
+Merge: 04af920 a6ea5d3
+Author: D4vRAM <d4vram369@proton.me>
+Date:   Thu Aug 28 02:26:27 2025 +0100
+
+    Merge feature-applock: añadida funcionalidad de bloqueo de app y configuraciones de perfil
+
+[33mcommit a6ea5d3303c6453c53acd4d4cb3bb3dae2e99429[m[33m ([m[1;32mfeature-applock[m[33m)[m
+Author: D4vRAM <d4vram369@proton.me>
+Date:   Thu Aug 28 02:24:34 2025 +0100
+
+    Añadidos algunos parámetros a sets y settings
+
+[33mcommit cfa2ab6d8c82af02367f19f6ea4cb1a7944d88f1[m
+Author: D4vRAM <d4vram369@proton.me>
+Date:   Mon Aug 25 17:45:11 2025 +0100
+
+    Bloqueo de pantalla con huella funciona, pero al forzar detención o limpiar caché, la app (el WebView) se carga 1 vez, antes de cambiar de app, o cerrarla y abrirla, que entonces si pide desbloqueo con huella. La función del PIN ya es funcional. Registro de desarrollo en el Changelog local y en Projects
+
+[33mcommit 97525bcec64fca72602f255e76fd1cd36aa9250b[m
+Author: D4vRAM <d4vram369@proton.me>
+Date:   Mon Aug 25 16:26:12 2025 +0100
+
+    Reforzando el desbloqueo biométrico. El PIN ya es funcional. Pero tras forzar detención y abrirla, la app carga antes que la pantalla de autenticación
+
+[33mcommit 04af9209241ac82c22878aaa54c7f42d0857b2e5[m
+Author: D4vRAM <d4vram369@proton.me>
+Date:   Mon Aug 25 05:09:26 2025 +0100
+
+    Paleta de colores ampliada a 16, implementada opción de Editar sustancias (ya sea para cambiar el color o el nombre). Ha quedado preciosa
+
+[33mcommit cbd162b164bdb798c2890259102428d9ac19fcb7[m
+Author: D4vRAM <d4vram369@proton.me>
+Date:   Mon Aug 25 05:09:26 2025 +0100
+
+    Paleta de colores ampliada a 16, implementada opción de Editar sustancias (ya sea para cambiar el color o el nombre). Ha quedado preciosa
+
+[33mcommit 3682a25dbec0ef2da1e8d0ec1b2fe19d920597e2[m
+Author: D4vRAM <d4vram369@proton.me>
+Date:   Mon Aug 25 04:59:20 2025 +0100
+
+    Interfaz de Diálogo de 'Registro actualizado' se muestra bien, al igual que la recién actualizada de 'Agregar entrada'. Ya la sustancia no deselecciona al editar, fixed
+
+[33mcommit 9985e5cbff2902e5e6e88456082fdb3da87d45a8[m
+Author: D4vRAM <d4vram369@proton.me>
+Date:   Mon Aug 25 04:42:37 2025 +0100
+
+    Bug de que se seleccionase un día antes del día clickado en el Calendario FIXED. Explicación de Cursor IDE Agent de cual era el problema: 🔍 ¿Por Qué Ocurría Este Bug?
+    El problema se debía a que JavaScript, cuando usa toISOString(), convierte la fecha a UTC (Tiempo Universal Coordinado). Si tu zona horaria está por delante de UTC (como en España, que está en UTC+1 o UTC+2), esto puede causar que la fecha se desplace al día anterior.
+    Ejemplo:
+    Fecha local: 19 de agosto, 23:00 (hora española)
+    UTC: 19 de agosto, 21:00 (2 horas menos)
+    Resultado: Si se interpreta incorrectamente, puede mostrar el día 18
+
+[33mcommit e307d8805dd684ad8d3484fb890004a1f6420daf[m
+Author: D4vRAM <d4vram369@proton.me>
+Date:   Mon Aug 25 04:26:57 2025 +0100
+
+    Configuración avanzada actualizada con tiempo de bloqueo predeterminado, y opción de PIN añadido como método alternativo
+
+[33mcommit 76b99118a6097fc8f3f092aaf5ad5f25f3a4cc92[m
+Author: D4vRAM <d4vram369@proton.me>
+Date:   Mon Aug 25 04:07:39 2025 +0100
+
+    Función de bloquear pantalla con huella biométrica CORRECTAMENTE IMPLEMENTADA. En la pantalla principal, hay un botón de un pequeño engranaje en la esquina superior derecha, que permite activar y desactivar el bloqueo de aplicación con huella dactilar. Al principio parecía no funcionar, pero funciona a la perfección. Ahora vamos a implementar en el botón de Configuraciones avanzadas un código PIN de bloqueo, como método de desbloqueo alternativo
+
+[33mcommit 3370ee382250465b83baec5718ec519d7e0c3314[m
+Author: D4vRAM <d4vram369@proton.me>
+Date:   Mon Aug 25 03:51:06 2025 +0100
+
+    Implementadas las librerías androidx.biometric:biometric-ktx y androidx.security:security-crypto en libs.versions.toml para tener las dependencias necesarias para construir la feature de bloqueo con huella biométrica y pin de bloqueo en la app. En app/build.gradle.kts añadimos implementation(libs.androidx.biometric) y implementation(libs.androidx.security.crypto). Seguimos hacia adelante mientras estudio todo el proceso mientras se crea con Cursor IDE Agent. Al final exportaré el archivo .md para ver el changelog completo en MyProjects
+
+[33mcommit 6f95b37ab98ce6ff190a46fc8be7c181d3b55736[m
+Author: D4vRAM <d4vram369@proton.me>
+Date:   Mon Aug 18 00:22:08 2025 +0100
+
+    Responsive arreglado para que el Teclado no tape las Notas de las Entradas mientras se escribe
+
+[33mcommit ff9e1da96a629f1ca12e81d2fbbdcfcd89145b7f[m
+Author: D4vRAM <d4vram369@proton.me>
+Date:   Sun Aug 17 23:54:25 2025 +0100
+
+    Arreglo tras DESASTRES de fallo de redimensionamiento de Modal con Cursor
+
+[33mcommit d92607382c80ee0657533201bb17e22d594ee691[m
+Author: D4vRAM <d4vram369@proton.me>
+Date:   Sun Aug 10 17:45:02 2025 +0100
+
+    El <span> 'Todas las sustancias', que realmente se relaciona con todos los registros agregados, y no con el número de sustancias registradas. Ha sido cambiado por 'Experiencias registradas', en la línea 1831 en la function renderSubstanceList y en la línea 1907 dentro de la function filterBySubstance(substanceName), en el archivo Index.html
+
+[33mcommit ee3191d40e596349580d630af89b357fa71f27c8[m
+Author: D4vRAM <d4vram369@proton.me>
+Date:   Wed Aug 6 18:26:37 2025 +0100
+
+    Corregida función ImportFromCSV para que al leer el archivo, utilice los IDs existentes. Solucionado el problema de que al Editar entrada en mismo día a misma hora, ya no ponga que no existe el registro seleccionado. Lo mismo con los que han sido exportados, y luego importados, que sucedía igual. Parece ser funcional, al menos lo de Editar o Eliminar entrada, y que no redirija a una diferente por falta de IDs. Antes estaba la función Date.now() sola, pero ahora es combinada con generateUniqueId() y .toString(36). El comando es 'function generateUniqueId() {
+        return Date.now().toString(36) + Math.random().toString(36).substr(2, 9);'. Creo que estamos muy cerca de la funcional 1.0 totalmente, aunque PODRÍA SER ESTA
+
+[33mcommit 86453b80c66da6e173b2328caa714b0e259bc10e[m
+Author: D4vRAM <d4vram369@proton.me>
+Date:   Wed Aug 6 18:08:14 2025 +0100
+
+    **IDs Únicos y Consistentes:** La función  ahora crea IDs que son cadenas de texto más robustas y únicas, y se utilizan consistentemente al crear nuevas entradas y al importar datos.
+    **Manejo de Eventos Robusto:** Los botones de Editar y Eliminar en el modal de entradas del día ahora usan  para almacenar el ID de la entrada. Los  se adjuntan dinámicamente *después* de que el HTML se inserta en el DOM, asegurando que el ID correcto se capture en el momento del clic.
+    **Lógica de Edición/Creación Unificada:** La función  ha sido refactorizada para manejar tanto la creación de nuevas entradas como la actualización de entradas existentes, basándose en el estado  y .
+    **Restablecimiento de Modo Edición:** Se ha mejorado el restablecimiento del formulario y del modo de edición para evitar que se arrastren estados incorrectos entre operaciones.
+
+[33mcommit 0f39ae5636072f766bcb65c2e8dad95db1d769e4[m
+Author: D4vRAM <d4vram369@proton.me>
+Date:   Mon Aug 4 04:01:19 2025 +0100
+
+    Eliminado botón de Debug Import y su función al final de Index.html para comprobar que Import CSV funcionaba correctamente
+
+[33mcommit d48bf2127e9fa96150b6c99458983c0fb061549a[m
+Author: D4vRAM <d4vram369@proton.me>
+Date:   Mon Aug 4 03:55:41 2025 +0100
+
+    Copiar todo el estado de experimental (cd84d65) en master
+
+[33mcommit eccc1acce964bb139ebe360c64be970515e0940b[m
+Author: D4vRAM <d4vram369@proton.me>
+Date:   Mon Aug 4 03:31:24 2025 +0100
+
+    YA FUNCIONA LA IMPORTACIÓN Y LA EXPORTACIÓNgit add . AHORA SÍ QUE SÍ, TAMBIÉN FUNCIONA EL CORRECTO REDIRECCIONAMIENTO DE LOS ENLACES QUE ESTÁN EN RECURSOS PARA ABRIRSE FUERA DE LA APK, EN EL NAVEGADOR POR DEFECTOgit add . ÚNICAMENTE FALTA MODIFICAR LOS RECUADROS DE PÁGINA FILE (Estética) y el RESPONSIVE del Teclado al tomar Notas Adicionales en Agregar
+
+[33mcommit cd84d656d407f8deee2f3d2f639c97938080cf16[m
+Author: D4vRAM <d4vram369@proton.me>
+Date:   Mon Aug 4 03:31:24 2025 +0100
+
+    YA FUNCIONA LA IMPORTACIÓN Y LA EXPORTACIÓNgit add . AHORA SÍ QUE SÍ, TAMBIÉN FUNCIONA EL CORRECTO REDIRECCIONAMIENTO DE LOS ENLACES QUE ESTÁN EN RECURSOS PARA ABRIRSE FUERA DE LA APK, EN EL NAVEGADOR POR DEFECTOgit add . ÚNICAMENTE FALTA MODIFICAR LOS RECUADROS DE PÁGINA FILE (Estética) y el RESPONSIVE del Teclado al tomar Notas Adicionales en Agregar
+
+[33mcommit ef7fa86204740162c8fc614c5f15da7ce029c8a3[m
+Author: D4vRAM <d4vram369@proton.me>
+Date:   Mon Aug 4 02:44:17 2025 +0100
+
+    Finalmente function ExportCSV y ImportCSV FUNCIONANgit add . Solo tengo que quitar el Debug de ImportCSV, pero ya ambos son funcionales. Ahora al responsive del teclado al tomar notas adicionales en Agregar entrada, para que no lo tape, y a la redirección de enlaces en el navegador fuera de la app
+
+[33mcommit e623795d14a5644ca6f3bdcfabc7de1ef0cec53e[m
+Author: D4vRAM <d4vram369@proton.me>
+Date:   Mon Aug 4 01:47:46 2025 +0100
+
+    Pop-up de Exportar CSV cambiado de página file:// dice: a algo más estético, aunque sigue sin funcionar bien por un error que muestra abajo. Intentamos hacer que funcione la función de Import CSV también, además de la de Export CSV
+
+[33mcommit 6cf7e12df8c3cd3c45b865747dd468e8e606c7f4[m
+Author: D4vRAM <d4vram369@proton.me>
+Date:   Mon Aug 4 01:15:22 2025 +0100
+
+    Función editEntryFromDaySafe(entryID) actualizada: ahora es posible editar las notas perfectamente y actualizar los registros, no crear registros duplicados guardando el anterior como pasaba antes. Está añadido un console.log que confirma que el registro ha sido actualizado, podría ser eliminado
+
+[33mcommit d757e7b8edaa8046cf5ba581ed9e19ce552ceece[m
+Author: D4vRAM <d4vram369@proton.me>
+Date:   Mon Aug 4 01:02:21 2025 +0100
+
+    Hemos solventado el problema de Editar entrada definitvamente: lo único que quedaba era que se cerrase de forma automática el primer Modal de Editar la entrada del día. Ya funciona como la seda. Hora de registro de Claude, 1AM
+
+[33mcommit 7554638bf770549f4808c8dc0e1156f84d891797[m
+Author: D4vRAM <d4vram369@proton.me>
+Date:   Mon Aug 4 00:57:48 2025 +0100
+
+    Botones de Editar entrada y Eliminar al hacer click en día del calendario con registros, están coloreados y definidos. Ahora vamos a arreglar la función closeDayModalSafe en línea 2569, para hacer que el Modal de Registros del día se cierre automáticamente tras Editar entrada, que ya es funcional, pero se debe pulsar fuera del recuadro para que se cierre el primer Modal. Esto de programar y aprender me flipa
+
+[33mcommit d120cb30fed0b0424ea4132cbc71e99930a6efb7[m
+Author: D4vRAM <d4vram369@proton.me>
+Date:   Sun Aug 3 21:37:15 2025 +0100
+
+    3 funciones nuevas añadidas antes del cierre del bloque script
+
+[33mcommit 46204c6a1372dff21a16f547a9d37fbdd99d1ad3[m
+Author: D4vRAM <d4vram369@proton.me>
+Date:   Sun Aug 3 19:47:49 2025 +0100
+
+    Punto de control, antes de aplicar lo de Responsive al Modal para que no quede tapado por el teclado, ya que sino el panel Agregar no funciona ni tampoco el Modal para agregar desde el día
+
+[33mcommit 996de10539b3fb212d76f57b1c4fc03f33ea9f6e[m
+Author: D4vRAM <d4vram369@proton.me>
+Date:   Sun Aug 3 19:13:01 2025 +0100
+
+    Features de agregar desde el Calendario y nuevas posologías y estructura, pero varios errores, como que Editar entrada no funciona, tras Agregar entrada en el calendario no se puede pasar al panel Agregar sin cerrar y abrir la app. Falta por solventar esto y a ser posible el Responsive del Modal de notas, que queda tapado por el teclado y no se puede ver que se está escribiendo
+
+[33mcommit 7b8858d136d47d15c489e872f81caa956f645f7b[m
+Author: D4vRAM <d4vram369@proton.me>
+Date:   Sun Aug 3 17:21:11 2025 +0100
+
+    Editada function AddEntry en línea 1747 por v2.0, la 1.0 guardada en home
+
+[33mcommit 54def0690a5877ca2b4fdfe8964b8f612b99e396[m
+Author: D4vRAM <d4vram369@proton.me>
+Date:   Sun Aug 3 17:08:22 2025 +0100
+
+    Cambios en la zona de Añadir Entrada, mas opciones en el Modal que se abre respecto a posología, tipo de sustancias, set and setting... Más completo el apartado de Añadir Entrada
+
+[33mcommit 43e4a1b2b7cd7852c7b82b8f79f826ede0e2a2bb[m
+Author: D4vRAM <d4vram369@proton.me>
+Date:   Sun Aug 3 16:53:45 2025 +0100
+
+    AndroidManifest.xml modificado con FileProvider y SDK version en WriteExternalStorage permission, además de añadido el archivo file_paths.xml para en teoría solucionar el Export to CSV
+
+[33mcommit 3963d171ead39f729693070453ee70d48b0e2431[m
+Author: D4vRAM <d4vram369@proton.me>
+Date:   Fri Aug 1 16:35:21 2025 +0100
+
+    Icono implementado, MainActivity.kt cambiado, añadidos permisos en AndroidManifest.xml y function ExportToCSV cambiada pero no funcional, aunque estoy cerca
+
+[33mcommit f5cce20c5f1d4aa9dc92ae9a2e25db318d536eab[m
+Author: D4vRAM <d4vram369@proton.me>
+Date:   Fri Aug 1 16:11:09 2025 +0100
+
+    Filtrado por colores a la hora de seleccionar las sustancias implementado
+
+[33mcommit 834ecbdd95f6e40e5a8bc61b0950a23ce3aed38b[m
+Author: D4vRAM <d4vram369@proton.me>
+Date:   Fri Aug 1 15:53:42 2025 +0100
+
+    Colores por sustancia filtradas en calendario rellenando la casilla del día del color de la sustancia, aunque debo implementar feature de que se desmarquen las sustancias que no estén seleccionadas
+
+[33mcommit ee3874e12e569803bfb47cc776110a298e2978b9[m
+Author: D4vRAM <d4vram369@proton.me>
+Date:   Thu Jul 31 16:16:00 2025 +0100
+
+    FUNCIONAL igual que en la rama master, pero solo he añadido nuevas posologías para agregar entradas. Las features de exportar CSV, importar CSV y que los Recursos, es decir links, se abran fuera de la app, aún no están implementadas
+
+[33mcommit 5b34bab586ce4d42461b77c8a091dc44eb705593[m
+Author: D4vRAM <d4vram369@proton.me>
+Date:   Thu Jul 31 15:59:58 2025 +0100
+
+    Supuestos cambios aplicados, pero NO FUNCIONALES. Este commit es solo para ver diferencias en código
+
+[33mcommit 2f5417aed12d017d71e84695417edd3ad949a51b[m
+Author: D4vRAM <d4vram369@proton.me>
+Date:   Thu Jul 31 15:40:25 2025 +0100
+
+    Funciones de importación y exportación cambiadas, pero sin cambios aparentes. También function openExternalURL. Me dispongo a cambiar la forma de compartir en redes sociales
+
+[33mcommit 0a2f6737c3595c635821a4b090e62b89982c977d[m
+Author: D4vRAM <d4vram369@proton.me>
+Date:   Thu Jul 31 15:22:47 2025 +0100
+
+    VERSIÓN FUNCIONAL: 1. TAMAÑO DE MODALES CORREGIDOS, 2. AÑADIDO EL FILTRADO POR SUSTANCIAS EN EL CALENDARIO, 3. AÑADIDO BOTÓN DE ELIMINACIÓN INDIVIDUAL PARA CADA SUSTANCIA. Me falta por determinar en donde se exportan los datos, y el de que forma. También debo hacer unas pequeñas modificaciones como añadir algunas formas de consumo más como rayita, cuarto de trip, medio trip, tirito, etc.
+
+[33mcommit 29db2e42b1077ff03b9b77f733af056ace8c728e[m
+Author: D4vRAM <d4vram369@proton.me>
+Date:   Wed Jul 30 02:54:14 2025 +0100
+
+    Estable con GPT-4.1 copiando y pegando entre codigos 1 y 2
+
+[33mcommit 1e40bd4b6abb1b8f51d67db585ab920206160464[m
+Author: D4vRAM <d4vram369@proton.me>
+Date:   Wed Jul 30 02:01:50 2025 +0100
+
+    Claude Sonnet 4 Pro se quedó hasta las 4AM sin tokens, así que debo seguir la versión 14 de la última respuesta cuando vuelva. De momento me quedo con la versión de las 00:29 y 00:37AM. Los Modales en ésta versión están mal ajustados, así que tengo instalada la de Telegram de las 00:34AM en Mensajes Guardados
+
+[33mcommit 887f5411a8c351760dfc07ec5846c1af0ac9d167[m
+Author: D4vRAM <d4vram369@proton.me>
+Date:   Wed Jul 30 00:37:51 2025 +0100
+
+    Sin cambios aparentes, aunque no la he probado mucho, ahora lo haré. Si no hay errores reportados tras esto, va de seda
+
+[33mcommit 16c15b6a6833e0827508bdf0ca90e4edb9e8e087[m
+Author: D4vRAM <d4vram369@proton.me>
+Date:   Wed Jul 30 00:29:38 2025 +0100
+
+    Filtrado por sustancia en el calendario
+
+[33mcommit 7ae02bf42938f4416011cec8ce2d3136210153d9[m
+Author: D4vRAM <d4vram369@proton.me>
+Date:   Wed Jul 30 00:23:55 2025 +0100
+
+    Funcional: no se han añadido los emojis pequeñitos, pero se ha añadido una barra fina de colores arriba que cambia la graduación de los colores, lo cual está chulo. Lo que buscaba era la animación de la barra de fondo azul fuerte, pero esto me sirve. Quiero intentar implementar que al seleccionar una sustancia, se marquen en el calendario los días que se ha consumido ésta, en lugar de que quede únicamente estáticos todos los días de consumo, con sus diferentes colores de las sustancias
+
+[33mcommit 8727ed98a1aefbfc648af255f8b234f0ca346306[m
+Author: D4vRAM <d4vram369@proton.me>
+Date:   Wed Jul 30 00:11:48 2025 +0100
+
+    🎯 Ahora debería funcionar:
+    
+    ✅ Emojis flotantes visibles con animación
+    ✅ Botón Añadir abre el modal
+    ✅ Botón Stats cambia a estadísticas
+    ✅ Botón Recursos cambia a recursos
+    ✅ Botón Calendario vuelve al calendario
+    ✅ Ojo 👁️ y Llave 🗝️ en el header
+    
+    ¡Ahora todo debería estar funcionando perfectamente! 🌈✨ PERO NO FUNCIONA EL BOTÓN DE CREAR NUEVAS DROGAS
+
+[33mcommit 8b358f23857e602f8c396423982c3d1d6c006fe7[m
+Author: D4vRAM <d4vram369@proton.me>
+Date:   Wed Jul 30 00:08:06 2025 +0100
+
+    Background con color oscuro y dos emojis de ojo y llave, pero solo funciona para agregar drogas nuevas, no los botones del panel inferior de Añadir, Stats o Recursos
+
+[33mcommit 6f17847c4961f8cf454d0a9a7e63b4a7ffbaa045[m
+Author: D4vRAM <d4vram369@proton.me>
+Date:   Wed Jul 30 00:05:29 2025 +0100
+
+    Primera versión funcional, pero falta poner el background color oscuro con la animación, que ya está lista pero en blanco, y diferenciar a ser posibles las drogas con sus colores distintos, para diferenciarlas mejor en el Calendario y darle algo más de color, como una especie de feature, lo demás pinta bien!
+
+[33mcommit 5080676562b2ec501587582fbfa568b3c86c42bb[m
+Author: D4vRAM <d4vram369@proton.me>
+Date:   Tue Jul 29 23:47:28 2025 +0100
+
+    Primera versión funcional, pero falta poner el background color oscuro con la animación, que ya está lista pero en blanco, y diferenciar a ser posibles las drogas con sus colores distintos, para diferenciarlas mejor en el Calendario y darle algo más de color, como una especie de feature, lo demás pinta bien!
+
+[33mcommit fa71af2ab7a7a63816bd6570939472269bfacd4c[m
+Author: D4vRAM <d4vram369@proton.me>
+Date:   Tue Jul 29 23:28:24 2025 +0100
+
+    Primera versión pseudo-funcional, ya que el color de Background es blanco aunque hay animación, y al agregar entradas a días no se quedan guardadas al seleccionar en el día del calendario. También deberían quedarse destacados en algún color o de alguna forma los días de consumo. No hay forma de ver a que días corresponden las entradas. Pero el diseño empieza a encajar en el móvil, ya no usamos Compose ni el default, sino un Webview y la redirección en MainActivity a Assets-Index.html
+
+[33mcommit 28d185cc14ee1b9a2e19afaaab0519f2ea389bc9[m
+Author: D4vRAM <d4vram369@proton.me>
+Date:   Tue Jul 29 23:06:22 2025 +0100
+
+    Saved game
+
+[33mcommit bc90edba935087e0d671bafcae5153ffb5f38962[m
+Author: D4vRAM <d4vram369@proton.me>
+Date:   Tue Jul 29 22:38:53 2025 +0100
+
+    Avanzando hacia la meta, antes de eliminar Colors.kt en theme, porqué está también está en ui/theme/Color.kt, pero hay que buscarlo con doble shift, porqué si no no lo veo, en vista Project
+
+[33mcommit cb090bf1745e2be91d5446482a4972bd8793fa0f[m
+Author: D4vRAM <d4vram369@proton.me>
+Date:   Tue Jul 29 19:32:52 2025 +0100
+
+    En Android Jetpack Compose no están definidas las cosas de como se ven de profesional en el navegador con Index.html. Hay que replicar ese estilo en Compose, ya que está en estilos por defecto, con los 6 o 7 pasos que están al final del chat de ChatGPT Plus en Proyectos, en PsychoLogger. Pero creo que voy por buen camino, pues en la web ya se ve bien, pero de momento lo dejo que me duelen hasta las piernas de no moverlas, llevo HORAS al PC programando/aprendiendo. Bárbaro...
+
+[33mcommit 1739774020a2c838f5e46d3056136e7223d8ea2c[m
+Author: D4vRAM <d4vram369@proton.me>
+Date:   Tue Jul 29 19:00:57 2025 +0100
+
+    Error en el móvil porqué solo sale pantalla de Bienvenida con el título de cada pestaña, pero parece ser que solo necesito eliminar el FragmentContainerView y el BottomNavigationView de activity_main.xml, ya no se necesitan
+
+[33mcommit 445a5d4d0fc826d060af57c49495a3b05f5483ba[m
+Author: D4vRAM <d4vram369@proton.me>
+Date:   Tue Jul 29 17:57:20 2025 +0100
+
+    En estado de desarrollo PsychoLogger, Bitacora Pisconautica, tras muchos archivos de la conversación con Claude Sonnet 4 Pro pero se me acabo limite hasta las 7pm, y pase a ChatGPT Plus que renové suscripción
