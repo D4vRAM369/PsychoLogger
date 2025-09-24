@@ -42,6 +42,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.content.FileProvider
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -362,6 +363,44 @@ class WebAppInterface(private val context: Context, private val activity: MainAc
             }
         } catch (e: Exception) {
             Toast.makeText(context, "❌ Error al exportar CSV: ${e.message}", Toast.LENGTH_LONG).show()
+            e.printStackTrace()
+        }
+    }
+
+    @JavascriptInterface
+    fun shareCSV(csvContent: String, filename: String = "") {
+        try {
+            val timestamp = SimpleDateFormat("yyyy-MM-dd_HH-mm-ss", Locale.getDefault()).format(Date())
+            val finalFilename = if (filename.isBlank()) "bitacora_psiconáutica_$timestamp.csv" else filename
+
+            // Crear archivo temporal en cache
+            val file = File(context.cacheDir, finalFilename)
+            file.writeText(csvContent)
+
+            // Obtener URI del archivo usando FileProvider
+            val uri = FileProvider.getUriForFile(
+                context,
+                "${context.packageName}.fileprovider",
+                file
+            )
+
+            // Crear Intent para compartir
+            val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                type = "text/csv"
+                putExtra(Intent.EXTRA_STREAM, uri)
+                putExtra(Intent.EXTRA_SUBJECT, "Bitácora Psiconáutica - $timestamp")
+                putExtra(Intent.EXTRA_TEXT, "📊 Mis datos exportados de PsychoLogger 🧠✨\n\nArchivo: $finalFilename")
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            }
+
+            // Crear chooser y mostrarlo
+            val chooserIntent = Intent.createChooser(shareIntent, "🚀 Compartir mi bitácora psiconáutica")
+            context.startActivity(chooserIntent)
+
+            Toast.makeText(context, "✅ ShareSheet abierto", Toast.LENGTH_SHORT).show()
+
+        } catch (e: Exception) {
+            Toast.makeText(context, "❌ Error al compartir: ${e.message}", Toast.LENGTH_LONG).show()
             e.printStackTrace()
         }
     }

@@ -1,6 +1,8 @@
 package com.d4vram.psychologger.ui.screens
 
 import android.content.Intent
+import android.util.Log
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -14,6 +16,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.core.content.ContextCompat
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -42,6 +45,7 @@ fun ProfileSettingsScreen(
     var showClearDataDialog by remember { mutableStateOf(false) }
     var showImportDialog by remember { mutableStateOf(false) }
     var importData by remember { mutableStateOf("") }
+    var isExporting by remember { mutableStateOf(false) }
     
     // Launcher para seleccionar archivo CSV
     val filePickerLauncher = rememberLauncherForActivityResult(
@@ -337,49 +341,41 @@ fun ProfileSettingsScreen(
                     // Exportar datos
                     Button(
                         onClick = {
-                            try {
-                                val csvContent = onExportData()
-                                val timestamp = SimpleDateFormat("yyyy-MM-dd_HH-mm-ss", Locale.getDefault()).format(Date())
-                                val filename = "bitacora_psiconautica_$timestamp.csv"
-                                
-                                // Crear archivo temporal
-                                val file = File(context.cacheDir, filename)
-                                file.writeText(csvContent)
-                                
-                                // Obtener URI del archivo
-                                val uri = FileProvider.getUriForFile(
-                                    context,
-                                    "${context.packageName}.fileprovider",
-                                    file
-                                )
-                                
-                                // Crear intent de compartir
-                                val shareIntent = Intent(Intent.ACTION_SEND).apply {
-                                    type = "text/csv"
-                                    putExtra(Intent.EXTRA_STREAM, uri)
-                                    putExtra(Intent.EXTRA_SUBJECT, "Bitácora Psiconáutica - $timestamp")
-                                    putExtra(Intent.EXTRA_TEXT, "Mis datos exportados de la aplicación")
-                                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                                }
-                                
-                                // Mostrar ShareScreen
-                                context.startActivity(Intent.createChooser(shareIntent, "Compartir datos CSV"))
-                                
-                            } catch (e: Exception) {
-                                // Manejar error
-                            }
+                            Log.d("PsychoExport", "🔴 BOTÓN SIMPLE CLICKEADO!")
+                            Toast.makeText(context, "🔴 Click detectado!", Toast.LENGTH_SHORT).show()
                         },
                         modifier = Modifier.fillMaxWidth(),
+                        enabled = true,
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFF06B6D4)
+                            containerColor = if (isExporting) Color(0xFF06B6D4).copy(alpha = 0.6f) else Color(0xFF06B6D4),
+                            disabledContainerColor = Color(0xFF06B6D4).copy(alpha = 0.6f)
                         ),
                         shape = RoundedCornerShape(12.dp)
                     ) {
-                        Text(
-                            "📤 Exportar Mis Datos (CSV)",
-                            color = Color.White,
-                            fontWeight = FontWeight.Medium
-                        )
+                        if (isExporting) {
+                            Row(
+                                horizontalArrangement = Arrangement.Center,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(16.dp),
+                                    strokeWidth = 2.dp,
+                                    color = Color.White
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    "Exportando...",
+                                    color = Color.White,
+                                    fontWeight = FontWeight.Medium
+                                )
+                            }
+                        } else {
+                            Text(
+                                "📤 Exportar Mis Datos (CSV)",
+                                color = Color.White,
+                                fontWeight = FontWeight.Medium
+                            )
+                        }
                     }
                     
                     Spacer(modifier = Modifier.height(12.dp))

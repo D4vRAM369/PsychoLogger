@@ -2383,7 +2383,8 @@
                     <div class="resource-card">
                         <h4>Exportar Datos</h4>
                         <p>Descargar todos tus datos en formato CSV</p>
-                        <button class="btn-primary" onclick="validateDataBeforeExport()">Exportar CSV</button>
+                        <button class="btn-primary" onclick="validateDataBeforeExport()">📤 Exportar CSV</button>
+                        <button class="btn-secondary" onclick="validateDataBeforeShare()" style="margin-top: 8px; background: var(--accent-cyan);">🚀 Compartir CSV</button>
                     </div>
                     <div class="resource-card">
                         <h4>Importar Datos</h4>
@@ -4721,6 +4722,83 @@
             showCustomAlert(`✅ Archivo exportado correctamente\n\n📁 ${fileName}\n\nRevisa tu carpeta de Descargas`),
             '✅ Exportación Completa'
             ;
+        }
+
+        // NUEVA FUNCIÓN PARA VALIDAR Y COMPARTIR CSV
+        function validateDataBeforeShare() {
+            const migratedCount = migrateOldEntries();
+            if (migratedCount > 0) {
+                showCustomAlert(
+                    `Se han actualizado ${migratedCount} registros con la nueva estructura. ` +
+                    'Ahora puedes compartir correctamente con todos los campos (Set, Setting, etc.).',
+                    '✅ Migración completada'
+                );
+                return;
+            }
+            const invalidEntries = entries.filter(entry =>
+                !entry.hasOwnProperty('set') || !entry.hasOwnProperty('setting')
+            );
+            if (invalidEntries.length > 0) {
+                showCustomConfirm(
+                    `Se encontraron ${invalidEntries.length} registros con estructura incompleta. ` +
+                    '¿Deseas corregirlos primero o compartir de todos modos?',
+                    'Registros incompletos detectados',
+                    () => switchView('calendar'),
+                    () => shareToCSV()
+                );
+            } else {
+                shareToCSV();
+            }
+        }
+
+        // FUNCIÓN PARA COMPARTIR CSV USANDO ANDROID INTERFACE
+        function shareToCSV() {
+            migrateOldEntries();
+            if (substances.length === 0 && entries.length === 0) {
+                alert('No hay datos para compartir');
+                return;
+            }
+
+            const csvLines = [];
+            csvLines.push('SUSTANCIAS');
+            csvLines.push('ID;Nombre;Color;Emoji;Fecha_Creacion;Fecha_Actualizacion');
+            substances.forEach(s => {
+                const row = [
+                    s.id,
+                    `"${s.name.replace(/"/g, '""')}"`,
+                    s.color,
+                    `"${(s.emoji || '').replace(/"/g, '""')}"`,
+                    `"${s.dateCreated || ''}"`,
+                    `"${s.dateUpdated || s.dateCreated || ''}"`
+                ];
+                csvLines.push(row.join(';'));
+            });
+
+            csvLines.push('');
+            csvLines.push('REGISTROS');
+            csvLines.push('ID;Sustancia;Dosis;Unidad;Fecha_Hora;Set;Setting;Notas;Fecha_Creacion;Fecha_Actualizacion');
+            entries.forEach(e => {
+                const row = [
+                    e.id,
+                    `"${e.substance.replace(/"/g, '""')}"`,
+                    e.dose,
+                    `"${(e.unit || '').replace(/"/g, '""')}"`,
+                    `"${e.date}"`,
+                    `"${(e.set || '').replace(/"/g, '""')}"`,
+                    `"${(e.setting || '').replace(/"/g, '""')}"`,
+                    `"${(e.notes || '').replace(/"/g, '""')}"`,
+                    `"${e.dateCreated || ''}"`,
+                    `"${e.dateUpdated || e.dateCreated || ''}"`
+                ];
+                csvLines.push(row.join(';'));
+            });
+
+            const csvContent = csvLines.join('\n');
+            const today = new Date().toISOString().split('T')[0];
+            const filename = `bitacora_psiconáutica_${today}.csv`;
+
+            // Llamar a la función Android para compartir
+            Android.shareCSV(csvContent, filename);
         }
 
         // FUNCIÓN DE IMPORTACIÓN ACTUALIZADA - Reemplaza la existente
