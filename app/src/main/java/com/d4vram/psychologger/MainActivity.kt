@@ -342,6 +342,26 @@ class WebAppInterface(private val context: Context, private val activity: MainAc
                         outputStream.write(csvContent.toByteArray(Charsets.UTF_8))
                     }
                     Toast.makeText(context, "✅ CSV exportado: $finalFilename", Toast.LENGTH_LONG).show()
+
+                    // Después de exportar exitosamente, abrir ShareSheet automáticamente
+                    activity.runOnUiThread {
+                        try {
+                            val shareFile = File(context.cacheDir, finalFilename)
+                            shareFile.writeText(csvContent)
+
+                            val shareUri = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", shareFile)
+                            val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                                type = "text/csv"
+                                putExtra(Intent.EXTRA_STREAM, shareUri)
+                                putExtra(Intent.EXTRA_SUBJECT, "Bitácora Psiconáutica")
+                                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                            }
+                            val chooser = Intent.createChooser(shareIntent, "🚀 Compartir CSV")
+                            activity.startActivity(chooser)
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                        }
+                    }
                 } ?: run {
                     Toast.makeText(context, "❌ Error al crear archivo", Toast.LENGTH_LONG).show()
                 }
@@ -360,6 +380,26 @@ class WebAppInterface(private val context: Context, private val activity: MainAc
                 context.sendBroadcast(intent)
 
                 Toast.makeText(context, "✅ CSV exportado: $finalFilename", Toast.LENGTH_LONG).show()
+
+                // Después de exportar exitosamente, abrir ShareSheet automáticamente
+                activity.runOnUiThread {
+                    try {
+                        val shareFile = File(context.cacheDir, finalFilename)
+                        shareFile.writeText(csvContent)
+
+                        val shareUri = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", shareFile)
+                        val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                            type = "text/csv"
+                            putExtra(Intent.EXTRA_STREAM, shareUri)
+                            putExtra(Intent.EXTRA_SUBJECT, "Bitácora Psiconáutica")
+                            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                        }
+                        val chooser = Intent.createChooser(shareIntent, "🚀 Compartir CSV")
+                        activity.startActivity(chooser)
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
+                }
             }
         } catch (e: Exception) {
             Toast.makeText(context, "❌ Error al exportar CSV: ${e.message}", Toast.LENGTH_LONG).show()
@@ -369,39 +409,43 @@ class WebAppInterface(private val context: Context, private val activity: MainAc
 
     @JavascriptInterface
     fun shareCSV(csvContent: String, filename: String = "") {
-        try {
-            val timestamp = SimpleDateFormat("yyyy-MM-dd_HH-mm-ss", Locale.getDefault()).format(Date())
-            val finalFilename = if (filename.isBlank()) "bitacora_psiconáutica_$timestamp.csv" else filename
+        // Ejecutar en el hilo principal de la Activity
+        activity.runOnUiThread {
+            try {
+                val timestamp = SimpleDateFormat("yyyy-MM-dd_HH-mm-ss", Locale.getDefault()).format(Date())
+                val finalFilename = if (filename.isBlank()) "bitacora_psiconáutica_$timestamp.csv" else filename
 
-            // Crear archivo temporal en cache
-            val file = File(context.cacheDir, finalFilename)
-            file.writeText(csvContent)
+                // Crear archivo temporal en cache
+                val file = File(context.cacheDir, finalFilename)
+                file.writeText(csvContent)
 
-            // Obtener URI del archivo usando FileProvider
-            val uri = FileProvider.getUriForFile(
-                context,
-                "${context.packageName}.fileprovider",
-                file
-            )
+                // Obtener URI del archivo usando FileProvider
+                val uri = FileProvider.getUriForFile(
+                    context,
+                    "${context.packageName}.fileprovider",
+                    file
+                )
 
-            // Crear Intent para compartir
-            val shareIntent = Intent(Intent.ACTION_SEND).apply {
-                type = "text/csv"
-                putExtra(Intent.EXTRA_STREAM, uri)
-                putExtra(Intent.EXTRA_SUBJECT, "Bitácora Psiconáutica - $timestamp")
-                putExtra(Intent.EXTRA_TEXT, "📊 Mis datos exportados de PsychoLogger 🧠✨\n\nArchivo: $finalFilename")
-                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                // Crear Intent para compartir
+                val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                    type = "text/csv"
+                    putExtra(Intent.EXTRA_STREAM, uri)
+                    putExtra(Intent.EXTRA_SUBJECT, "Bitácora Psiconáutica - $timestamp")
+                    putExtra(Intent.EXTRA_TEXT, "📊 Mis datos exportados de PsychoLogger 🧠✨\n\nArchivo: $finalFilename")
+                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                }
+
+                // Crear chooser y mostrarlo desde la Activity
+                val chooserIntent = Intent.createChooser(shareIntent, "🚀 Compartir mi bitácora psiconáutica")
+                chooserIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                activity.startActivity(chooserIntent)
+
+                Toast.makeText(context, "✅ ShareSheet abierto", Toast.LENGTH_SHORT).show()
+
+            } catch (e: Exception) {
+                Toast.makeText(context, "❌ Error al compartir: ${e.message}", Toast.LENGTH_LONG).show()
+                e.printStackTrace()
             }
-
-            // Crear chooser y mostrarlo
-            val chooserIntent = Intent.createChooser(shareIntent, "🚀 Compartir mi bitácora psiconáutica")
-            context.startActivity(chooserIntent)
-
-            Toast.makeText(context, "✅ ShareSheet abierto", Toast.LENGTH_SHORT).show()
-
-        } catch (e: Exception) {
-            Toast.makeText(context, "❌ Error al compartir: ${e.message}", Toast.LENGTH_LONG).show()
-            e.printStackTrace()
         }
     }
 
