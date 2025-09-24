@@ -2550,17 +2550,6 @@
                                     </div>
                                 </div>
 
-                                <!-- Campo personalizado para ESTIMULANTES/MDMA -->
-                                <div class="dropdown-option custom-input-container" data-category="estimulantes">
-                                    <span class="option-emoji">➕</span>
-                                    <div class="custom-unit-input">
-                                        <input type="text" placeholder="Añadir unidad personalizada..."
-                                               class="custom-unit-field" data-category="estimulantes">
-                                        <button type="button" class="add-custom-unit-btn"
-                                                onclick="addCustomUnit('estimulantes', this)">Añadir</button>
-                                    </div>
-                                </div>
-
                                 <!-- Estimulantes/MDMA -->
                                 <div class="dropdown-option category-header"
                                      data-category="estimulantes">
@@ -2588,14 +2577,16 @@
                                     <span class="option-text">punto/bomba</span>
                                 </div>
 
-                                <!-- Campo personalizado para POLVO/CRISTAL -->
-                                <div class="dropdown-option custom-input-container" data-category="polvo">
+
+
+                                <!-- Campo personalizado para ESTIMULANTES/MDMA -->
+                                <div class="dropdown-option custom-input-container" data-category="estimulantes">
                                     <span class="option-emoji">➕</span>
                                     <div class="custom-unit-input">
                                         <input type="text" placeholder="Añadir unidad personalizada..."
-                                               class="custom-unit-field" data-category="polvo">
+                                               class="custom-unit-field" data-category="estimulantes">
                                         <button type="button" class="add-custom-unit-btn"
-                                                onclick="addCustomUnit('polvo', this)">Añadir</button>
+                                                onclick="addCustomUnit('estimulantes', this)">Añadir</button>
                                     </div>
                                 </div>
 
@@ -2625,14 +2616,14 @@
                                     <span class="option-text">key bump</span>
                                 </div>
 
-                                <!-- Campo personalizado para LÍQUIDOS -->
-                                <div class="dropdown-option custom-input-container" data-category="liquidos">
+                                <!-- Campo personalizado para Polvo/Cristal -->
+                                <div class="dropdown-option custom-input-container" data-category="polvo">
                                     <span class="option-emoji">➕</span>
                                     <div class="custom-unit-input">
                                         <input type="text" placeholder="Añadir unidad personalizada..."
-                                               class="custom-unit-field" data-category="liquidos">
+                                               class="custom-unit-field" data-category="polvo">
                                         <button type="button" class="add-custom-unit-btn"
-                                                onclick="addCustomUnit('liquidos', this)">Añadir</button>
+                                                onclick="addCustomUnit('polvo', this)">Añadir</button>
                                     </div>
                                 </div>
 
@@ -2658,14 +2649,14 @@
                                     <span class="option-text">vial</span>
                                 </div>
 
-                                <!-- Campo personalizado para OTRAS -->
-                                <div class="dropdown-option custom-input-container" data-category="otras">
+                                <!-- Campo personalizado para LÍQUIDOS -->
+                                <div class="dropdown-option custom-input-container" data-category="liquidos">
                                     <span class="option-emoji">➕</span>
                                     <div class="custom-unit-input">
                                         <input type="text" placeholder="Añadir unidad personalizada..."
-                                               class="custom-unit-field" data-category="otras">
+                                               class="custom-unit-field" data-category="liquidos">
                                         <button type="button" class="add-custom-unit-btn"
-                                                onclick="addCustomUnit('otras', this)">Añadir</button>
+                                                onclick="addCustomUnit('liquidos', this)">Añadir</button>
                                     </div>
                                 </div>
 
@@ -2709,6 +2700,20 @@
                                     <span class="option-emoji">🍪🍪</span>
                                     <span class="option-text">cookies</span>
                                 </div>
+
+                                <!-- Campo personalizado para OTRAS -->
+
+                                <div class="dropdown-option custom-input-container" data-category="otras">
+                                    <span class="option-emoji">➕</span>
+                                    <div class="custom-unit-input">
+                                        <input type="text" placeholder="Añadir unidad personalizada..."
+                                               class="custom-unit-field" data-category="otras">
+                                        <button type="button" class="add-custom-unit-btn"
+                                                onclick="addCustomUnit('otras', this)">Añadir</button>
+                                    </div>
+                                </div>
+
+
                             </div>
                             <input type="hidden" id="entryUnit" name="entryUnit" value="" required>
                         </div>
@@ -2805,6 +2810,17 @@
                                     <span class="option-emoji">🚨</span>
                                     <span class="option-text">Pain crisis</span>
                                 </div>
+
+                                <!-- Campo personalizado para SET -->
+                                <div class="dropdown-option custom-input-container" data-category="set">
+                                    <span class="option-emoji">➕</span>
+                                    <div class="custom-unit-input">
+                                        <input type="text" placeholder="Añadir estado mental personalizado..."
+                                               class="custom-unit-field" data-category="set">
+                                        <button type="button" class="add-custom-unit-btn"
+                                                onclick="addCustomSet(this)">Añadir</button>
+                                    </div>
+                                </div>
                             </div>
                             <input type="hidden" id="entrySet" name="entrySet">
                         </div>
@@ -2883,6 +2899,17 @@
                                      onclick="selectOption('entrySettingDropdown', 'ceremonia', 'Ceremonia', '🕯️')">
                                     <span class="option-emoji">🕯️</span>
                                     <span class="option-text">Ceremonia</span>
+                                </div>
+
+                                <!-- Campo personalizado para SETTING -->
+                                <div class="dropdown-option custom-input-container" data-category="setting">
+                                    <span class="option-emoji">➕</span>
+                                    <div class="custom-unit-input">
+                                        <input type="text" placeholder="Añadir entorno personalizado..."
+                                               class="custom-unit-field" data-category="setting">
+                                        <button type="button" class="add-custom-unit-btn"
+                                                onclick="addCustomSetting(this)">Añadir</button>
+                                    </div>
                                 </div>
                             </div>
                             <input type="hidden" id="entrySetting" name="entrySetting">
@@ -3304,6 +3331,9 @@
                  
                  // Cargar unidades personalizadas
                  loadCustomUnits();
+
+                 // Cargar sets y settings personalizados
+                 loadCustomSetsAndSettings();
 
                  // Set current datetime for entry form
                  const now = new Date();
@@ -5608,6 +5638,233 @@
                     openDropdown = null;
                 }
             });
+
+            // === FUNCIONES PARA SETS Y SETTINGS PERSONALIZADOS ===
+            function addCustomSet(buttonElement) {
+                const container = buttonElement.closest('.custom-input-container');
+                const input = container.querySelector('.custom-unit-field');
+                const setName = input.value.trim();
+                if (!setName) {
+                    showAlert('⚠️ Error', 'Por favor ingresa el nombre del estado mental personalizado.');
+                    input.focus();
+                    return;
+                }
+                if (setName.length > 25) {
+                    showAlert('⚠️ Error', 'El nombre del estado mental no puede exceder 25 caracteres.');
+                    input.focus();
+                    return;
+                }
+                if (customSetExists(setName)) {
+                    showAlert('⚠️ Error', 'Este estado mental personalizado ya existe.');
+                    input.focus();
+                    return;
+                }
+                const newOption = createCustomSetOption(setName);
+                container.parentNode.insertBefore(newOption, container);
+                saveCustomSet(setName);
+                input.value = '';
+                showAlert('✅ Éxito', `Estado mental "${setName}" agregado correctamente.`);
+                selectOption('entrySetDropdown', `custom_set_${setName}`, setName, '💭');
+            }
+
+            function addCustomSetting(buttonElement) {
+                const container = buttonElement.closest('.custom-input-container');
+                const input = container.querySelector('.custom-unit-field');
+                const settingName = input.value.trim();
+                if (!settingName) {
+                    showAlert('⚠️ Error', 'Por favor ingresa el nombre del entorno personalizado.');
+                    input.focus();
+                    return;
+                }
+                if (settingName.length > 25) {
+                    showAlert('⚠️ Error', 'El nombre del entorno no puede exceder 25 caracteres.');
+                    input.focus();
+                    return;
+                }
+                if (customSettingExists(settingName)) {
+                    showAlert('⚠️ Error', 'Este entorno personalizado ya existe.');
+                    input.focus();
+                    return;
+                }
+                const newOption = createCustomSettingOption(settingName);
+                container.parentNode.insertBefore(newOption, container);
+                saveCustomSetting(settingName);
+                input.value = '';
+                showAlert('✅ Éxito', `Entorno "${settingName}" agregado correctamente.`);
+                selectOption('entrySettingDropdown', `custom_setting_${settingName}`, settingName, '🌍');
+            }
+
+            function createCustomSetOption(setName) {
+                const option = document.createElement('div');
+                option.className = 'dropdown-option custom-unit';
+                option.setAttribute('data-value', `custom_set_${setName}`);
+                option.setAttribute('data-set-name', setName);
+                option.innerHTML = `
+                    <div class="custom-unit-content" onclick="selectOption('entrySetDropdown', 'custom_set_${setName}', '${setName}', '💭')">
+                        <span class="option-emoji">💭</span>
+                        <span class="option-text">${setName}</span>
+                    </div>
+                    <div class="custom-unit-actions">
+                        <button class="custom-unit-btn edit-custom-unit-btn" onclick="editCustomSet('${setName}', this)" title="Editar estado mental">✏️</button>
+                        <button class="custom-unit-btn delete-custom-unit-btn" onclick="deleteCustomSet('${setName}', this)" title="Eliminar estado mental">🗑️</button>
+                    </div>
+                `;
+                return option;
+            }
+
+            function createCustomSettingOption(settingName) {
+                const option = document.createElement('div');
+                option.className = 'dropdown-option custom-unit';
+                option.setAttribute('data-value', `custom_setting_${settingName}`);
+                option.setAttribute('data-setting-name', settingName);
+                option.innerHTML = `
+                    <div class="custom-unit-content" onclick="selectOption('entrySettingDropdown', 'custom_setting_${settingName}', '${settingName}', '🌍')">
+                        <span class="option-emoji">🌍</span>
+                        <span class="option-text">${settingName}</span>
+                    </div>
+                    <div class="custom-unit-actions">
+                        <button class="custom-unit-btn edit-custom-unit-btn" onclick="editCustomSetting('${settingName}', this)" title="Editar entorno">✏️</button>
+                        <button class="custom-unit-btn delete-custom-unit-btn" onclick="deleteCustomSetting('${settingName}', this)" title="Eliminar entorno">🗑️</button>
+                    </div>
+                `;
+                return option;
+            }
+
+            function customSetExists(setName) {
+                return document.querySelectorAll(`[data-value="custom_set_${setName}"]`).length > 0;
+            }
+
+            function customSettingExists(settingName) {
+                return document.querySelectorAll(`[data-value="custom_setting_${settingName}"]`).length > 0;
+            }
+
+            function saveCustomSet(setName) {
+                let customSets = JSON.parse(localStorage.getItem('psychologger_custom_sets') || '[]');
+                if (!customSets.includes(setName)) {
+                    customSets.push(setName);
+                    localStorage.setItem('psychologger_custom_sets', JSON.stringify(customSets));
+                }
+            }
+
+            function saveCustomSetting(settingName) {
+                let customSettings = JSON.parse(localStorage.getItem('psychologger_custom_settings') || '[]');
+                if (!customSettings.includes(settingName)) {
+                    customSettings.push(settingName);
+                    localStorage.setItem('psychologger_custom_settings', JSON.stringify(customSettings));
+                }
+            }
+
+            function editCustomSet(oldSetName, buttonElement) {
+                const newName = prompt('Editar estado mental:', oldSetName);
+                if (!newName || newName.trim() === '') return;
+                const trimmedName = newName.trim();
+                if (trimmedName === oldSetName) return;
+                if (trimmedName.length > 25) {
+                    showAlert('⚠️ Error', 'El nombre del estado mental no puede exceder 25 caracteres.');
+                    return;
+                }
+                if (customSetExists(trimmedName)) {
+                    showAlert('⚠️ Error', 'Ya existe un estado mental con ese nombre.');
+                    return;
+                }
+                let customSets = JSON.parse(localStorage.getItem('psychologger_custom_sets') || '[]');
+                const index = customSets.indexOf(oldSetName);
+                if (index !== -1) {
+                    customSets[index] = trimmedName;
+                    localStorage.setItem('psychologger_custom_sets', JSON.stringify(customSets));
+                }
+                const optionElement = buttonElement.closest('.dropdown-option.custom-unit');
+                optionElement.setAttribute('data-value', `custom_set_${trimmedName}`);
+                optionElement.setAttribute('data-set-name', trimmedName);
+                optionElement.querySelector('.option-text').textContent = trimmedName;
+                const editBtn = optionElement.querySelector('.edit-custom-unit-btn');
+                const deleteBtn = optionElement.querySelector('.delete-custom-unit-btn');
+                const content = optionElement.querySelector('.custom-unit-content');
+                editBtn.setAttribute('onclick', `editCustomSet('${trimmedName}', this)`);
+                deleteBtn.setAttribute('onclick', `deleteCustomSet('${trimmedName}', this)`);
+                content.setAttribute('onclick', `selectOption('entrySetDropdown', 'custom_set_${trimmedName}', '${trimmedName}', '💭')`);
+                showAlert('✅ Estado Mental Actualizado', `El estado mental ha sido actualizado a "${trimmedName}".`);
+            }
+
+            function editCustomSetting(oldSettingName, buttonElement) {
+                const newName = prompt('Editar entorno:', oldSettingName);
+                if (!newName || newName.trim() === '') return;
+                const trimmedName = newName.trim();
+                if (trimmedName === oldSettingName) return;
+                if (trimmedName.length > 25) {
+                    showAlert('⚠️ Error', 'El nombre del entorno no puede exceder 25 caracteres.');
+                    return;
+                }
+                if (customSettingExists(trimmedName)) {
+                    showAlert('⚠️ Error', 'Ya existe un entorno con ese nombre.');
+                    return;
+                }
+                let customSettings = JSON.parse(localStorage.getItem('psychologger_custom_settings') || '[]');
+                const index = customSettings.indexOf(oldSettingName);
+                if (index !== -1) {
+                    customSettings[index] = trimmedName;
+                    localStorage.setItem('psychologger_custom_settings', JSON.stringify(customSettings));
+                }
+                const optionElement = buttonElement.closest('.dropdown-option.custom-unit');
+                optionElement.setAttribute('data-value', `custom_setting_${trimmedName}`);
+                optionElement.setAttribute('data-setting-name', trimmedName);
+                optionElement.querySelector('.option-text').textContent = trimmedName;
+                const editBtn = optionElement.querySelector('.edit-custom-unit-btn');
+                const deleteBtn = optionElement.querySelector('.delete-custom-unit-btn');
+                const content = optionElement.querySelector('.custom-unit-content');
+                editBtn.setAttribute('onclick', `editCustomSetting('${trimmedName}', this)`);
+                deleteBtn.setAttribute('onclick', `deleteCustomSetting('${trimmedName}', this)`);
+                content.setAttribute('onclick', `selectOption('entrySettingDropdown', 'custom_setting_${trimmedName}', '${trimmedName}', '🌍')`);
+                showAlert('✅ Entorno Actualizado', `El entorno ha sido actualizado a "${trimmedName}".`);
+            }
+
+            function deleteCustomSet(setName, buttonElement) {
+                if (!confirm(`¿Estás seguro de que quieres eliminar el estado mental "${setName}"?`)) return;
+                let customSets = JSON.parse(localStorage.getItem('psychologger_custom_sets') || '[]');
+                const index = customSets.indexOf(setName);
+                if (index !== -1) {
+                    customSets.splice(index, 1);
+                    localStorage.setItem('psychologger_custom_sets', JSON.stringify(customSets));
+                }
+                buttonElement.closest('.dropdown-option.custom-unit').remove();
+                showAlert('✅ Estado Mental Eliminado', `El estado mental "${setName}" ha sido eliminado correctamente.`);
+            }
+
+            function deleteCustomSetting(settingName, buttonElement) {
+                if (!confirm(`¿Estás seguro de que quieres eliminar el entorno "${settingName}"?`)) return;
+                let customSettings = JSON.parse(localStorage.getItem('psychologger_custom_settings') || '[]');
+                const index = customSettings.indexOf(settingName);
+                if (index !== -1) {
+                    customSettings.splice(index, 1);
+                    localStorage.setItem('psychologger_custom_settings', JSON.stringify(customSettings));
+                }
+                buttonElement.closest('.dropdown-option.custom-unit').remove();
+                showAlert('✅ Entorno Eliminado', `El entorno "${settingName}" ha sido eliminado correctamente.`);
+            }
+
+            function loadCustomSetsAndSettings() {
+                const customSets = JSON.parse(localStorage.getItem('psychologger_custom_sets') || '[]');
+                customSets.forEach(setName => {
+                    if (!customSetExists(setName)) {
+                        const newOption = createCustomSetOption(setName);
+                        const inputContainer = document.querySelector('#entrySetOptions .custom-input-container[data-category="set"]');
+                        if (inputContainer) {
+                            inputContainer.parentNode.insertBefore(newOption, inputContainer);
+                        }
+                    }
+                });
+
+                const customSettings = JSON.parse(localStorage.getItem('psychologger_custom_settings') || '[]');
+                customSettings.forEach(settingName => {
+                    if (!customSettingExists(settingName)) {
+                        const newOption = createCustomSettingOption(settingName);
+                        const inputContainer = document.querySelector('#entrySettingOptions .custom-input-container[data-category="setting"]');
+                        if (inputContainer) {
+                            inputContainer.parentNode.insertBefore(newOption, inputContainer);
+                        }
+                    }
+                });
+            }
 
         </script>
 
