@@ -75,6 +75,9 @@ class MainActivity : FragmentActivity() {
         // Inicializar el gestor de bloqueo de aplicación
         appLockManager = AppLockManager(this)
 
+        // Programar backups automáticos cada 12 horas
+        schedulePeriodicBackups()
+
         // Deja que Compose gestione los insets (barra de estado / teclado)
         WindowCompat.setDecorFitsSystemWindows(window, false)
 
@@ -326,6 +329,34 @@ class MainActivity : FragmentActivity() {
         webView = null
     }
 
+    /**
+     * Programa backups automáticos cada 12 horas usando WorkManager
+     *
+     * CONCEPTO: WorkManager Periodic Work
+     * - PeriodicWorkRequest ejecuta tareas periódicamente
+     * - ExistingPeriodicWorkPolicy.KEEP no duplica el trabajo
+     * - Constraints garantiza que solo ejecute en condiciones óptimas
+     */
+    private fun schedulePeriodicBackups() {
+        val constraints = androidx.work.Constraints.Builder()
+            .setRequiresBatteryNotLow(true)  // Solo si batería > 15%
+            .build()
+
+        val backupWork = androidx.work.PeriodicWorkRequestBuilder<BackupWorker>(
+            12, java.util.concurrent.TimeUnit.HOURS  // Cada 12 horas
+        )
+            .setConstraints(constraints)
+            .build()
+
+        androidx.work.WorkManager.getInstance(this).enqueueUniquePeriodicWork(
+            BackupWorker.WORK_NAME,
+            androidx.work.ExistingPeriodicWorkPolicy.KEEP,  // No reemplazar si ya existe
+            backupWork
+        )
+
+        android.util.Log.d("MainActivity", "Backups automáticos programados cada 12 horas")
+    }
+
     fun setWebAppInterface(instance: WebAppInterface) {
         webAppInterface = instance
     }
@@ -337,6 +368,9 @@ class WebAppInterface(private val context: Context, private val activity: MainAc
     // === GESTIÓN DE AUDIO ===
     private val audioRecorder = AudioRecorder(context)
     private val audioPlayer = AudioPlayer()
+
+    // === GESTIÓN DE BACKUPS ===
+    private val backupManager = BackupManager(context)
 
     // Launcher para solicitar permisos de audio
     private var recordAudioPermissionLauncher: ActivityResultLauncher<String>? = null
@@ -927,6 +961,162 @@ class WebAppInterface(private val context: Context, private val activity: MainAc
                 Toast.makeText(context, "❌ Error al compartir: ${e.message}", Toast.LENGTH_SHORT).show()
                 e.printStackTrace()
             }
+        }
+    }
+
+    // ========================================
+    // === MÉTODOS DE BACKUP Y EXPORTACIÓN ===
+    // ========================================
+
+    /**
+     * Crear backup manual (botón en Ajustes)
+     *
+     * @param localStorageJson JSON string con todo el localStorage
+     * @return "OK" si se creó correctamente, "ERROR: ..." si falló
+     */
+    @JavascriptInterface
+    fun createManualBackup(localStorageJson: String): String {
+        return try {
+            val backupFile = backupManager.createBackupWithData(localStorageJson)
+
+            if (backupFile != null) {
+                Toast.makeText(
+                    context,
+                    "✅ Backup creado: ${backupFile.name}",
+                    Toast.LENGTH_LONG
+                ).show()
+                "OK:${backupFile.name}"
+            } else {
+                Toast.makeText(context, "❌ Error al crear backup", Toast.LENGTH_SHORT).show()
+                "ERROR: No se pudo crear el backup"
+            }
+        } catch (e: Exception) {
+            Toast.makeText(context, "❌ Error: ${e.message}", Toast.LENGTH_SHORT).show()
+            "ERROR: ${e.message}"
+        }
+    }
+
+    /**
+     * Exportar todos los audios en un ZIP (sin cifrar)
+     *
+     * @return "OK" si se exportó, "ERROR: ..." si falló
+     */
+    @JavascriptInterface
+    fun exportAudiosZip(): String {
+        return try {
+            val zipFile = backupManager.exportAudioZip(password = null)
+
+            if (zipFile != null) {
+                // Compartir vía ShareSheet
+                activity.runOnUiThread {
+                    val uri = FileProvider.getUriForFile(
+                        context,
+                        "${context.packageName}.fileprovider",
+                        zipFile
+                    )
+
+                    val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                        type = "application/zip"
+                        putExtra(Intent.EXTRA_STREAM, uri)
+                        putExtra(Intent.EXTRA_SUBJECT, "Notas de voz - PsychoLogger")
+                        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                    }
+
+                    val chooser = Intent.createChooser(shareIntent, "📦 Exportar audios")
+                    chooser.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    activity.startActivity(chooser)
+                }
+
+                "OK"
+            } else {
+                "ERROR: No se pudo crear el ZIP"
+            }
+        } catch (e: Exception) {
+            "ERROR: ${e.message}"
+        }
+    }
+
+    /**
+     * Exportar audios en ZIP cifrado con contraseña
+     *
+     * @param password Contraseña para cifrar (AES-256)
+     * @return "OK" si se exportó, "ERROR: ..." si falló
+     */
+    @JavascriptInterface
+    fun exportAudiosZipEncrypted(password: String): String {
+        return try {
+            if (password.length < 8) {
+                Toast.makeText(
+                    context,
+                    "⚠️ La contraseña debe tener al menos 8 caracteres",
+                    Toast.LENGTH_SHORT
+                ).show()
+                return "ERROR: Contraseña muy corta"
+            }
+
+            val zipFile = backupManager.exportAudioZip(password = password)
+
+            if (zipFile != null) {
+                // Compartir vía ShareSheet
+                activity.runOnUiThread {
+                    val uri = FileProvider.getUriForFile(
+                        context,
+                        "${context.packageName}.fileprovider",
+                        zipFile
+                    )
+
+                    val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                        type = "application/zip"
+                        putExtra(Intent.EXTRA_STREAM, uri)
+                        putExtra(Intent.EXTRA_SUBJECT, "Notas de voz cifradas - PsychoLogger")
+                        putExtra(Intent.EXTRA_TEXT, "⚠️ Este archivo está cifrado con AES-256.\nGuarda la contraseña en un lugar seguro.")
+                        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                    }
+
+                    val chooser = Intent.createChooser(shareIntent, "🔒 Exportar audios cifrados")
+                    chooser.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    activity.startActivity(chooser)
+                }
+
+                Toast.makeText(
+                    context,
+                    "✅ ZIP cifrado creado. Guarda la contraseña!",
+                    Toast.LENGTH_LONG
+                ).show()
+
+                "OK"
+            } else {
+                "ERROR: No se pudo crear el ZIP cifrado"
+            }
+        } catch (e: Exception) {
+            "ERROR: ${e.message}"
+        }
+    }
+
+    /**
+     * Listar backups disponibles
+     *
+     * @return JSON array con la lista de backups
+     */
+    @JavascriptInterface
+    fun listBackups(): String {
+        return try {
+            val backups = backupManager.listBackups()
+            val jsonArray = org.json.JSONArray()
+
+            backups.forEach { backup ->
+                val jsonObj = org.json.JSONObject().apply {
+                    put("name", backup.file.name)
+                    put("date", backup.formattedDate)
+                    put("size", backup.formattedSize)
+                    put("timestamp", backup.timestamp)
+                }
+                jsonArray.put(jsonObj)
+            }
+
+            jsonArray.toString()
+        } catch (e: Exception) {
+            "[]"
         }
     }
 

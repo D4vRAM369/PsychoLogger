@@ -57,6 +57,9 @@ dependencies {
     // WebView support - NUEVA DEPENDENCIA AGREGADA
     implementation("androidx.webkit:webkit:1.8.0")
 
+    // WorkManager for periodic backups
+    implementation("androidx.work:work-runtime-ktx:2.9.0")
+
     // Biometric and Security
     implementation(libs.androidx.biometric)
     implementation(libs.androidx.security.crypto)

@@ -2765,6 +2765,16 @@
                         <p>Eliminar todos los datos almacenados</p>
                         <button class="btn-danger" onclick="clearAllData()">Limpiar Todo</button>
                     </div>
+                    <div class="resource-card">
+                        <h4>💾 Backup Manual</h4>
+                        <p>Crear backup completo (datos + audios)</p>
+                        <button class="btn-primary" onclick="createManualBackup()">🗄️ Crear Backup</button>
+                    </div>
+                    <div class="resource-card">
+                        <h4>🎤 Exportar Audios</h4>
+                        <p>Exportar todas las notas de voz en ZIP</p>
+                        <button class="btn-primary" onclick="openAudioExportModal()">📦 Exportar ZIP</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -3356,6 +3366,44 @@
 
                     <button type="submit" class="btn-primary">💾 Guardar Registro</button>
                 </form>
+            </div>
+        </div>
+
+        <!-- Audio Export Modal -->
+        <div id="audioExportModal" class="modal">
+            <div class="modal-content" style="max-width: 450px;">
+                <button class="close-btn" onclick="closeModal('audioExportModal')">×</button>
+                <h3>📦 Exportar Notas de Voz</h3>
+
+                <div style="margin: 20px 0;">
+                    <p style="color: var(--text-muted); font-size: 0.9rem;">
+                        Exporta todas tus notas de voz en un archivo ZIP. Opcionalmente puedes cifrarlo con contraseña (AES-256).
+                    </p>
+                </div>
+
+                <div class="form-group">
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                        <input type="checkbox" id="encryptAudioZip" style="width: auto;">
+                        <span>🔒 Cifrar con contraseña (AES-256)</span>
+                    </label>
+                </div>
+
+                <div id="passwordGroup" class="form-group" style="display: none;">
+                    <label>Contraseña (mínimo 8 caracteres)</label>
+                    <input type="password" id="audioZipPassword" placeholder="Introduce una contraseña fuerte" minlength="8">
+                    <small style="color: var(--text-muted); font-size: 0.8rem;">
+                        ⚠️ Guarda esta contraseña en un lugar seguro. Sin ella no podrás desencriptar el archivo.
+                    </small>
+                </div>
+
+                <div style="display: flex; gap: 12px; margin-top: 24px;">
+                    <button type="button" class="btn-secondary" onclick="closeModal('audioExportModal')" style="flex: 1;">
+                        Cancelar
+                    </button>
+                    <button type="button" class="btn-primary" onclick="exportAudiosZip()" style="flex: 1;">
+                        📤 Exportar
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -5877,6 +5925,111 @@
                     showCustomAlert('Todos los datos han sido eliminados', '🗑️ Datos Eliminados');
                 }
             );
+        }
+
+        // ========================================
+        // FUNCIONES DE BACKUP Y EXPORTACIÓN
+        // ========================================
+
+        /**
+         * Crear backup manual (botón en Ajustes)
+         *
+         * CONCEPTO: Serializar localStorage completo
+         * Convertimos todo el localStorage a JSON y lo enviamos a Android
+         */
+        function createManualBackup() {
+            try {
+                // Recopilar todos los datos de localStorage
+                const backupData = {
+                    substances: substances,
+                    entries: entries,
+                    userProfile: userProfile,
+                    customUnits: localStorage.getItem('customUnits'),
+                    customSets: localStorage.getItem('customSets'),
+                    customSettings: localStorage.getItem('customSettings'),
+                    timestamp: new Date().toISOString(),
+                    version: '1.0'
+                };
+
+                // Convertir a JSON
+                const jsonString = JSON.stringify(backupData, null, 2);
+
+                // Llamar a Android
+                const result = Android.createManualBackup(jsonString);
+
+                if (result.startsWith('OK:')) {
+                    const filename = result.substring(3);
+                    console.log('Backup creado:', filename);
+                } else {
+                    console.error('Error en backup:', result);
+                }
+
+            } catch (error) {
+                console.error('Error al crear backup:', error);
+                Android.showToast('❌ Error: ' + error.message);
+            }
+        }
+
+        /**
+         * Abrir modal de exportación de audios
+         */
+        function openAudioExportModal() {
+            openModal('audioExportModal');
+
+            // Setup del checkbox
+            const checkbox = document.getElementById('encryptAudioZip');
+            const passwordGroup = document.getElementById('passwordGroup');
+
+            checkbox.addEventListener('change', function() {
+                passwordGroup.style.display = this.checked ? 'block' : 'none';
+            });
+        }
+
+        /**
+         * Exportar audios en ZIP (con o sin cifrado)
+         */
+        function exportAudiosZip() {
+            try {
+                const encryptCheckbox = document.getElementById('encryptAudioZip');
+                const passwordInput = document.getElementById('audioZipPassword');
+
+                if (encryptCheckbox.checked) {
+                    // Exportar con cifrado
+                    const password = passwordInput.value.trim();
+
+                    if (!password || password.length < 8) {
+                        Android.showToast('⚠️ La contraseña debe tener al menos 8 caracteres');
+                        return;
+                    }
+
+                    const result = Android.exportAudiosZipEncrypted(password);
+
+                    if (result === 'OK') {
+                        closeModal('audioExportModal');
+                        // Reset form
+                        encryptCheckbox.checked = false;
+                        passwordInput.value = '';
+                        document.getElementById('passwordGroup').style.display = 'none';
+                    } else {
+                        console.error('Error:', result);
+                    }
+
+                } else {
+                    // Exportar sin cifrar
+                    const result = Android.exportAudiosZip();
+
+                    if (result === 'OK') {
+                        closeModal('audioExportModal');
+                        Android.showToast('✅ Audios exportados correctamente');
+                    } else {
+                        console.error('Error:', result);
+                    }
+                }
+
+            } catch (error) {
+                console.error('Error al exportar audios:', error);
+                Android.showToast('❌ Error: ' + error.message);
+            }
         }
 
         function openExternalURL(url) {
