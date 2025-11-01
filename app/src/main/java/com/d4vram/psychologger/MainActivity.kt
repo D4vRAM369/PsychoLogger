@@ -62,6 +62,8 @@ class MainActivity : FragmentActivity() {
     private var filePathCallback: ValueCallback<Array<Uri>>? = null
     private lateinit var fileChooserLauncher: ActivityResultLauncher<Intent>
     private lateinit var appLockManager: AppLockManager
+    var webAppInterface: WebAppInterface? = null
+        private set
 
     var webView: WebView? = null
         private set
@@ -316,10 +318,58 @@ class MainActivity : FragmentActivity() {
         // ⚠️ FIX CRÍTICO: Resetear estado biométrico al volver del background
         appLockManager.resetBiometricState()
     }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        // Liberar recursos de audio
+        webAppInterface?.release()
+        webView = null
+    }
+
+    fun setWebAppInterface(instance: WebAppInterface) {
+        webAppInterface = instance
+    }
 }
 
 // ==== INTERFAZ ANDROID-JS ====
 class WebAppInterface(private val context: Context, private val activity: MainActivity) {
+
+    // === GESTIÓN DE AUDIO ===
+    private val audioRecorder = AudioRecorder(context)
+    private val audioPlayer = AudioPlayer()
+
+    // Launcher para solicitar permisos de audio
+    private var recordAudioPermissionLauncher: ActivityResultLauncher<String>? = null
+
+    init {
+        // Configurar callbacks del reproductor
+        audioPlayer.setProgressCallback { progress, currentMs, totalMs ->
+            // Notificar a JavaScript sobre el progreso
+            activity.executeJavaScript("""
+                if (window.onAudioProgressUpdate) {
+                    window.onAudioProgressUpdate($progress, $currentMs, $totalMs);
+                }
+            """.trimIndent())
+        }
+
+        audioPlayer.setCompletionCallback {
+            // Notificar a JavaScript que terminó la reproducción
+            activity.executeJavaScript("""
+                if (window.onAudioCompleted) {
+                    window.onAudioCompleted();
+                }
+            """.trimIndent())
+        }
+
+        audioPlayer.setErrorCallback { errorMessage ->
+            // Notificar a JavaScript sobre errores
+            activity.executeJavaScript("""
+                if (window.onAudioError) {
+                    window.onAudioError("$errorMessage");
+                }
+            """.trimIndent())
+        }
+    }
 
     @JavascriptInterface
     fun downloadCSV(csvContent: String, filename: String) {
@@ -644,6 +694,266 @@ class WebAppInterface(private val context: Context, private val activity: MainAc
             e.printStackTrace()
         }
     }
+
+    // ========================================
+    // === MÉTODOS DE GRABACIÓN DE AUDIO ===
+    // ========================================
+
+    /**
+     * Inicia la grabación de audio
+     *
+     * IMPORTANTE: Este método verifica permisos automáticamente.
+     * Si no hay permisos, muestra un Toast pidiendo que el usuario los otorgue manualmente.
+     *
+     * @return Ruta del archivo donde se está grabando (o mensaje de error)
+     *
+     * CONCEPTO: @JavascriptInterface
+     * Esta anotación hace que el método sea accesible desde JavaScript:
+     * JavaScript: Android.startRecording()
+     * Kotlin: este método se ejecuta
+     */
+    @JavascriptInterface
+    fun startRecording(): String {
+        return try {
+            // Verificar permiso de audio
+            if (!hasRecordAudioPermission()) {
+                Toast.makeText(context, "⚠️ Se requiere permiso de micrófono. Ve a Ajustes → Permisos", Toast.LENGTH_LONG).show()
+                return "ERROR: Sin permiso de micrófono"
+            }
+
+            // Iniciar grabación
+            val file = audioRecorder.startRecording()
+
+            // Retornar el nombre del archivo (JavaScript lo guardará)
+            file.name
+        } catch (e: Exception) {
+            Toast.makeText(context, "❌ Error al grabar: ${e.message}", Toast.LENGTH_SHORT).show()
+            "ERROR: ${e.message}"
+        }
+    }
+
+    /**
+     * Detiene la grabación actual
+     *
+     * @return JSON con información del resultado: {"filename": "...", "duration": 15000}
+     *
+     * CONCEPTO: Retornar JSON desde Kotlin a JavaScript
+     * JavaScript puede parsear esto con JSON.parse()
+     */
+    @JavascriptInterface
+    fun stopRecording(): String {
+        return try {
+            val result = audioRecorder.stopRecording()
+
+            // Construir JSON manualmente (simple y claro)
+            """{"filename": "${result.file.name}", "duration": ${result.durationMillis}}"""
+        } catch (e: Exception) {
+            Toast.makeText(context, "❌ Error al detener grabación: ${e.message}", Toast.LENGTH_SHORT).show()
+            """{"error": "${e.message}"}"""
+        }
+    }
+
+    /**
+     * Cancela la grabación actual sin guardar
+     */
+    @JavascriptInterface
+    fun cancelRecording() {
+        try {
+            audioRecorder.cancelRecording()
+            Toast.makeText(context, "🗑️ Grabación cancelada", Toast.LENGTH_SHORT).show()
+        } catch (e: Exception) {
+            Toast.makeText(context, "❌ Error al cancelar: ${e.message}", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    /**
+     * Verifica si hay una grabación en curso
+     *
+     * @return "true" o "false" (como String porque JavaScript lo espera así)
+     *
+     * CONCEPTO: JavaScript solo recibe Strings desde @JavascriptInterface
+     * Debemos retornar "true"/"false" como String, no Boolean
+     */
+    @JavascriptInterface
+    fun isRecording(): String {
+        return audioRecorder.isRecording().toString()
+    }
+
+    /**
+     * Obtiene la duración actual de la grabación en milisegundos
+     *
+     * ÚTIL PARA: Mostrar timer "00:15" en la UI durante grabación
+     */
+    @JavascriptInterface
+    fun getRecordingDuration(): String {
+        return audioRecorder.getCurrentDuration().toString()
+    }
+
+    // ========================================
+    // === MÉTODOS DE REPRODUCCIÓN DE AUDIO ===
+    // ========================================
+
+    /**
+     * Reproduce un archivo de audio
+     *
+     * @param filename Nombre del archivo (ej: "audio_123.m4a")
+     * @return "OK" si se inició correctamente, "ERROR: ..." si falló
+     *
+     * CONCEPTO: Rutas de archivos
+     * JavaScript solo conoce el NOMBRE del archivo.
+     * Kotlin reconstruye la ruta completa en filesDir/audio_notes/
+     */
+    @JavascriptInterface
+    fun playAudio(filename: String): String {
+        return try {
+            // Reconstruir ruta completa
+            val audioNotesDir = File(context.filesDir, "audio_notes")
+            val audioFile = File(audioNotesDir, filename)
+
+            if (!audioFile.exists()) {
+                Toast.makeText(context, "❌ Archivo de audio no encontrado", Toast.LENGTH_SHORT).show()
+                return "ERROR: Archivo no existe"
+            }
+
+            // Reproducir
+            val success = audioPlayer.play(audioFile)
+            if (success) "OK" else "ERROR: No se pudo reproducir"
+        } catch (e: Exception) {
+            Toast.makeText(context, "❌ Error al reproducir: ${e.message}", Toast.LENGTH_SHORT).show()
+            "ERROR: ${e.message}"
+        }
+    }
+
+    /**
+     * Pausa la reproducción actual
+     */
+    @JavascriptInterface
+    fun pauseAudio() {
+        audioPlayer.pause()
+    }
+
+    /**
+     * Reanuda la reproducción
+     */
+    @JavascriptInterface
+    fun resumeAudio() {
+        audioPlayer.resume()
+    }
+
+    /**
+     * Detiene completamente la reproducción
+     */
+    @JavascriptInterface
+    fun stopAudio() {
+        audioPlayer.stop()
+    }
+
+    /**
+     * Verifica si hay audio reproduciéndose
+     *
+     * @return "true" o "false" como String
+     */
+    @JavascriptInterface
+    fun isPlayingAudio(): String {
+        return audioPlayer.isPlaying().toString()
+    }
+
+    /**
+     * Elimina un archivo de audio del almacenamiento
+     *
+     * @param filename Nombre del archivo a eliminar
+     * @return "OK" si se eliminó, "ERROR: ..." si falló
+     *
+     * ÚTIL PARA: Cuando el usuario elimina una entrada con audio adjunto
+     */
+    @JavascriptInterface
+    fun deleteAudio(filename: String): String {
+        return try {
+            val audioNotesDir = File(context.filesDir, "audio_notes")
+            val audioFile = File(audioNotesDir, filename)
+
+            if (audioFile.exists()) {
+                audioFile.delete()
+                "OK"
+            } else {
+                "ERROR: Archivo no existe"
+            }
+        } catch (e: Exception) {
+            "ERROR: ${e.message}"
+        }
+    }
+
+    /**
+     * Comparte un archivo de audio vía ShareSheet
+     *
+     * @param filename Nombre del archivo a compartir
+     *
+     * CONCEPTO: FileProvider
+     * No podemos compartir archivos de filesDir directamente (privados).
+     * Usamos FileProvider para crear URIs temporales compartibles.
+     */
+    @JavascriptInterface
+    fun shareAudio(filename: String) {
+        activity.runOnUiThread {
+            try {
+                val audioNotesDir = File(context.filesDir, "audio_notes")
+                val audioFile = File(audioNotesDir, filename)
+
+                if (!audioFile.exists()) {
+                    Toast.makeText(context, "❌ Archivo no encontrado", Toast.LENGTH_SHORT).show()
+                    return@runOnUiThread
+                }
+
+                // Crear URI compartible con FileProvider
+                val uri = FileProvider.getUriForFile(
+                    context,
+                    "${context.packageName}.fileprovider",
+                    audioFile
+                )
+
+                // Intent de compartir
+                val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                    type = "audio/*"
+                    putExtra(Intent.EXTRA_STREAM, uri)
+                    putExtra(Intent.EXTRA_SUBJECT, "Nota de voz - PsychoLogger")
+                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                }
+
+                val chooser = Intent.createChooser(shareIntent, "🎤 Compartir nota de voz")
+                chooser.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                activity.startActivity(chooser)
+
+            } catch (e: Exception) {
+                Toast.makeText(context, "❌ Error al compartir: ${e.message}", Toast.LENGTH_SHORT).show()
+                e.printStackTrace()
+            }
+        }
+    }
+
+    // ========================================
+    // === MÉTODOS AUXILIARES ===
+    // ========================================
+
+    /**
+     * Verifica si la app tiene permiso de grabación de audio
+     *
+     * CONCEPTO: Runtime Permissions
+     * En Android 6.0+ los permisos peligrosos deben verificarse en tiempo de ejecución.
+     */
+    private fun hasRecordAudioPermission(): Boolean {
+        return context.checkSelfPermission(android.Manifest.permission.RECORD_AUDIO) ==
+                android.content.pm.PackageManager.PERMISSION_GRANTED
+    }
+
+    /**
+     * Libera recursos al destruir la interfaz
+     *
+     * IMPORTANTE: Llamar esto en onDestroy() de MainActivity
+     */
+    fun release() {
+        audioRecorder.cancelRecording()
+        audioPlayer.release()
+    }
 }
 
 @SuppressLint("SetJavaScriptEnabled")
@@ -799,7 +1109,10 @@ fun WebViewScreen(
                     allowUniversalAccessFromFileURLs = true
                 }
 
-                addJavascriptInterface(WebAppInterface(context, context as MainActivity), "Android")
+                val activity = context as MainActivity
+                val interfaceInstance = WebAppInterface(context, activity)
+                activity.setWebAppInterface(interfaceInstance)
+                addJavascriptInterface(interfaceInstance, "Android")
 
                 setDownloadListener { url, _, contentDisposition, mimetype, _ ->
                     try {

@@ -2489,6 +2489,164 @@
        transform: translateY(0);
    }
 
+   /* ========================================
+      ESTILOS DE AUDIO - Grabación y Reproducción
+      ======================================== */
+
+   /* Botón de grabar (estilo outline con icono de micrófono) */
+   .btn-audio-record {
+       width: 100%;
+       padding: 12px 16px;
+       background: transparent;
+       border: 2px dashed var(--primary);
+       border-radius: 12px;
+       color: var(--primary);
+       font-size: 0.95rem;
+       font-weight: 600;
+       cursor: pointer;
+       transition: all 0.3s ease;
+       display: flex;
+       align-items: center;
+       justify-content: center;
+       gap: 8px;
+   }
+
+   .btn-audio-record:hover {
+       background: var(--primary-alpha);
+       border-style: solid;
+       transform: translateY(-2px);
+   }
+
+   .btn-audio-record:active {
+       transform: translateY(0);
+   }
+
+   /* Card de grabación activa (fondo rojizo, animación de pulso) */
+   .audio-recording-card {
+       background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(248, 113, 113, 0.1));
+       border: 2px solid var(--danger);
+       border-radius: 12px;
+       padding: 16px;
+       margin-top: 8px;
+   }
+
+   /* Animación de pulso para indicar grabación */
+   .recording-pulse {
+       width: 12px;
+       height: 12px;
+       background: var(--danger);
+       border-radius: 50%;
+       animation: pulse 1.5s ease-in-out infinite;
+   }
+
+   @keyframes pulse {
+       0%, 100% {
+           opacity: 1;
+           transform: scale(1);
+       }
+       50% {
+           opacity: 0.4;
+           transform: scale(1.3);
+       }
+   }
+
+   /* Card del reproductor de audio (fondo azul/morado suave) */
+   .audio-player-card {
+       background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(6, 182, 212, 0.1));
+       border: 2px solid var(--primary);
+       border-radius: 12px;
+       padding: 16px;
+       margin-top: 8px;
+   }
+
+   /* Contenedor de la barra de progreso */
+   .audio-progress-container {
+       width: 100%;
+       height: 6px;
+       background: rgba(139, 92, 246, 0.2);
+       border-radius: 3px;
+       overflow: hidden;
+       position: relative;
+   }
+
+   /* Barra de progreso (se anima con width%) */
+   .audio-progress-bar {
+       height: 100%;
+       background: linear-gradient(90deg, var(--primary), var(--secondary));
+       border-radius: 3px;
+       width: 0%;
+       transition: width 0.1s linear;
+   }
+
+   /* Botones de iconos pequeños (compartir, eliminar) */
+   .btn-icon-small {
+       background: rgba(139, 92, 246, 0.15);
+       border: 1px solid rgba(139, 92, 246, 0.3);
+       border-radius: 8px;
+       padding: 6px 10px;
+       font-size: 1rem;
+       cursor: pointer;
+       transition: all 0.2s ease;
+   }
+
+   .btn-icon-small:hover {
+       background: rgba(139, 92, 246, 0.25);
+       transform: scale(1.05);
+   }
+
+   .btn-icon-small:active {
+       transform: scale(0.95);
+   }
+
+   /* Botón grande de play/pause (centrado) */
+   .btn-icon-large {
+       background: var(--primary);
+       color: white;
+       border: none;
+       border-radius: 50%;
+       width: 48px;
+       height: 48px;
+       font-size: 1.2rem;
+       cursor: pointer;
+       transition: all 0.3s ease;
+       display: flex;
+       align-items: center;
+       justify-content: center;
+       box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4);
+   }
+
+   .btn-icon-large:hover {
+       background: var(--primary-dark);
+       transform: scale(1.1);
+       box-shadow: 0 6px 16px rgba(139, 92, 246, 0.5);
+   }
+
+   .btn-icon-large:active {
+       transform: scale(1);
+   }
+
+   /* Botón de detener grabación (rojo) */
+   .btn-icon-danger {
+       background: var(--danger);
+       color: white;
+       border: none;
+       border-radius: 8px;
+       padding: 8px 16px;
+       font-size: 0.9rem;
+       font-weight: 600;
+       cursor: pointer;
+       transition: all 0.2s ease;
+   }
+
+   .btn-icon-danger:hover {
+       background: #dc2626;
+       transform: scale(1.05);
+   }
+
+   .btn-icon-danger:active {
+       transform: scale(0.95);
+   }
+
     </style>
 </head>
 <body>
@@ -3135,6 +3293,67 @@
                         </small>
                     </div>
 
+                    <!-- ========================================
+                         SECCIÓN DE AUDIO - Grabación y Reproducción
+                         ======================================== -->
+                    <div class="form-group">
+                        <label>Nota de voz (opcional)</label>
+
+                        <!-- Botón inicial para grabar (solo visible si no hay audio ni grabación activa) -->
+                        <button type="button" id="btnStartRecording" class="btn-audio-record"
+                                style="display: none;">
+                            🎤 Grabar nota de voz
+                        </button>
+
+                        <!-- Card de grabación activa (solo visible mientras graba) -->
+                        <div id="recordingCard" class="audio-recording-card" style="display: none;">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <div class="recording-pulse"></div>
+                                    <div>
+                                        <div style="font-weight: 600; color: var(--danger);">Grabando...</div>
+                                        <div id="recordingTimer" style="font-size: 0.9rem; color: var(--text-muted);">00:00</div>
+                                    </div>
+                                </div>
+                                <button type="button" id="btnStopRecording" class="btn-icon-danger">
+                                    ⏹️ Detener
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Card de audio grabado (solo visible cuando hay audio listo) -->
+                        <div id="audioPlayerCard" class="audio-player-card" style="display: none;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                                <div style="font-weight: 600;">🎤 Nota de voz</div>
+                                <div style="display: flex; gap: 4px;">
+                                    <button type="button" id="btnShareAudio" class="btn-icon-small" title="Compartir">
+                                        📤
+                                    </button>
+                                    <button type="button" id="btnDeleteAudio" class="btn-icon-small" title="Eliminar">
+                                        🗑️
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Barra de progreso -->
+                            <div class="audio-progress-container">
+                                <div id="audioProgressBar" class="audio-progress-bar"></div>
+                            </div>
+
+                            <!-- Controles de reproducción -->
+                            <div style="display: flex; justify-content: center; margin-top: 12px;">
+                                <button type="button" id="btnPlayPause" class="btn-icon-large">
+                                    ▶️
+                                </button>
+                            </div>
+
+                            <!-- Info de duración -->
+                            <div id="audioDuration" style="text-align: center; font-size: 0.85rem; color: var(--text-muted); margin-top: 8px;">
+                                00:00
+                            </div>
+                        </div>
+                    </div>
+
                     <button type="submit" class="btn-primary">💾 Guardar Registro</button>
                 </form>
             </div>
@@ -3241,6 +3460,293 @@
             let selectedSubstanceColor = '#8B5CF6';
             let selectedSubstanceFilter = null;
 
+            // ========================================
+            // VARIABLES GLOBALES DE AUDIO
+            // ========================================
+            let currentAudioFilename = null;  // Nombre del archivo de audio actual
+            let recordingTimerInterval = null;  // Intervalo del timer de grabación
+            let isPlaying = false;  // Estado de reproducción
+
+            // ========================================
+            // FUNCIONES DE AUDIO - Grabación
+            // ========================================
+
+            /**
+             * Iniciar grabación de audio
+             *
+             * CONCEPTO: Llamada al bridge Android
+             * Android.startRecording() ejecuta el método en Kotlin
+             * Kotlin retorna el nombre del archivo o un mensaje de error
+             */
+            function startRecording() {
+                try {
+                    const result = Android.startRecording();
+
+                    if (result.startsWith('ERROR:')) {
+                        console.error('Error al grabar:', result);
+                        return;
+                    }
+
+                    // Guardar el nombre del archivo
+                    currentAudioFilename = result;
+
+                    // Actualizar UI
+                    updateAudioUI('recording');
+
+                    // Iniciar timer visual
+                    startRecordingTimer();
+
+                } catch (error) {
+                    console.error('Error al iniciar grabación:', error);
+                    Android.showToast('❌ Error: ' + error.message);
+                }
+            }
+
+            /**
+             * Detener grabación y guardar
+             */
+            function stopRecording() {
+                try {
+                    const result = Android.stopRecording();
+                    const data = JSON.parse(result);
+
+                    if (data.error) {
+                        console.error('Error al detener:', data.error);
+                        return;
+                    }
+
+                    // Guardar información del audio
+                    currentAudioFilename = data.filename;
+
+                    // Detener timer
+                    stopRecordingTimer();
+
+                    // Actualizar UI para mostrar reproductor
+                    updateAudioUI('player');
+
+                    console.log('Audio grabado:', data.filename, 'Duración:', data.duration + 'ms');
+
+                } catch (error) {
+                    console.error('Error al detener grabación:', error);
+                    Android.showToast('❌ Error: ' + error.message);
+                }
+            }
+
+            /**
+             * Eliminar audio actual
+             */
+            function deleteAudio() {
+                if (!currentAudioFilename) return;
+
+                if (confirm('¿Eliminar esta nota de voz?')) {
+                    // Detener reproducción si está activa
+                    if (isPlaying) {
+                        Android.stopAudio();
+                        isPlaying = false;
+                    }
+
+                    // Eliminar archivo
+                    const result = Android.deleteAudio(currentAudioFilename);
+
+                    if (result === 'OK') {
+                        currentAudioFilename = null;
+                        updateAudioUI('initial');
+                        Android.showToast('🗑️ Nota de voz eliminada');
+                    } else {
+                        console.error('Error al eliminar:', result);
+                    }
+                }
+            }
+
+            /**
+             * Compartir audio actual
+             */
+            function shareAudio() {
+                if (!currentAudioFilename) return;
+                Android.shareAudio(currentAudioFilename);
+            }
+
+            // ========================================
+            // FUNCIONES DE AUDIO - Reproducción
+            // ========================================
+
+            /**
+             * Toggle play/pause
+             */
+            function togglePlayPause() {
+                if (!currentAudioFilename) return;
+
+                if (isPlaying) {
+                    Android.pauseAudio();
+                    isPlaying = false;
+                    updatePlayButton('▶️');
+                } else {
+                    const isPlayingCheck = Android.isPlayingAudio();
+
+                    if (isPlayingCheck === 'true') {
+                        // Ya estaba reproduciéndose, resumir
+                        Android.resumeAudio();
+                    } else {
+                        // Iniciar nueva reproducción
+                        const result = Android.playAudio(currentAudioFilename);
+                        if (result.startsWith('ERROR:')) {
+                            console.error('Error al reproducir:', result);
+                            Android.showToast('❌ ' + result);
+                            return;
+                        }
+                    }
+
+                    isPlaying = true;
+                    updatePlayButton('⏸️');
+                }
+            }
+
+            /**
+             * Callback invocado por Kotlin cuando el audio termina
+             *
+             * CONCEPTO: Callbacks desde Android a JavaScript
+             * Kotlin llama window.onAudioCompleted()
+             * Este callback se ejecuta automáticamente
+             */
+            window.onAudioCompleted = function() {
+                isPlaying = false;
+                updatePlayButton('▶️');
+                updateAudioProgress(0);
+            };
+
+            /**
+             * Callback de progreso invocado por Kotlin cada 100ms
+             *
+             * @param progress Float entre 0.0 y 1.0
+             * @param currentMs Posición actual en milisegundos
+             * @param totalMs Duración total en milisegundos
+             */
+            window.onAudioProgressUpdate = function(progress, currentMs, totalMs) {
+                updateAudioProgress(progress);
+                updateAudioDuration(currentMs, totalMs);
+            };
+
+            /**
+             * Callback de errores de audio
+             */
+            window.onAudioError = function(message) {
+                console.error('Error de audio:', message);
+                isPlaying = false;
+                updatePlayButton('▶️');
+            };
+
+            // ========================================
+            // FUNCIONES DE UI - Actualización de Interfaz
+            // ========================================
+
+            /**
+             * Actualiza la UI según el estado del audio
+             *
+             * @param state 'initial' | 'recording' | 'player'
+             *
+             * CONCEPTO: Gestión de estados en UI
+             * Solo uno de los 3 elementos es visible a la vez:
+             * - btnStartRecording: Estado inicial (sin audio)
+             * - recordingCard: Durante grabación
+             * - audioPlayerCard: Cuando hay audio listo
+             */
+            function updateAudioUI(state) {
+                const btnStart = document.getElementById('btnStartRecording');
+                const recordingCard = document.getElementById('recordingCard');
+                const playerCard = document.getElementById('audioPlayerCard');
+
+                // Ocultar todo primero
+                btnStart.style.display = 'none';
+                recordingCard.style.display = 'none';
+                playerCard.style.display = 'none';
+
+                // Mostrar el elemento correspondiente
+                if (state === 'initial') {
+                    btnStart.style.display = 'block';
+                } else if (state === 'recording') {
+                    recordingCard.style.display = 'block';
+                } else if (state === 'player') {
+                    playerCard.style.display = 'block';
+                    updatePlayButton('▶️');
+                    updateAudioProgress(0);
+                }
+            }
+
+            /**
+             * Actualiza el icono del botón play/pause
+             */
+            function updatePlayButton(icon) {
+                const btn = document.getElementById('btnPlayPause');
+                if (btn) btn.textContent = icon;
+            }
+
+            /**
+             * Actualiza la barra de progreso de reproducción
+             *
+             * @param progress Float entre 0.0 y 1.0
+             */
+            function updateAudioProgress(progress) {
+                const bar = document.getElementById('audioProgressBar');
+                if (bar) {
+                    bar.style.width = (progress * 100) + '%';
+                }
+            }
+
+            /**
+             * Actualiza el texto de duración "00:15 / 01:23"
+             */
+            function updateAudioDuration(currentMs, totalMs) {
+                const durationEl = document.getElementById('audioDuration');
+                if (durationEl) {
+                    const current = formatTime(currentMs);
+                    const total = formatTime(totalMs);
+                    durationEl.textContent = `${current} / ${total}`;
+                }
+            }
+
+            /**
+             * Timer de grabación (actualiza cada 1 segundo)
+             *
+             * CONCEPTO: setInterval en JavaScript
+             * Ejecuta una función cada X milisegundos
+             * Guarda el ID para poder detenerlo con clearInterval()
+             */
+            function startRecordingTimer() {
+                let startTime = Date.now();
+
+                recordingTimerInterval = setInterval(() => {
+                    const elapsed = Date.now() - startTime;
+                    const timerEl = document.getElementById('recordingTimer');
+                    if (timerEl) {
+                        timerEl.textContent = formatTime(elapsed);
+                    }
+                }, 1000);  // Actualizar cada 1 segundo
+            }
+
+            function stopRecordingTimer() {
+                if (recordingTimerInterval) {
+                    clearInterval(recordingTimerInterval);
+                    recordingTimerInterval = null;
+                }
+            }
+
+            /**
+             * Formatea milisegundos a formato "mm:ss"
+             *
+             * CONCEPTO: Manipulación de tiempo
+             * Math.floor() redondea hacia abajo
+             * padStart(2, '0') añade ceros a la izquierda: "5" → "05"
+             *
+             * @param ms Milisegundos
+             * @return String formato "02:35"
+             */
+            function formatTime(ms) {
+                const totalSeconds = Math.floor(ms / 1000);
+                const minutes = Math.floor(totalSeconds / 60);
+                const seconds = totalSeconds % 60;
+                return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+            }
+
             // Función para sincronizar datos desde localStorage
             function syncDataFromStorage() {
                 try {
@@ -3267,6 +3773,7 @@
                             set: entry.set || '',
                             setting: entry.setting || '',
                             notes: entry.notes || '',
+                            audioPath: entry.audioPath || null,
                             createdAt: entry.createdAt || new Date().toISOString(),
                             updatedAt: entry.updatedAt || ''
                         }));
@@ -3595,10 +4102,31 @@
                     const title = this.querySelector('h5').textContent;
                     const author = this.querySelector('.book-author').textContent;
                     const description = this.querySelector('.book-desc').textContent;
-                    
+
                     showBookModal(title, author, description);
                 });
             });
+
+            // ========================================
+            // EVENT LISTENERS DE AUDIO
+            // ========================================
+            const btnStartRec = document.getElementById('btnStartRecording');
+            if (btnStartRec) btnStartRec.addEventListener('click', startRecording);
+
+            const btnStopRec = document.getElementById('btnStopRecording');
+            if (btnStopRec) btnStopRec.addEventListener('click', stopRecording);
+
+            const btnPlay = document.getElementById('btnPlayPause');
+            if (btnPlay) btnPlay.addEventListener('click', togglePlayPause);
+
+            const btnDel = document.getElementById('btnDeleteAudio');
+            if (btnDel) btnDel.addEventListener('click', deleteAudio);
+
+            const btnShare = document.getElementById('btnShareAudio');
+            if (btnShare) btnShare.addEventListener('click', shareAudio);
+
+            // Inicializar UI de audio
+            updateAudioUI('initial');
         }
 
         // Navigation functions
@@ -4227,6 +4755,15 @@
             waitForElement('entrySetting',   el => el.value = entry.setting || '');
             waitForElement('entryNotes',     el => el.value = entry.notes || '');
 
+            // Cargar audio si existe
+            if (entry.audioPath) {
+                currentAudioFilename = entry.audioPath;
+                updateAudioUI('player');
+            } else {
+                currentAudioFilename = null;
+                updateAudioUI('initial');
+            }
+
             const submitBtn = document.querySelector('#entryForm button[type="submit"]');
             if (submitBtn) {
               submitBtn.innerHTML = '✅ Actualizar Registro';
@@ -4249,6 +4786,11 @@
                 confirmMessage,
                 '🗑️ Confirmar Eliminación',
                                  () => {
+                     // Eliminar archivo de audio si existe
+                     if (entry.audioPath) {
+                         Android.deleteAudio(entry.audioPath);
+                     }
+
                      entries = entries.filter(e => e.id !== entryId); // Use !== for strict comparison
                      saveDataToStorage();
 
@@ -4459,6 +5001,14 @@
         function resetEntryForm() {
             const form = document.getElementById('entryForm');
             if (form) form.reset();
+
+            // Resetear audio
+            if (isPlaying) {
+                Android.stopAudio();
+                isPlaying = false;
+            }
+            currentAudioFilename = null;
+            updateAudioUI('initial');
 
             // Fecha y hora por defecto: ahora (local)
             const now = new Date();
@@ -4760,6 +5310,7 @@
                     set: set || null, // Store null if empty
                     setting: setting || null, // Store null if empty
                     notes: notes || null, // Store null if empty
+                    audioPath: currentAudioFilename || entries[existingEntryIndex].audioPath || null, // Mantener audio existente o actualizar
                     updatedAt: new Date().toISOString()
                 };
 
@@ -4782,6 +5333,7 @@
                    set: set || null,
                    setting: setting || null,
                    notes: notes || null,
+                   audioPath: currentAudioFilename || null, // Guardar audio si existe
                    createdAt: new Date().toISOString()
                };
                entries.push(entry);
@@ -5669,18 +6221,33 @@
                 if (openDropdown && openDropdown !== dropdown) {
                     const otherOptions = openDropdown.querySelector('.dropdown-options');
                     const otherHeader = openDropdown.querySelector('.dropdown-header');
+
+                    // Deshabilitar pointer-events temporalmente
+                    if (otherOptions) {
+                        otherOptions.style.pointerEvents = 'none';
+                        setTimeout(() => {
+                            if (otherOptions) otherOptions.style.pointerEvents = '';
+                        }, 200);
+                    }
+
                     otherOptions.classList.remove('show');
                     otherHeader.classList.remove('active');
                 }
 
                 // Toggle del dropdown actual
                 if (options.classList.contains('show')) {
+                    // Deshabilitar pointer-events al cerrar
+                    if (options) {
+                        options.style.pointerEvents = 'none';
+                        setTimeout(() => {
+                            if (options) options.style.pointerEvents = '';
+                        }, 200);
+                    }
 
                     options.classList.remove('show');
                     header.classList.remove('active');
                     openDropdown = null;
                 } else {
-
                     options.classList.add('show');
                     header.classList.add('active');
                     openDropdown = dropdown;
@@ -5707,6 +6274,15 @@
                 // Cerrar el dropdown
                 const options = dropdown.querySelector('.dropdown-options');
                 const header = dropdown.querySelector('.dropdown-header');
+
+                // Deshabilitar pointer-events temporalmente para evitar clicks fantasma
+                if (options) {
+                    options.style.pointerEvents = 'none';
+                    setTimeout(() => {
+                        if (options) options.style.pointerEvents = '';
+                    }, 200);
+                }
+
                 options.classList.remove('show');
                 header.classList.remove('active');
                 openDropdown = null;
@@ -5955,25 +6531,73 @@
 
             // Cerrar dropdowns al hacer clic fuera
             document.addEventListener('click', function(e) {
+                // Verificar si el click fue en un dropdown-option (ignorar esos clicks)
+                if (e.target.closest('.dropdown-option')) {
+                    return;
+                }
+
+                // Verificar si el click fue dentro del dropdown abierto
                 if (openDropdown && !openDropdown.contains(e.target)) {
                     const options = openDropdown.querySelector('.dropdown-options');
                     const header = openDropdown.querySelector('.dropdown-header');
+
+                    // Deshabilitar pointer-events temporalmente para evitar clicks fantasma
+                    if (options) {
+                        options.style.pointerEvents = 'none';
+                        setTimeout(() => {
+                            if (options) options.style.pointerEvents = '';
+                        }, 150);
+                    }
+
                     options.classList.remove('show');
                     header.classList.remove('active');
                     openDropdown = null;
                 }
-            });
+            }, true); // Usar fase de captura para prevenir el problema
 
             // Cerrar dropdowns con la tecla Escape
             document.addEventListener('keydown', function(e) {
                 if (e.key === 'Escape' && openDropdown) {
                     const options = openDropdown.querySelector('.dropdown-options');
                     const header = openDropdown.querySelector('.dropdown-header');
+
+                    // Deshabilitar pointer-events al cerrar
+                    if (options) {
+                        options.style.pointerEvents = 'none';
+                        setTimeout(() => {
+                            if (options) options.style.pointerEvents = '';
+                        }, 200);
+                    }
+
                     options.classList.remove('show');
                     header.classList.remove('active');
                     openDropdown = null;
                 }
             });
+
+            // Prevenir clicks durante el scroll en los dropdowns
+            let isScrolling = false;
+            let scrollTimeout;
+
+            document.addEventListener('scroll', function(e) {
+                if (e.target.classList && e.target.classList.contains('dropdown-options')) {
+                    isScrolling = true;
+                    clearTimeout(scrollTimeout);
+
+                    // Resetear después de que termine el scroll
+                    scrollTimeout = setTimeout(() => {
+                        isScrolling = false;
+                    }, 150);
+                }
+            }, true);
+
+            // Interceptar clicks durante scroll
+            document.addEventListener('mousedown', function(e) {
+                if (isScrolling && e.target.closest('.dropdown-option')) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
+            }, true);
 
             // === FUNCIONES PARA SETS Y SETTINGS PERSONALIZADOS ===
             function addCustomSet(buttonElement) {
