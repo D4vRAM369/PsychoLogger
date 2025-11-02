@@ -52,11 +52,13 @@ import com.d4vram.psychologger.ui.screens.AdvancedSettingsScreen
 import com.d4vram.psychologger.ui.screens.PinSetupScreen
 import com.d4vram.psychologger.ui.screens.PinEntryScreen
 import com.d4vram.psychologger.ui.theme.PsychoLoggerTheme
+import org.json.JSONObject
 import java.io.File
 import java.io.FileOutputStream
 import java.text.SimpleDateFormat
-import java.util.Locale
 import java.util.Date
+import java.util.Locale
+import java.util.TimeZone
 
 class MainActivity : FragmentActivity() {
     private var filePathCallback: ValueCallback<Array<Uri>>? = null
@@ -405,6 +407,171 @@ class WebAppInterface(private val context: Context, private val activity: MainAc
         }
     }
 
+    private data class SubstanceCsv(
+        val id: String,
+        val name: String,
+        val color: String,
+        val emoji: String?,
+        val createdAt: String,
+        val updatedAt: String?
+    )
+
+    private data class EntryCsv(
+        val id: String,
+        val substance: String,
+        val dose: Double,
+        val unit: String,
+        val date: String,
+        val set: String?,
+        val setting: String?,
+        val notes: String?,
+        val createdAt: String?,
+        val updatedAt: String?
+    )
+
+    private fun normaliseLine(raw: String): String =
+        raw.trim().removePrefix("\uFEFF")
+
+    private fun isHeaderLine(line: String): Boolean {
+        val upper = line.uppercase(Locale.getDefault())
+        return upper.startsWith("ID,") ||
+                upper.startsWith("ID;") ||
+                upper.startsWith("CAMPO,") ||
+                upper.startsWith("CAMPO;")
+    }
+
+    private fun parseCsvLine(rawLine: String): List<String> {
+        if (rawLine.isEmpty()) return emptyList()
+
+        val line = normaliseLine(rawLine)
+        if (line.isEmpty()) return emptyList()
+
+        val delimiter = detectDelimiter(line)
+        val result = mutableListOf<String>()
+        val current = StringBuilder()
+        var inQuotes = false
+        var quoteChar = '"'
+        var i = 0
+
+        fun flush() {
+            result.add(current.toString())
+            current.setLength(0)
+        }
+
+        while (i < line.length) {
+            val ch = line[i]
+            when {
+                (ch == '"' || ch == '\'') && (!inQuotes) -> {
+                    inQuotes = true
+                    quoteChar = ch
+                }
+                ch == quoteChar && inQuotes -> {
+                    val nextChar = line.getOrNull(i + 1)
+                    if (nextChar == quoteChar) {
+                        current.append(quoteChar)
+                        i++
+                    } else {
+                        inQuotes = false
+                    }
+                }
+                ch == delimiter && !inQuotes -> {
+                    flush()
+                }
+                else -> current.append(ch)
+            }
+            i++
+        }
+
+        flush()
+        return result
+    }
+
+    private fun detectDelimiter(line: String): Char {
+        val semicolons = line.count { it == ';' }
+        val commas = line.count { it == ',' }
+        return when {
+            semicolons > 0 && semicolons >= commas -> ';'
+            commas > 0 -> ','
+            else -> ';'
+        }
+    }
+
+    private fun parseSubstance(columns: List<String>): SubstanceCsv? {
+        if (columns.size < 3) return null
+
+        val id = columns.getOrNull(0)?.trim().orEmpty().ifBlank {
+            "${System.currentTimeMillis()}-${kotlin.random.Random.nextInt(1000, 9999)}"
+        }
+        val name = columns.getOrNull(1)?.trim('"', '\'').orEmpty()
+        val color = columns.getOrNull(2)?.trim('"', '\'').orEmpty()
+        if (name.isEmpty()) return null
+
+        val thirdColumn = columns.getOrNull(3)?.trim('"', '\'')
+        val (emoji, createdAtIndex) = if (isLikelyDate(thirdColumn)) {
+            null to 3
+        } else {
+            (thirdColumn?.ifBlank { null }) to 4
+        }
+
+        val createdAtRaw = columns.getOrNull(createdAtIndex)?.trim('"', '\'')
+        val updatedAtRaw = columns.getOrNull(createdAtIndex + 1)?.trim('"', '\'')
+
+        return SubstanceCsv(
+            id = id,
+            name = name,
+            color = color,
+            emoji = emoji,
+            createdAt = createdAtRaw?.takeUnless { it.isBlank() } ?: Date().toInstantString(),
+            updatedAt = updatedAtRaw?.takeUnless { it.isBlank() }
+        )
+    }
+
+    private fun parseEntry(columns: List<String>): EntryCsv? {
+        if (columns.size < 5) return null
+
+        val id = columns.getOrNull(0)?.trim().orEmpty().ifBlank {
+            System.currentTimeMillis().toString()
+        }
+        val substance = columns.getOrNull(1)?.trim('"', '\'').orEmpty()
+        if (substance.isEmpty()) return null
+
+        val doseValue = columns.getOrNull(2)?.trim()?.replace(',', '.') ?: "0"
+        val dose = doseValue.toDoubleOrNull() ?: 0.0
+
+        val unit = columns.getOrNull(3)?.trim('"', '\'').orEmpty()
+        val date = columns.getOrNull(4)?.trim('"', '\'').orEmpty()
+
+        val set = columns.getOrNull(5)?.trim('"', '\'')?.takeUnless { it.isBlank() }
+        val setting = columns.getOrNull(6)?.trim('"', '\'')?.takeUnless { it.isBlank() }
+        val notes = columns.getOrNull(7)?.trim('"', '\'')?.takeUnless { it.isBlank() }
+        val createdAt = columns.getOrNull(8)?.trim('"', '\'')?.takeUnless { it.isBlank() }
+        val updatedAt = columns.getOrNull(9)?.trim('"', '\'')?.takeUnless { it.isBlank() }
+
+        return EntryCsv(
+            id = id,
+            substance = substance,
+            dose = dose,
+            unit = unit,
+            date = date,
+            set = set,
+            setting = setting,
+            notes = notes,
+            createdAt = createdAt,
+            updatedAt = updatedAt
+        )
+    }
+
+    private fun isLikelyDate(value: String?): Boolean {
+        if (value.isNullOrBlank()) return false
+        val normalized = value.trim()
+        return normalized.contains("-") || normalized.contains("T") || normalized.contains(":")
+    }
+
+    private fun Date.toInstantString(): String =
+        SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault()).apply {
+            timeZone = TimeZone.getTimeZone("UTC")
+        }.format(this)
+
     @JavascriptInterface
     fun downloadCSV(csvContent: String, filename: String) {
         try {
@@ -546,23 +713,31 @@ class WebAppInterface(private val context: Context, private val activity: MainAc
                 return
             }
 
-            val lines = content.split("\n")
+            val lines = content
+                .replace("\r\n", "\n")
+                .replace("\r", "\n")
+                .split("\n")
             var substanceCount = 0
             var entryCount = 0
             var currentSection = ""
 
             for (line in lines) {
-                val trimmedLine = line.trim()
-                when {
-                    trimmedLine == "SUSTANCIAS" -> { currentSection = "substances"; continue }
-                    trimmedLine == "REGISTROS"  -> { currentSection = "entries"; continue }
-                    trimmedLine == "PERFIL"     -> { currentSection = "profile"; continue }
-                    trimmedLine.isEmpty() ||
-                            trimmedLine.startsWith("ID,") ||
-                            trimmedLine.startsWith("Campo,") -> continue
+                val trimmedLine = normaliseLine(line)
+                if (trimmedLine.isEmpty()) continue
 
-                    currentSection == "substances" && trimmedLine.isNotEmpty() -> substanceCount++
-                    currentSection == "entries"    && trimmedLine.isNotEmpty() -> entryCount++
+                val upper = trimmedLine.uppercase(Locale.getDefault())
+                when {
+                    upper == "SUSTANCIAS" -> { currentSection = "substances"; continue }
+                    upper == "REGISTROS"  -> { currentSection = "entries"; continue }
+                    upper == "PERFIL"     -> { currentSection = "profile"; continue }
+                }
+
+                if (isHeaderLine(trimmedLine)) continue
+
+                val columns = parseCsvLine(trimmedLine)
+                when (currentSection) {
+                    "substances" -> if (parseSubstance(columns) != null) substanceCount++
+                    "entries" -> if (parseEntry(columns) != null) entryCount++
                 }
             }
 
@@ -617,48 +792,32 @@ class WebAppInterface(private val context: Context, private val activity: MainAc
                     return@runOnUiThread
                 }
 
-                val lines = csvContent.split("\n")
+                val lines = csvContent
+                    .replace("\r\n", "\n")
+                    .replace("\r", "\n")
+                    .split("\n")
                 var currentSection = ""
-                val substancesToImport = mutableListOf<Map<String, String>>()
-                val entriesToImport    = mutableListOf<Map<String, String>>()
+                val substancesToImport = mutableListOf<SubstanceCsv>()
+                val entriesToImport    = mutableListOf<EntryCsv>()
 
                 for (line in lines) {
-                    val trimmedLine = line.trim()
+                    val trimmedLine = normaliseLine(line)
+                    if (trimmedLine.isEmpty()) continue
+
+                    val upper = trimmedLine.uppercase(Locale.getDefault())
                     when {
-                        trimmedLine == "SUSTANCIAS" -> { currentSection = "substances"; continue }
-                        trimmedLine == "REGISTROS"  -> { currentSection = "entries"; continue }
-                        trimmedLine.isEmpty() || trimmedLine.startsWith("ID,") -> continue
+                        upper == "SUSTANCIAS" -> { currentSection = "substances"; continue }
+                        upper == "REGISTROS"  -> { currentSection = "entries"; continue }
+                        upper == "PERFIL"     -> { currentSection = "profile"; continue }
+                    }
 
-                        currentSection == "substances" -> {
-                            val parts = trimmedLine.split(",")
-                            if (parts.size >= 4) {
-                                substancesToImport += mapOf(
-                                    "id"        to (parts[0].toIntOrNull()?.toString()
-                                        ?: "${System.currentTimeMillis()}-${kotlin.random.Random.nextInt(1000, 9999)}"),
-                                    "name"      to parts[1].replace("\"", ""),
-                                    "color"     to parts[2].replace("\"", ""),
-                                    "createdAt" to parts[3].replace("\"", "")
-                                )
-                            }
-                        }
+                    if (isHeaderLine(trimmedLine)) continue
 
-                        currentSection == "entries" -> {
-                            val parts = trimmedLine.split(",")
-                            if (parts.size >= 7) {
-                                entriesToImport += mapOf(
-                                    "id"        to (parts[0].toIntOrNull()?.toString()
-                                        ?: System.currentTimeMillis().toString()),
-                                    "substance" to parts[1].replace("\"", ""),
-                                    "dose"      to parts[2],
-                                    "unit"      to parts[3].replace("\"", ""),
-                                    "date"      to parts[4].replace("\"", ""),
-                                    "set"       to (if (parts.size > 5) parts[5].replace("\"", "") else ""),
-                                    "setting"   to (if (parts.size > 6) parts[6].replace("\"", "") else ""),
-                                    "notes"     to (if (parts.size > 7) parts[7].replace("\"", "") else ""),
-                                    "createdAt" to (if (parts.size > 8) parts[8].replace("\"", "") else "")
-                                )
-                            }
-                        }
+                    val columns = parseCsvLine(trimmedLine)
+
+                    when (currentSection) {
+                        "substances" -> parseSubstance(columns)?.let { substancesToImport += it }
+                        "entries" -> parseEntry(columns)?.let { entriesToImport += it }
                     }
                 }
 
@@ -666,36 +825,53 @@ class WebAppInterface(private val context: Context, private val activity: MainAc
                     appendLine("try {")
                     appendLine("  console.log('Iniciando importación...');")
                     if (replaceAll) {
-                        appendLine("  substances = getDefaultSubstances();")
+                        appendLine("  substances = [];")
                         appendLine("  entries = [];")
-                        appendLine("  userProfile = {};")
+                        appendLine("  userProfile = userProfile || {};")
                     }
                     appendLine("  var importedSub = 0; var importedEnt = 0;")
 
                     substancesToImport.forEach { s ->
+                        val subJson = JSONObject().apply {
+                            put("id", s.id)
+                            put("name", s.name)
+                            put("color", s.color)
+                            s.emoji?.let { put("emoji", it) }
+                            put("createdAt", s.createdAt)
+                            s.updatedAt?.let { put("updatedAt", it) }
+                        }
+                        val subJsonString = subJson.toString()
+                        val lowerName = s.name.lowercase(Locale.getDefault())
+                        val lowerNameLiteral = JSONObject.quote(lowerName)
                         appendLine("""
                             (function(){
-                              var newSub = { id: "${s["id"]}", name: "${s["name"]}", color: "${s["color"]}", createdAt: "${s["createdAt"]}" };
-                              var exists = (substances || []).some(function(ex){ return ex.name.toLowerCase() === newSub.name.toLowerCase(); });
-                              if (!exists) { substances.push(newSub); importedSub++; }
+                              var newSub = ${subJsonString};
+                              var shouldInsert = true;
+                              if (!${replaceAll}) {
+                                shouldInsert = !(substances || []).some(function(ex){ return ((ex.name || '')).toLowerCase() === ${lowerNameLiteral}; });
+                              }
+                              if (shouldInsert) { substances.push(newSub); importedSub++; }
                             })();
                         """.trimIndent())
                     }
 
                     entriesToImport.forEach { e ->
+                        val entryJson = JSONObject().apply {
+                            put("id", e.id)
+                            put("substance", e.substance)
+                            put("dose", e.dose)
+                            put("unit", e.unit)
+                            put("date", e.date)
+                            put("set", e.set ?: "")
+                            put("setting", e.setting ?: "")
+                            put("notes", e.notes ?: "")
+                            put("createdAt", e.createdAt ?: "")
+                            put("updatedAt", e.updatedAt ?: "")
+                        }
+                        val entryJsonString = entryJson.toString()
                         appendLine("""
                             (function(){
-                              entries.push({
-                                id: "${e["id"]}",
-                                substance: "${e["substance"]}",
-                                dose: ${e["dose"]},
-                                unit: "${e["unit"]}",
-                                date: "${e["date"]}",
-                                set: "${e["set"] ?: ""}",
-                                setting: "${e["setting"] ?: ""}",
-                                notes: "${e["notes"] ?: ""}",
-                                createdAt: "${e["createdAt"] ?: ""}"
-                              });
+                              entries.push(${entryJsonString});
                               importedEnt++;
                             })();
                         """.trimIndent())
@@ -704,6 +880,7 @@ class WebAppInterface(private val context: Context, private val activity: MainAc
                     appendLine("""
                         localStorage.setItem('substances', JSON.stringify(substances));
                         localStorage.setItem('entries', JSON.stringify(entries));
+                        localStorage.setItem('userProfile', JSON.stringify(userProfile || {}));
 
                         if (typeof refreshAfterImport === 'function') {
                             refreshAfterImport();

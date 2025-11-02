@@ -4029,32 +4029,6 @@
                 }
             ];
         }
-
-
-
-        // Función para sincronizar datos desde localStorage (para importación)
-        function syncDataFromStorage() {
-            try {
-                const storedSubstances = localStorage.getItem('substances');
-                const storedEntries = localStorage.getItem('entries');
-                const storedProfile = localStorage.getItem('userProfile');
-                
-                if (storedSubstances) {
-                    substances = JSON.parse(storedSubstances);
-                }
-                
-                if (storedEntries) {
-                    entries = JSON.parse(storedEntries);
-                }
-                
-                if (storedProfile) {
-                    userProfile = JSON.parse(storedProfile);
-                }
-            } catch (error) {
-                console.error('Error sincronizando datos:', error);
-            }
-        }
-
         // Función específica para después de importación
         function refreshAfterImport() {
             try {
