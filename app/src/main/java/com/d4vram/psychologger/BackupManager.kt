@@ -3,6 +3,7 @@ package com.d4vram.psychologger
 import android.content.Context
 import android.util.Log
 import org.json.JSONArray
+import org.json.JSONException
 import org.json.JSONObject
 import java.io.File
 import java.io.FileInputStream
@@ -50,11 +51,19 @@ class BackupManager(private val context: Context) {
         private const val IV_LENGTH = 12
     }
 
+    private val backupPrefs by lazy {
+        context.getSharedPreferences("backup_prefs", Context.MODE_PRIVATE)
+    }
+
     /**
      * Directorios de backups
      */
     private val backupsDir: File by lazy {
-        File(context.filesDir, "backups").apply {
+        val external = context.getExternalFilesDir("backups")?.apply {
+            if (!exists()) mkdirs()
+        }
+
+        external?.takeIf { it.exists() && it.canWrite() } ?: File(context.filesDir, "backups").apply {
             if (!exists()) mkdirs()
         }
     }
@@ -63,16 +72,39 @@ class BackupManager(private val context: Context) {
         File(context.filesDir, "audio_notes")
     }
 
+    private val photoDir: File by lazy {
+        val external = context.getExternalFilesDir("entry_photos")?.apply {
+            if (!exists()) mkdirs()
+        }
+
+        external ?: File(context.filesDir, "entry_photos").apply {
+            if (!exists()) mkdirs()
+        }
+    }
+
+    private val backupCacheDir: File by lazy {
+        File(context.filesDir, "backup_cache").apply {
+            if (!exists()) mkdirs()
+        }
+    }
+
+    private val localStorageSnapshotFile: File
+        get() = File(backupCacheDir, "local_storage_snapshot.json")
+
     /**
      * Crear backup completo (automático o manual)
      *
      * ESTRUCTURA DEL BACKUP:
      * backups/
      *   ├── backup_2025-01-15_14-30-00.zip
-     *   │   ├── data.json (localStorage completo)
-     *   │   └── audios/
-     *   │       ├── audio_uuid1.m4a
-     *   │       └── audio_uuid2.m4a
+     *   │   ├── data.json   (snapshot completo en JSON)
+     *   │   ├── data.csv    (exportación tabular en CSV)
+     *   │   ├── audios/
+     *   │   │   ├── audio_uuid1.m4a
+     *   │   │   └── audio_uuid2.m4a
+     *   │   └── photos/
+     *   │       ├── photo_uuid1.jpg
+     *   │       └── photo_uuid2.jpg
      *
      * @return File del backup creado o null si falla
      */
@@ -80,6 +112,7 @@ class BackupManager(private val context: Context) {
         return try {
             val timestamp = SimpleDateFormat("yyyy-MM-dd_HH-mm-ss", Locale.getDefault()).format(Date())
             val backupFile = File(backupsDir, "backup_$timestamp.zip")
+            val snapshot = readLocalStorageSnapshot()
 
             Log.d(TAG, "Creando backup: ${backupFile.name}")
 
@@ -87,16 +120,24 @@ class BackupManager(private val context: Context) {
             ZipOutputStream(FileOutputStream(backupFile)).use { zipOut ->
 
                 // 1. Añadir data.json con localStorage completo
-                addLocalStorageToZip(zipOut)
+                addLocalStorageToZip(zipOut, snapshot)
 
-                // 2. Añadir todos los archivos de audio
+                // 2. Añadir data.csv generado a partir del snapshot
+                addCsvExportToZip(zipOut, snapshot)
+
+                // 3. Añadir todos los archivos de audio
                 addAudioFilesToZip(zipOut)
+
+                // 4. Añadir fotos asociadas a registros
+                addPhotoFilesToZip(zipOut)
             }
 
             Log.d(TAG, "Backup creado exitosamente: ${backupFile.absolutePath}")
 
             // Limpiar backups antiguos
             cleanOldBackups()
+
+            updateLastBackupMetadata(backupFile, type = "auto")
 
             backupFile
 
@@ -112,20 +153,42 @@ class BackupManager(private val context: Context) {
      * CONCEPTO: SharedPreferences vs localStorage
      * - localStorage del WebView no es accesible directamente desde Kotlin
      * - Solución: JavaScript envía los datos a Android vía bridge
-     * - Por ahora creamos un placeholder, luego lo pasaremos desde JS
+     * - En backups automáticos se usa el snapshot cacheado
      */
-    private fun addLocalStorageToZip(zipOut: ZipOutputStream) {
-        // Este método será llamado con los datos desde JavaScript
-        // Por ahora añadimos un placeholder
-        val dataJson = JSONObject().apply {
-            put("timestamp", System.currentTimeMillis())
-            put("version", "1.0")
-            put("note", "Los datos reales se añadirán desde JavaScript")
+    private fun addLocalStorageToZip(zipOut: ZipOutputStream, snapshot: String?) {
+        val dataJson = snapshot ?: run {
+            JSONObject().apply {
+                put("timestamp", System.currentTimeMillis())
+                put("version", "1.0")
+                put("note", "Snapshot no disponible - se usó placeholder")
+            }.toString(2)
         }
 
         val entry = ZipEntry("data.json")
         zipOut.putNextEntry(entry)
-        zipOut.write(dataJson.toString(2).toByteArray())
+        zipOut.write(dataJson.toByteArray(Charsets.UTF_8))
+        zipOut.closeEntry()
+    }
+
+    /**
+     * Añade un CSV equivalente a data.json al ZIP (si hay snapshot disponible)
+     */
+    private fun addCsvExportToZip(zipOut: ZipOutputStream, snapshot: String?) {
+        if (snapshot.isNullOrBlank()) {
+            Log.w(TAG, "Snapshot no disponible, omitiendo data.csv en el backup")
+            return
+        }
+
+        val csvContent = try {
+            createCsvFromSnapshot(snapshot)
+        } catch (e: Exception) {
+            Log.e(TAG, "No se pudo generar CSV desde snapshot", e)
+            null
+        } ?: return
+
+        val entry = ZipEntry("data.csv")
+        zipOut.putNextEntry(entry)
+        zipOut.write(csvContent.toByteArray(Charsets.UTF_8))
         zipOut.closeEntry()
     }
 
@@ -161,6 +224,34 @@ class BackupManager(private val context: Context) {
     }
 
     /**
+     * Añade todas las fotos asociadas a registros al ZIP
+     */
+    private fun addPhotoFilesToZip(zipOut: ZipOutputStream) {
+        if (!photoDir.exists()) {
+            Log.d(TAG, "No hay carpeta de fotos")
+            return
+        }
+
+        val photoFiles = photoDir.listFiles()?.filter { it.isFile } ?: emptyList()
+        Log.d(TAG, "Añadiendo ${photoFiles.size} fotos al backup")
+
+        photoFiles.forEach { photoFile ->
+            try {
+                val entry = ZipEntry("photos/${photoFile.name}")
+                zipOut.putNextEntry(entry)
+
+                FileInputStream(photoFile).use { input ->
+                    input.copyTo(zipOut)
+                }
+
+                zipOut.closeEntry()
+            } catch (e: Exception) {
+                Log.e(TAG, "Error al añadir foto ${photoFile.name}", e)
+            }
+        }
+    }
+
+    /**
      * Crear backup con datos de localStorage (llamado desde JavaScript)
      *
      * @param localStorageData JSON string con todo el localStorage
@@ -174,16 +265,25 @@ class BackupManager(private val context: Context) {
             ZipOutputStream(FileOutputStream(backupFile)).use { zipOut ->
 
                 // 1. Añadir data.json con los datos reales
-                val entry = ZipEntry("data.json")
-                zipOut.putNextEntry(entry)
-                zipOut.write(localStorageData.toByteArray())
-                zipOut.closeEntry()
+                addLocalStorageToZip(zipOut, localStorageData)
 
-                // 2. Añadir audios
+                // 2. Añadir data.csv con la exportación tabular
+                addCsvExportToZip(zipOut, localStorageData)
+
+                // 3. Añadir audios
                 addAudioFilesToZip(zipOut)
+
+                // 4. Añadir fotos
+                addPhotoFilesToZip(zipOut)
             }
 
+            // Guardar snapshot para futuros autobackups
+            saveLocalStorageSnapshot(localStorageData)
+
             cleanOldBackups()
+
+            updateLastBackupMetadata(backupFile, type = "manual")
+
             backupFile
 
         } catch (e: Exception) {
@@ -335,6 +435,34 @@ class BackupManager(private val context: Context) {
     }
 
     /**
+     * Guardar snapshot del localStorage para usar en backups automáticos
+     */
+    fun saveLocalStorageSnapshot(snapshot: String) {
+        try {
+            localStorageSnapshotFile.writeText(snapshot)
+            Log.d(TAG, "Snapshot de localStorage actualizado (${snapshot.length} bytes)")
+        } catch (e: Exception) {
+            Log.e(TAG, "Error al guardar snapshot de localStorage", e)
+        }
+    }
+
+    /**
+     * Leer snapshot más reciente del localStorage
+     */
+    private fun readLocalStorageSnapshot(): String? {
+        return try {
+            if (localStorageSnapshotFile.exists()) {
+                localStorageSnapshotFile.readText()
+            } else {
+                null
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error al leer snapshot de localStorage", e)
+            null
+        }
+    }
+
+    /**
      * Listar todos los backups disponibles
      *
      * @return Lista de BackupInfo ordenada por fecha (más reciente primero)
@@ -390,5 +518,142 @@ class BackupManager(private val context: Context) {
                 size < 1024 * 1024 -> "${size / 1024} KB"
                 else -> "%.2f MB".format(size / (1024.0 * 1024.0))
             }
+    }
+
+    /**
+     * Persistir información del último backup creado (auto o manual)
+     */
+    private fun updateLastBackupMetadata(file: File, type: String) {
+        try {
+            val timestamp = if (file.exists()) file.lastModified() else System.currentTimeMillis()
+            backupPrefs.edit()
+                .putLong("last_backup_timestamp", timestamp)
+                .putString("last_backup_path", file.absolutePath)
+                .putString("last_backup_filename", file.name)
+                .putString("last_backup_type", type)
+                .apply()
+        } catch (e: Exception) {
+            Log.e(TAG, "Error guardando metadata de backup", e)
+        }
+    }
+
+    fun getLastBackupMetadata(): LastBackupMetadata? {
+        val timestamp = backupPrefs.getLong("last_backup_timestamp", -1L)
+        if (timestamp <= 0) return null
+
+        val path = backupPrefs.getString("last_backup_path", null) ?: return null
+        val filename = backupPrefs.getString("last_backup_filename", null) ?: return null
+        val type = backupPrefs.getString("last_backup_type", "manual") ?: "manual"
+
+        return LastBackupMetadata(
+            absolutePath = path,
+            filename = filename,
+            timestamp = timestamp,
+            type = type
+        )
+    }
+
+    data class LastBackupMetadata(
+        val absolutePath: String,
+        val filename: String,
+        val timestamp: Long,
+        val type: String
+    ) {
+        val formattedDate: String
+            get() = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault()).format(Date(timestamp))
+    }
+
+    fun getBackupsDirectory(): File = backupsDir
+
+    /**
+     * Genera un CSV siguiendo el mismo formato que la exportación manual desde WebView
+     */
+    @Throws(JSONException::class)
+    private fun createCsvFromSnapshot(snapshot: String): String {
+        val root = JSONObject(snapshot)
+        val substancesArray = root.optJSONArray("substances") ?: JSONArray()
+        val entriesArray = root.optJSONArray("entries") ?: JSONArray()
+
+        val csvBuilder = StringBuilder()
+        csvBuilder.append('\uFEFF') // BOM para UTF-8
+
+        // Sección de sustancias
+        csvBuilder.append("SUSTANCIAS\n")
+        csvBuilder.append("ID;Nombre;Color;Emoji;Fecha_Creacion;Fecha_Actualizacion\n")
+
+        for (i in 0 until substancesArray.length()) {
+            val obj = substancesArray.optJSONObject(i) ?: continue
+            val id = obj.optString("id")
+            val name = obj.optString("name")
+            val color = obj.optString("color")
+            val emoji = obj.optString("emoji", suggestEmojiFallback(name))
+            val createdAt = obj.optString("createdAt")
+            val updatedAt = obj.optString("updatedAt")
+
+            val row = listOf(
+                id,
+                quoteForCsv(name),
+                quoteForCsv(color),
+                quoteForCsv(emoji),
+                quoteForCsv(createdAt),
+                quoteForCsv(updatedAt)
+            ).joinToString(";")
+
+            csvBuilder.append(row).append('\n')
+        }
+
+        csvBuilder.append('\n')
+
+        // Sección de registros
+        csvBuilder.append("REGISTROS\n")
+        csvBuilder.append("ID;Sustancia;Dosis;Unidad;Fecha_Hora;Set;Setting;Notas;Fecha_Creacion;Fecha_Actualizacion\n")
+
+        for (i in 0 until entriesArray.length()) {
+            val obj = entriesArray.optJSONObject(i) ?: continue
+            val row = listOf(
+                obj.optString("id"),
+                quoteForCsv(obj.optString("substance")),
+                obj.optDouble("dose", 0.0).toString(),
+                quoteForCsv(obj.optString("unit")),
+                quoteForCsv(obj.optString("date")),
+                quoteForCsv(obj.optString("set")),
+                quoteForCsv(obj.optString("setting")),
+                quoteForCsv(obj.optString("notes")),
+                quoteForCsv(obj.optString("createdAt")),
+                quoteForCsv(obj.optString("updatedAt"))
+            ).joinToString(";")
+
+            csvBuilder.append(row).append('\n')
+        }
+
+        return csvBuilder.toString()
+    }
+
+    private fun quoteForCsv(value: String?): String {
+        val sanitized = value ?: ""
+        return "\"${sanitized.replace("\"", "\"\"")}\""
+    }
+
+    /**
+     * Fallback simple de emoji, replicando la lógica básica del front
+     */
+    private fun suggestEmojiFallback(name: String?): String {
+        val lower = name?.lowercase(Locale.getDefault()) ?: return "💊"
+        return when {
+            lower.contains("lsd") || lower.contains("ácido") -> "🌈"
+            lower.contains("ket") || lower.contains("ketamina") -> "❄️"
+            lower.contains("opio") || lower.contains("hero") || lower.contains("morf") -> "🌿"
+            lower.contains("mdma") || lower.contains("éxtasis") -> "💎"
+            lower.contains("coca") -> "❄️"
+            lower.contains("anfet") || lower.contains("speed") || lower.contains("meth") -> "⚡"
+            lower.contains("cannabis") || lower.contains("marihuana") || lower.contains("hach") -> "🌿"
+            lower.contains("psiloc") || lower.contains("hongo") -> "🍄"
+            lower.contains("dmt") -> "👁️"
+            lower.contains("mescal") || lower.contains("peyote") -> "🌵"
+            lower.contains("alcohol") -> "🍷"
+            lower.contains("nicotina") || lower.contains("tabaco") -> "🚬"
+            lower.contains("cafe") || lower.contains("té") -> "☕"
+            else -> "💊"
+        }
     }
 }

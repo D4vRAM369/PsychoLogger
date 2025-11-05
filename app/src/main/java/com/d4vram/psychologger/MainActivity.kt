@@ -2,6 +2,7 @@ package com.d4vram.psychologger
 
 import android.annotation.SuppressLint
 import android.app.DownloadManager
+import android.content.ActivityNotFoundException
 import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
@@ -63,12 +64,23 @@ import java.util.TimeZone
 class MainActivity : FragmentActivity() {
     private var filePathCallback: ValueCallback<Array<Uri>>? = null
     private lateinit var fileChooserLauncher: ActivityResultLauncher<Intent>
+    private lateinit var capturePhotoLauncher: ActivityResultLauncher<Uri>
+    private lateinit var pickPhotoLauncher: ActivityResultLauncher<String>
+    private var pendingPhotoResult: ((PhotoResult) -> Unit)? = null
+    private var pendingPhotoFile: File? = null
+    private val photoManager by lazy { PhotoManager(this) }
     private lateinit var appLockManager: AppLockManager
     var webAppInterface: WebAppInterface? = null
         private set
 
     var webView: WebView? = null
         private set
+
+    data class PhotoResult(
+        val success: Boolean,
+        val filename: String? = null,
+        val error: String? = null
+    )
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -91,6 +103,50 @@ class MainActivity : FragmentActivity() {
             } else null
             filePathCallback?.onReceiveValue(results)
             filePathCallback = null
+        }
+
+        capturePhotoLauncher = registerForActivityResult(
+            ActivityResultContracts.TakePicture()
+        ) { success ->
+            val callback = pendingPhotoResult
+            val file = pendingPhotoFile
+            pendingPhotoResult = null
+            pendingPhotoFile = null
+
+            if (success && file != null && file.exists()) {
+                callback?.invoke(PhotoResult(success = true, filename = file.name))
+            } else {
+                file?.takeIf { it.exists() }?.delete()
+                callback?.invoke(
+                    PhotoResult(
+                        success = false,
+                        error = if (success) "No se pudo guardar la foto" else null
+                    )
+                )
+            }
+        }
+
+        pickPhotoLauncher = registerForActivityResult(
+            ActivityResultContracts.GetContent()
+        ) { uri ->
+            val callback = pendingPhotoResult
+            pendingPhotoResult = null
+
+            if (uri != null) {
+                try {
+                    val copiedFile = photoManager.copyUriToPhoto(uri)
+                    callback?.invoke(PhotoResult(success = true, filename = copiedFile.name))
+                } catch (e: Exception) {
+                    callback?.invoke(
+                        PhotoResult(
+                            success = false,
+                            error = e.message ?: "Error al importar imagen"
+                        )
+                    )
+                }
+            } else {
+                callback?.invoke(PhotoResult(success = false, error = null))
+            }
         }
 
         setContent {
@@ -310,6 +366,40 @@ class MainActivity : FragmentActivity() {
         }
     }
 
+    fun requestPhotoFromCamera(onResult: (PhotoResult) -> Unit) {
+        if (pendingPhotoResult != null) {
+            onResult(PhotoResult(success = false, error = "Ya hay una operación de imagen en curso"))
+            return
+        }
+
+        try {
+            val file = photoManager.createPhotoFile()
+            val uri = FileProvider.getUriForFile(this, "$packageName.fileprovider", file)
+            pendingPhotoFile = file
+            pendingPhotoResult = onResult
+            capturePhotoLauncher.launch(uri)
+        } catch (e: Exception) {
+            pendingPhotoFile = null
+            pendingPhotoResult = null
+            onResult(PhotoResult(success = false, error = e.message ?: "No se pudo iniciar la cámara"))
+        }
+    }
+
+    fun requestPhotoFromGallery(onResult: (PhotoResult) -> Unit) {
+        if (pendingPhotoResult != null) {
+            onResult(PhotoResult(success = false, error = "Ya hay una operación de imagen en curso"))
+            return
+        }
+
+        try {
+            pendingPhotoResult = onResult
+            pickPhotoLauncher.launch("image/*")
+        } catch (e: Exception) {
+            pendingPhotoResult = null
+            onResult(PhotoResult(success = false, error = e.message ?: "No se pudo abrir la galería"))
+        }
+    }
+
     fun executeJavaScript(script: String) {
         runOnUiThread {
             webView?.evaluateJavascript(script) { result ->
@@ -370,6 +460,9 @@ class WebAppInterface(private val context: Context, private val activity: MainAc
     // === GESTIÓN DE AUDIO ===
     private val audioRecorder = AudioRecorder(context)
     private val audioPlayer = AudioPlayer()
+
+    // === GESTIÓN DE FOTOS ===
+    private val photoManager = PhotoManager(context)
 
     // === GESTIÓN DE BACKUPS ===
     private val backupManager = BackupManager(context)
@@ -1142,8 +1235,173 @@ class WebAppInterface(private val context: Context, private val activity: MainAc
     }
 
     // ========================================
+    // === MÉTODOS DE FOTOS ===
+    // ========================================
+
+    @JavascriptInterface
+    fun capturePhoto() {
+        activity.runOnUiThread {
+            if (!hasCameraPermission()) {
+                Toast.makeText(context, "⚠️ Se requiere permiso de cámara. Ve a Ajustes → Permisos", Toast.LENGTH_LONG).show()
+                val message = JSONObject.quote("Permiso de cámara denegado")
+                activity.executeJavaScript(
+                    """
+                        if (window.onPhotoCaptureError) {
+                            window.onPhotoCaptureError($message);
+                        }
+                    """.trimIndent()
+                )
+                return@runOnUiThread
+            }
+
+            activity.requestPhotoFromCamera { result ->
+                when {
+                    result.success && !result.filename.isNullOrBlank() -> {
+                        val quoted = JSONObject.quote(result.filename)
+                        activity.executeJavaScript(
+                            """
+                                if (window.onPhotoCaptured) {
+                                    window.onPhotoCaptured($quoted);
+                                }
+                            """.trimIndent()
+                        )
+                    }
+                    !result.error.isNullOrBlank() -> {
+                        val message = JSONObject.quote(result.error)
+                        activity.executeJavaScript(
+                            """
+                                if (window.onPhotoCaptureError) {
+                                    window.onPhotoCaptureError($message);
+                                }
+                            """.trimIndent()
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    @JavascriptInterface
+    fun pickPhotoFromGallery() {
+        activity.runOnUiThread {
+            activity.requestPhotoFromGallery { result ->
+                when {
+                    result.success && !result.filename.isNullOrBlank() -> {
+                        val quoted = JSONObject.quote(result.filename)
+                        activity.executeJavaScript(
+                            """
+                                if (window.onPhotoCaptured) {
+                                    window.onPhotoCaptured($quoted);
+                                }
+                            """.trimIndent()
+                        )
+                    }
+                    !result.error.isNullOrBlank() -> {
+                        val message = JSONObject.quote(result.error)
+                        activity.executeJavaScript(
+                            """
+                                if (window.onPhotoCaptureError) {
+                                    window.onPhotoCaptureError($message);
+                                }
+                            """.trimIndent()
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    @JavascriptInterface
+    fun deletePhoto(filename: String): String {
+        return try {
+            if (filename.isBlank()) {
+                "ERROR: Nombre de archivo inválido"
+            } else if (photoManager.deletePhoto(filename)) {
+                "OK"
+            } else {
+                "ERROR: Archivo no encontrado"
+            }
+        } catch (e: Exception) {
+            "ERROR: ${e.message}"
+        }
+    }
+
+    @JavascriptInterface
+    fun getPhotoPreview(filename: String): String {
+        return try {
+            photoManager.getPreviewDataUrl(filename) ?: ""
+        } catch (e: Exception) {
+            ""
+        }
+    }
+
+    @JavascriptInterface
+    fun viewPhoto(filename: String) {
+        activity.runOnUiThread {
+            try {
+                val uri = photoManager.getShareUri(filename)
+                if (uri == null) {
+                    Toast.makeText(context, "❌ Imagen no encontrada", Toast.LENGTH_SHORT).show()
+                    return@runOnUiThread
+                }
+
+                val intent = Intent(Intent.ACTION_VIEW).apply {
+                    setDataAndType(uri, "image/*")
+                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                }
+
+                activity.startActivity(intent)
+            } catch (e: ActivityNotFoundException) {
+                Toast.makeText(context, "❌ No se encontró app para abrir imágenes", Toast.LENGTH_SHORT).show()
+            } catch (e: Exception) {
+                Toast.makeText(context, "❌ Error al abrir imagen: ${e.message}", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    @JavascriptInterface
+    fun sharePhoto(filename: String) {
+        activity.runOnUiThread {
+            try {
+                val uri = photoManager.getShareUri(filename)
+                if (uri == null) {
+                    Toast.makeText(context, "❌ Imagen no encontrada", Toast.LENGTH_SHORT).show()
+                    return@runOnUiThread
+                }
+
+                val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                    type = "image/*"
+                    putExtra(Intent.EXTRA_STREAM, uri)
+                    putExtra(Intent.EXTRA_SUBJECT, "Foto - PsychoLogger")
+                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                }
+
+                val chooser = Intent.createChooser(shareIntent, "📷 Compartir foto")
+                activity.startActivity(chooser)
+            } catch (e: Exception) {
+                Toast.makeText(context, "❌ Error al compartir foto: ${e.message}", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    // ========================================
     // === MÉTODOS DE BACKUP Y EXPORTACIÓN ===
     // ========================================
+
+    /**
+     * Crear backup manual (botón en Ajustes)
+     *
+     * @param localStorageJson JSON string con todo el localStorage
+     * @return "OK" si se creó correctamente, "ERROR: ..." si falló
+     */
+    @JavascriptInterface
+    fun cacheLocalStorageSnapshot(localStorageJson: String) {
+        try {
+            backupManager.saveLocalStorageSnapshot(localStorageJson)
+        } catch (e: Exception) {
+            android.util.Log.e("WebAppInterface", "Error al actualizar snapshot de backup", e)
+        }
+    }
 
     /**
      * Crear backup manual (botón en Ajustes)
@@ -1157,9 +1415,10 @@ class WebAppInterface(private val context: Context, private val activity: MainAc
             val backupFile = backupManager.createBackupWithData(localStorageJson)
 
             if (backupFile != null) {
+                val backupPath = backupFile.absolutePath
                 Toast.makeText(
                     context,
-                    "✅ Backup creado: ${backupFile.name}",
+                    "✅ Backup guardado en:\n$backupPath",
                     Toast.LENGTH_LONG
                 ).show()
                 "OK:${backupFile.name}"
@@ -1171,6 +1430,27 @@ class WebAppInterface(private val context: Context, private val activity: MainAc
             Toast.makeText(context, "❌ Error: ${e.message}", Toast.LENGTH_SHORT).show()
             "ERROR: ${e.message}"
         }
+    }
+
+    @JavascriptInterface
+    fun getLastBackupInfo(): String {
+        return try {
+            val metadata = backupManager.getLastBackupMetadata() ?: return ""
+            JSONObject().apply {
+                put("type", metadata.type)
+                put("timestamp", metadata.timestamp)
+                put("filename", metadata.filename)
+                put("absolutePath", metadata.absolutePath)
+                put("formattedDate", metadata.formattedDate)
+            }.toString()
+        } catch (e: Exception) {
+            ""
+        }
+    }
+
+    @JavascriptInterface
+    fun getBackupsDirectory(): String {
+        return backupManager.getBackupsDirectory().absolutePath
     }
 
     /**
@@ -1309,6 +1589,11 @@ class WebAppInterface(private val context: Context, private val activity: MainAc
      */
     private fun hasRecordAudioPermission(): Boolean {
         return context.checkSelfPermission(android.Manifest.permission.RECORD_AUDIO) ==
+                android.content.pm.PackageManager.PERMISSION_GRANTED
+    }
+
+    private fun hasCameraPermission(): Boolean {
+        return context.checkSelfPermission(android.Manifest.permission.CAMERA) ==
                 android.content.pm.PackageManager.PERMISSION_GRANTED
     }
 

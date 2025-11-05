@@ -2559,6 +2559,135 @@
        margin-top: 8px;
    }
 
+   /* ========================================
+      ESTILOS GENERALES PARA ADJUNTOS (Audio / Foto)
+      ======================================== */
+   .media-attachments-grid {
+       display: grid;
+       grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+       gap: 12px;
+       margin-top: 12px;
+   }
+
+   .media-card {
+       border: 2px dashed var(--primary);
+       border-radius: 16px;
+       padding: 18px;
+       background: rgba(139, 92, 246, 0.08);
+       display: flex;
+       flex-direction: column;
+       justify-content: center;
+       gap: 12px;
+       cursor: pointer;
+       transition: all 0.25s ease;
+       min-height: 130px;
+   }
+
+   .media-card:hover {
+       transform: translateY(-3px);
+       box-shadow: 0 12px 24px rgba(139, 92, 246, 0.25);
+       border-style: solid;
+   }
+
+   .media-card.has-attachment {
+       border-style: solid;
+       background: linear-gradient(135deg, rgba(139, 92, 246, 0.15), rgba(236, 72, 153, 0.12));
+   }
+
+   .media-card-header {
+       display: flex;
+       align-items: center;
+       gap: 12px;
+   }
+
+   .media-card-icon {
+       font-size: 1.8rem;
+   }
+
+   .media-card-title {
+       font-size: 1.1rem;
+       font-weight: 600;
+       color: var(--text-light);
+   }
+
+   .media-card-subtitle {
+       font-size: 0.95rem;
+       color: var(--text-muted);
+       line-height: 1.4;
+   }
+
+   .media-card-footer {
+       display: flex;
+       gap: 8px;
+       flex-wrap: wrap;
+       font-size: 0.85rem;
+       color: var(--accent-cyan);
+   }
+
+   .photo-modal-preview {
+       border-radius: 14px;
+       border: 1px solid rgba(255,255,255,0.08);
+       background: rgba(15, 23, 42, 0.6);
+       display: flex;
+       align-items: center;
+       justify-content: center;
+       overflow: hidden;
+       aspect-ratio: 4 / 3;
+       margin-bottom: 16px;
+   }
+
+   .photo-modal-preview img {
+       width: 100%;
+       height: 100%;
+       object-fit: cover;
+   }
+
+   .photo-modal-preview.empty {
+       flex-direction: column;
+       padding: 24px;
+       gap: 12px;
+       color: var(--text-muted);
+       text-align: center;
+       font-size: 0.95rem;
+   }
+
+   .photo-modal-actions {
+       display: flex;
+       flex-wrap: wrap;
+       gap: 12px;
+   }
+
+   .photo-modal-actions button {
+       flex: 1 1 200px;
+   }
+
+   .photo-extra-actions {
+       display: flex;
+       gap: 8px;
+       flex-wrap: wrap;
+       margin-top: 16px;
+   }
+
+   .photo-extra-actions button {
+       flex: 1 1 140px;
+   }
+
+   .btn-outline {
+       border: 2px solid var(--primary);
+       background: transparent;
+       color: var(--primary);
+       padding: 12px 16px;
+       border-radius: 12px;
+       font-weight: 600;
+       cursor: pointer;
+       transition: all 0.25s ease;
+   }
+
+   .btn-outline:hover {
+       background: var(--primary-alpha);
+       transform: translateY(-2px);
+   }
+
    /* Contenedor de la barra de progreso */
    .audio-progress-container {
        width: 100%;
@@ -2766,6 +2895,18 @@
                         <button class="btn-danger" onclick="clearAllData()">Limpiar Todo</button>
                     </div>
                     <div class="resource-card">
+                        <h4>🔄 Auto-Backup</h4>
+                        <p>La app crea una copia completa cada 12 horas cuando detecta cambios recientes.</p>
+                        <div>
+                            <strong>Último backup:</strong>
+                            <span id="backupStatusText">Aún no se ha generado.</span>
+                        </div>
+                        <div style="margin-top: 8px;">
+                            <strong>Carpeta:</strong>
+                            <code id="backupPathText">Android/data/com.d4vram.psychologger/files/backups</code>
+                        </div>
+                    </div>
+                    <div class="resource-card">
                         <h4>💾 Backup Manual</h4>
                         <p>Crear backup completo (datos + audios)</p>
                         <button class="btn-primary" onclick="createManualBackup()">🗄️ Crear Backup</button>
@@ -2809,7 +2950,7 @@
         <div id="entryModal" class="modal">
             <div class="modal-content">
                 <button class="close-btn" onclick="closeModal('entryModal')">×</button>
-                <h3>Nuevo Registro</h3>
+                <h3 id="entryModalTitle">Nuevo Registro</h3>
                 <form id="entryForm">
                     <div class="form-group">
                         <label>Sustancia *</label>
@@ -3303,69 +3444,123 @@
                         </small>
                     </div>
 
-                    <!-- ========================================
-                         SECCIÓN DE AUDIO - Grabación y Reproducción
-                         ======================================== -->
                     <div class="form-group">
-                        <label>Nota de voz (opcional)</label>
-
-                        <!-- Botón inicial para grabar (solo visible si no hay audio ni grabación activa) -->
-                        <button type="button" id="btnStartRecording" class="btn-audio-record"
-                                style="display: none;">
-                            🎤 Grabar nota de voz
-                        </button>
-
-                        <!-- Card de grabación activa (solo visible mientras graba) -->
-                        <div id="recordingCard" class="audio-recording-card" style="display: none;">
-                            <div style="display: flex; justify-content: space-between; align-items: center;">
-                                <div style="display: flex; align-items: center; gap: 8px;">
-                                    <div class="recording-pulse"></div>
+                        <label>Adjuntos</label>
+                        <div class="media-attachments-grid">
+                            <div class="media-card" id="voiceNoteCard" onclick="openAudioModal()">
+                                <div class="media-card-header">
+                                    <div class="media-card-icon">🎤</div>
                                     <div>
-                                        <div style="font-weight: 600; color: var(--danger);">Grabando...</div>
-                                        <div id="recordingTimer" style="font-size: 0.9rem; color: var(--text-muted);">00:00</div>
+                                        <div class="media-card-title">Nota de voz</div>
+                                        <div class="media-card-subtitle" id="voiceNoteCardSubtitle">Sin nota de voz</div>
                                     </div>
                                 </div>
-                                <button type="button" id="btnStopRecording" class="btn-icon-danger">
-                                    ⏹️ Detener
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- Card de audio grabado (solo visible cuando hay audio listo) -->
-                        <div id="audioPlayerCard" class="audio-player-card" style="display: none;">
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                                <div style="font-weight: 600;">🎤 Nota de voz</div>
-                                <div style="display: flex; gap: 4px;">
-                                    <button type="button" id="btnShareAudio" class="btn-icon-small" title="Compartir">
-                                        📤
-                                    </button>
-                                    <button type="button" id="btnDeleteAudio" class="btn-icon-small" title="Eliminar">
-                                        🗑️
-                                    </button>
+                                <div class="media-card-footer" id="voiceNoteCardFooter">
+                                    Pulsa para grabar o escuchar
                                 </div>
                             </div>
-
-                            <!-- Barra de progreso -->
-                            <div class="audio-progress-container">
-                                <div id="audioProgressBar" class="audio-progress-bar"></div>
-                            </div>
-
-                            <!-- Controles de reproducción -->
-                            <div style="display: flex; justify-content: center; margin-top: 12px;">
-                                <button type="button" id="btnPlayPause" class="btn-icon-large">
-                                    ▶️
-                                </button>
-                            </div>
-
-                            <!-- Info de duración -->
-                            <div id="audioDuration" style="text-align: center; font-size: 0.85rem; color: var(--text-muted); margin-top: 8px;">
-                                00:00
+                            <div class="media-card" id="photoAttachmentCard" onclick="openPhotoModal()">
+                                <div class="media-card-header">
+                                    <div class="media-card-icon">📷</div>
+                                    <div>
+                                        <div class="media-card-title">Foto / Imagen</div>
+                                        <div class="media-card-subtitle" id="photoCardSubtitle">Sin imagen adjunta</div>
+                                    </div>
+                                </div>
+                                <div class="media-card-footer" id="photoCardFooter">
+                                    Captura o selecciona una imagen
+                                </div>
                             </div>
                         </div>
                     </div>
 
                     <button type="submit" class="btn-primary">💾 Guardar Registro</button>
                 </form>
+            </div>
+        </div>
+
+        <!-- Modal Nota de Voz -->
+        <div id="audioModal" class="modal">
+            <div class="modal-content" style="max-width: 480px;">
+                <button class="close-btn" onclick="closeModal('audioModal')">×</button>
+                <h3>🎤 Nota de voz</h3>
+                <p style="color: var(--text-muted); margin-bottom: 16px; font-size: 0.9rem;">
+                    Graba, escucha o elimina la nota de voz asociada a este registro.
+                </p>
+
+                <button type="button" id="btnStartRecording" class="btn-audio-record" style="display: none;">
+                    🎤 Grabar nota de voz
+                </button>
+
+                <div id="recordingCard" class="audio-recording-card" style="display: none;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <div class="recording-pulse"></div>
+                            <div>
+                                <div style="font-weight: 600; color: var(--danger);">Grabando...</div>
+                                <div id="recordingTimer" style="font-size: 0.9rem; color: var(--text-muted);">00:00</div>
+                            </div>
+                        </div>
+                        <button type="button" id="btnStopRecording" class="btn-icon-danger">
+                            ⏹️ Detener
+                        </button>
+                    </div>
+                </div>
+
+                <div id="audioPlayerCard" class="audio-player-card" style="display: none;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                        <div style="font-weight: 600;">🎤 Nota de voz</div>
+                        <div style="display: flex; gap: 4px;">
+                            <button type="button" id="btnShareAudio" class="btn-icon-small" title="Compartir">
+                                📤
+                            </button>
+                            <button type="button" id="btnDeleteAudio" class="btn-icon-small" title="Eliminar">
+                                🗑️
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="audio-progress-container">
+                        <div id="audioProgressBar" class="audio-progress-bar"></div>
+                    </div>
+
+                    <div style="display: flex; justify-content: center; margin-top: 12px;">
+                        <button type="button" id="btnPlayPause" class="btn-icon-large">
+                            ▶️
+                        </button>
+                    </div>
+
+                    <div id="audioDuration" style="text-align: center; font-size: 0.85rem; color: var(--text-muted); margin-top: 8px;">
+                        00:00
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal Foto / Imagen -->
+        <div id="photoModal" class="modal">
+            <div class="modal-content" style="max-width: 520px;">
+                <button class="close-btn" onclick="closeModal('photoModal')">×</button>
+                <h3>📷 Foto / Imagen</h3>
+                <p style="color: var(--text-muted); margin-bottom: 16px; font-size: 0.9rem;">
+                    Añade una foto para complementar este registro. Puedes tomarla ahora o elegirla desde tu galería.
+                </p>
+
+                <div id="photoPreview" class="photo-modal-preview empty">
+                    <div style="font-size: 2rem;">🖼️</div>
+                    <div>No hay imagen adjunta todavía</div>
+                </div>
+
+                <div class="photo-modal-actions">
+                    <button type="button" id="btnCapturePhoto" class="btn-primary">📸 Tomar foto</button>
+                    <button type="button" id="btnPickPhoto" class="btn-outline">🖼️ Elegir de galería</button>
+                </div>
+
+                <div id="photoExtraActions" class="photo-extra-actions" style="display: none;">
+                    <button type="button" id="btnViewPhoto" class="btn-secondary">👁️ Ver</button>
+                    <button type="button" id="btnSharePhoto" class="btn-secondary">📤 Compartir</button>
+                    <button type="button" id="btnDeletePhoto" class="btn-danger">🗑️ Eliminar</button>
+                </div>
             </div>
         </div>
 
@@ -3512,6 +3707,7 @@
             // VARIABLES GLOBALES DE AUDIO
             // ========================================
             let currentAudioFilename = null;  // Nombre del archivo de audio actual
+            let currentPhotoFilename = null;  // Nombre del archivo de foto actual
             let recordingTimerInterval = null;  // Intervalo del timer de grabación
             let isPlaying = false;  // Estado de reproducción
 
@@ -3703,6 +3899,10 @@
                 const recordingCard = document.getElementById('recordingCard');
                 const playerCard = document.getElementById('audioPlayerCard');
 
+                if (!btnStart || !recordingCard || !playerCard) {
+                    return;
+                }
+
                 // Ocultar todo primero
                 btnStart.style.display = 'none';
                 recordingCard.style.display = 'none';
@@ -3718,6 +3918,8 @@
                     updatePlayButton('▶️');
                     updateAudioProgress(0);
                 }
+
+                updateVoiceNoteCard();
             }
 
             /**
@@ -3751,6 +3953,198 @@
                     durationEl.textContent = `${current} / ${total}`;
                 }
             }
+
+            /**
+             * Actualiza el estado visual de la tarjeta de nota de voz
+             */
+            function updateVoiceNoteCard() {
+                const card = document.getElementById('voiceNoteCard');
+                const subtitle = document.getElementById('voiceNoteCardSubtitle');
+                const footer = document.getElementById('voiceNoteCardFooter');
+
+                if (!card || !subtitle || !footer) return;
+
+                if (currentAudioFilename) {
+                    card.classList.add('has-attachment');
+                    subtitle.textContent = 'Nota de voz lista';
+                    footer.textContent = 'Pulsa para escuchar o eliminar';
+                } else {
+                    card.classList.remove('has-attachment');
+                    subtitle.textContent = 'Sin nota de voz';
+                    footer.textContent = 'Pulsa para grabar o escuchar';
+                }
+            }
+
+            /**
+             * Abre el modal de nota de voz sincronizando el estado previo
+             */
+            function openAudioModal() {
+                updateAudioUI(currentAudioFilename ? 'player' : 'initial');
+                updateVoiceNoteCard();
+                openModal('audioModal');
+            }
+
+            /**
+             * Actualiza la tarjeta de foto adjunta
+             */
+            function updatePhotoCard() {
+                const card = document.getElementById('photoAttachmentCard');
+                const subtitle = document.getElementById('photoCardSubtitle');
+                const footer = document.getElementById('photoCardFooter');
+
+                if (!card || !subtitle || !footer) return;
+
+                if (currentPhotoFilename) {
+                    card.classList.add('has-attachment');
+                    subtitle.textContent = 'Imagen adjunta lista';
+                    footer.textContent = 'Pulsa para verla o cambiarla';
+                } else {
+                    card.classList.remove('has-attachment');
+                    subtitle.textContent = 'Sin imagen adjunta';
+                    footer.textContent = 'Captura o selecciona una imagen';
+                }
+            }
+
+            /**
+             * Actualiza la vista previa del modal de foto y sus acciones
+             */
+            function updatePhotoModalControls() {
+                const preview = document.getElementById('photoPreview');
+                const extraActions = document.getElementById('photoExtraActions');
+
+                if (!preview) return;
+
+                if (!currentPhotoFilename) {
+                    if (extraActions) extraActions.style.display = 'none';
+                    preview.classList.add('empty');
+                    preview.innerHTML = `
+                        <div style="font-size: 2rem;">🖼️</div>
+                        <div>No hay imagen adjunta todavía</div>
+                    `;
+                    return;
+                }
+
+                if (extraActions) extraActions.style.display = 'flex';
+                preview.classList.remove('empty');
+
+                try {
+                    const dataUrl = (typeof Android !== 'undefined' && Android.getPhotoPreview)
+                        ? Android.getPhotoPreview(currentPhotoFilename)
+                        : '';
+
+                    if (dataUrl) {
+                        preview.innerHTML = `<img src="${dataUrl}" alt="Foto adjunta">`;
+                    } else {
+                        preview.classList.add('empty');
+                        preview.innerHTML = `
+                            <div style="font-size: 2rem;">🖼️</div>
+                            <div>No se pudo cargar la vista previa</div>
+                        `;
+                    }
+                } catch (error) {
+                    console.error('Error obteniendo vista previa de la foto:', error);
+                    preview.classList.add('empty');
+                    preview.innerHTML = `
+                        <div style="font-size: 2rem;">⚠️</div>
+                        <div>No se pudo cargar la vista previa</div>
+                    `;
+                }
+            }
+
+            /**
+             * Abre el modal de foto asegurando que la vista previa esté actualizada
+             */
+            function openPhotoModal() {
+                updatePhotoCard();
+                updatePhotoModalControls();
+                openModal('photoModal');
+            }
+
+            /**
+             * Inicia la captura de foto con la cámara
+             */
+            function capturePhotoFromCamera() {
+                if (typeof Android === 'undefined' || !Android.capturePhoto) {
+                    showCustomAlert('Esta función solo está disponible en Android.', '❌ No disponible');
+                    return;
+                }
+                Android.capturePhoto();
+            }
+
+            /**
+             * Permite elegir una imagen desde la galería
+             */
+            function pickPhotoFromGallery() {
+                if (typeof Android === 'undefined' || !Android.pickPhotoFromGallery) {
+                    showCustomAlert('Esta función solo está disponible en Android.', '❌ No disponible');
+                    return;
+                }
+                Android.pickPhotoFromGallery();
+            }
+
+            function viewPhotoAttachment() {
+                if (!currentPhotoFilename) {
+                    showCustomAlert('No hay ninguna imagen adjunta todavía.', '📷 Sin imagen');
+                    return;
+                }
+                if (typeof Android !== 'undefined' && Android.viewPhoto) {
+                    Android.viewPhoto(currentPhotoFilename);
+                }
+            }
+
+            function sharePhotoAttachment() {
+                if (!currentPhotoFilename) {
+                    showCustomAlert('No hay ninguna imagen adjunta que compartir.', '📷 Sin imagen');
+                    return;
+                }
+                if (typeof Android !== 'undefined' && Android.sharePhoto) {
+                    Android.sharePhoto(currentPhotoFilename);
+                }
+            }
+
+            function deletePhotoAttachment() {
+                if (!currentPhotoFilename) {
+                    showCustomAlert('No hay ninguna imagen adjunta que eliminar.', '📷 Sin imagen');
+                    return;
+                }
+
+                showCustomConfirm(
+                    '¿Eliminar la imagen adjunta?',
+                    '🗑️ Eliminar foto',
+                    () => {
+                        if (typeof Android !== 'undefined' && Android.deletePhoto) {
+                            const result = Android.deletePhoto(currentPhotoFilename);
+                            if (result === 'OK') {
+                                currentPhotoFilename = null;
+                                updatePhotoCard();
+                                updatePhotoModalControls();
+                                Android.showToast('🗑️ Foto eliminada');
+                            } else {
+                                showCustomAlert(result || 'No se pudo eliminar la foto.', '❌ Error');
+                            }
+                        }
+                    }
+                );
+            }
+
+            window.onPhotoCaptured = function(filename) {
+                if (!filename) {
+                    return;
+                }
+                currentPhotoFilename = filename;
+                updatePhotoCard();
+                updatePhotoModalControls();
+                if (typeof Android !== 'undefined' && Android.showToast) {
+                    Android.showToast('📷 Foto guardada');
+                }
+            };
+
+            window.onPhotoCaptureError = function(message) {
+                console.error('Error capturando foto:', message);
+                if (message) {
+                    showCustomAlert(message, '❌ Error al capturar foto');
+                }
+            };
 
             /**
              * Timer de grabación (actualiza cada 1 segundo)
@@ -3822,6 +4216,7 @@
                             setting: entry.setting || '',
                             notes: entry.notes || '',
                             audioPath: entry.audioPath || null,
+                            photoPath: entry.photoPath || null,
                             createdAt: entry.createdAt || new Date().toISOString(),
                             updatedAt: entry.updatedAt || ''
                         }));
@@ -3858,8 +4253,85 @@
                     localStorage.setItem('substances', JSON.stringify(substances));
                     localStorage.setItem('entries', JSON.stringify(entries));
                     localStorage.setItem('userProfile', JSON.stringify(userProfile));
+                    notifyBackupDataChanged();
                 } catch (error) {
                     console.error('Error guardando datos:', error);
+                }
+            }
+
+            function safeParseJSON(rawValue, fallback) {
+                if (!rawValue) {
+                    return fallback;
+                }
+                try {
+                    return JSON.parse(rawValue);
+                } catch (error) {
+                    console.warn('No se pudo parsear JSON, usando fallback.', error);
+                    return fallback;
+                }
+            }
+
+            function collectBackupPayload() {
+                return {
+                    substances: substances,
+                    entries: entries,
+                    userProfile: userProfile,
+                    customUnits: safeParseJSON(localStorage.getItem('psychologger_custom_units'), {}),
+                    customSets: safeParseJSON(localStorage.getItem('psychologger_custom_sets'), []),
+                    customSettings: safeParseJSON(localStorage.getItem('psychologger_custom_settings'), []),
+                    timestamp: new Date().toISOString(),
+                    version: '1.0'
+                };
+            }
+
+            function notifyBackupDataChanged() {
+                try {
+                    if (window.Android && typeof Android.cacheLocalStorageSnapshot === 'function') {
+                        const payload = collectBackupPayload();
+                        Android.cacheLocalStorageSnapshot(JSON.stringify(payload));
+                    }
+                } catch (error) {
+                    console.error('Error al notificar snapshot de backup:', error);
+                }
+            }
+
+            function refreshBackupStatus() {
+                const statusEl = document.getElementById('backupStatusText');
+                const pathEl = document.getElementById('backupPathText');
+                if (!statusEl || !pathEl) return;
+
+                let fallbackPath = 'Android/data/com.d4vram.psychologger/files/backups';
+
+                try {
+                    if (window.Android && typeof Android.getBackupsDirectory === 'function') {
+                        const actualPath = Android.getBackupsDirectory();
+                        if (actualPath) {
+                            fallbackPath = actualPath;
+                        }
+                    }
+                } catch (error) {
+                    console.warn('No se pudo obtener la carpeta de backups:', error);
+                }
+
+                pathEl.textContent = fallbackPath;
+
+                try {
+                    if (window.Android && typeof Android.getLastBackupInfo === 'function') {
+                        const raw = Android.getLastBackupInfo();
+                        if (!raw) {
+                            statusEl.textContent = 'Aún no se ha generado un backup.';
+                            return;
+                        }
+                        const info = JSON.parse(raw);
+                        const typeLabel = info.type === 'auto' ? 'Automático' : 'Manual';
+                        const formatted = info.formattedDate || new Date(info.timestamp).toLocaleString();
+                        statusEl.textContent = `${typeLabel} · ${formatted}`;
+                    } else {
+                        statusEl.textContent = 'Aún no se ha generado un backup.';
+                    }
+                } catch (error) {
+                    console.error('Error al consultar el estado del backup:', error);
+                    statusEl.textContent = 'No se pudo leer el estado del backup.';
                 }
             }
 
@@ -4054,6 +4526,7 @@
         document.addEventListener('DOMContentLoaded', function() {
             initializeApp();
             setupEventListeners();
+            refreshBackupStatus();
         });
 
                  function initializeApp() {
@@ -4082,6 +4555,9 @@
                      currentSelectedDate = new Date(localDateTime);
                      updateDateTimeDisplay();
                  }
+
+                 // Mantener snapshot actualizado aun después de la carga inicial
+                 notifyBackupDataChanged();
              } catch (error) {
                  console.error('Error initializing app:', error);
                  showCustomAlert(`Error al inicializar la aplicación: ${error.message}`, '❌ Error de Inicialización');
@@ -4149,6 +4625,25 @@
 
             // Inicializar UI de audio
             updateAudioUI('initial');
+
+            const btnCapturePhoto = document.getElementById('btnCapturePhoto');
+            if (btnCapturePhoto) btnCapturePhoto.addEventListener('click', capturePhotoFromCamera);
+
+            const btnPickPhoto = document.getElementById('btnPickPhoto');
+            if (btnPickPhoto) btnPickPhoto.addEventListener('click', pickPhotoFromGallery);
+
+            const btnViewPhoto = document.getElementById('btnViewPhoto');
+            if (btnViewPhoto) btnViewPhoto.addEventListener('click', viewPhotoAttachment);
+
+            const btnSharePhoto = document.getElementById('btnSharePhoto');
+            if (btnSharePhoto) btnSharePhoto.addEventListener('click', sharePhotoAttachment);
+
+            const btnDeletePhoto = document.getElementById('btnDeletePhoto');
+            if (btnDeletePhoto) btnDeletePhoto.addEventListener('click', deletePhotoAttachment);
+
+            updateVoiceNoteCard();
+            updatePhotoCard();
+            updatePhotoModalControls();
         }
 
         // Navigation functions
@@ -4189,6 +4684,8 @@
             // Regenerate content for specific views
             if (viewName === 'stats') {
                 renderStats();
+            } else if (viewName === 'data') {
+                refreshBackupStatus();
             }
         }
 
@@ -4228,7 +4725,9 @@
         function closeModal(modalId) {
             document.getElementById(modalId).classList.remove('active');
             document.body.style.overflow = ''; // Restore background scrolling
-            resetEditMode(); // Always reset edit mode when closing entry modal
+            if (modalId === 'entryModal') {
+                resetEditMode(); // Solo resetear el formulario principal
+            }
         }
 
         // ===== FUNCIONES DEL DATETIME PICKER PERSONALIZADO =====
@@ -4659,6 +5158,13 @@
                             ${entry.set ? `<div class="entry-meta">🧠 Set: ${entry.set}</div>` : ''}
                             ${entry.setting ? `<div class="entry-meta">🏞️ Setting: ${entry.setting}</div>` : ''}
                             ${entry.notes ? `<div class="entry-notes">📝 ${entry.notes}</div>` : ''}
+                            ${(entry.audioPath || entry.photoPath) ? `
+                                <div class="entry-meta">
+                                    📎 Adjuntos:
+                                    ${entry.audioPath ? '<span style="margin-left:4px;">🎤 Nota de voz</span>' : ''}
+                                    ${entry.photoPath ? '<span style="margin-left:8px;">📷 Foto</span>' : ''}
+                                </div>
+                            ` : ''}
                             <div class="entry-actions" style="margin-top: 0.5rem;">
                                 <button class="btn-edit" data-entry-id="${entry.id}">✏️ Editar</button>
                                 <button class="btn-delete" data-entry-id="${entry.id}">🗑️ Eliminar</button>
@@ -4754,27 +5260,32 @@
             isEditMode = true;
             currentEditingEntryId = entryId;
 
-            populateSubstanceDropdown();
-
-            const substanceHeaderText = document.querySelector('#entrySubstanceDropdown .dropdown-text');
-            const substanceHiddenInput = document.getElementById('entrySubstance');
-            if (substanceHeaderText && substanceHiddenInput) {
-                substanceHiddenInput.value = entry.substance;
-                substanceHeaderText.textContent = `${getSubstanceEmoji(entry.substance)} ${entry.substance}`;
+            const modalTitle = document.getElementById('entryModalTitle');
+            if (modalTitle) {
+                modalTitle.textContent = 'Editar Registro';
             }
+
+            populateSubstanceDropdown();
+            restoreDropdownSelection('entrySubstanceDropdown', entry.substance, 'Selecciona una sustancia...');
 
             openModal('entryModal'); // tras esto aún puede tardar 1 frame
 
             waitForElement('entryDose',      el => el.value = entry.dose);
-            waitForElement('entryUnit',      el => el.value = entry.unit);
+            waitForElement('entryUnitDropdown', () => {
+                restoreDropdownSelection('entryUnitDropdown', entry.unit, 'Seleccionar unidad...');
+            });
             waitForElement('entryDateTime',  el => {
                 el.value = entry.date;
                 // Actualizar también el display personalizado cuando se edita
                 currentSelectedDate = new Date(entry.date);
                 updateDateTimeDisplay();
             });
-            waitForElement('entrySet',       el => el.value = entry.set || '');
-            waitForElement('entrySetting',   el => el.value = entry.setting || '');
+            waitForElement('entrySetDropdown', () => {
+                restoreDropdownSelection('entrySetDropdown', entry.set || '', 'Seleccionar...');
+            });
+            waitForElement('entrySettingDropdown', () => {
+                restoreDropdownSelection('entrySettingDropdown', entry.setting || '', 'Seleccionar...');
+            });
             waitForElement('entryNotes',     el => el.value = entry.notes || '');
 
             // Cargar audio si existe
@@ -4785,6 +5296,14 @@
                 currentAudioFilename = null;
                 updateAudioUI('initial');
             }
+
+            if (entry.photoPath) {
+                currentPhotoFilename = entry.photoPath;
+            } else {
+                currentPhotoFilename = null;
+            }
+            updatePhotoCard();
+            updatePhotoModalControls();
 
             const submitBtn = document.querySelector('#entryForm button[type="submit"]');
             if (submitBtn) {
@@ -4811,6 +5330,9 @@
                      // Eliminar archivo de audio si existe
                      if (entry.audioPath) {
                          Android.deleteAudio(entry.audioPath);
+                     }
+                     if (entry.photoPath && Android.deletePhoto) {
+                         Android.deletePhoto(entry.photoPath);
                      }
 
                      entries = entries.filter(e => e.id !== entryId); // Use !== for strict comparison
@@ -5012,6 +5534,11 @@
             isEditMode = false;
             currentEditingEntryId = null;
 
+            const modalTitle = document.getElementById('entryModalTitle');
+            if (modalTitle) {
+                modalTitle.textContent = 'Nuevo Registro';
+            }
+
             const submitBtn = document.querySelector('#entryForm button[type="submit"]');
             if (submitBtn) {
                 submitBtn.innerHTML = '💾 Guardar Registro';
@@ -5031,6 +5558,11 @@
             }
             currentAudioFilename = null;
             updateAudioUI('initial');
+            updateVoiceNoteCard();
+
+            currentPhotoFilename = null;
+            updatePhotoCard();
+            updatePhotoModalControls();
 
             // Fecha y hora por defecto: ahora (local)
             const now = new Date();
@@ -5332,7 +5864,8 @@
                     set: set || null, // Store null if empty
                     setting: setting || null, // Store null if empty
                     notes: notes || null, // Store null if empty
-                    audioPath: currentAudioFilename || entries[existingEntryIndex].audioPath || null, // Mantener audio existente o actualizar
+                    audioPath: currentAudioFilename || entries[existingEntryIndex].audioPath || null,
+                    photoPath: currentPhotoFilename || entries[existingEntryIndex].photoPath || null,
                     updatedAt: new Date().toISOString()
                 };
 
@@ -5355,7 +5888,8 @@
                    set: set || null,
                    setting: setting || null,
                    notes: notes || null,
-                   audioPath: currentAudioFilename || null, // Guardar audio si existe
+                   audioPath: currentAudioFilename || null,
+                   photoPath: currentPhotoFilename || null,
                    createdAt: new Date().toISOString()
                };
                entries.push(entry);
@@ -5914,19 +6448,15 @@
         function createManualBackup() {
             try {
                 // Recopilar todos los datos de localStorage
-                const backupData = {
-                    substances: substances,
-                    entries: entries,
-                    userProfile: userProfile,
-                    customUnits: localStorage.getItem('customUnits'),
-                    customSets: localStorage.getItem('customSets'),
-                    customSettings: localStorage.getItem('customSettings'),
-                    timestamp: new Date().toISOString(),
-                    version: '1.0'
-                };
+                const backupData = collectBackupPayload();
 
                 // Convertir a JSON
                 const jsonString = JSON.stringify(backupData, null, 2);
+
+                if (!window.Android || typeof Android.createManualBackup !== 'function') {
+                    showCustomAlert('La función de backup manual solo está disponible en Android.', 'ℹ️ Información');
+                    return;
+                }
 
                 // Llamar a Android
                 const result = Android.createManualBackup(jsonString);
@@ -5934,6 +6464,7 @@
                 if (result.startsWith('OK:')) {
                     const filename = result.substring(3);
                     console.log('Backup creado:', filename);
+                    refreshBackupStatus();
                 } else {
                     console.error('Error en backup:', result);
                 }
@@ -6432,6 +6963,54 @@
 
             // === FUNCIONES PARA UNIDADES PERSONALIZADAS ===
 
+            function restoreDropdownSelection(dropdownId, storedValue, fallbackText = 'Seleccionar...') {
+                const dropdown = document.getElementById(dropdownId);
+                if (!dropdown) return;
+
+                const headerText = dropdown.querySelector('.dropdown-text');
+                const hiddenInput = dropdown.querySelector('input[type="hidden"]');
+                const options = dropdown.querySelectorAll('.dropdown-option');
+
+                options.forEach(option => option.classList.remove('selected'));
+
+                if (!storedValue) {
+                    if (headerText) headerText.textContent = fallbackText;
+                    if (hiddenInput) hiddenInput.value = '';
+                    return;
+                }
+
+                let matchedOption = null;
+                options.forEach(option => {
+                    const optionLabel = option.querySelector('.option-text')?.textContent?.trim() || option.textContent.trim();
+                    const optionValue = option.dataset.value || '';
+
+                    if (optionValue === storedValue) {
+                        matchedOption = option;
+                    } else if (!matchedOption && optionLabel.toLowerCase() === storedValue.toLowerCase()) {
+                        matchedOption = option;
+                    }
+                });
+
+                if (matchedOption) {
+                    matchedOption.classList.add('selected');
+                    const emoji = matchedOption.querySelector('.option-emoji')?.textContent?.trim() || '';
+                    const text = matchedOption.querySelector('.option-text')?.textContent?.trim() || matchedOption.textContent.trim();
+
+                    if (headerText) headerText.textContent = emoji ? `${emoji} ${text}` : text;
+
+                    if (hiddenInput) {
+                        if ((matchedOption.dataset.value || '').startsWith('custom_')) {
+                            hiddenInput.value = text;
+                        } else {
+                            hiddenInput.value = matchedOption.dataset.value;
+                        }
+                    }
+                } else {
+                    if (headerText) headerText.textContent = storedValue;
+                    if (hiddenInput) hiddenInput.value = storedValue;
+                }
+            }
+
             // Función para agregar unidad personalizada
             function addCustomUnit(category, buttonElement) {
                 const container = buttonElement.closest('.custom-input-container');
@@ -6530,6 +7109,7 @@
                 if (!customUnits[category].includes(unitName)) {
                     customUnits[category].push(unitName);
                     localStorage.setItem('psychologger_custom_units', JSON.stringify(customUnits));
+                    notifyBackupDataChanged();
                 }
             }
             
@@ -6590,6 +7170,7 @@
                     if (index !== -1) {
                         customUnits[category][index] = trimmedName;
                         localStorage.setItem('psychologger_custom_units', JSON.stringify(customUnits));
+                        notifyBackupDataChanged();
                     }
                 }
 
@@ -6632,6 +7213,7 @@
                     if (index !== -1) {
                         customUnits[category].splice(index, 1);
                         localStorage.setItem('psychologger_custom_units', JSON.stringify(customUnits));
+                        notifyBackupDataChanged();
                     }
                 }
 
@@ -6650,6 +7232,7 @@
                     if (index !== -1) {
                         customUnits[category].splice(index, 1);
                         localStorage.setItem('psychologger_custom_units', JSON.stringify(customUnits));
+                        notifyBackupDataChanged();
                         return true;
                     }
                 }
@@ -6830,6 +7413,7 @@
                 if (!customSets.includes(setName)) {
                     customSets.push(setName);
                     localStorage.setItem('psychologger_custom_sets', JSON.stringify(customSets));
+                    notifyBackupDataChanged();
                 }
             }
 
@@ -6838,6 +7422,7 @@
                 if (!customSettings.includes(settingName)) {
                     customSettings.push(settingName);
                     localStorage.setItem('psychologger_custom_settings', JSON.stringify(customSettings));
+                    notifyBackupDataChanged();
                 }
             }
 
@@ -6859,6 +7444,7 @@
                 if (index !== -1) {
                     customSets[index] = trimmedName;
                     localStorage.setItem('psychologger_custom_sets', JSON.stringify(customSets));
+                    notifyBackupDataChanged();
                 }
                 const optionElement = buttonElement.closest('.dropdown-option.custom-unit');
                 optionElement.setAttribute('data-value', `custom_set_${trimmedName}`);
@@ -6891,6 +7477,7 @@
                 if (index !== -1) {
                     customSettings[index] = trimmedName;
                     localStorage.setItem('psychologger_custom_settings', JSON.stringify(customSettings));
+                    notifyBackupDataChanged();
                 }
                 const optionElement = buttonElement.closest('.dropdown-option.custom-unit');
                 optionElement.setAttribute('data-value', `custom_setting_${trimmedName}`);
@@ -6912,6 +7499,7 @@
                 if (index !== -1) {
                     customSets.splice(index, 1);
                     localStorage.setItem('psychologger_custom_sets', JSON.stringify(customSets));
+                    notifyBackupDataChanged();
                 }
                 buttonElement.closest('.dropdown-option.custom-unit').remove();
                 showAlert('✅ Estado Mental Eliminado', `El estado mental "${setName}" ha sido eliminado correctamente.`);
@@ -6924,6 +7512,7 @@
                 if (index !== -1) {
                     customSettings.splice(index, 1);
                     localStorage.setItem('psychologger_custom_settings', JSON.stringify(customSettings));
+                    notifyBackupDataChanged();
                 }
                 buttonElement.closest('.dropdown-option.custom-unit').remove();
                 showAlert('✅ Entorno Eliminado', `El entorno "${settingName}" ha sido eliminado correctamente.`);
