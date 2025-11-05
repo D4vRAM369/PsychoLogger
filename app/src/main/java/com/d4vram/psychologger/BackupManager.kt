@@ -1,10 +1,13 @@
 package com.d4vram.psychologger
 
 import android.content.Context
+import android.net.Uri
 import android.util.Log
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
+import java.io.BufferedInputStream
+import java.io.BufferedOutputStream
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
@@ -12,6 +15,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import java.util.zip.ZipEntry
+import java.util.zip.ZipInputStream
 import java.util.zip.ZipOutputStream
 import javax.crypto.Cipher
 import javax.crypto.CipherOutputStream
@@ -252,6 +256,110 @@ class BackupManager(private val context: Context) {
     }
 
     /**
+     * Resultado de restaurar un backup
+     */
+    data class RestoreResult(
+        val success: Boolean,
+        val dataJson: String? = null,
+        val restoredAudios: Int = 0,
+        val restoredPhotos: Int = 0,
+        val message: String? = null
+    )
+
+    /**
+     * Restaurar un backup ZIP seleccionado por el usuario
+     *
+     * @param uri Uri del archivo ZIP seleccionado (usualmente vía SAF)
+     * @return RestoreResult con la información necesaria para sincronizar la UI
+     */
+    fun restoreBackup(uri: Uri): RestoreResult {
+        val resolver = context.contentResolver
+        val tempRoot = File(context.cacheDir, "restore_tmp").apply {
+            if (exists()) {
+                deleteRecursively()
+            }
+            mkdirs()
+        }
+        val tempAudioDir = File(tempRoot, "audio_notes").apply { mkdirs() }
+        val tempPhotoDir = File(tempRoot, "entry_photos").apply { mkdirs() }
+
+        return try {
+            var dataJson: String? = null
+            var restoredAudios = 0
+            var restoredPhotos = 0
+
+            resolver.openInputStream(uri)?.use { inputStream ->
+                ZipInputStream(BufferedInputStream(inputStream)).use { zipIn ->
+                    var entry = zipIn.nextEntry
+                    val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
+
+                    while (entry != null) {
+                        val entryName = entry.name ?: ""
+
+                        when {
+                            entry.isDirectory -> {
+                                // No hacemos nada con directorios vacíos
+                            }
+                            entryName.equals("data.json", ignoreCase = true) -> {
+                                dataJson = zipIn.readBytes().toString(Charsets.UTF_8)
+                            }
+                            entryName.startsWith("audios/") -> {
+                                val fileName = sanitizeEntryName(entryName.substringAfter('/'))
+                                if (!fileName.isNullOrBlank()) {
+                                    val targetFile = File(tempAudioDir, fileName)
+                                    writeZipEntryToFile(zipIn, targetFile, buffer)
+                                    restoredAudios++
+                                }
+                            }
+                            entryName.startsWith("photos/") -> {
+                                val fileName = sanitizeEntryName(entryName.substringAfter('/'))
+                                if (!fileName.isNullOrBlank()) {
+                                    val targetFile = File(tempPhotoDir, fileName)
+                                    writeZipEntryToFile(zipIn, targetFile, buffer)
+                                    restoredPhotos++
+                                }
+                            }
+                            else -> {
+                                Log.d(TAG, "Entrada desconocida en backup: $entryName")
+                            }
+                        }
+
+                        zipIn.closeEntry()
+                        entry = zipIn.nextEntry
+                    }
+                }
+            } ?: return RestoreResult(
+                success = false,
+                message = "No se pudo abrir el archivo seleccionado"
+            )
+
+            if (dataJson.isNullOrBlank()) {
+                return RestoreResult(success = false, message = "El backup no contiene data.json")
+            }
+
+            // Reemplazar contenido actual con lo extraído en temporal
+            replaceDirectoryContents(audioNotesDir, tempAudioDir)
+            replaceDirectoryContents(photoDir, tempPhotoDir)
+
+            // Actualizar snapshot para futuros autobackups
+            saveLocalStorageSnapshot(dataJson!!)
+
+            RestoreResult(
+                success = true,
+                dataJson = dataJson,
+                restoredAudios = restoredAudios,
+                restoredPhotos = restoredPhotos,
+                message = "Backup restaurado correctamente"
+            )
+        } catch (e: Exception) {
+            Log.e(TAG, "Error al restaurar backup", e)
+            RestoreResult(success = false, message = e.message ?: "Error al restaurar backup")
+        } finally {
+            tempRoot.deleteRecursively()
+        }
+    }
+
+    /**
      * Crear backup con datos de localStorage (llamado desde JavaScript)
      *
      * @param localStorageData JSON string con todo el localStorage
@@ -325,6 +433,35 @@ class BackupManager(private val context: Context) {
 
         } catch (e: Exception) {
             Log.e(TAG, "Error al exportar audios", e)
+            null
+        }
+    }
+
+    /**
+     * Exportar todas las fotos en un ZIP
+     */
+    fun exportPhotosZip(): File? {
+        return try {
+            val timestamp = SimpleDateFormat("yyyy-MM-dd_HH-mm-ss", Locale.getDefault()).format(Date())
+            val zipFile = File(context.cacheDir, "photos_$timestamp.zip")
+
+            ZipOutputStream(FileOutputStream(zipFile)).use { zipOut ->
+                val photoFiles = photoDir.listFiles()?.filter { it.isFile } ?: emptyList()
+                photoFiles.forEach { photo ->
+                    try {
+                        val entry = ZipEntry("photos/${photo.name}")
+                        zipOut.putNextEntry(entry)
+                        FileInputStream(photo).use { input -> input.copyTo(zipOut) }
+                        zipOut.closeEntry()
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Error al añadir foto ${photo.name} al ZIP", e)
+                    }
+                }
+            }
+
+            zipFile
+        } catch (e: Exception) {
+            Log.e(TAG, "Error al exportar fotos", e)
             null
         }
     }
@@ -499,6 +636,54 @@ class BackupManager(private val context: Context) {
      */
     private fun bytesToHex(bytes: ByteArray): String {
         return bytes.joinToString("") { "%02x".format(it) }
+    }
+
+    private fun writeZipEntryToFile(zipIn: ZipInputStream, targetFile: File, buffer: ByteArray) {
+        targetFile.parentFile?.let {
+            if (!it.exists()) {
+                it.mkdirs()
+            }
+        }
+
+        FileOutputStream(targetFile).use { output ->
+            BufferedOutputStream(output).use { buffered ->
+                var bytesRead = zipIn.read(buffer)
+                while (bytesRead != -1) {
+                    buffered.write(buffer, 0, bytesRead)
+                    bytesRead = zipIn.read(buffer)
+                }
+                buffered.flush()
+            }
+        }
+    }
+
+    private fun replaceDirectoryContents(targetDir: File, sourceDir: File) {
+        if (!targetDir.exists()) {
+            targetDir.mkdirs()
+        } else {
+            targetDir.listFiles()?.forEach { file ->
+                if (!file.deleteRecursively()) {
+                    Log.w(TAG, "No se pudo eliminar ${file.name} antes de restaurar backup")
+                }
+            }
+        }
+
+        sourceDir.listFiles()?.forEach { sourceFile ->
+            val destination = File(targetDir, sourceFile.name)
+            try {
+                sourceFile.copyTo(destination, overwrite = true)
+            } catch (e: Exception) {
+                Log.e(TAG, "No se pudo copiar ${sourceFile.name} al directorio definitivo", e)
+            }
+        }
+    }
+
+    private fun sanitizeEntryName(rawName: String): String? {
+        val candidate = rawName.substringAfterLast('/').trim()
+        if (candidate.isEmpty() || candidate.contains("..")) {
+            return null
+        }
+        return candidate
     }
 
     /**

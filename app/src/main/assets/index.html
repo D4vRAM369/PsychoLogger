@@ -2887,9 +2887,19 @@
                         <button class="btn-primary" onclick="createManualBackup()">🗄️ Crear Backup</button>
                     </div>
                     <div class="resource-card">
+                        <h4>📥 Importar Backup</h4>
+                        <p>Restaura datos, audios y fotos desde un ZIP previamente exportado.</p>
+                        <button class="btn-secondary" onclick="promptBackupImport()">📥 Importar Backup</button>
+                    </div>
+                    <div class="resource-card">
                         <h4>🎤 Exportar Audios</h4>
                         <p>Exportar todas las notas de voz en ZIP</p>
                         <button class="btn-primary" onclick="openAudioExportModal()">📦 Exportar ZIP</button>
+                    </div>
+                    <div class="resource-card">
+                        <h4>📸 Exportar Fotos</h4>
+                        <p>Descargar todas las imágenes adjuntas en un ZIP</p>
+                        <button class="btn-primary" onclick="exportPhotosZip()">🗂️ Exportar Fotos</button>
                     </div>
                 </div>
             </div>
@@ -4741,8 +4751,16 @@
         }
 
         function closeModal(modalId) {
-            document.getElementById(modalId).classList.remove('active');
-            document.body.style.overflow = ''; // Restore background scrolling
+            const modal = document.getElementById(modalId);
+            if (!modal) {
+                return;
+            }
+
+            modal.classList.remove('active');
+
+            const anyActiveModal = document.querySelector('.modal.active');
+            document.body.style.overflow = anyActiveModal ? 'hidden' : '';
+
             if (modalId === 'entryModal') {
                 resetEditMode(); // Solo resetear el formulario principal
             }
@@ -6555,6 +6573,107 @@
             }
         }
 
+        /**
+         * Exportar todas las fotos en un ZIP
+         */
+        function exportPhotosZip() {
+            if (!window.Android || typeof Android.exportPhotosZip !== 'function') {
+                showCustomAlert('Esta función solo está disponible en Android.', 'ℹ️ Información');
+                return;
+            }
+
+            try {
+                const result = Android.exportPhotosZip();
+                if (result !== 'OK') {
+                    console.error('Error exportando fotos:', result);
+                }
+            } catch (error) {
+                console.error('Error exportando fotos:', error);
+                Android.showToast('❌ Error exportando fotos');
+            }
+        }
+
+        /**
+         * Mostrar confirmación e iniciar importación de un backup ZIP
+         */
+        function promptBackupImport() {
+            if (!window.Android || typeof Android.importBackup !== 'function') {
+                showCustomAlert('Importar backup solo está disponible en Android.', 'ℹ️ Información');
+                return;
+            }
+
+            showCustomConfirm(
+                'Esta acción reemplazará tus datos actuales (sustancias, registros, adjuntos).\n\n' +
+                'Te recomendamos crear un backup manual antes de continuar.\n\n' +
+                '¿Quieres importar un archivo de backup ahora?',
+                '📥 Importar Backup',
+                () => Android.importBackup()
+            );
+        }
+
+        /**
+         * Callback desde Android cuando el backup se importó correctamente
+         *
+         * @param payloadJson String con el contenido del data.json del backup
+         * @param infoJson String opcional con información adicional (audios, fotos restauradas)
+         */
+        window.onBackupRestored = function(payloadJson, infoJson) {
+            try {
+                const payload = JSON.parse(payloadJson || '{}');
+                const extraInfo = infoJson ? JSON.parse(infoJson) : {};
+
+                substances = Array.isArray(payload.substances) ? payload.substances : [];
+                entries = Array.isArray(payload.entries) ? payload.entries : [];
+                userProfile = payload.userProfile || {};
+
+                localStorage.setItem('substances', JSON.stringify(substances));
+                localStorage.setItem('entries', JSON.stringify(entries));
+                localStorage.setItem('userProfile', JSON.stringify(userProfile));
+
+                if (payload.customUnits) {
+                    localStorage.setItem('psychologger_custom_units', JSON.stringify(payload.customUnits));
+                }
+                if (payload.customSets) {
+                    localStorage.setItem('psychologger_custom_sets', JSON.stringify(payload.customSets));
+                }
+                if (payload.customSettings) {
+                    localStorage.setItem('psychologger_custom_settings', JSON.stringify(payload.customSettings));
+                }
+
+                saveDataToStorage();
+
+                generateCalendar();
+                renderStats();
+                renderSubstanceList();
+                refreshBackupStatus();
+
+                currentAudioFilename = null;
+                currentPhotoFilename = null;
+                updateVoiceNoteCard();
+                updatePhotoCard();
+                updatePhotoModalControls();
+
+                const restoredAudios = extraInfo && typeof extraInfo.audios === 'number' ? extraInfo.audios : 0;
+                const restoredPhotos = extraInfo && typeof extraInfo.photos === 'number' ? extraInfo.photos : 0;
+                const summary = `✅ Backup importado correctamente.\n\n🎤 Audios restaurados: ${restoredAudios}\n📸 Fotos restauradas: ${restoredPhotos}`;
+
+                showCustomAlert(summary, '📥 Importación completada');
+                switchView('calendar');
+
+            } catch (error) {
+                console.error('Error aplicando backup:', error);
+                showCustomAlert('No se pudo aplicar el backup: ' + error.message, '❌ Error al importar');
+            }
+        };
+
+        /**
+         * Callback desde Android cuando la importación falla
+         */
+        window.onBackupRestoreError = function(message) {
+            const humanMessage = message || 'No se pudo importar el backup seleccionado.';
+            showCustomAlert(humanMessage, '❌ Error al importar backup');
+        };
+
         function openExternalURL(url) {
             // Attempt to open in a new window/tab, which is generally handled by the system browser on mobile
             window.open(url, '_blank', 'noopener,noreferrer');
@@ -6588,9 +6707,7 @@
         // Close modals when clicking outside
         document.addEventListener('click', function(e) {
             if (e.target.classList.contains('modal')) {
-                e.target.classList.remove('active');
-                document.body.style.overflow = '';
-                resetEditMode(); // Reset edit mode when any modal is closed by clicking outside
+                closeModal(e.target.id);
             }
         });
 

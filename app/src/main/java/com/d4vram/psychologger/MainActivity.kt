@@ -47,6 +47,7 @@ import androidx.core.content.FileProvider
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.lifecycleScope
 import com.d4vram.psychologger.ui.screens.LockScreen
 import com.d4vram.psychologger.ui.screens.SettingsScreen
 import com.d4vram.psychologger.ui.screens.AdvancedSettingsScreen
@@ -60,15 +61,20 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class MainActivity : FragmentActivity() {
     private var filePathCallback: ValueCallback<Array<Uri>>? = null
     private lateinit var fileChooserLauncher: ActivityResultLauncher<Intent>
     private lateinit var capturePhotoLauncher: ActivityResultLauncher<Uri>
     private lateinit var pickPhotoLauncher: ActivityResultLauncher<String>
+    private lateinit var importBackupLauncher: ActivityResultLauncher<Array<String>>
     private var pendingPhotoResult: ((PhotoResult) -> Unit)? = null
     private var pendingPhotoFile: File? = null
     private val photoManager by lazy { PhotoManager(this) }
+    private val backupManager by lazy { BackupManager(this) }
     private lateinit var appLockManager: AppLockManager
     var webAppInterface: WebAppInterface? = null
         private set
@@ -146,6 +152,71 @@ class MainActivity : FragmentActivity() {
                 }
             } else {
                 callback?.invoke(PhotoResult(success = false, error = null))
+            }
+        }
+
+        importBackupLauncher = registerForActivityResult(
+            ActivityResultContracts.OpenDocument()
+        ) { uri ->
+            if (uri != null) {
+                try {
+                    contentResolver.takePersistableUriPermission(
+                        uri,
+                        Intent.FLAG_GRANT_READ_URI_PERMISSION
+                    )
+                } catch (_: SecurityException) {
+                    // Algunos proveedores no permiten persistir el permiso; ignorar
+                }
+
+                lifecycleScope.launch {
+                    val result = withContext(Dispatchers.IO) {
+                        backupManager.restoreBackup(uri)
+                    }
+
+                    if (result.success && result.dataJson != null) {
+                        val payloadQuoted = JSONObject.quote(result.dataJson)
+                        val infoJson = JSONObject().apply {
+                            put("audios", result.restoredAudios)
+                            put("photos", result.restoredPhotos)
+                            result.message?.let { put("message", it) }
+                        }.toString()
+                        val infoQuoted = JSONObject.quote(infoJson)
+
+                        executeJavaScript(
+                            """
+                                if (window.onBackupRestored) {
+                                    window.onBackupRestored($payloadQuoted, $infoQuoted);
+                                }
+                            """.trimIndent()
+                        )
+
+                        Toast.makeText(
+                            this@MainActivity,
+                            "✅ Backup importado correctamente",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    } else {
+                        val errorMessage = result.message ?: "No se pudo importar el backup"
+                        executeJavaScript(
+                            """
+                                if (window.onBackupRestoreError) {
+                                    window.onBackupRestoreError(${JSONObject.quote(errorMessage)});
+                                }
+                            """.trimIndent()
+                        )
+                        Toast.makeText(
+                            this@MainActivity,
+                            "❌ $errorMessage",
+                            Toast.LENGTH_LONG
+                        ).show()
+                    }
+                }
+            } else {
+                Toast.makeText(
+                    this@MainActivity,
+                    "Importación cancelada",
+                    Toast.LENGTH_SHORT
+                ).show()
             }
         }
 
@@ -451,6 +522,10 @@ class MainActivity : FragmentActivity() {
 
     fun setWebAppInterface(instance: WebAppInterface) {
         webAppInterface = instance
+    }
+
+    fun startBackupImportFlow() {
+        importBackupLauncher.launch(arrayOf("application/zip", "application/octet-stream"))
     }
 }
 
@@ -1433,6 +1508,14 @@ class WebAppInterface(private val context: Context, private val activity: MainAc
     }
 
     @JavascriptInterface
+    fun importBackup() {
+        activity.runOnUiThread {
+            Toast.makeText(context, "📥 Selecciona un archivo ZIP de backup", Toast.LENGTH_SHORT).show()
+            activity.startBackupImportFlow()
+        }
+    }
+
+    @JavascriptInterface
     fun getLastBackupInfo(): String {
         return try {
             val metadata = backupManager.getLastBackupMetadata() ?: return ""
@@ -1487,6 +1570,40 @@ class WebAppInterface(private val context: Context, private val activity: MainAc
                 "OK"
             } else {
                 "ERROR: No se pudo crear el ZIP"
+            }
+        } catch (e: Exception) {
+            "ERROR: ${e.message}"
+        }
+    }
+
+    @JavascriptInterface
+    fun exportPhotosZip(): String {
+        return try {
+            val zipFile = backupManager.exportPhotosZip()
+
+            if (zipFile != null) {
+                activity.runOnUiThread {
+                    val uri = FileProvider.getUriForFile(
+                        context,
+                        "${context.packageName}.fileprovider",
+                        zipFile
+                    )
+
+                    val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                        type = "application/zip"
+                        putExtra(Intent.EXTRA_STREAM, uri)
+                        putExtra(Intent.EXTRA_SUBJECT, "Fotos - PsychoLogger")
+                        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                    }
+
+                    val chooser = Intent.createChooser(shareIntent, "📸 Exportar fotos")
+                    chooser.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    activity.startActivity(chooser)
+                }
+
+                "OK"
+            } else {
+                "ERROR: No se pudo crear el ZIP de fotos"
             }
         } catch (e: Exception) {
             "ERROR: ${e.message}"
