@@ -2075,8 +2075,199 @@
             }
         }
 
+        /* ========================================
+           ESTILOS GENERALES PARA ADJUNTOS (Audio / Foto)
+           ======================================== */
+        .media-attachments-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 12px;
+            margin-top: 12px;
+        }
+
+        .media-card {
+            border: 2px dashed var(--primary-purple);
+            border-radius: 16px;
+            padding: 18px;
+            background: rgba(139, 92, 246, 0.08); /* primary-purple con alpha */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            min-height: 130px;
+        }
+
+        .media-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 24px rgba(139, 92, 246, 0.25);
+            border-style: solid;
+        }
+
+        .media-card.has-attachment {
+            border-style: solid;
+            background: linear-gradient(
+              135deg,
+              rgba(139, 92, 246, 0.15),   /* primary-purple */
+              rgba(236, 72, 153, 0.12)    /* secondary-pink */
+            );
+        }
+
+        .media-card-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .media-card-icon { font-size: 1.8rem; }
+
+        .media-card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-light);
+        }
+
+        .media-card-subtitle {
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            line-height: 1.4;
+        }
+
+        .media-card-footer {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            font-size: 0.85rem;
+            color: var(--accent-cyan);
+        }
+
+        /* Preview del modal de Foto */
+        .photo-modal-preview {
+            border-radius: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(15, 23, 42, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            aspect-ratio: 4 / 3;
+            margin-bottom: 16px;
+        }
+        .photo-modal-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .photo-modal-preview.empty {
+            flex-direction: column;
+            padding: 24px;
+            gap: 12px;
+            color: var(--text-muted);
+            text-align: center;
+            font-size: 0.95rem;
+        }
+
+        /* Acciones en el modal de Foto */
+        .photo-modal-actions { display: flex; flex-wrap: wrap; gap: 12px; }
+        .photo-modal-actions button { flex: 1 1 200px; }
+        .photo-extra-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 16px; }
+        .photo-extra-actions button { flex: 1 1 140px; }
+        .modal-attachment-actions {
+            display: none;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 16px;
+        }
+        .modal-attachment-actions button {
+            flex: 1 1 150px;
+        }
+
+        /* Botón outline reutilizable */
+        .btn-outline {
+            border: 2px solid var(--primary-purple);
+            background: transparent;
+            color: var(--primary-purple);
+            padding: 12px 16px;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+        .btn-outline:hover {
+            background: rgba(139, 92, 246, 0.12); /* alpha del primary */
+            transform: translateY(-2px);
+        }
+
+        /* Barra de progreso de audio (compartida por UI) */
+        .audio-progress-container {
+            width: 100%;
+            height: 6px;
+            background: rgba(139, 92, 246, 0.2);
+            border-radius: 3px;
+            overflow: hidden;
+            position: relative;
+        }
+        .audio-progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary-purple), var(--secondary-pink));
+            border-radius: 3px;
+            width: 0%;
+            transition: width 0.1s linear;
+        }
+
+        /* Botones de icono */
+        .btn-icon-small {
+            background: rgba(139, 92, 246, 0.15);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            border-radius: 8px;
+            padding: 6px 10px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .btn-icon-small:hover {
+            background: rgba(139, 92, 246, 0.25);
+            transform: scale(1.05);
+        }
+        .btn-icon-small:active { transform: scale(0.95); }
+
+        .btn-icon-large {
+            background: var(--primary-purple);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 48px;
+            height: 48px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4);
+        }
+        .btn-icon-large:hover {
+            background: #7c3aed; /* tono más oscuro del primary-purple */
+            transform: scale(1.1);
+            box-shadow: 0 6px 16px rgba(139, 92, 246, 0.5);
+        }
+        .btn-icon-large:active { transform: scale(1); }
+
+        .btn-icon-danger {
+            background: #ef4444;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 8px 16px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .btn-icon-danger:hover { background: #dc2626; transform: scale(1.05); }
+        .btn-icon-danger:active { transform: scale(0.95); }
+
+
         /* ===== DROPDOWNS PERSONALIZADOS ===== */
-        
         .custom-dropdown {
             position: relative;
             width: 100%;
@@ -2086,9 +2277,9 @@
         .dropdown-header {
             width: 100%;
             padding: 1rem;
-            background: linear-gradient(135deg, 
-                rgba(139, 92, 246, 0.1) 0%, 
-                rgba(236, 72, 153, 0.1) 50%, 
+            background: linear-gradient(135deg,
+                rgba(139, 92, 246, 0.1) 0%,
+                rgba(236, 72, 153, 0.1) 50%,
                 rgba(6, 182, 212, 0.1) 100%);
             border: 2px solid var(--border-color);
             border-radius: 16px;
@@ -2107,18 +2298,18 @@
             border-color: var(--primary-purple);
             box-shadow: 0 0 25px rgba(139, 92, 246, 0.4);
             transform: translateY(-3px);
-            background: linear-gradient(135deg, 
-                rgba(139, 92, 246, 0.15) 0%, 
-                rgba(236, 72, 153, 0.15) 50%, 
+            background: linear-gradient(135deg,
+                rgba(139, 92, 246, 0.15) 0%,
+                rgba(236, 72, 153, 0.15) 50%,
                 rgba(6, 182, 212, 0.15) 100%);
         }
 
         .dropdown-header.active {
             border-color: var(--accent-cyan);
             box-shadow: 0 0 30px rgba(6, 182, 212, 0.5);
-            background: linear-gradient(135deg, 
-                rgba(139, 92, 246, 0.2) 0%, 
-                rgba(236, 72, 153, 0.2) 50%, 
+            background: linear-gradient(135deg,
+                rgba(139, 92, 246, 0.2) 0%,
+                rgba(236, 72, 153, 0.2) 50%,
                 rgba(6, 182, 212, 0.2) 100%);
         }
 
@@ -2143,8 +2334,8 @@
             top: calc(100% + 8px);
             left: 0;
             right: 0;
-            background: linear-gradient(135deg, 
-                rgba(26, 26, 46, 0.95) 0%, 
+            background: linear-gradient(135deg,
+                rgba(26, 26, 46, 0.95) 0%,
                 rgba(15, 15, 35, 0.95) 100%);
             border: 2px solid var(--border-color);
             border-radius: 16px;
@@ -2185,15 +2376,15 @@
         }
 
         .dropdown-option:hover {
-            background: linear-gradient(135deg, 
-                rgba(139, 92, 246, 0.2) 0%, 
+            background: linear-gradient(135deg,
+                rgba(139, 92, 246, 0.2) 0%,
                 rgba(236, 72, 153, 0.2) 100%);
             transform: translateX(5px);
         }
 
         .dropdown-option.selected {
-            background: linear-gradient(135deg, 
-                rgba(139, 92, 246, 0.3) 0%, 
+            background: linear-gradient(135deg,
+                rgba(139, 92, 246, 0.3) 0%,
                 rgba(6, 182, 212, 0.3) 100%);
             border-left: 4px solid var(--accent-cyan);
         }
@@ -2231,8 +2422,8 @@
 
         /* Estilos para headers de categorías */
         .dropdown-option.category-header {
-            background: linear-gradient(135deg, 
-                rgba(139, 92, 246, 0.3) 0%, 
+            background: linear-gradient(135deg,
+                rgba(139, 92, 246, 0.3) 0%,
                 rgba(6, 182, 212, 0.3) 100%);
             color: var(--accent-cyan);
             font-weight: 700;
@@ -2244,8 +2435,8 @@
         }
 
         .dropdown-option.category-header:hover {
-            background: linear-gradient(135deg, 
-                rgba(139, 92, 246, 0.4) 0%, 
+            background: linear-gradient(135deg,
+                rgba(139, 92, 246, 0.4) 0%,
                 rgba(6, 182, 212, 0.4) 100%);
             transform: none;
         }
@@ -2259,7 +2450,7 @@
             border-top-left-radius: 14px;
             border-top-right-radius: 14px;
         }
-        
+
         /* === ESTILOS PARA CAMPOS PERSONALIZADOS DE UNIDADES === */
         .dropdown-option.custom-input-container {
             background: rgba(139, 92, 246, 0.15);
@@ -2272,24 +2463,24 @@
             gap: 0.5rem;
             min-height: auto;
         }
-        
+
         .dropdown-option.custom-input-container:hover {
             background: rgba(139, 92, 246, 0.2);
             transform: none;
             border-color: var(--accent-cyan);
         }
-        
+
         .dropdown-option.custom-input-container:hover::before {
             opacity: 0;
         }
-        
+
         .custom-unit-input {
             display: flex;
             gap: 0.5rem;
             align-items: center;
             width: 100%;
         }
-        
+
         .custom-unit-field {
             flex: 1;
             background: var(--darker-bg);
@@ -2301,17 +2492,17 @@
             outline: none;
             transition: all 0.3s ease;
         }
-        
+
         .custom-unit-field::placeholder {
             color: var(--text-muted);
             font-style: italic;
         }
-        
+
         .custom-unit-field:focus {
             border-color: var(--accent-cyan);
             box-shadow: 0 0 0 2px rgba(6, 182, 212, 0.2);
         }
-        
+
         .add-custom-unit-btn {
             background: linear-gradient(135deg, var(--primary-purple), var(--accent-cyan));
             border: none;
@@ -2324,17 +2515,17 @@
             transition: all 0.3s ease;
             white-space: nowrap;
         }
-        
+
         .add-custom-unit-btn:hover {
             background: linear-gradient(135deg, var(--secondary-pink), var(--accent-cyan));
             transform: translateY(-1px);
             box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4);
         }
-        
+
         .add-custom-unit-btn:active {
             transform: translateY(0);
         }
-        
+
         /* Estilos para unidades personalizadas una vez agregadas */
         .dropdown-option.custom-unit {
             background: rgba(6, 182, 212, 0.1);
@@ -2415,18 +2606,18 @@
         .dropdown-option.custom-unit:hover::after {
             opacity: 1;
         }
-        
+
         /* Responsive para móvil */
         @media (max-width: 768px) {
             .custom-unit-input {
                 flex-direction: column;
                 gap: 0.5rem;
             }
-            
+
             .custom-unit-field {
                 width: 100%;
             }
-            
+
             .add-custom-unit-btn {
                 width: 100%;
                 padding: 0.6rem;
@@ -2559,222 +2750,6 @@
        margin-top: 8px;
    }
 
-   /* ========================================
-      ESTILOS GENERALES PARA ADJUNTOS (Audio / Foto)
-      ======================================== */
-   .media-attachments-grid {
-       display: grid;
-       grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-       gap: 12px;
-       margin-top: 12px;
-   }
-
-   .media-card {
-       border: 2px dashed var(--primary);
-       border-radius: 16px;
-       padding: 18px;
-       background: rgba(139, 92, 246, 0.08);
-       display: flex;
-       flex-direction: column;
-       justify-content: center;
-       gap: 12px;
-       cursor: pointer;
-       transition: all 0.25s ease;
-       min-height: 130px;
-   }
-
-   .media-card:hover {
-       transform: translateY(-3px);
-       box-shadow: 0 12px 24px rgba(139, 92, 246, 0.25);
-       border-style: solid;
-   }
-
-   .media-card.has-attachment {
-       border-style: solid;
-       background: linear-gradient(135deg, rgba(139, 92, 246, 0.15), rgba(236, 72, 153, 0.12));
-   }
-
-   .media-card-header {
-       display: flex;
-       align-items: center;
-       gap: 12px;
-   }
-
-   .media-card-icon {
-       font-size: 1.8rem;
-   }
-
-   .media-card-title {
-       font-size: 1.1rem;
-       font-weight: 600;
-       color: var(--text-light);
-   }
-
-   .media-card-subtitle {
-       font-size: 0.95rem;
-       color: var(--text-muted);
-       line-height: 1.4;
-   }
-
-   .media-card-footer {
-       display: flex;
-       gap: 8px;
-       flex-wrap: wrap;
-       font-size: 0.85rem;
-       color: var(--accent-cyan);
-   }
-
-   .photo-modal-preview {
-       border-radius: 14px;
-       border: 1px solid rgba(255,255,255,0.08);
-       background: rgba(15, 23, 42, 0.6);
-       display: flex;
-       align-items: center;
-       justify-content: center;
-       overflow: hidden;
-       aspect-ratio: 4 / 3;
-       margin-bottom: 16px;
-   }
-
-   .photo-modal-preview img {
-       width: 100%;
-       height: 100%;
-       object-fit: cover;
-   }
-
-   .photo-modal-preview.empty {
-       flex-direction: column;
-       padding: 24px;
-       gap: 12px;
-       color: var(--text-muted);
-       text-align: center;
-       font-size: 0.95rem;
-   }
-
-   .photo-modal-actions {
-       display: flex;
-       flex-wrap: wrap;
-       gap: 12px;
-   }
-
-   .photo-modal-actions button {
-       flex: 1 1 200px;
-   }
-
-   .photo-extra-actions {
-       display: flex;
-       gap: 8px;
-       flex-wrap: wrap;
-       margin-top: 16px;
-   }
-
-   .photo-extra-actions button {
-       flex: 1 1 140px;
-   }
-
-   .btn-outline {
-       border: 2px solid var(--primary);
-       background: transparent;
-       color: var(--primary);
-       padding: 12px 16px;
-       border-radius: 12px;
-       font-weight: 600;
-       cursor: pointer;
-       transition: all 0.25s ease;
-   }
-
-   .btn-outline:hover {
-       background: var(--primary-alpha);
-       transform: translateY(-2px);
-   }
-
-   /* Contenedor de la barra de progreso */
-   .audio-progress-container {
-       width: 100%;
-       height: 6px;
-       background: rgba(139, 92, 246, 0.2);
-       border-radius: 3px;
-       overflow: hidden;
-       position: relative;
-   }
-
-   /* Barra de progreso (se anima con width%) */
-   .audio-progress-bar {
-       height: 100%;
-       background: linear-gradient(90deg, var(--primary), var(--secondary));
-       border-radius: 3px;
-       width: 0%;
-       transition: width 0.1s linear;
-   }
-
-   /* Botones de iconos pequeños (compartir, eliminar) */
-   .btn-icon-small {
-       background: rgba(139, 92, 246, 0.15);
-       border: 1px solid rgba(139, 92, 246, 0.3);
-       border-radius: 8px;
-       padding: 6px 10px;
-       font-size: 1rem;
-       cursor: pointer;
-       transition: all 0.2s ease;
-   }
-
-   .btn-icon-small:hover {
-       background: rgba(139, 92, 246, 0.25);
-       transform: scale(1.05);
-   }
-
-   .btn-icon-small:active {
-       transform: scale(0.95);
-   }
-
-   /* Botón grande de play/pause (centrado) */
-   .btn-icon-large {
-       background: var(--primary);
-       color: white;
-       border: none;
-       border-radius: 50%;
-       width: 48px;
-       height: 48px;
-       font-size: 1.2rem;
-       cursor: pointer;
-       transition: all 0.3s ease;
-       display: flex;
-       align-items: center;
-       justify-content: center;
-       box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4);
-   }
-
-   .btn-icon-large:hover {
-       background: var(--primary-dark);
-       transform: scale(1.1);
-       box-shadow: 0 6px 16px rgba(139, 92, 246, 0.5);
-   }
-
-   .btn-icon-large:active {
-       transform: scale(1);
-   }
-
-   /* Botón de detener grabación (rojo) */
-   .btn-icon-danger {
-       background: var(--danger);
-       color: white;
-       border: none;
-       border-radius: 8px;
-       padding: 8px 16px;
-       font-size: 0.9rem;
-       font-weight: 600;
-       cursor: pointer;
-       transition: all 0.2s ease;
-   }
-
-   .btn-icon-danger:hover {
-       background: #dc2626;
-       transform: scale(1.05);
-   }
-
-   .btn-icon-danger:active {
-       transform: scale(0.95);
-   }
 
     </style>
 </head>
@@ -3508,17 +3483,7 @@
                 </div>
 
                 <div id="audioPlayerCard" class="audio-player-card" style="display: none;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                        <div style="font-weight: 600;">🎤 Nota de voz</div>
-                        <div style="display: flex; gap: 4px;">
-                            <button type="button" id="btnShareAudio" class="btn-icon-small" title="Compartir">
-                                📤
-                            </button>
-                            <button type="button" id="btnDeleteAudio" class="btn-icon-small" title="Eliminar">
-                                🗑️
-                            </button>
-                        </div>
-                    </div>
+                    <div style="font-weight: 600; margin-bottom: 12px;">🎤 Nota de voz lista</div>
 
                     <div class="audio-progress-container">
                         <div id="audioProgressBar" class="audio-progress-bar"></div>
@@ -3532,6 +3497,12 @@
 
                     <div id="audioDuration" style="text-align: center; font-size: 0.85rem; color: var(--text-muted); margin-top: 8px;">
                         00:00
+                    </div>
+
+                    <div id="audioModalActions" class="modal-attachment-actions">
+                        <button type="button" id="btnSaveAudioAttachment" class="btn-primary">💾 Guardar</button>
+                        <button type="button" id="btnShareAudio" class="btn-outline">📤 Compartir</button>
+                        <button type="button" id="btnDeleteAudio" class="btn-danger">🗑️ Eliminar</button>
                     </div>
                 </div>
             </div>
@@ -3557,8 +3528,9 @@
                 </div>
 
                 <div id="photoExtraActions" class="photo-extra-actions" style="display: none;">
-                    <button type="button" id="btnViewPhoto" class="btn-secondary">👁️ Ver</button>
-                    <button type="button" id="btnSharePhoto" class="btn-secondary">📤 Compartir</button>
+                    <button type="button" id="btnSavePhotoAttachment" class="btn-primary">💾 Guardar</button>
+                    <button type="button" id="btnViewPhoto" class="btn-outline">👁️ Ver</button>
+                    <button type="button" id="btnSharePhoto" class="btn-outline">📤 Compartir</button>
                     <button type="button" id="btnDeletePhoto" class="btn-danger">🗑️ Eliminar</button>
                 </div>
             </div>
@@ -3810,6 +3782,19 @@
                 Android.shareAudio(currentAudioFilename);
             }
 
+            function confirmAudioAttachment() {
+                if (!currentAudioFilename) {
+                    showCustomAlert('No hay ninguna nota de voz para guardar.', '🎤 Sin nota de voz');
+                    return;
+                }
+
+                updateVoiceNoteCard();
+                closeModal('audioModal');
+                if (typeof Android !== 'undefined' && Android.showToast) {
+                    Android.showToast('🎤 Nota de voz lista para este registro');
+                }
+            }
+
             // ========================================
             // FUNCIONES DE AUDIO - Reproducción
             // ========================================
@@ -3898,6 +3883,8 @@
                 const btnStart = document.getElementById('btnStartRecording');
                 const recordingCard = document.getElementById('recordingCard');
                 const playerCard = document.getElementById('audioPlayerCard');
+                const modalActions = document.getElementById('audioModalActions');
+                const saveAudioBtn = document.getElementById('btnSaveAudioAttachment');
 
                 if (!btnStart || !recordingCard || !playerCard) {
                     return;
@@ -3917,6 +3904,14 @@
                     playerCard.style.display = 'block';
                     updatePlayButton('▶️');
                     updateAudioProgress(0);
+                }
+
+                if (modalActions) {
+                    const shouldShowActions = state === 'player' && !!currentAudioFilename;
+                    modalActions.style.display = shouldShowActions ? 'flex' : 'none';
+                }
+                if (saveAudioBtn) {
+                    saveAudioBtn.disabled = !currentAudioFilename;
                 }
 
                 updateVoiceNoteCard();
@@ -4011,11 +4006,13 @@
             function updatePhotoModalControls() {
                 const preview = document.getElementById('photoPreview');
                 const extraActions = document.getElementById('photoExtraActions');
+                const saveButton = document.getElementById('btnSavePhotoAttachment');
 
                 if (!preview) return;
 
                 if (!currentPhotoFilename) {
                     if (extraActions) extraActions.style.display = 'none';
+                    if (saveButton) saveButton.disabled = true;
                     preview.classList.add('empty');
                     preview.innerHTML = `
                         <div style="font-size: 2rem;">🖼️</div>
@@ -4025,6 +4022,7 @@
                 }
 
                 if (extraActions) extraActions.style.display = 'flex';
+                if (saveButton) saveButton.disabled = false;
                 preview.classList.remove('empty');
 
                 try {
@@ -4125,6 +4123,20 @@
                         }
                     }
                 );
+            }
+
+            function confirmPhotoAttachment() {
+                if (!currentPhotoFilename) {
+                    showCustomAlert('No hay ninguna imagen para guardar.', '📷 Sin imagen');
+                    return;
+                }
+
+                updatePhotoCard();
+                updatePhotoModalControls();
+                closeModal('photoModal');
+                if (typeof Android !== 'undefined' && Android.showToast) {
+                    Android.showToast('📷 Imagen lista para este registro');
+                }
             }
 
             window.onPhotoCaptured = function(filename) {
@@ -4623,6 +4635,9 @@
             const btnShare = document.getElementById('btnShareAudio');
             if (btnShare) btnShare.addEventListener('click', shareAudio);
 
+            const btnSaveAudio = document.getElementById('btnSaveAudioAttachment');
+            if (btnSaveAudio) btnSaveAudio.addEventListener('click', confirmAudioAttachment);
+
             // Inicializar UI de audio
             updateAudioUI('initial');
 
@@ -4640,6 +4655,9 @@
 
             const btnDeletePhoto = document.getElementById('btnDeletePhoto');
             if (btnDeletePhoto) btnDeletePhoto.addEventListener('click', deletePhotoAttachment);
+
+            const btnSavePhoto = document.getElementById('btnSavePhotoAttachment');
+            if (btnSavePhoto) btnSavePhoto.addEventListener('click', confirmPhotoAttachment);
 
             updateVoiceNoteCard();
             updatePhotoCard();
@@ -5864,8 +5882,8 @@
                     set: set || null, // Store null if empty
                     setting: setting || null, // Store null if empty
                     notes: notes || null, // Store null if empty
-                    audioPath: currentAudioFilename || entries[existingEntryIndex].audioPath || null,
-                    photoPath: currentPhotoFilename || entries[existingEntryIndex].photoPath || null,
+                    audioPath: currentAudioFilename || null,
+                    photoPath: currentPhotoFilename || null,
                     updatedAt: new Date().toISOString()
                 };
 
