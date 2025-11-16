@@ -1607,6 +1607,101 @@
             margin-top: 2rem;
         }
 
+        /* === STATS GRID === */
+        .stats-metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .stat-chip {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+            padding: 1rem;
+            border-radius: 16px;
+            background: rgba(15, 15, 35, 0.85);
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
+        }
+
+        .stat-chip h5 {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+        .stat-chip strong {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--accent-cyan);
+        }
+
+        .chart-card {
+            background: var(--card-bg);
+            border-radius: 20px;
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            padding: 1.25rem;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.35);
+            position: relative;
+        }
+
+        .chart-card h4 {
+            margin-bottom: 0.85rem;
+            color: var(--text-light);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .chart-card canvas {
+            width: 100%;
+            height: 260px;
+            display: block;
+        }
+
+        .chart-legend {
+            margin-top: 1rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.6rem 1rem;
+        }
+
+        .chart-legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .chart-legend-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 999px;
+        }
+
+        .chart-tooltip {
+            position: absolute;
+            padding: 0.5rem 0.75rem;
+            background: rgba(8, 8, 19, 0.9);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: var(--text-light);
+            font-size: 0.8rem;
+            pointer-events: none;
+            opacity: 0;
+            transform: translate(-50%, -120%);
+            transition: opacity 0.15s ease;
+            z-index: 10;
+        }
+
+        .chart-card.show-tooltip .chart-tooltip {
+            opacity: 1;
+        }
+
         .resource-card {
             background: var(--card-bg);
             border-radius: 16px;
@@ -5991,71 +6086,452 @@
         }
 
         // Stats functions
+        const chartPalette = ['#FBBF24', '#F97316', '#F472B6', '#8B5CF6', '#60A5FA', '#34D399', '#22D3EE', '#EC4899', '#A3E635', '#F87171'];
+
         function renderStats() {
             const statsContainer = document.getElementById('stats-content');
+            if (!statsContainer) return;
 
-            if (entries.length === 0) {
-                statsContainer.innerHTML = '<div class="resource-card"><h4>No hay datos</h4><p>Añade algunos registros para ver estadísticas</p></div>';
+            if (!entries.length) {
+                statsContainer.innerHTML = '<div class="resource-card"><h4>📊 Sin datos suficientes</h4><p>Registra experiencias para generar estadísticas.</p></div>';
                 return;
             }
 
-            const totalEntries = entries.length;
-            const uniqueSubstances = [...new Set(entries.map(entry => entry.substance))];
+            const stats = buildStatsData(entries);
 
-            // Calculate average per month based on the span of entries
-            let firstEntryDate = entries.length > 0 ? new Date(Math.min(...entries.map(e => new Date(e.date)))) : null;
-            let lastEntryDate = entries.length > 0 ? new Date(Math.max(...entries.map(e => new Date(e.date)))) : null;
+            const summaryHtml = stats.summary.map(item => `
+                <div class="stat-chip">
+                    <h5>${item.icon} ${item.label}</h5>
+                    <strong>${item.value}</strong>
+                    <span>${item.caption}</span>
+                </div>
+            `).join('');
 
-            let monthsSpan = 0;
-            if (firstEntryDate && lastEntryDate) {
-                monthsSpan = (lastEntryDate.getFullYear() - firstEntryDate.getFullYear()) * 12;
-                monthsSpan -= firstEntryDate.getMonth();
-                monthsSpan += lastEntryDate.getMonth();
-                monthsSpan = Math.max(1, monthsSpan + 1); // Ensure at least 1 month
-            } else {
-                monthsSpan = 1; // Default to 1 month if no entries
-            }
-
-            const averagePerMonth = (totalEntries / monthsSpan).toFixed(1);
-
-
-            // Most used substance
-            const substanceCount = {};
-            entries.forEach(entry => {
-                substanceCount[entry.substance] = (substanceCount[entry.substance] || 0) + 1;
-            });
-            const mostUsed = Object.keys(substanceCount).length > 0 ? Object.keys(substanceCount).reduce((a, b) => substanceCount[a] > substanceCount[b] ? a : b) : 'N/A';
-
-            // Recent activity
-            const lastWeek = new Date();
-            lastWeek.setDate(lastWeek.getDate() - 7);
-            const recentEntries = entries.filter(entry => new Date(entry.date) > lastWeek).length;
+            const setLegend = buildLegendHtml(stats.setLegend);
+            const settingLegend = buildLegendHtml(stats.settingLegend);
 
             statsContainer.innerHTML = `
-                <div class="resource-card">
-                    <h4>Registros Totales</h4>
-                    <p style="font-size: 2rem; color: var(--accent-cyan); font-weight: bold;">${totalEntries}</p>
+                <div class="stats-metrics-grid">${summaryHtml}</div>
+
+                <div class="chart-card" id="card-frequency">
+                    <h4>📊 Frecuencia de consumo por sustancia</h4>
+                    <canvas id="chart-substances" height="260"></canvas>
+                    <div class="chart-tooltip" id="tooltip-substances"></div>
                 </div>
-                <div class="resource-card">
-                    <h4>Sustancias Únicas</h4>
-                    <p style="font-size: 2rem; color: var(--secondary-pink); font-weight: bold;">${uniqueSubstances.length}</p>
+
+                <div class="chart-card" id="card-timeline">
+                    <h4>📈 Timeline mensual de registros</h4>
+                    <canvas id="chart-timeline" height="260"></canvas>
+                    <div class="chart-tooltip" id="tooltip-timeline"></div>
                 </div>
-                <div class="resource-card">
-                    <h4>Más Utilizada</h4>
-                    <p style="font-size: 1.5rem; color: var(--primary-purple); font-weight: bold;">${mostUsed}</p>
-                    <p>${substanceCount[mostUsed] || 0} veces</p>
+
+                <div class="chart-card" id="card-set">
+                    <h4>🧠 Distribución de Set (estado mental)</h4>
+                    <canvas id="chart-set" height="260"></canvas>
+                    <div class="chart-tooltip" id="tooltip-set"></div>
+                    <div class="chart-legend">${setLegend}</div>
                 </div>
-                <div class="resource-card">
-                    <h4>Actividad Reciente</h4>
-                    <p style="font-size: 2rem; color: var(--accent-orange); font-weight: bold;">${recentEntries}</p>
-                    <p>Últimos 7 días</p>
-                </div>
-                <div class="resource-card">
-                    <h4>Promedio Mensual</h4>
-                    <p style="font-size: 2rem; color: var(--accent-cyan); font-weight: bold;">${averagePerMonth}</p>
-                    <p>Registros por mes</p>
+
+                <div class="chart-card" id="card-setting">
+                    <h4>🌐 Distribución de Setting (entorno)</h4>
+                    <canvas id="chart-setting" height="260"></canvas>
+                    <div class="chart-tooltip" id="tooltip-setting"></div>
+                    <div class="chart-legend">${settingLegend}</div>
                 </div>
             `;
+
+            requestAnimationFrame(() => {
+                drawBarChart('chart-substances', stats.substanceFrequency, document.getElementById('tooltip-substances'));
+                drawLineChart('chart-timeline', stats.timeline, document.getElementById('tooltip-timeline'));
+                drawDonutChart('chart-set', stats.setDistribution, document.getElementById('tooltip-set'));
+                drawDonutChart('chart-setting', stats.settingDistribution, document.getElementById('tooltip-setting'));
+            });
+        }
+
+        function buildStatsData(entries) {
+            const sorted = [...entries].sort((a, b) => new Date(a.date) - new Date(b.date));
+            const uniqueDays = Array.from(new Set(sorted.map(entry => normalizeDateValue(entry.date)))).sort((a, b) => a - b);
+            const { currentStreak, bestStreak } = calculateStreaks(uniqueDays);
+            const lastEntry = sorted[sorted.length - 1];
+            const daysSinceLast = lastEntry ? Math.max(0, Math.floor((normalizeDateValue(new Date()) - normalizeDateValue(lastEntry.date)) / 86400000)) : 0;
+            const summary = [
+                { label: 'Racha actual', value: currentStreak, caption: 'días consecutivos', icon: '🔥' },
+                { label: 'Mejor racha', value: bestStreak, caption: 'récord histórico', icon: '⭐' },
+                { label: 'Días sin consumo', value: daysSinceLast, caption: 'desde último registro', icon: '🌙' },
+                { label: 'Días activos', value: uniqueDays.length, caption: 'con registros', icon: '📅' }
+            ];
+
+            const substanceFrequency = buildFrequencyData(sorted);
+            const timeline = buildTimelineData(sorted);
+            const setDistribution = buildDistributionData(sorted, 'set', 'Sin set');
+            const settingDistribution = buildDistributionData(sorted, 'setting', 'Sin setting');
+
+            return {
+                summary,
+                substanceFrequency,
+                timeline,
+                setDistribution,
+                settingDistribution,
+                setLegend: toLegendItems(setDistribution),
+                settingLegend: toLegendItems(settingDistribution)
+            };
+        }
+
+        function normalizeDateValue(value) {
+            const d = new Date(value);
+            d.setHours(0, 0, 0, 0);
+            return d.getTime();
+        }
+
+        function calculateStreaks(days) {
+            if (!days.length) return { currentStreak: 0, bestStreak: 0 };
+            const DAY = 86400000;
+            let best = 1;
+            let streak = 1;
+
+            for (let i = 1; i < days.length; i++) {
+                if (days[i] - days[i - 1] === DAY) {
+                    streak++;
+                } else if (days[i] !== days[i - 1]) {
+                    streak = 1;
+                }
+                if (streak > best) best = streak;
+            }
+
+            let current = 1;
+            for (let i = days.length - 1; i > 0; i--) {
+                if (days[i] - days[i - 1] === DAY) {
+                    current++;
+                } else if (days[i] !== days[i - 1]) {
+                    break;
+                }
+            }
+
+            return { currentStreak: days.length ? current : 0, bestStreak: days.length ? Math.max(best, current) : 0 };
+        }
+
+        function buildFrequencyData(entries) {
+            const counts = {};
+            entries.forEach(entry => {
+                const label = (entry.substance || 'Sin sustancia').trim() || 'Sin sustancia';
+                counts[label] = (counts[label] || 0) + 1;
+            });
+            return Object.entries(counts)
+                .sort((a, b) => b[1] - a[1])
+                .map(([label, value], index) => ({
+                    label,
+                    value,
+                    color: chartPalette[index % chartPalette.length]
+                }));
+        }
+
+        function buildTimelineData(entries) {
+            const map = new Map();
+            entries.forEach(entry => {
+                const date = new Date(entry.date);
+                const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+                const label = date.toLocaleString('es-ES', { month: 'short', year: 'numeric' });
+                const current = map.get(key) || { label, value: 0 };
+                current.value += 1;
+                map.set(key, current);
+            });
+
+            return Array.from(map.entries())
+                .sort((a, b) => a[0].localeCompare(b[0]))
+                .slice(-6)
+                .map(([, data], index) => ({
+                    ...data,
+                    color: chartPalette[index % chartPalette.length]
+                }));
+        }
+
+        function buildDistributionData(entries, field, fallbackLabel) {
+            const counts = {};
+            entries.forEach(entry => {
+                const raw = (entry[field] || '').trim();
+                const label = raw.length ? raw : fallbackLabel;
+                counts[label] = (counts[label] || 0) + 1;
+            });
+
+            return Object.entries(counts)
+                .sort((a, b) => b[1] - a[1])
+                .map(([label, value], index) => ({
+                    label,
+                    value,
+                    color: chartPalette[index % chartPalette.length]
+                }));
+        }
+
+        function toLegendItems(distribution) {
+            const total = distribution.reduce((sum, item) => sum + item.value, 0) || 1;
+            return distribution.map(item => ({
+                label: item.label,
+                color: item.color,
+                percent: Math.round((item.value / total) * 100)
+            }));
+        }
+
+        function buildLegendHtml(items) {
+            if (!items.length) {
+                return '<p style="color: var(--text-muted);">Sin datos suficientes</p>';
+            }
+            return items.map(item => `
+                <div class="chart-legend-item">
+                    <span class="chart-legend-color" style="background: ${item.color};"></span>
+                    ${item.label} (${item.percent}%)
+                </div>
+            `).join('');
+        }
+
+        function drawBarChart(canvasId, dataset, tooltipEl) {
+            const canvas = document.getElementById(canvasId);
+            if (!canvas || !dataset.length) return;
+            const { ctx, width, height } = setupCanvas(canvas);
+            ctx.clearRect(0, 0, width, height);
+
+            const padding = { top: 30, right: 20, bottom: 50, left: 40 };
+            const chartWidth = width - padding.left - padding.right;
+            const chartHeight = height - padding.top - padding.bottom;
+            const maxValue = Math.max(...dataset.map(item => item.value), 1);
+            const barSpace = chartWidth / dataset.length;
+            const barWidth = Math.max(20, barSpace * 0.6);
+            const shapes = [];
+
+            ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+            ctx.fillStyle = 'rgba(255,255,255,0.6)';
+            ctx.font = '12px Inter, sans-serif';
+            const steps = 4;
+            for (let i = 0; i <= steps; i++) {
+                const y = padding.top + (chartHeight / steps) * i;
+                ctx.beginPath();
+                ctx.moveTo(padding.left, y);
+                ctx.lineTo(width - padding.right, y);
+                ctx.stroke();
+                const label = Math.round(maxValue - (maxValue / steps) * i);
+                ctx.fillText(label.toString(), 6, y + 4);
+            }
+
+            dataset.forEach((item, index) => {
+                const barHeight = (item.value / maxValue) * chartHeight;
+                const x = padding.left + index * barSpace + (barSpace - barWidth) / 2;
+                const y = padding.top + chartHeight - barHeight;
+                ctx.fillStyle = item.color;
+                ctx.beginPath();
+                ctx.moveTo(x, y + barHeight);
+                ctx.lineTo(x, y + 10);
+                ctx.quadraticCurveTo(x, y, x + 10, y);
+                ctx.lineTo(x + barWidth - 10, y);
+                ctx.quadraticCurveTo(x + barWidth, y, x + barWidth, y + 10);
+                ctx.lineTo(x + barWidth, y + barHeight);
+                ctx.closePath();
+                ctx.fill();
+
+                ctx.fillStyle = 'rgba(255,255,255,0.85)';
+                ctx.textAlign = 'center';
+                ctx.save();
+                ctx.translate(x + barWidth / 2, height - 20);
+                ctx.rotate(-0.1);
+                ctx.fillText(item.label.slice(0, 12), 0, 0);
+                ctx.restore();
+
+                shapes.push({ type: 'rect', label: item.label, value: item.value, x, y, width: barWidth, height: barHeight });
+            });
+
+            attachTooltip(canvas, tooltipEl, shapes, shape => `${shape.label}: ${shape.value}`);
+        }
+
+        function drawLineChart(canvasId, dataset, tooltipEl) {
+            const canvas = document.getElementById(canvasId);
+            if (!canvas || !dataset.length) return;
+            const { ctx, width, height } = setupCanvas(canvas);
+            ctx.clearRect(0, 0, width, height);
+
+            const padding = { top: 30, right: 20, bottom: 50, left: 40 };
+            const chartWidth = width - padding.left - padding.right;
+            const chartHeight = height - padding.top - padding.bottom;
+            const maxValue = Math.max(...dataset.map(item => item.value), 1);
+            const pointSpacing = dataset.length > 1 ? chartWidth / (dataset.length - 1) : chartWidth / 2;
+            const shapes = [];
+
+            ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+            ctx.fillStyle = 'rgba(255,255,255,0.6)';
+            ctx.font = '12px Inter, sans-serif';
+            const steps = 4;
+            for (let i = 0; i <= steps; i++) {
+                const y = padding.top + (chartHeight / steps) * i;
+                ctx.beginPath();
+                ctx.moveTo(padding.left, y);
+                ctx.lineTo(width - padding.right, y);
+                ctx.stroke();
+                const label = Math.round(maxValue - (maxValue / steps) * i);
+                ctx.fillText(label.toString(), 6, y + 4);
+            }
+
+            ctx.beginPath();
+            ctx.lineWidth = 3;
+            ctx.strokeStyle = '#38BDF8';
+            ctx.lineJoin = 'round';
+            dataset.forEach((item, index) => {
+                const x = padding.left + (dataset.length === 1 ? chartWidth / 2 : index * pointSpacing);
+                const y = padding.top + chartHeight - (item.value / maxValue) * chartHeight;
+                if (index === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+                shapes.push({ type: 'point', label: item.label, value: item.value, x, y, radius: 8 });
+            });
+            ctx.stroke();
+
+            shapes.forEach(point => {
+                ctx.fillStyle = '#0EA5E9';
+                ctx.beginPath();
+                ctx.arc(point.x, point.y, 6, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = '#E0F2FE';
+                ctx.beginPath();
+                ctx.arc(point.x, point.y, 3, 0, Math.PI * 2);
+                ctx.fill();
+            });
+
+            ctx.fillStyle = 'rgba(255,255,255,0.8)';
+            ctx.textAlign = 'center';
+            dataset.forEach((item, index) => {
+                const x = padding.left + (dataset.length === 1 ? chartWidth / 2 : index * pointSpacing);
+                ctx.fillText(item.label, x, height - 15);
+            });
+
+            attachTooltip(canvas, tooltipEl, shapes, shape => `${shape.label}: ${shape.value}`);
+        }
+
+        function drawDonutChart(canvasId, dataset, tooltipEl) {
+            const canvas = document.getElementById(canvasId);
+            if (!canvas || !dataset.length) return;
+            const { ctx, width, height } = setupCanvas(canvas);
+            ctx.clearRect(0, 0, width, height);
+
+            const centerX = width / 2;
+            const centerY = height / 2;
+            const radius = Math.min(width, height) / 2 - 20;
+            const innerRadius = radius * 0.55;
+            const total = dataset.reduce((sum, item) => sum + item.value, 0) || 1;
+            let startAngle = -Math.PI / 2;
+            const shapes = [];
+
+            dataset.forEach(item => {
+                const sliceAngle = (item.value / total) * Math.PI * 2;
+                const endAngle = startAngle + sliceAngle;
+                ctx.beginPath();
+                ctx.fillStyle = item.color;
+                ctx.moveTo(centerX, centerY);
+                ctx.arc(centerX, centerY, radius, startAngle, endAngle);
+                ctx.arc(centerX, centerY, innerRadius, endAngle, startAngle, true);
+                ctx.closePath();
+                ctx.fill();
+
+                shapes.push({
+                    type: 'arc',
+                    label: item.label,
+                    value: item.value,
+                    startAngle,
+                    endAngle,
+                    innerRadius,
+                    outerRadius: radius,
+                    centerX,
+                    centerY
+                });
+                startAngle = endAngle;
+            });
+
+            attachTooltip(canvas, tooltipEl, shapes, shape => `${shape.label}: ${shape.value}`);
+        }
+
+        function setupCanvas(canvas) {
+            const parentWidth = canvas.parentElement ? canvas.parentElement.clientWidth : 320;
+            const cssWidth = canvas.clientWidth || parentWidth || 320;
+            const cssHeight = canvas.clientHeight || 260;
+            const ratio = window.devicePixelRatio || 1;
+            canvas.width = cssWidth * ratio;
+            canvas.height = cssHeight * ratio;
+            const ctx = canvas.getContext('2d');
+            ctx.scale(ratio, ratio);
+            return { ctx, width: cssWidth, height: cssHeight };
+        }
+
+        function attachTooltip(canvas, tooltipEl, shapes, formatter) {
+            if (!canvas || !tooltipEl || !shapes.length) return;
+            const card = canvas.closest('.chart-card');
+            const hideTooltip = () => card && card.classList.remove('show-tooltip');
+
+            const handler = evt => {
+                const point = getRelativePoint(canvas, evt);
+                const target = findShape(shapes, point);
+                if (target) {
+                    tooltipEl.textContent = formatter(target);
+                    tooltipEl.style.left = `${point.x}px`;
+                    tooltipEl.style.top = `${point.y}px`;
+                    card?.classList.add('show-tooltip');
+                } else {
+                    hideTooltip();
+                }
+            };
+
+            canvas.addEventListener('pointerup', handler);
+            canvas.addEventListener('pointerleave', hideTooltip);
+        }
+
+        function getRelativePoint(canvas, evt) {
+            const rect = canvas.getBoundingClientRect();
+            const clientX = evt.touches ? evt.touches[0].clientX : evt.clientX;
+            const clientY = evt.touches ? evt.touches[0].clientY : evt.clientY;
+            const x = (clientX - rect.left);
+            const y = (clientY - rect.top);
+            return { x, y };
+        }
+
+        function findShape(shapes, point) {
+            for (const shape of shapes) {
+                if (shape.type === 'rect') {
+                    if (
+                        point.x >= shape.x &&
+                        point.x <= shape.x + shape.width &&
+                        point.y >= shape.y &&
+                        point.y <= shape.y + shape.height
+                    ) {
+                        return shape;
+                    }
+                } else if (shape.type === 'point') {
+                    const distance = Math.hypot(point.x - shape.x, point.y - shape.y);
+                    if (distance <= shape.radius) {
+                        return shape;
+                    }
+                } else if (shape.type === 'arc') {
+                    const dx = point.x - shape.centerX;
+                    const dy = point.y - shape.centerY;
+                    const distance = Math.hypot(dx, dy);
+                    if (distance < shape.innerRadius || distance > shape.outerRadius) continue;
+                    let angle = Math.atan2(dy, dx);
+                    angle = normalizeAngle(angle);
+                    const start = normalizeAngle(shape.startAngle);
+                    const end = normalizeAngle(shape.endAngle);
+                    if (isAngleBetween(angle, start, end)) {
+                        return shape;
+                    }
+                }
+            }
+            return null;
+        }
+
+        function normalizeAngle(angle) {
+            const twoPi = Math.PI * 2;
+            return (angle % twoPi + twoPi) % twoPi;
+        }
+
+        function isAngleBetween(angle, start, end) {
+            if (start <= end) {
+                return angle >= start && angle <= end;
+            }
+            return angle >= start || angle <= end;
         }
 
         // FUNCIÓN DE MIGRACIÓN MEJORADA - Añade esto al principio de tu script
