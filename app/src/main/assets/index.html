@@ -1724,6 +1724,79 @@
             margin-bottom: 0.5rem;
         }
 
+        .dev-panel {
+            margin-top: 2.5rem;
+            padding: 2rem;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            background: linear-gradient(135deg, rgba(13, 16, 35, 0.95), rgba(23, 29, 62, 0.9));
+            box-shadow: 0 25px 60px rgba(13, 16, 35, 0.45);
+        }
+
+        .dev-panel__badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.4rem 0.9rem;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            letter-spacing: 0.05em;
+            background: rgba(95, 127, 255, 0.15);
+            color: #9eaefc;
+            border: 1px solid rgba(95, 127, 255, 0.25);
+        }
+
+        .dev-panel__title {
+            margin: 1rem 0 0.5rem;
+            font-size: 1.7rem;
+            color: #eef0ff;
+        }
+
+        .dev-panel__subtitle {
+            margin-bottom: 1.3rem;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 1rem;
+        }
+
+        .dev-panel__content {
+            display: grid;
+            gap: 1.5rem;
+        }
+
+        .dev-panel__content p {
+            color: rgba(255, 255, 255, 0.78);
+            line-height: 1.6;
+            font-size: 0.98rem;
+            margin: 0;
+        }
+
+        .dev-panel__cta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .dev-panel__tag {
+            padding: 0.35rem 0.75rem;
+            border-radius: 8px;
+            background: rgba(255, 221, 0, 0.12);
+            color: #ffd900;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        .dev-panel__coffee img {
+            border-radius: 12px;
+            box-shadow: 0 12px 25px rgba(95, 127, 255, 0.35);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .dev-panel__coffee img:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 15px 30px rgba(95, 127, 255, 0.45);
+        }
+
         .backup-folder-row {
             margin-top: 0.75rem;
             display: flex;
@@ -3027,6 +3100,31 @@
                         <button class="btn-primary" onclick="exportPhotosZip()">🗂️ Exportar Fotos</button>
                     </div>
                 </div>
+
+                <section class="dev-panel">
+                    <span class="dev-panel__badge">Acerca del proyecto</span>
+                    <h3 class="dev-panel__title">Hecho con amor por D4vRAM</h3>
+                    <p class="dev-panel__subtitle">Aprendizaje Basado en Proyectos · Comunidad open source · IA como profesora y copiloto</p>
+
+                    <div class="dev-panel__content">
+                        <p>
+                            Esta aplicación ha sido desarrollada por <strong>D4vRAM</strong> siguiendo un método de Aprendizaje Basado en Proyectos (ABP).
+                            Nació como proyecto personal y de exploración constante, iterando con la IA como guía y compañera de código para compartir
+                            una herramienta útil con la comunidad psiconáutica responsable. Es software libre y se mantiene con cariño por quienes creen
+                            en la cultura abierta ❤️
+                        </p>
+                        <p>
+                            Si este proyecto te resulta valioso y quieres apoyar su evolución, puedes invitarme a un café o hacer el donativo que quieras/puedas. Cada aporte ayuda a seguir
+                            mejorando PsychoLogger, documentar nuevas funciones y crear más recursos para la comunidad.
+                        </p>
+                        <div class="dev-panel__cta">
+                            <span class="dev-panel__tag">Project-Based Learning + AI</span>
+                            <a class="dev-panel__coffee" href="https://www.buymeacoffee.com/D4vRAM369" target="_blank" rel="noopener noreferrer">
+                                <img src="https://img.buymeacoffee.com/button-api/?text=Buy%20me%20a%20coffee&emoji=☕&slug=D4vRAM369&button_colour=5F7FFF&font_colour=ffffff&font_family=Inter&outline_colour=000000&coffee_colour=FFDD00" alt="Buy Me a Coffee" loading="lazy">
+                            </a>
+                        </div>
+                    </div>
+                </section>
             </div>
         </div>
 
@@ -6641,70 +6739,8 @@
             return lines.slice(0, 2);
         }
 
-        // FUNCIÓN DE MIGRACIÓN MEJORADA - Añade esto al principio de tu script
-        function migrateOldEntries() {
-            let updatedCount = 0;
-
-            entries.forEach(entry => {
-                let updated = false;
-
-                // Asegurar que todos los campos existan
-                if (!entry.hasOwnProperty('set')) {
-                    entry.set = '';
-                    updated = true;
-                }
-
-                if (!entry.hasOwnProperty('setting')) {
-                    entry.setting = '';
-                    updated = true;
-                }
-
-                if (!entry.hasOwnProperty('unit')) {
-                    entry.unit = '';
-                    updated = true;
-                }
-
-                if (!entry.hasOwnProperty('notes')) {
-                    entry.notes = '';
-                    updated = true;
-                }
-
-                if (!entry.hasOwnProperty('createdAt')) {
-                    entry.createdAt = new Date().toISOString();
-                    updated = true;
-                }
-
-                if (!entry.hasOwnProperty('updatedAt')) {
-                    entry.updatedAt = '';
-                    updated = true;
-                }
-
-                if (updated) {
-                    updatedCount++;
-                }
-            });
-
-                             if (updatedCount > 0) {
-                     saveDataToStorage();
-                     return updatedCount;
-                 }
-            return 0;
-        }
-
         // FUNCIÓN DE VALIDACIÓN ACTUALIZADA - Reemplaza la existente
         function validateDataBeforeExport() {
-            // Primero migrar registros antiguos
-            const migratedCount = migrateOldEntries();
-
-            if (migratedCount > 0) {
-                showCustomAlert(
-                    `Se han actualizado ${migratedCount} registros con la nueva estructura. ` +
-                    'Ahora puedes exportar correctamente con todos los campos (Set, Setting, etc.).',
-                    '✅ Migración completada'
-                );
-                return;
-            }
-
             // Verificar que todos los registros tengan la estructura correcta
             const invalidEntries = entries.filter(entry =>
                 !entry.hasOwnProperty('set') || !entry.hasOwnProperty('setting')
@@ -6731,9 +6767,6 @@
 
         // FUNCIÓN DE EXPORTACIÓN ACTUALIZADA - Reemplaza la existente
         function exportToCSV() {
-            // Primero asegurarnos de que todos los registros están migrados
-            migrateOldEntries();
-
             if (substances.length === 0 && entries.length === 0) {
                 alert('No hay datos para exportar');
                 return;
@@ -6996,78 +7029,7 @@
         function generateUniqueId() {
             return Date.now().toString(36) + Math.random().toString(36).substr(2, 9);
         }
-
-
-        // AÑADE ESTA FUNCIÓN PARA AÑADIR UN BOTÓN DE MIGRACIÓN
-        function addMigrationButton() {
-            const dataView = document.getElementById('data-view');
-            if (dataView) {
-                // Crear contenedor para botones
-                const buttonContainer = document.createElement('div');
-                buttonContainer.style.marginTop = '2rem';
-                buttonContainer.style.padding = '1rem';
-                buttonContainer.style.backgroundColor = 'var(--darker-bg)';
-                buttonContainer.style.borderRadius = '12px';
-                buttonContainer.style.border = '1px solid var(--border-color)';
-
-                // Título
-                const title = document.createElement('h4');
-                title.textContent = 'Migración de Datos';
-                title.style.color = 'var(--accent-cyan)';
-                title.style.marginBottom = '1rem';
-                buttonContainer.appendChild(title);
-
-                // Descripción
-                const description = document.createElement('p');
-                description.textContent = 'Si tienes registros antiguos, migra primero para incluir todos los campos (Set, Setting, etc.) en las exportaciones.';
-                description.style.color = 'var(--text-muted)';
-                description.style.marginBottom = '1rem';
-                buttonContainer.appendChild(description);
-
-                // Botón de migración
-                const migrateButton = document.createElement('button');
-                migrateButton.className = 'btn-primary';
-                migrateButton.textContent = '🔄 Migrar registros antiguos';
-                migrateButton.onclick = function() {
-                    const migratedCount = migrateOldEntries();
-                    if (migratedCount > 0) {
-                        showCustomAlert(`✅ ${migratedCount} registros actualizados con la nueva estructura`);
-                    } else {
-                        showCustomAlert('ℹ️ Todos los registros ya tienen la estructura completa');
-                    }
-                };
-                migrateButton.style.marginRight = '1rem';
-                buttonContainer.appendChild(migrateButton);
-
-                // Añadir al DOM
-                dataView.querySelector('.calendar-container').appendChild(buttonContainer);
-            }
-        }
-
-        // AÑADE ESTO AL FINAL DE TU ARCHIVO, DESPUÉS DE TODAS LAS FUNCIONES
-        document.addEventListener('DOMContentLoaded', function() {
-            // Añadir el botón de migración después de que se cargue la página
-            setTimeout(addMigrationButton, 2000);
-
-            // Verificar si hay registros que necesiten migración
-            const needsMigration = entries.some(entry =>
-                !entry.hasOwnProperty('set') || !entry.hasOwnProperty('setting')
-            );
-
-            if (needsMigration) {
-                setTimeout(() => {
-                    showCustomAlert(
-                        '📋 Se han detectado registros antiguos.\n\n' +
-                        'Para exportar correctamente con todos los campos (Set, Setting, etc.), ' +
-                        'por favor ve a la pestaña "Datos" y haz clic en "Migrar registros antiguos" ' +
-                        'antes de exportar.',
-                        'Migración Requerida'
-                    );
-                }, 3000);
-            }
-        });
-
-
+        
         function clearAllData() {
             showCustomConfirm(
                 '¿Estás seguro de que quieres eliminar todos los datos? Esta acción no se puede deshacer.',

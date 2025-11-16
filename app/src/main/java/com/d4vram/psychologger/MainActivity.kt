@@ -1774,10 +1774,6 @@ fun WebViewScreen(
                             // Función de exportación
                             window.exportToCSV = function() {
                                 try {
-                                    if (typeof migrateOldEntries === 'function') {
-                                        migrateOldEntries();
-                                    }
-
                                     let csvContent = "";
                                     csvContent += "SUSTANCIAS\n";
                                     csvContent += "ID,Nombre,Color,Emoji,Fecha_Creacion,Fecha_Actualizacion\n";
