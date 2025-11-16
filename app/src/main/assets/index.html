@@ -6211,11 +6211,29 @@
         }
 
         function buildFrequencyData(entries) {
+            // Patrones inválidos a excluir (búsqueda parcial)
+            const invalidPatterns = [
+                'month', 'year', 'day', 'week',
+                'si me da', 'undefined', 'null',
+                'select', 'option', 'value'
+            ];
+
             const counts = {};
             entries.forEach(entry => {
-                const label = (entry.substance || 'Sin sustancia').trim() || 'Sin sustancia';
-                counts[label] = (counts[label] || 0) + 1;
+                let label = (entry.substance || 'Sin sustancia').trim() || 'Sin sustancia';
+                const labelLower = label.toLowerCase();
+
+                // Filtrar si contiene algún patrón inválido
+                const isInvalid = invalidPatterns.some(pattern =>
+                    labelLower.includes(pattern)
+                );
+
+                // Solo contar si es válido y no está vacío
+                if (!isInvalid && label.length > 0) {
+                    counts[label] = (counts[label] || 0) + 1;
+                }
             });
+
             return Object.entries(counts)
                 .sort((a, b) => b[1] - a[1])
                 .map(([label, value], index) => ({
@@ -6226,11 +6244,15 @@
         }
 
         function buildTimelineData(entries) {
+            const monthNames = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
             const map = new Map();
             entries.forEach(entry => {
                 const date = new Date(entry.date);
-                const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-                const label = date.toLocaleString('es-ES', { month: 'short', year: 'numeric' });
+                if (isNaN(date)) return;
+                const year = date.getFullYear();
+                const month = date.getMonth();
+                const key = `${year}-${String(month + 1).padStart(2, '0')}`;
+                const label = `${monthNames[month]} ${year}`;
                 const current = map.get(key) || { label, value: 0 };
                 current.value += 1;
                 map.set(key, current);
@@ -6289,7 +6311,7 @@
             const { ctx, width, height } = setupCanvas(canvas);
             ctx.clearRect(0, 0, width, height);
 
-            const padding = { top: 30, right: 20, bottom: 50, left: 40 };
+            const padding = { top: 30, right: 20, bottom: 80, left: 40 };
             const chartWidth = width - padding.left - padding.right;
             const chartHeight = height - padding.top - padding.bottom;
             const maxValue = Math.max(...dataset.map(item => item.value), 1);
@@ -6315,23 +6337,38 @@
                 const barHeight = (item.value / maxValue) * chartHeight;
                 const x = padding.left + index * barSpace + (barSpace - barWidth) / 2;
                 const y = padding.top + chartHeight - barHeight;
+                const radius = 10;
+
                 ctx.fillStyle = item.color;
                 ctx.beginPath();
                 ctx.moveTo(x, y + barHeight);
-                ctx.lineTo(x, y + 10);
-                ctx.quadraticCurveTo(x, y, x + 10, y);
-                ctx.lineTo(x + barWidth - 10, y);
-                ctx.quadraticCurveTo(x + barWidth, y, x + barWidth, y + 10);
+                ctx.lineTo(x, y + radius);
+                ctx.quadraticCurveTo(x, y, x + radius, y);
+                ctx.lineTo(x + barWidth - radius, y);
+                ctx.quadraticCurveTo(x + barWidth, y, x + barWidth, y + radius);
                 ctx.lineTo(x + barWidth, y + barHeight);
                 ctx.closePath();
                 ctx.fill();
 
+                ctx.lineWidth = 1.5;
+                ctx.strokeStyle = 'rgba(15,15,35,0.6)';
+                ctx.beginPath();
+                ctx.moveTo(x, y + barHeight);
+                ctx.lineTo(x, y + radius);
+                ctx.quadraticCurveTo(x, y, x + radius, y);
+                ctx.lineTo(x + barWidth - radius, y);
+                ctx.quadraticCurveTo(x + barWidth, y, x + barWidth, y + radius);
+                ctx.lineTo(x + barWidth, y + barHeight);
+                ctx.stroke();
+
                 ctx.fillStyle = 'rgba(255,255,255,0.85)';
-                ctx.textAlign = 'center';
+                ctx.textAlign = 'left';
+                ctx.font = '10px Inter, sans-serif';
                 ctx.save();
-                ctx.translate(x + barWidth / 2, height - 20);
-                ctx.rotate(-0.1);
-                ctx.fillText(item.label.slice(0, 12), 0, 0);
+                ctx.translate(x + barWidth / 2, height - 15);
+                ctx.rotate(-Math.PI / 2);
+                const truncatedLabel = truncateLabel(item.label, 14);
+                ctx.fillText(truncatedLabel, 0, 0);
                 ctx.restore();
 
                 shapes.push({ type: 'rect', label: item.label, value: item.value, x, y, width: barWidth, height: barHeight });
@@ -6346,7 +6383,7 @@
             const { ctx, width, height } = setupCanvas(canvas);
             ctx.clearRect(0, 0, width, height);
 
-            const padding = { top: 30, right: 20, bottom: 50, left: 40 };
+            const padding = { top: 30, right: 50, bottom: 70, left: 40 };
             const chartWidth = width - padding.left - padding.right;
             const chartHeight = height - padding.top - padding.bottom;
             const maxValue = Math.max(...dataset.map(item => item.value), 1);
@@ -6395,10 +6432,15 @@
             });
 
             ctx.fillStyle = 'rgba(255,255,255,0.8)';
-            ctx.textAlign = 'center';
+            ctx.textAlign = 'left';
+            ctx.font = '11px Inter, sans-serif';
             dataset.forEach((item, index) => {
                 const x = padding.left + (dataset.length === 1 ? chartWidth / 2 : index * pointSpacing);
-                ctx.fillText(item.label, x, height - 15);
+                ctx.save();
+                ctx.translate(x, height - 10);
+                ctx.rotate(-Math.PI / 4);
+                ctx.fillText(item.label, 0, 0);
+                ctx.restore();
             });
 
             attachTooltip(canvas, tooltipEl, shapes, shape => `${shape.label}: ${shape.value}`);
@@ -6421,6 +6463,8 @@
             dataset.forEach(item => {
                 const sliceAngle = (item.value / total) * Math.PI * 2;
                 const endAngle = startAngle + sliceAngle;
+                const percent = Math.round((item.value / total) * 100);
+
                 ctx.beginPath();
                 ctx.fillStyle = item.color;
                 ctx.moveTo(centerX, centerY);
@@ -6433,6 +6477,8 @@
                     type: 'arc',
                     label: item.label,
                     value: item.value,
+                    percent: percent,
+                    total: total,
                     startAngle,
                     endAngle,
                     innerRadius,
@@ -6443,7 +6489,7 @@
                 startAngle = endAngle;
             });
 
-            attachTooltip(canvas, tooltipEl, shapes, shape => `${shape.label}: ${shape.value}`);
+            attachTooltip(canvas, tooltipEl, shapes, shape => `${shape.label}: ${shape.value} (${shape.percent}%)`);
         }
 
         function setupCanvas(canvas) {
@@ -6466,24 +6512,46 @@
             const handler = evt => {
                 const point = getRelativePoint(canvas, evt);
                 const target = findShape(shapes, point);
+
                 if (target) {
+                    // Solo prevenir scroll si tocamos un elemento del gráfico
+                    evt.preventDefault();
                     tooltipEl.textContent = formatter(target);
                     tooltipEl.style.left = `${point.x}px`;
                     tooltipEl.style.top = `${point.y}px`;
                     card?.classList.add('show-tooltip');
                 } else {
+                    // Si no tocamos nada, permitir scroll normal
                     hideTooltip();
                 }
             };
 
+            // Soporte para eventos táctiles y de ratón
+            canvas.addEventListener('touchstart', handler);
+            canvas.addEventListener('touchmove', handler);
+            canvas.addEventListener('touchend', hideTooltip);
             canvas.addEventListener('pointerup', handler);
             canvas.addEventListener('pointerleave', hideTooltip);
         }
 
         function getRelativePoint(canvas, evt) {
             const rect = canvas.getBoundingClientRect();
-            const clientX = evt.touches ? evt.touches[0].clientX : evt.clientX;
-            const clientY = evt.touches ? evt.touches[0].clientY : evt.clientY;
+            let clientX, clientY;
+
+            if (evt.touches && evt.touches.length > 0) {
+                // touchstart, touchmove
+                clientX = evt.touches[0].clientX;
+                clientY = evt.touches[0].clientY;
+            } else if (evt.changedTouches && evt.changedTouches.length > 0) {
+                // touchend
+                clientX = evt.changedTouches[0].clientX;
+                clientY = evt.changedTouches[0].clientY;
+            } else {
+                // mouse/pointer events
+                clientX = evt.clientX;
+                clientY = evt.clientY;
+            }
+
             const x = (clientX - rect.left);
             const y = (clientY - rect.top);
             return { x, y };
@@ -6532,6 +6600,30 @@
                 return angle >= start && angle <= end;
             }
             return angle >= start || angle <= end;
+        }
+
+        function truncateLabel(label, maxChars) {
+            if (!label) return '';
+            if (label.length <= maxChars) return label;
+            return label.slice(0, maxChars - 1) + '…';
+        }
+
+        function wrapLabel(label, maxPerLine) {
+            if (!label) return [''];
+            const words = label.split(' ');
+            const lines = [];
+            let current = '';
+            words.forEach(word => {
+                const addition = current.length ? `${current} ${word}` : word;
+                if (addition.length <= maxPerLine) {
+                    current = addition;
+                } else {
+                    if (current) lines.push(current);
+                    current = word.length > maxPerLine ? word.slice(0, maxPerLine - 1) + '…' : word;
+                }
+            });
+            if (current) lines.push(current);
+            return lines.slice(0, 2);
         }
 
         // FUNCIÓN DE MIGRACIÓN MEJORADA - Añade esto al principio de tu script
