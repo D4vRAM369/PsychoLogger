@@ -1553,15 +1553,24 @@
             box-shadow: 0 8px 25px rgba(139, 92, 246, 0.4);
         }
 
-        .datetime-actions .btn-secondary {
-            background: var(--card-bg);
+        .btn-secondary {
+            background: linear-gradient(135deg, rgba(6, 182, 212, 0.15), rgba(14, 165, 233, 0.35));
             color: var(--text-light);
-            border: 2px solid var(--border-color);
+            padding: 0.75rem 1.5rem;
+            border: 1px solid rgba(6, 182, 212, 0.4);
+            border-radius: 14px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            box-shadow: 0 6px 18px rgba(6, 182, 212, 0.25);
         }
 
-        .datetime-actions .btn-secondary:hover {
-            border-color: var(--primary-purple);
-            box-shadow: 0 5px 15px rgba(139, 92, 246, 0.2);
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            border-color: rgba(6, 182, 212, 0.8);
+            box-shadow: 0 12px 28px rgba(6, 182, 212, 0.35);
+            background: linear-gradient(135deg, rgba(6, 182, 212, 0.3), rgba(14, 165, 233, 0.55));
         }
 
         .datetime-actions .btn-danger {
@@ -1618,6 +1627,27 @@
         .resource-card h4 {
             color: var(--accent-cyan);
             margin-bottom: 0.5rem;
+        }
+
+        .backup-folder-row {
+            margin-top: 0.75rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+
+        .backup-path-chip {
+            display: block;
+            width: 100%;
+            padding: 0.45rem 0.75rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 0.86rem;
+            font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+            word-break: break-all;
+            overflow-wrap: anywhere;
+            white-space: normal;
         }
         
         /* === ESTILOS PARA LA SECCIÓN DE LIBROS === */
@@ -2876,9 +2906,9 @@
                             <strong>Último backup:</strong>
                             <span id="backupStatusText">Aún no se ha generado.</span>
                         </div>
-                        <div style="margin-top: 8px;">
+                        <div class="backup-folder-row">
                             <strong>Carpeta:</strong>
-                            <code id="backupPathText">Android/data/com.d4vram.psychologger/files/backups</code>
+                            <code id="backupPathText" class="backup-path-chip" title="Android/data/com.d4vram.psychologger/files/backups">Android/data/com.d4vram.psychologger/files/backups</code>
                         </div>
                     </div>
                     <div class="resource-card">
@@ -4335,7 +4365,12 @@
                     console.warn('No se pudo obtener la carpeta de backups:', error);
                 }
 
-                pathEl.textContent = fallbackPath;
+                const prettyPath = fallbackPath
+                    .replace(/^\/storage\/emulated\/0\//, '')
+                    .replace(/^\/sdcard\//, '')
+                    .replace(/^\/data\/user\/0\//, 'data/user/0/');
+                pathEl.textContent = prettyPath.trim();
+                pathEl.setAttribute('title', fallbackPath);
 
                 try {
                     if (window.Android && typeof Android.getLastBackupInfo === 'function') {
