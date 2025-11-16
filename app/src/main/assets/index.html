@@ -6526,6 +6526,21 @@
                 }
             };
 
+            // Limpiar listeners antiguos si existen (prevenir memory leaks)
+            if (canvas._tooltipHandler) {
+                canvas.removeEventListener('touchstart', canvas._tooltipHandler);
+                canvas.removeEventListener('touchmove', canvas._tooltipHandler);
+                canvas.removeEventListener('pointerup', canvas._tooltipHandler);
+            }
+            if (canvas._hideTooltipHandler) {
+                canvas.removeEventListener('touchend', canvas._hideTooltipHandler);
+                canvas.removeEventListener('pointerleave', canvas._hideTooltipHandler);
+            }
+
+            // Guardar referencias para poder limpiar después
+            canvas._tooltipHandler = handler;
+            canvas._hideTooltipHandler = hideTooltip;
+
             // Soporte para eventos táctiles y de ratón
             canvas.addEventListener('touchstart', handler);
             canvas.addEventListener('touchmove', handler);
