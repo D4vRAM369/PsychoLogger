@@ -149,6 +149,94 @@ Tus registros se guardan de forma estructurada:
 - Contacta al desarrollador
 - Revisa la documentación técnica
 
+## 🔓 Desencriptar Backups de Audios Cifrados
+
+Cuando exportas audios desde PsychoLogger, se cifran con **AES-256-GCM** para proteger tu privacidad. Aquí te explicamos cómo recuperarlos:
+
+### Requisitos
+
+```bash
+# Instalar Python 3 (si no lo tienes)
+sudo apt install python3 python3-pip  # Linux/Ubuntu
+# brew install python3                # macOS
+
+# Instalar librería de criptografía
+pip3 install cryptography
+```
+
+### Comandos de Desencriptación
+
+```bash
+# Opción 1: Con contraseña en el comando (menos seguro)
+python3 decrypt_psychologger.py audios_encrypted_2025-01-15.zip miContraseña123
+
+# Opción 2: Sin contraseña (te la pedirá de forma oculta - RECOMENDADO)
+python3 decrypt_psychologger.py audios_encrypted_2025-01-15.zip
+🔒 Contraseña: ****
+```
+
+### ¿Qué hace el script?
+
+1. **Lee el ZIP cifrado** con tus audios exportados
+2. **Extrae los metadatos** (salt, IV, iteraciones PBKDF2)
+3. **Deriva la clave AES-256** desde tu contraseña usando PBKDF2 con 120,000 iteraciones
+4. **Desencripta** los datos con AES-256-GCM
+5. **Extrae los audios** a la carpeta `decrypted_audios/`
+
+### Ejemplo completo
+
+```bash
+# 1. Descargar el ZIP cifrado desde tu teléfono
+adb pull /sdcard/Download/audios_encrypted_2025-01-15.zip .
+
+# 2. Desencriptar
+python3 decrypt_psychologger.py audios_encrypted_2025-01-15.zip
+🔒 Contraseña: ****
+
+# Salida:
+🔓 Desencriptando: audios_encrypted_2025-01-15.zip
+📄 Metadata:
+   - Algoritmo: AES-256-GCM
+   - Iteraciones: 120000
+   - Salt: 16 bytes
+   - IV: 12 bytes
+📦 Datos cifrados: 2458930 bytes
+🔑 Derivando clave AES-256 con PBKDF2 (120000 iteraciones)...
+🔐 Desencriptando con AES-256-GCM...
+✅ Desencriptado exitoso: 2458802 bytes
+📂 Extrayendo audios a: decrypted_audios/
+🎵 Audios encontrados: 12
+   ✓ audio_2025-01-10_143522.m4a
+   ✓ audio_2025-01-11_092311.m4a
+   ...
+✅ ¡Desencriptado completado!
+
+# 3. Tus audios están en: decrypted_audios/
+ls decrypted_audios/
+```
+
+### Seguridad del Cifrado
+
+- **Algoritmo:** AES-256-GCM (estándar militar)
+- **Derivación de clave:** PBKDF2-HMAC-SHA256 con 120,000 iteraciones
+- **Salt único:** Generado aleatoriamente por backup
+- **IV único:** Generado aleatoriamente (96 bits)
+- **Autenticación:** GCM incluye verificación de integridad
+
+### Errores Comunes
+
+**❌ Contraseña incorrecta:**
+```
+❌ ERROR: Contraseña incorrecta o datos corruptos
+```
+→ Verifica que la contraseña sea exactamente la que usaste al exportar.
+
+**❌ Librería no instalada:**
+```
+ModuleNotFoundError: No module named 'cryptography'
+```
+→ Ejecuta: `pip3 install cryptography`
+
 ---
 
 **Recuerda:** Esta herramienta está diseñada para fomentar el uso responsable y la reducción de daños. Siempre infórmate adecuadamente y considera los riesgos antes de experimentar con cualquier sustancia psicoactiva.
