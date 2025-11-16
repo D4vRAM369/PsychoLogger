@@ -495,6 +495,314 @@
             position: relative;
             animation: modalSlideIn 0.3s ease;
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+
+
+
+        /* Book modal specific styles */
+        .book-author-modal {
+            color: var(--accent-cyan);
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+        }
+
+        .book-desc-modal {
+            color: var(--text-muted);
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+        }
+
+        .book-actions {
+            text-align: center;
+            margin-top: 1.5rem;
+        }
+
+        /* Books modal styles */
+        .books-list {
+            max-height: 97vh;
+            overflow-y: auto;
+            padding-right: 0.5rem;
+        }
+
+        .book-entry {
+            background: rgba(139, 92, 246, 0.05);
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            transition: all 0.2s ease;
+        }
+
+        .book-entry:hover {
+            background: rgba(139, 92, 246, 0.1);
+            border-color: rgba(139, 92, 246, 0.3);
+        }
+
+        .book-entry h4 {
+            color: var(--accent-cyan);
+            margin: 0 0 0.25rem 0;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        .book-author {
+            color: var(--primary-purple);
+            font-size: 0.9rem;
+            margin: 0 0 0.5rem 0;
+            font-weight: 500;
+        }
+
+        .book-desc {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            line-height: 1.4;
+            margin: 0;
+        }
+
+        /* Books modal specific styles */
+        .books-modal-content {
+            max-width: 600px !important;
+            width: 95% !important;
+            max-height: 85vh !important;
+        }
+
+        .books-modal-body {
+            padding: 0;
+        }
+
+        .books-modal-subtitle {
+            color: var(--text-muted);
+            text-align: center;
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+
+        .books-modal-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            max-height: 97vh;
+            overflow-y: auto;
+            padding-right: 0.5rem;
+        }
+
+        .modal-book-item {
+            background: rgba(139, 92, 246, 0.08);
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            border-radius: 12px;
+            padding: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+        }
+
+        .modal-book-item:hover {
+            background: rgba(139, 92, 246, 0.15);
+            border-color: rgba(139, 92, 246, 0.4);
+            transform: translateX(3px);
+        }
+
+        .modal-book-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .modal-book-info h5 {
+            color: var(--accent-cyan);
+            margin: 0 0 0.25rem 0;
+            font-size: 1rem;
+            font-weight: 600;
+            line-height: 1.3;
+        }
+
+        .modal-book-author {
+            color: var(--primary-purple);
+            font-size: 0.85rem;
+            margin: 0 0 0.5rem 0;
+            font-weight: 500;
+        }
+
+        .modal-book-desc {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            line-height: 1.4;
+            margin: 0;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .modal-book-arrow {
+            color: var(--accent-cyan);
+            font-size: 1.2rem;
+            font-weight: bold;
+            opacity: 0.7;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+        }
+
+        .modal-book-item:hover .modal-book-arrow {
+            opacity: 1;
+            transform: translateX(3px);
+        }
+
+        /* Mobile responsive adjustments */
+        @media (max-width: 480px) {
+            .books-modal-content {
+                width: 98% !important;
+                margin: 0.5rem auto !important;
+                max-height: 90vh !important;
+                padding: 1.5rem !important;
+            }
+
+            .modal-book-item {
+                padding: 0.75rem;
+                flex-direction: column;
+                align-items: flex-start;
+                text-align: left;
+                gap: 0.5rem;
+            }
+
+            .modal-book-arrow {
+                align-self: flex-end;
+                margin-top: 0.5rem;
+                font-size: 1rem;
+            }
+
+            .modal-book-info h5 {
+                font-size: 0.95rem;
+                line-height: 1.2;
+            }
+
+            .modal-book-author {
+                font-size: 0.8rem;
+                margin-bottom: 0.25rem;
+            }
+
+            .modal-book-desc {
+                font-size: 0.75rem;
+                -webkit-line-clamp: 3;
+                line-height: 1.3;
+            }
+
+            .books-modal-grid {
+                max-height: 97vh;
+                gap: 0.5rem;
+            }
+
+            .books-modal-subtitle {
+                font-size: 0.85rem;
+                margin-bottom: 1rem;
+            }
+
+            .custom-dialog-header h3 {
+                font-size: 1.1rem;
+            }
+        }
+
+        /* ==== MODAL DE LIBROS (GPT-5 SOLUTION) ==== */
+        .hidden { display: none !important; }
+        body.modal-open { overflow: hidden; }
+
+        /* contenedor general */
+        .books-modal:not(.hidden) {
+          display: block;
+          position: fixed;
+          inset: 0;
+          z-index: 99999; /* por encima de cualquier barra/nav */
+        }
+
+        /* fondo oscurecido con blur */
+        .modal__backdrop {
+          position: absolute;
+          inset: 0;
+          background: rgba(8, 8, 19, 0.6);
+          backdrop-filter: blur(4px);
+        }
+
+        /* panel */
+        .modal__panel {
+          position: relative;
+          z-index: 100000;
+          margin: 0.2vh auto 0.2vh;
+          width: min(100vw, 800px);
+          min-height: 800px;
+          max-height: 100vh;
+          background: #111327;
+          color: #fff;
+          border-radius: 20px;
+          box-shadow: 0 20px 60px rgba(0,0,0,.55);
+          border: 1px solid rgba(255,255,255,0.08);
+          display: flex;
+          flex-direction: column;
+          overflow: hidden;
+        }
+
+        /* cabecera */
+        .modal__header {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 12px;
+          padding: 16px 18px;
+          background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,0));
+        }
+        .modal__title {
+          display: flex; align-items: center; gap: 10px;
+        }
+        .modal__emoji { font-size: 22px; }
+        .modal__header h3 {
+          font-size: 18px; font-weight: 700; margin: 0;
+        }
+        .modal__close {
+          appearance: none; border: 0; background: #e7e7ff; color: #0c0f25;
+          font-weight: 700; border-radius: 12px; width: 40px; height: 40px;
+          cursor: pointer;
+        }
+
+        /* subtítulo */
+        .modal__subtitle {
+          margin: 0 18px 8px 18px;
+          color: rgba(255,255,255,.75);
+          font-size: 14px;
+        }
+
+        /* grid scrollable */
+        .books-grid {
+          padding: 8px 18px 16px 18px;
+          overflow: auto;
+          -webkit-overflow-scrolling: touch;
+          display: grid;
+          gap: 12px;
+        }
+        .book {
+          background: #1a1a2e;
+          border: 1px solid rgba(255,255,255,0.06);
+          border-radius: 16px;
+          padding: 14px;
+        }
+        .book__title { margin: 0 0 6px 0; font-size: 16px; font-weight: 700; }
+        .book__meta  { margin: 0 0 6px 0; font-size: 13px; opacity: .9; }
+        .book__desc  { margin: 0; font-size: 14px; opacity: .8; }
+
+        /* nota final */
+        .modal__note {
+          margin: 8px 18px 18px;
+          font-size: 12px;
+          color: rgba(255,255,255,.75);
+        }
+
+        /* Responsive fino para móviles pequeños */
+        @media (max-width: 380px) {
+          .modal__panel { width: 94vw; }
+          .book__title { font-size: 15px; }
+          .book__desc  { font-size: 13px; }
         }
 
         /* Ensure modal content is centered on small screens */
@@ -889,6 +1197,400 @@
             text-align: center;
         }
 
+        /* ===== CUSTOM DATETIME PICKER ===== */
+        .custom-datetime-selector {
+            width: 100%;
+        }
+
+        .datetime-display {
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(135deg,
+                rgba(139, 92, 246, 0.1) 0%,
+                rgba(6, 182, 212, 0.1) 100%);
+            border: 2px solid var(--border-color);
+            border-radius: 16px;
+            color: var(--text-light);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            backdrop-filter: blur(10px);
+        }
+
+        .datetime-display:hover {
+            border-color: var(--primary-purple);
+            box-shadow: 0 0 25px rgba(139, 92, 246, 0.4);
+            transform: translateY(-3px);
+        }
+
+        .datetime-text {
+            font-size: 1rem;
+            color: var(--text-light);
+        }
+
+        .datetime-icon {
+            font-size: 1.2rem;
+            opacity: 0.8;
+        }
+
+        /* Modal específico para datetime */
+        .datetime-modal {
+            max-width: 450px;
+            width: 90%;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+        }
+
+        .datetime-picker-container {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+            margin: 1.5rem 0;
+        }
+
+        .date-section, .time-section {
+            background: linear-gradient(135deg,
+                rgba(139, 92, 246, 0.05) 0%,
+                rgba(6, 182, 212, 0.05) 100%);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .date-row, .time-row {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            justify-content: center;
+        }
+
+        .date-field, .time-field {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .date-field label, .time-field label {
+            font-size: 0.8rem;
+            color: var(--primary-purple);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .date-select, .time-select {
+            padding: 0.8rem 1rem;
+            background-color: var(--card-bg);
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            color: var(--text-light);
+            font-size: 1.1rem;
+            font-weight: 600;
+            font-variant-numeric: tabular-nums;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 80px;
+            text-align: center;
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            background-image:
+                radial-gradient(circle at top left, rgba(139, 92, 246, 0.18), transparent 70%),
+                radial-gradient(circle at bottom right, rgba(6, 182, 212, 0.18), transparent 70%),
+                url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23A855F7' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+            background-repeat: no-repeat, no-repeat, no-repeat;
+            background-position: center, center, right 1rem center;
+            background-size: 260% 260%, 220% 220%, 0.9rem;
+            padding-right: 2.5rem;
+        }
+
+        .date-select::-ms-expand, .time-select::-ms-expand {
+            display: none;
+        }
+
+        .date-select:hover, .time-select:hover {
+            border-color: var(--primary-purple);
+            box-shadow: 0 0 15px rgba(139, 92, 246, 0.3);
+        }
+
+        .date-select:focus, .time-select:focus {
+            outline: none;
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 20px rgba(6, 182, 212, 0.4);
+        }
+
+        .date-select option, .time-select option {
+            background-color: var(--card-bg);
+            color: var(--text-light);
+        }
+
+        .date-select option:hover, .time-select option:hover,
+        .date-select option:focus, .time-select option:focus {
+            background-color: rgba(139, 92, 246, 0.35);
+        }
+
+        .date-select option:checked, .time-select option:checked {
+            background-color: rgba(6, 182, 212, 0.35);
+            color: var(--text-light);
+        }
+
+        .custom-select-wrapper {
+            position: relative;
+            width: 100%;
+            min-width: 80px;
+        }
+
+        .custom-select-wrapper select {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .custom-select-trigger {
+            width: 100%;
+            padding: 0.85rem 2.75rem 0.85rem 1.1rem;
+            border-radius: 12px;
+            border: 2px solid var(--border-color);
+            background: linear-gradient(135deg,
+                rgba(139, 92, 246, 0.18) 0%,
+                rgba(6, 182, 212, 0.18) 100%);
+            color: var(--text-light);
+            font-size: 1.1rem;
+            font-weight: 600;
+            font-variant-numeric: tabular-nums;
+            letter-spacing: 0.02em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.45rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            box-shadow: inset 0 0 15px rgba(8, 9, 34, 0.35);
+        }
+
+        .custom-select-trigger::after {
+            content: '';
+            position: absolute;
+            right: 1.05rem;
+            top: 50%;
+            width: 0.65rem;
+            height: 0.65rem;
+            border-right: 2px solid rgba(168, 85, 247, 0.85);
+            border-bottom: 2px solid rgba(168, 85, 247, 0.85);
+            transform: translateY(-50%) rotate(45deg);
+            transition: transform 0.3s ease, border-color 0.3s ease;
+        }
+
+        .custom-select-wrapper.is-open .custom-select-trigger::after {
+            transform: translateY(-50%) rotate(-135deg);
+            border-color: var(--accent-cyan);
+        }
+
+        .custom-select-trigger:hover {
+            border-color: var(--primary-purple);
+            box-shadow: 0 0 18px rgba(139, 92, 246, 0.35);
+            transform: translateY(-2px);
+        }
+
+        .custom-select-wrapper.is-open .custom-select-trigger {
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 25px rgba(6, 182, 212, 0.45);
+        }
+
+        .custom-select-value {
+            text-transform: uppercase;
+            font-variant-numeric: tabular-nums;
+            letter-spacing: 0.06em;
+        }
+
+        .custom-select-dropdown {
+            position: absolute;
+            top: calc(100% + 0.75rem);
+            left: 0;
+            right: 0;
+            background: rgba(13, 14, 40, 0.95);
+            border: 1px solid rgba(139, 92, 246, 0.5);
+            border-radius: 16px;
+            box-shadow: 0 20px 45px rgba(10, 5, 45, 0.6);
+            padding: 0.6rem;
+            display: none;
+            flex-direction: column;
+            gap: 0.35rem;
+            max-height: 240px;
+            overflow-y: auto;
+            z-index: 25;
+            backdrop-filter: blur(18px);
+            animation: customSelectFadeIn 0.22s ease forwards;
+        }
+
+        .custom-select-wrapper.is-open .custom-select-dropdown {
+            display: flex;
+        }
+
+        .custom-select-option {
+            width: 100%;
+            border: none;
+            border-radius: 12px;
+            padding: 0.75rem 0.9rem;
+            background: linear-gradient(135deg,
+                rgba(60, 52, 110, 0.45) 0%,
+                rgba(27, 45, 80, 0.35) 100%);
+            color: var(--text-light);
+            font-weight: 600;
+            font-size: 1rem;
+            letter-spacing: 0.04em;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            position: relative;
+        }
+
+        .custom-select-option::after {
+            content: '';
+            width: 0.5rem;
+            height: 0.5rem;
+            border-radius: 999px;
+            background: rgba(168, 85, 247, 0.0);
+            box-shadow: 0 0 0 rgba(168, 85, 247, 0.0);
+            transition: all 0.3s ease;
+        }
+
+        .custom-select-option:hover {
+            transform: translateX(4px);
+            background: linear-gradient(135deg,
+                rgba(139, 92, 246, 0.45) 0%,
+                rgba(6, 182, 212, 0.28) 100%);
+            box-shadow: 0 12px 24px rgba(10, 5, 35, 0.45);
+        }
+
+        .custom-select-option:hover::after {
+            background: rgba(168, 85, 247, 0.6);
+            box-shadow: 0 0 12px rgba(168, 85, 247, 0.65);
+        }
+
+        .custom-select-option.selected {
+            background: linear-gradient(135deg,
+                rgba(6, 182, 212, 0.36) 0%,
+                rgba(139, 92, 246, 0.52) 100%);
+            box-shadow: 0 16px 32px rgba(6, 182, 212, 0.25);
+        }
+
+        .custom-select-option.selected::after {
+            background: var(--accent-cyan);
+            box-shadow: 0 0 14px rgba(6, 182, 212, 0.7);
+        }
+
+        .custom-select-dropdown::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .custom-select-dropdown::-webkit-scrollbar-track {
+            background: rgba(15, 16, 42, 0.4);
+            border-radius: 999px;
+        }
+
+        .custom-select-dropdown::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, rgba(139, 92, 246, 0.6), rgba(6, 182, 212, 0.6));
+            border-radius: 999px;
+        }
+
+        @keyframes customSelectFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(6px) scale(0.98);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .time-separator {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--accent-cyan);
+            margin: 0 0.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .datetime-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .datetime-actions button {
+            flex: 1;
+            min-width: 120px;
+            padding: 1rem;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+        }
+
+        .datetime-actions .btn-primary {
+            background: linear-gradient(135deg, var(--primary-purple) 0%, var(--accent-cyan) 100%);
+            color: white;
+        }
+
+        .datetime-actions .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(139, 92, 246, 0.4);
+        }
+
+        .datetime-actions .btn-secondary {
+            background: var(--card-bg);
+            color: var(--text-light);
+            border: 2px solid var(--border-color);
+        }
+
+        .datetime-actions .btn-secondary:hover {
+            border-color: var(--primary-purple);
+            box-shadow: 0 5px 15px rgba(139, 92, 246, 0.2);
+        }
+
+        .datetime-actions .btn-danger {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: white;
+        }
+
+        .datetime-actions .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(239, 68, 68, 0.4);
+        }
+
+        /* Responsive para pantallas pequeñas */
+        @media (max-width: 480px) {
+            .date-row, .time-row {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .time-separator {
+                margin: 0;
+                margin-top: 0.5rem;
+            }
+
+            .datetime-actions {
+                flex-direction: column;
+            }
+        }
+
         .resources-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -916,6 +1618,146 @@
         .resource-card h4 {
             color: var(--accent-cyan);
             margin-bottom: 0.5rem;
+        }
+        
+        /* === ESTILOS PARA LA SECCIÓN DE LIBROS === */
+        .books-expandable {
+            margin-top: 2rem;
+            animation: slideDown 0.3s ease-out;
+        }
+        
+        .books-container {
+            background: rgba(26, 26, 46, 0.95);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 1.5rem;
+            max-height: 70vh;
+            overflow-y: auto;
+            backdrop-filter: blur(10px);
+        }
+        
+        .books-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .books-header h3 {
+            color: var(--accent-cyan);
+            margin: 0;
+            font-size: 1.25rem;
+        }
+        
+        .close-books-btn {
+            background: var(--primary-purple);
+            border: none;
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        
+        .close-books-btn:hover {
+            background: var(--secondary-pink);
+            transform: scale(1.1);
+        }
+        
+        .books-grid {
+            display: grid;
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+        
+        .book-item {
+            background: rgba(139, 92, 246, 0.1);
+            padding: 1.2rem;
+            border-radius: 12px;
+            border-left: 4px solid var(--accent-cyan);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .book-item:hover {
+            background: rgba(139, 92, 246, 0.2);
+            transform: translateX(5px);
+            box-shadow: 0 4px 8px rgba(139, 92, 246, 0.3);
+        }
+        
+        .book-item h5 {
+            color: var(--accent-cyan);
+            margin: 0 0 0.5rem 0;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+        
+        .book-author {
+            color: var(--accent-orange);
+            font-size: 0.9rem;
+            font-weight: 500;
+            margin: 0 0 0.5rem 0;
+        }
+        
+        .book-desc {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            line-height: 1.4;
+            margin: 0;
+        }
+        
+        .books-note {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            background: rgba(6, 182, 212, 0.1);
+            border-radius: 8px;
+            border: 1px solid rgba(6, 182, 212, 0.3);
+        }
+        
+        .books-note p {
+            margin: 0;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            line-height: 1.4;
+        }
+        
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* Responsive para móvil */
+        @media (max-width: 768px) {
+            .books-container {
+                max-height: 97vh;
+                padding: 1rem;
+            }
+            
+            .books-header {
+                margin-bottom: 1rem;
+            }
+            
+            .book-item {
+                padding: 1rem;
+            }
+            
+            .book-item h5 {
+                font-size: 1rem;
+            }
         }
 
         .entry-item {
@@ -1233,8 +2075,199 @@
             }
         }
 
+        /* ========================================
+           ESTILOS GENERALES PARA ADJUNTOS (Audio / Foto)
+           ======================================== */
+        .media-attachments-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 12px;
+            margin-top: 12px;
+        }
+
+        .media-card {
+            border: 2px dashed var(--primary-purple);
+            border-radius: 16px;
+            padding: 18px;
+            background: rgba(139, 92, 246, 0.08); /* primary-purple con alpha */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            min-height: 130px;
+        }
+
+        .media-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 24px rgba(139, 92, 246, 0.25);
+            border-style: solid;
+        }
+
+        .media-card.has-attachment {
+            border-style: solid;
+            background: linear-gradient(
+              135deg,
+              rgba(139, 92, 246, 0.15),   /* primary-purple */
+              rgba(236, 72, 153, 0.12)    /* secondary-pink */
+            );
+        }
+
+        .media-card-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .media-card-icon { font-size: 1.8rem; }
+
+        .media-card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-light);
+        }
+
+        .media-card-subtitle {
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            line-height: 1.4;
+        }
+
+        .media-card-footer {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            font-size: 0.85rem;
+            color: var(--accent-cyan);
+        }
+
+        /* Preview del modal de Foto */
+        .photo-modal-preview {
+            border-radius: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(15, 23, 42, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            aspect-ratio: 4 / 3;
+            margin-bottom: 16px;
+        }
+        .photo-modal-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .photo-modal-preview.empty {
+            flex-direction: column;
+            padding: 24px;
+            gap: 12px;
+            color: var(--text-muted);
+            text-align: center;
+            font-size: 0.95rem;
+        }
+
+        /* Acciones en el modal de Foto */
+        .photo-modal-actions { display: flex; flex-wrap: wrap; gap: 12px; }
+        .photo-modal-actions button { flex: 1 1 200px; }
+        .photo-extra-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 16px; }
+        .photo-extra-actions button { flex: 1 1 140px; }
+        .modal-attachment-actions {
+            display: none;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 16px;
+        }
+        .modal-attachment-actions button {
+            flex: 1 1 150px;
+        }
+
+        /* Botón outline reutilizable */
+        .btn-outline {
+            border: 2px solid var(--primary-purple);
+            background: transparent;
+            color: var(--primary-purple);
+            padding: 12px 16px;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+        .btn-outline:hover {
+            background: rgba(139, 92, 246, 0.12); /* alpha del primary */
+            transform: translateY(-2px);
+        }
+
+        /* Barra de progreso de audio (compartida por UI) */
+        .audio-progress-container {
+            width: 100%;
+            height: 6px;
+            background: rgba(139, 92, 246, 0.2);
+            border-radius: 3px;
+            overflow: hidden;
+            position: relative;
+        }
+        .audio-progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary-purple), var(--secondary-pink));
+            border-radius: 3px;
+            width: 0%;
+            transition: width 0.1s linear;
+        }
+
+        /* Botones de icono */
+        .btn-icon-small {
+            background: rgba(139, 92, 246, 0.15);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            border-radius: 8px;
+            padding: 6px 10px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .btn-icon-small:hover {
+            background: rgba(139, 92, 246, 0.25);
+            transform: scale(1.05);
+        }
+        .btn-icon-small:active { transform: scale(0.95); }
+
+        .btn-icon-large {
+            background: var(--primary-purple);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 48px;
+            height: 48px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4);
+        }
+        .btn-icon-large:hover {
+            background: #7c3aed; /* tono más oscuro del primary-purple */
+            transform: scale(1.1);
+            box-shadow: 0 6px 16px rgba(139, 92, 246, 0.5);
+        }
+        .btn-icon-large:active { transform: scale(1); }
+
+        .btn-icon-danger {
+            background: #ef4444;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 8px 16px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .btn-icon-danger:hover { background: #dc2626; transform: scale(1.05); }
+        .btn-icon-danger:active { transform: scale(0.95); }
+
+
         /* ===== DROPDOWNS PERSONALIZADOS ===== */
-        
         .custom-dropdown {
             position: relative;
             width: 100%;
@@ -1244,9 +2277,9 @@
         .dropdown-header {
             width: 100%;
             padding: 1rem;
-            background: linear-gradient(135deg, 
-                rgba(139, 92, 246, 0.1) 0%, 
-                rgba(236, 72, 153, 0.1) 50%, 
+            background: linear-gradient(135deg,
+                rgba(139, 92, 246, 0.1) 0%,
+                rgba(236, 72, 153, 0.1) 50%,
                 rgba(6, 182, 212, 0.1) 100%);
             border: 2px solid var(--border-color);
             border-radius: 16px;
@@ -1265,18 +2298,18 @@
             border-color: var(--primary-purple);
             box-shadow: 0 0 25px rgba(139, 92, 246, 0.4);
             transform: translateY(-3px);
-            background: linear-gradient(135deg, 
-                rgba(139, 92, 246, 0.15) 0%, 
-                rgba(236, 72, 153, 0.15) 50%, 
+            background: linear-gradient(135deg,
+                rgba(139, 92, 246, 0.15) 0%,
+                rgba(236, 72, 153, 0.15) 50%,
                 rgba(6, 182, 212, 0.15) 100%);
         }
 
         .dropdown-header.active {
             border-color: var(--accent-cyan);
             box-shadow: 0 0 30px rgba(6, 182, 212, 0.5);
-            background: linear-gradient(135deg, 
-                rgba(139, 92, 246, 0.2) 0%, 
-                rgba(236, 72, 153, 0.2) 50%, 
+            background: linear-gradient(135deg,
+                rgba(139, 92, 246, 0.2) 0%,
+                rgba(236, 72, 153, 0.2) 50%,
                 rgba(6, 182, 212, 0.2) 100%);
         }
 
@@ -1301,8 +2334,8 @@
             top: calc(100% + 8px);
             left: 0;
             right: 0;
-            background: linear-gradient(135deg, 
-                rgba(26, 26, 46, 0.95) 0%, 
+            background: linear-gradient(135deg,
+                rgba(26, 26, 46, 0.95) 0%,
                 rgba(15, 15, 35, 0.95) 100%);
             border: 2px solid var(--border-color);
             border-radius: 16px;
@@ -1343,15 +2376,15 @@
         }
 
         .dropdown-option:hover {
-            background: linear-gradient(135deg, 
-                rgba(139, 92, 246, 0.2) 0%, 
+            background: linear-gradient(135deg,
+                rgba(139, 92, 246, 0.2) 0%,
                 rgba(236, 72, 153, 0.2) 100%);
             transform: translateX(5px);
         }
 
         .dropdown-option.selected {
-            background: linear-gradient(135deg, 
-                rgba(139, 92, 246, 0.3) 0%, 
+            background: linear-gradient(135deg,
+                rgba(139, 92, 246, 0.3) 0%,
                 rgba(6, 182, 212, 0.3) 100%);
             border-left: 4px solid var(--accent-cyan);
         }
@@ -1389,8 +2422,8 @@
 
         /* Estilos para headers de categorías */
         .dropdown-option.category-header {
-            background: linear-gradient(135deg, 
-                rgba(139, 92, 246, 0.3) 0%, 
+            background: linear-gradient(135deg,
+                rgba(139, 92, 246, 0.3) 0%,
                 rgba(6, 182, 212, 0.3) 100%);
             color: var(--accent-cyan);
             font-weight: 700;
@@ -1402,8 +2435,8 @@
         }
 
         .dropdown-option.category-header:hover {
-            background: linear-gradient(135deg, 
-                rgba(139, 92, 246, 0.4) 0%, 
+            background: linear-gradient(135deg,
+                rgba(139, 92, 246, 0.4) 0%,
                 rgba(6, 182, 212, 0.4) 100%);
             transform: none;
         }
@@ -1416,6 +2449,179 @@
         .dropdown-option.category-header:first-child {
             border-top-left-radius: 14px;
             border-top-right-radius: 14px;
+        }
+
+        /* === ESTILOS PARA CAMPOS PERSONALIZADOS DE UNIDADES === */
+        .dropdown-option.custom-input-container {
+            background: rgba(139, 92, 246, 0.15);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            border-radius: 8px;
+            margin: 0.5rem;
+            padding: 0.75rem;
+            cursor: default;
+            flex-direction: column;
+            gap: 0.5rem;
+            min-height: auto;
+        }
+
+        .dropdown-option.custom-input-container:hover {
+            background: rgba(139, 92, 246, 0.2);
+            transform: none;
+            border-color: var(--accent-cyan);
+        }
+
+        .dropdown-option.custom-input-container:hover::before {
+            opacity: 0;
+        }
+
+        .custom-unit-input {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+            width: 100%;
+        }
+
+        .custom-unit-field {
+            flex: 1;
+            background: var(--darker-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 0.5rem;
+            color: var(--text-light);
+            font-size: 0.9rem;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .custom-unit-field::placeholder {
+            color: var(--text-muted);
+            font-style: italic;
+        }
+
+        .custom-unit-field:focus {
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 0 2px rgba(6, 182, 212, 0.2);
+        }
+
+        .add-custom-unit-btn {
+            background: linear-gradient(135deg, var(--primary-purple), var(--accent-cyan));
+            border: none;
+            color: white;
+            padding: 0.5rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .add-custom-unit-btn:hover {
+            background: linear-gradient(135deg, var(--secondary-pink), var(--accent-cyan));
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4);
+        }
+
+        .add-custom-unit-btn:active {
+            transform: translateY(0);
+        }
+
+        /* Estilos para unidades personalizadas una vez agregadas */
+        .dropdown-option.custom-unit {
+            background: rgba(6, 182, 212, 0.1);
+            border-left: 3px solid var(--accent-cyan);
+            position: relative;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-right: 50px;
+        }
+
+        .custom-unit-content {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            flex: 1;
+        }
+
+        .custom-unit-actions {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            position: absolute;
+            right: 30px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        .dropdown-option.custom-unit:hover .custom-unit-actions {
+            opacity: 1;
+        }
+
+        .custom-unit-btn {
+            width: 18px;
+            height: 18px;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            transition: all 0.3s ease;
+            margin: 0 1px;
+        }
+
+        .edit-custom-unit-btn {
+            background: var(--accent-cyan);
+            color: white;
+        }
+
+        .edit-custom-unit-btn:hover {
+            background: var(--primary-purple);
+            transform: scale(1.1);
+        }
+
+        .delete-custom-unit-btn {
+            background: var(--secondary-pink);
+            color: white;
+        }
+
+        .delete-custom-unit-btn:hover {
+            background: #dc2626;
+            transform: scale(1.1);
+        }
+
+        .dropdown-option.custom-unit::after {
+            content: '✨';
+            position: absolute;
+            right: 1rem;
+            opacity: 0.7;
+            font-size: 0.9rem;
+            pointer-events: none;
+        }
+
+        .dropdown-option.custom-unit:hover::after {
+            opacity: 1;
+        }
+
+        /* Responsive para móvil */
+        @media (max-width: 768px) {
+            .custom-unit-input {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            .custom-unit-field {
+                width: 100%;
+            }
+
+            .add-custom-unit-btn {
+                width: 100%;
+                padding: 0.6rem;
+            }
         }
 
         /* Scrollbar personalizado para dropdowns */
@@ -1473,6 +2679,77 @@
    .btn-danger:active {
        transform: translateY(0);
    }
+
+   /* ========================================
+      ESTILOS DE AUDIO - Grabación y Reproducción
+      ======================================== */
+
+   /* Botón de grabar (estilo outline con icono de micrófono) */
+   .btn-audio-record {
+       width: 100%;
+       padding: 12px 16px;
+       background: transparent;
+       border: 2px dashed var(--primary);
+       border-radius: 12px;
+       color: var(--primary);
+       font-size: 0.95rem;
+       font-weight: 600;
+       cursor: pointer;
+       transition: all 0.3s ease;
+       display: flex;
+       align-items: center;
+       justify-content: center;
+       gap: 8px;
+   }
+
+   .btn-audio-record:hover {
+       background: var(--primary-alpha);
+       border-style: solid;
+       transform: translateY(-2px);
+   }
+
+   .btn-audio-record:active {
+       transform: translateY(0);
+   }
+
+   /* Card de grabación activa (fondo rojizo, animación de pulso) */
+   .audio-recording-card {
+       background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(248, 113, 113, 0.1));
+       border: 2px solid var(--danger);
+       border-radius: 12px;
+       padding: 16px;
+       margin-top: 8px;
+   }
+
+   /* Animación de pulso para indicar grabación */
+   .recording-pulse {
+       width: 12px;
+       height: 12px;
+       background: var(--danger);
+       border-radius: 50%;
+       animation: pulse 1.5s ease-in-out infinite;
+   }
+
+   @keyframes pulse {
+       0%, 100% {
+           opacity: 1;
+           transform: scale(1);
+       }
+       50% {
+           opacity: 0.4;
+           transform: scale(1.3);
+       }
+   }
+
+   /* Card del reproductor de audio (fondo azul/morado suave) */
+   .audio-player-card {
+       background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(6, 182, 212, 0.1));
+       border: 2px solid var(--primary);
+       border-radius: 12px;
+       padding: 16px;
+       margin-top: 8px;
+   }
+
 
     </style>
 </head>
@@ -1553,9 +2830,20 @@
                         <h4>PsychonautWiki</h4>
                         <p>Enciclopedia científica de sustancias psicoactivas y sus efectos</p>
                     </div>
+                    <div class="resource-card"
+                         onclick="openExternalURL('https://www.drugscience.org.uk/')">
+                        <h4>DrugsScience</h4>
+                        <p>Organización independiente líder en información y educación científica sobre drogas, que ofrece recursos y datos basados en evidencia para promover decisiones informadas y políticas sensatas</p>
+                    </div>
+                    <div class="resource-card" onclick="openBooksModal()">
+                        <h4>📚 Libros Recomendados</h4>
+                        <p>Bibliografía esencial sobre psiconáuticos, neurociencia y reducción de riesgos</p>
+                    </div>
                 </div>
+
             </div>
         </div>
+
 
         <!-- Data View -->
         <div id="data-view" class="view" style="display: none;">
@@ -1565,7 +2853,7 @@
                     <div class="resource-card">
                         <h4>Exportar Datos</h4>
                         <p>Descargar todos tus datos en formato CSV</p>
-                        <button class="btn-primary" onclick="validateDataBeforeExport()">Exportar CSV</button>
+                        <button class="btn-primary" onclick="validateDataBeforeExport()">📤 Exportar CSV</button>
                     </div>
                     <div class="resource-card">
                         <h4>Importar Datos</h4>
@@ -1580,6 +2868,38 @@
                         <h4>Limpiar Datos</h4>
                         <p>Eliminar todos los datos almacenados</p>
                         <button class="btn-danger" onclick="clearAllData()">Limpiar Todo</button>
+                    </div>
+                    <div class="resource-card">
+                        <h4>🔄 Auto-Backup</h4>
+                        <p>La app crea una copia completa cada 12 horas cuando detecta cambios recientes.</p>
+                        <div>
+                            <strong>Último backup:</strong>
+                            <span id="backupStatusText">Aún no se ha generado.</span>
+                        </div>
+                        <div style="margin-top: 8px;">
+                            <strong>Carpeta:</strong>
+                            <code id="backupPathText">Android/data/com.d4vram.psychologger/files/backups</code>
+                        </div>
+                    </div>
+                    <div class="resource-card">
+                        <h4>💾 Backup Manual</h4>
+                        <p>Crear backup completo (datos + audios)</p>
+                        <button class="btn-primary" onclick="createManualBackup()">🗄️ Crear Backup</button>
+                    </div>
+                    <div class="resource-card">
+                        <h4>📥 Importar Backup</h4>
+                        <p>Restaura datos, audios y fotos desde un ZIP previamente exportado.</p>
+                        <button class="btn-secondary" onclick="promptBackupImport()">📥 Importar Backup</button>
+                    </div>
+                    <div class="resource-card">
+                        <h4>🎤 Exportar Audios</h4>
+                        <p>Exportar todas las notas de voz en ZIP</p>
+                        <button class="btn-primary" onclick="openAudioExportModal()">📦 Exportar ZIP</button>
+                    </div>
+                    <div class="resource-card">
+                        <h4>📸 Exportar Fotos</h4>
+                        <p>Descargar todas las imágenes adjuntas en un ZIP</p>
+                        <button class="btn-primary" onclick="exportPhotosZip()">🗂️ Exportar Fotos</button>
                     </div>
                 </div>
             </div>
@@ -1615,7 +2935,7 @@
         <div id="entryModal" class="modal">
             <div class="modal-content">
                 <button class="close-btn" onclick="closeModal('entryModal')">×</button>
-                <h3>Nuevo Registro</h3>
+                <h3 id="entryModalTitle">Nuevo Registro</h3>
                 <form id="entryForm">
                     <div class="form-group">
                         <label>Sustancia *</label>
@@ -1684,6 +3004,17 @@
                                     <span class="option-text">1/8 tripi</span>
                                 </div>
 
+                                <!-- Campo personalizado para PSICODÉLICOS -->
+                                <div class="dropdown-option custom-input-container" data-category="psicodelicos">
+                                    <span class="option-emoji">➕</span>
+                                    <div class="custom-unit-input">
+                                        <input type="text" placeholder="Añadir unidad personalizada..."
+                                               class="custom-unit-field" data-category="psicodelicos">
+                                        <button type="button" class="add-custom-unit-btn"
+                                                onclick="addCustomUnit('psicodelicos', this)">Añadir</button>
+                                    </div>
+                                </div>
+
                                 <!-- Hongos/Plantas -->
                                 <div class="dropdown-option category-header" data-category="hongos">
                                     <span class="option-emoji">🍄</span>
@@ -1708,6 +3039,17 @@
                                      onclick="selectOption('entryUnitDropdown', 'media-seta', '1/2 seta', '🍄')">
                                     <span class="option-emoji">🍄</span>
                                     <span class="option-text">1/2 seta</span>
+                                </div>
+
+                                <!-- Campo personalizado para HONGOS/PLANTAS -->
+                                <div class="dropdown-option custom-input-container" data-category="hongos">
+                                    <span class="option-emoji">➕</span>
+                                    <div class="custom-unit-input">
+                                        <input type="text" placeholder="Añadir unidad personalizada..."
+                                               class="custom-unit-field" data-category="hongos">
+                                        <button type="button" class="add-custom-unit-btn"
+                                                onclick="addCustomUnit('hongos', this)">Añadir</button>
+                                    </div>
                                 </div>
 
                                 <!-- Estimulantes/MDMA -->
@@ -1737,6 +3079,19 @@
                                     <span class="option-text">punto/bomba</span>
                                 </div>
 
+
+
+                                <!-- Campo personalizado para ESTIMULANTES/MDMA -->
+                                <div class="dropdown-option custom-input-container" data-category="estimulantes">
+                                    <span class="option-emoji">➕</span>
+                                    <div class="custom-unit-input">
+                                        <input type="text" placeholder="Añadir unidad personalizada..."
+                                               class="custom-unit-field" data-category="estimulantes">
+                                        <button type="button" class="add-custom-unit-btn"
+                                                onclick="addCustomUnit('estimulantes', this)">Añadir</button>
+                                    </div>
+                                </div>
+
                                 <!-- Polvo/Cristal -->
                                 <div class="dropdown-option category-header" data-category="polvo">
                                     <span class="option-emoji">❄️</span>
@@ -1763,6 +3118,17 @@
                                     <span class="option-text">key bump</span>
                                 </div>
 
+                                <!-- Campo personalizado para Polvo/Cristal -->
+                                <div class="dropdown-option custom-input-container" data-category="polvo">
+                                    <span class="option-emoji">➕</span>
+                                    <div class="custom-unit-input">
+                                        <input type="text" placeholder="Añadir unidad personalizada..."
+                                               class="custom-unit-field" data-category="polvo">
+                                        <button type="button" class="add-custom-unit-btn"
+                                                onclick="addCustomUnit('polvo', this)">Añadir</button>
+                                    </div>
+                                </div>
+
                                 <!-- Líquidos -->
                                 <div class="dropdown-option category-header"
                                      data-category="liquidos">
@@ -1783,6 +3149,17 @@
                                      onclick="selectOption('entryUnitDropdown', 'vial', 'vial', '🧪')">
                                     <span class="option-emoji">🧪</span>
                                     <span class="option-text">vial</span>
+                                </div>
+
+                                <!-- Campo personalizado para LÍQUIDOS -->
+                                <div class="dropdown-option custom-input-container" data-category="liquidos">
+                                    <span class="option-emoji">➕</span>
+                                    <div class="custom-unit-input">
+                                        <input type="text" placeholder="Añadir unidad personalizada..."
+                                               class="custom-unit-field" data-category="liquidos">
+                                        <button type="button" class="add-custom-unit-btn"
+                                                onclick="addCustomUnit('liquidos', this)">Añadir</button>
+                                    </div>
                                 </div>
 
                                 <!-- Otras -->
@@ -1825,6 +3202,20 @@
                                     <span class="option-emoji">🍪🍪</span>
                                     <span class="option-text">cookies</span>
                                 </div>
+
+                                <!-- Campo personalizado para OTRAS -->
+
+                                <div class="dropdown-option custom-input-container" data-category="otras">
+                                    <span class="option-emoji">➕</span>
+                                    <div class="custom-unit-input">
+                                        <input type="text" placeholder="Añadir unidad personalizada..."
+                                               class="custom-unit-field" data-category="otras">
+                                        <button type="button" class="add-custom-unit-btn"
+                                                onclick="addCustomUnit('otras', this)">Añadir</button>
+                                    </div>
+                                </div>
+
+
                             </div>
                             <input type="hidden" id="entryUnit" name="entryUnit" value="" required>
                         </div>
@@ -1832,7 +3223,14 @@
 
                     <div class="form-group">
                         <label>Fecha y Hora *</label>
-                        <input type="datetime-local" id="entryDateTime" required>
+                        <div class="custom-datetime-selector" id="entryDateTimeSelector">
+                            <div class="datetime-display" onclick="toggleDateTimeModal()">
+                                <span class="datetime-text" id="dateTimeDisplay">Establecer fecha y hora</span>
+                                <span class="datetime-icon">📅</span>
+                            </div>
+                        </div>
+                        <!-- Input oculto para compatibilidad -->
+                        <input type="datetime-local" id="entryDateTime" required style="display: none;">
                     </div>
 
                     <div class="form-group">
@@ -1914,6 +3312,17 @@
                                     <span class="option-emoji">🚨</span>
                                     <span class="option-text">Pain crisis</span>
                                 </div>
+
+                                <!-- Campo personalizado para SET -->
+                                <div class="dropdown-option custom-input-container" data-category="set">
+                                    <span class="option-emoji">➕</span>
+                                    <div class="custom-unit-input">
+                                        <input type="text" placeholder="Añadir estado mental personalizado..."
+                                               class="custom-unit-field" data-category="set">
+                                        <button type="button" class="add-custom-unit-btn"
+                                                onclick="addCustomSet(this)">Añadir</button>
+                                    </div>
+                                </div>
                             </div>
                             <input type="hidden" id="entrySet" name="entrySet">
                         </div>
@@ -1993,6 +3402,17 @@
                                     <span class="option-emoji">🕯️</span>
                                     <span class="option-text">Ceremonia</span>
                                 </div>
+
+                                <!-- Campo personalizado para SETTING -->
+                                <div class="dropdown-option custom-input-container" data-category="setting">
+                                    <span class="option-emoji">➕</span>
+                                    <div class="custom-unit-input">
+                                        <input type="text" placeholder="Añadir entorno personalizado..."
+                                               class="custom-unit-field" data-category="setting">
+                                        <button type="button" class="add-custom-unit-btn"
+                                                onclick="addCustomSetting(this)">Añadir</button>
+                                    </div>
+                                </div>
                             </div>
                             <input type="hidden" id="entrySetting" name="entrySetting">
                         </div>
@@ -2009,8 +3429,158 @@
                         </small>
                     </div>
 
+                    <div class="form-group">
+                        <label>Adjuntos</label>
+                        <div class="media-attachments-grid">
+                            <div class="media-card" id="voiceNoteCard" onclick="openAudioModal()">
+                                <div class="media-card-header">
+                                    <div class="media-card-icon">🎤</div>
+                                    <div>
+                                        <div class="media-card-title">Nota de voz</div>
+                                        <div class="media-card-subtitle" id="voiceNoteCardSubtitle">Sin nota de voz</div>
+                                    </div>
+                                </div>
+                                <div class="media-card-footer" id="voiceNoteCardFooter">
+                                    Pulsa para grabar o escuchar
+                                </div>
+                            </div>
+                            <div class="media-card" id="photoAttachmentCard" onclick="openPhotoModal()">
+                                <div class="media-card-header">
+                                    <div class="media-card-icon">📷</div>
+                                    <div>
+                                        <div class="media-card-title">Foto / Imagen</div>
+                                        <div class="media-card-subtitle" id="photoCardSubtitle">Sin imagen adjunta</div>
+                                    </div>
+                                </div>
+                                <div class="media-card-footer" id="photoCardFooter">
+                                    Captura o selecciona una imagen
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <button type="submit" class="btn-primary">💾 Guardar Registro</button>
                 </form>
+            </div>
+        </div>
+
+        <!-- Modal Nota de Voz -->
+        <div id="audioModal" class="modal">
+            <div class="modal-content" style="max-width: 480px;">
+                <button class="close-btn" onclick="closeModal('audioModal')">×</button>
+                <h3>🎤 Nota de voz</h3>
+                <p style="color: var(--text-muted); margin-bottom: 16px; font-size: 0.9rem;">
+                    Graba, escucha o elimina la nota de voz asociada a este registro.
+                </p>
+
+                <button type="button" id="btnStartRecording" class="btn-audio-record" style="display: none;">
+                    🎤 Grabar nota de voz
+                </button>
+
+                <div id="recordingCard" class="audio-recording-card" style="display: none;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <div class="recording-pulse"></div>
+                            <div>
+                                <div style="font-weight: 600; color: var(--danger);">Grabando...</div>
+                                <div id="recordingTimer" style="font-size: 0.9rem; color: var(--text-muted);">00:00</div>
+                            </div>
+                        </div>
+                        <button type="button" id="btnStopRecording" class="btn-icon-danger">
+                            ⏹️ Detener
+                        </button>
+                    </div>
+                </div>
+
+                <div id="audioPlayerCard" class="audio-player-card" style="display: none;">
+                    <div style="font-weight: 600; margin-bottom: 12px;">🎤 Nota de voz lista</div>
+
+                    <div class="audio-progress-container">
+                        <div id="audioProgressBar" class="audio-progress-bar"></div>
+                    </div>
+
+                    <div style="display: flex; justify-content: center; margin-top: 12px;">
+                        <button type="button" id="btnPlayPause" class="btn-icon-large">
+                            ▶️
+                        </button>
+                    </div>
+
+                    <div id="audioDuration" style="text-align: center; font-size: 0.85rem; color: var(--text-muted); margin-top: 8px;">
+                        00:00
+                    </div>
+
+                    <div id="audioModalActions" class="modal-attachment-actions">
+                        <button type="button" id="btnSaveAudioAttachment" class="btn-primary">💾 Guardar</button>
+                        <button type="button" id="btnShareAudio" class="btn-outline">📤 Compartir</button>
+                        <button type="button" id="btnDeleteAudio" class="btn-danger">🗑️ Eliminar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal Foto / Imagen -->
+        <div id="photoModal" class="modal">
+            <div class="modal-content" style="max-width: 520px;">
+                <button class="close-btn" onclick="closeModal('photoModal')">×</button>
+                <h3>📷 Foto / Imagen</h3>
+                <p style="color: var(--text-muted); margin-bottom: 16px; font-size: 0.9rem;">
+                    Añade una foto para complementar este registro. Puedes tomarla ahora o elegirla desde tu galería.
+                </p>
+
+                <div id="photoPreview" class="photo-modal-preview empty">
+                    <div style="font-size: 2rem;">🖼️</div>
+                    <div>No hay imagen adjunta todavía</div>
+                </div>
+
+                <div class="photo-modal-actions">
+                    <button type="button" id="btnCapturePhoto" class="btn-primary">📸 Tomar foto</button>
+                    <button type="button" id="btnPickPhoto" class="btn-outline">🖼️ Elegir de galería</button>
+                </div>
+
+                <div id="photoExtraActions" class="photo-extra-actions" style="display: none;">
+                    <button type="button" id="btnSavePhotoAttachment" class="btn-primary">💾 Guardar</button>
+                    <button type="button" id="btnViewPhoto" class="btn-outline">👁️ Ver</button>
+                    <button type="button" id="btnSharePhoto" class="btn-outline">📤 Compartir</button>
+                    <button type="button" id="btnDeletePhoto" class="btn-danger">🗑️ Eliminar</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Audio Export Modal -->
+        <div id="audioExportModal" class="modal">
+            <div class="modal-content" style="max-width: 450px;">
+                <button class="close-btn" onclick="closeModal('audioExportModal')">×</button>
+                <h3>📦 Exportar Notas de Voz</h3>
+
+                <div style="margin: 20px 0;">
+                    <p style="color: var(--text-muted); font-size: 0.9rem;">
+                        Exporta todas tus notas de voz en un archivo ZIP. Opcionalmente puedes cifrarlo con contraseña (AES-256).
+                    </p>
+                </div>
+
+                <div class="form-group">
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                        <input type="checkbox" id="encryptAudioZip" style="width: auto;">
+                        <span>🔒 Cifrar con contraseña (AES-256)</span>
+                    </label>
+                </div>
+
+                <div id="passwordGroup" class="form-group" style="display: none;">
+                    <label>Contraseña (mínimo 8 caracteres)</label>
+                    <input type="password" id="audioZipPassword" placeholder="Introduce una contraseña fuerte" minlength="8">
+                    <small style="color: var(--text-muted); font-size: 0.8rem;">
+                        ⚠️ Guarda esta contraseña en un lugar seguro. Sin ella no podrás desencriptar el archivo.
+                    </small>
+                </div>
+
+                <div style="display: flex; gap: 12px; margin-top: 24px;">
+                    <button type="button" class="btn-secondary" onclick="closeModal('audioExportModal')" style="flex: 1;">
+                        Cancelar
+                    </button>
+                    <button type="button" class="btn-primary" onclick="exportAudiosZip()" style="flex: 1;">
+                        📤 Exportar
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -2115,6 +3685,532 @@
             let selectedSubstanceColor = '#8B5CF6';
             let selectedSubstanceFilter = null;
 
+            // ========================================
+            // VARIABLES GLOBALES DE AUDIO
+            // ========================================
+            let currentAudioFilename = null;  // Nombre del archivo de audio actual
+            let currentPhotoFilename = null;  // Nombre del archivo de foto actual
+            let recordingTimerInterval = null;  // Intervalo del timer de grabación
+            let isPlaying = false;  // Estado de reproducción
+
+            // ========================================
+            // FUNCIONES DE AUDIO - Grabación
+            // ========================================
+
+            /**
+             * Iniciar grabación de audio
+             *
+             * CONCEPTO: Llamada al bridge Android
+             * Android.startRecording() ejecuta el método en Kotlin
+             * Kotlin retorna el nombre del archivo o un mensaje de error
+             */
+            function startRecording() {
+                try {
+                    const result = Android.startRecording();
+
+                    if (result.startsWith('ERROR:')) {
+                        console.error('Error al grabar:', result);
+                        return;
+                    }
+
+                    // Guardar el nombre del archivo
+                    currentAudioFilename = result;
+
+                    // Actualizar UI
+                    updateAudioUI('recording');
+
+                    // Iniciar timer visual
+                    startRecordingTimer();
+
+                } catch (error) {
+                    console.error('Error al iniciar grabación:', error);
+                    Android.showToast('❌ Error: ' + error.message);
+                }
+            }
+
+            /**
+             * Detener grabación y guardar
+             */
+            function stopRecording() {
+                try {
+                    const result = Android.stopRecording();
+                    const data = JSON.parse(result);
+
+                    if (data.error) {
+                        console.error('Error al detener:', data.error);
+                        return;
+                    }
+
+                    // Guardar información del audio
+                    currentAudioFilename = data.filename;
+
+                    // Detener timer
+                    stopRecordingTimer();
+
+                    // Actualizar UI para mostrar reproductor
+                    updateAudioUI('player');
+
+                    console.log('Audio grabado:', data.filename, 'Duración:', data.duration + 'ms');
+
+                } catch (error) {
+                    console.error('Error al detener grabación:', error);
+                    Android.showToast('❌ Error: ' + error.message);
+                }
+            }
+
+            /**
+             * Eliminar audio actual
+             */
+            function deleteAudio() {
+                if (!currentAudioFilename) return;
+
+                if (confirm('¿Eliminar esta nota de voz?')) {
+                    // Detener reproducción si está activa
+                    if (isPlaying) {
+                        Android.stopAudio();
+                        isPlaying = false;
+                    }
+
+                    // Eliminar archivo
+                    const result = Android.deleteAudio(currentAudioFilename);
+
+                    if (result === 'OK') {
+                        currentAudioFilename = null;
+                        updateAudioUI('initial');
+                        Android.showToast('🗑️ Nota de voz eliminada');
+                    } else {
+                        console.error('Error al eliminar:', result);
+                    }
+                }
+            }
+
+            /**
+             * Compartir audio actual
+             */
+            function shareAudio() {
+                if (!currentAudioFilename) return;
+                Android.shareAudio(currentAudioFilename);
+            }
+
+            function confirmAudioAttachment() {
+                if (!currentAudioFilename) {
+                    showCustomAlert('No hay ninguna nota de voz para guardar.', '🎤 Sin nota de voz');
+                    return;
+                }
+
+                updateVoiceNoteCard();
+                closeModal('audioModal');
+                if (typeof Android !== 'undefined' && Android.showToast) {
+                    Android.showToast('🎤 Nota de voz lista para este registro');
+                }
+            }
+
+            // ========================================
+            // FUNCIONES DE AUDIO - Reproducción
+            // ========================================
+
+            /**
+             * Toggle play/pause
+             */
+            function togglePlayPause() {
+                if (!currentAudioFilename) return;
+
+                if (isPlaying) {
+                    Android.pauseAudio();
+                    isPlaying = false;
+                    updatePlayButton('▶️');
+                } else {
+                    const isPlayingCheck = Android.isPlayingAudio();
+
+                    if (isPlayingCheck === 'true') {
+                        // Ya estaba reproduciéndose, resumir
+                        Android.resumeAudio();
+                    } else {
+                        // Iniciar nueva reproducción
+                        const result = Android.playAudio(currentAudioFilename);
+                        if (result.startsWith('ERROR:')) {
+                            console.error('Error al reproducir:', result);
+                            Android.showToast('❌ ' + result);
+                            return;
+                        }
+                    }
+
+                    isPlaying = true;
+                    updatePlayButton('⏸️');
+                }
+            }
+
+            /**
+             * Callback invocado por Kotlin cuando el audio termina
+             *
+             * CONCEPTO: Callbacks desde Android a JavaScript
+             * Kotlin llama window.onAudioCompleted()
+             * Este callback se ejecuta automáticamente
+             */
+            window.onAudioCompleted = function() {
+                isPlaying = false;
+                updatePlayButton('▶️');
+                updateAudioProgress(0);
+            };
+
+            /**
+             * Callback de progreso invocado por Kotlin cada 100ms
+             *
+             * @param progress Float entre 0.0 y 1.0
+             * @param currentMs Posición actual en milisegundos
+             * @param totalMs Duración total en milisegundos
+             */
+            window.onAudioProgressUpdate = function(progress, currentMs, totalMs) {
+                updateAudioProgress(progress);
+                updateAudioDuration(currentMs, totalMs);
+            };
+
+            /**
+             * Callback de errores de audio
+             */
+            window.onAudioError = function(message) {
+                console.error('Error de audio:', message);
+                isPlaying = false;
+                updatePlayButton('▶️');
+            };
+
+            // ========================================
+            // FUNCIONES DE UI - Actualización de Interfaz
+            // ========================================
+
+            /**
+             * Actualiza la UI según el estado del audio
+             *
+             * @param state 'initial' | 'recording' | 'player'
+             *
+             * CONCEPTO: Gestión de estados en UI
+             * Solo uno de los 3 elementos es visible a la vez:
+             * - btnStartRecording: Estado inicial (sin audio)
+             * - recordingCard: Durante grabación
+             * - audioPlayerCard: Cuando hay audio listo
+             */
+            function updateAudioUI(state) {
+                const btnStart = document.getElementById('btnStartRecording');
+                const recordingCard = document.getElementById('recordingCard');
+                const playerCard = document.getElementById('audioPlayerCard');
+                const modalActions = document.getElementById('audioModalActions');
+                const saveAudioBtn = document.getElementById('btnSaveAudioAttachment');
+
+                if (!btnStart || !recordingCard || !playerCard) {
+                    return;
+                }
+
+                // Ocultar todo primero
+                btnStart.style.display = 'none';
+                recordingCard.style.display = 'none';
+                playerCard.style.display = 'none';
+
+                // Mostrar el elemento correspondiente
+                if (state === 'initial') {
+                    btnStart.style.display = 'block';
+                } else if (state === 'recording') {
+                    recordingCard.style.display = 'block';
+                } else if (state === 'player') {
+                    playerCard.style.display = 'block';
+                    updatePlayButton('▶️');
+                    updateAudioProgress(0);
+                }
+
+                if (modalActions) {
+                    const shouldShowActions = state === 'player' && !!currentAudioFilename;
+                    modalActions.style.display = shouldShowActions ? 'flex' : 'none';
+                }
+                if (saveAudioBtn) {
+                    saveAudioBtn.disabled = !currentAudioFilename;
+                }
+
+                updateVoiceNoteCard();
+            }
+
+            /**
+             * Actualiza el icono del botón play/pause
+             */
+            function updatePlayButton(icon) {
+                const btn = document.getElementById('btnPlayPause');
+                if (btn) btn.textContent = icon;
+            }
+
+            /**
+             * Actualiza la barra de progreso de reproducción
+             *
+             * @param progress Float entre 0.0 y 1.0
+             */
+            function updateAudioProgress(progress) {
+                const bar = document.getElementById('audioProgressBar');
+                if (bar) {
+                    bar.style.width = (progress * 100) + '%';
+                }
+            }
+
+            /**
+             * Actualiza el texto de duración "00:15 / 01:23"
+             */
+            function updateAudioDuration(currentMs, totalMs) {
+                const durationEl = document.getElementById('audioDuration');
+                if (durationEl) {
+                    const current = formatTime(currentMs);
+                    const total = formatTime(totalMs);
+                    durationEl.textContent = `${current} / ${total}`;
+                }
+            }
+
+            /**
+             * Actualiza el estado visual de la tarjeta de nota de voz
+             */
+            function updateVoiceNoteCard() {
+                const card = document.getElementById('voiceNoteCard');
+                const subtitle = document.getElementById('voiceNoteCardSubtitle');
+                const footer = document.getElementById('voiceNoteCardFooter');
+
+                if (!card || !subtitle || !footer) return;
+
+                if (currentAudioFilename) {
+                    card.classList.add('has-attachment');
+                    subtitle.textContent = 'Nota de voz lista';
+                    footer.textContent = 'Pulsa para escuchar o eliminar';
+                } else {
+                    card.classList.remove('has-attachment');
+                    subtitle.textContent = 'Sin nota de voz';
+                    footer.textContent = 'Pulsa para grabar o escuchar';
+                }
+            }
+
+            /**
+             * Abre el modal de nota de voz sincronizando el estado previo
+             */
+            function openAudioModal() {
+                updateAudioUI(currentAudioFilename ? 'player' : 'initial');
+                updateVoiceNoteCard();
+                openModal('audioModal');
+            }
+
+            /**
+             * Actualiza la tarjeta de foto adjunta
+             */
+            function updatePhotoCard() {
+                const card = document.getElementById('photoAttachmentCard');
+                const subtitle = document.getElementById('photoCardSubtitle');
+                const footer = document.getElementById('photoCardFooter');
+
+                if (!card || !subtitle || !footer) return;
+
+                if (currentPhotoFilename) {
+                    card.classList.add('has-attachment');
+                    subtitle.textContent = 'Imagen adjunta lista';
+                    footer.textContent = 'Pulsa para verla o cambiarla';
+                } else {
+                    card.classList.remove('has-attachment');
+                    subtitle.textContent = 'Sin imagen adjunta';
+                    footer.textContent = 'Captura o selecciona una imagen';
+                }
+            }
+
+            /**
+             * Actualiza la vista previa del modal de foto y sus acciones
+             */
+            function updatePhotoModalControls() {
+                const preview = document.getElementById('photoPreview');
+                const extraActions = document.getElementById('photoExtraActions');
+                const saveButton = document.getElementById('btnSavePhotoAttachment');
+
+                if (!preview) return;
+
+                if (!currentPhotoFilename) {
+                    if (extraActions) extraActions.style.display = 'none';
+                    if (saveButton) saveButton.disabled = true;
+                    preview.classList.add('empty');
+                    preview.innerHTML = `
+                        <div style="font-size: 2rem;">🖼️</div>
+                        <div>No hay imagen adjunta todavía</div>
+                    `;
+                    return;
+                }
+
+                if (extraActions) extraActions.style.display = 'flex';
+                if (saveButton) saveButton.disabled = false;
+                preview.classList.remove('empty');
+
+                try {
+                    const dataUrl = (typeof Android !== 'undefined' && Android.getPhotoPreview)
+                        ? Android.getPhotoPreview(currentPhotoFilename)
+                        : '';
+
+                    if (dataUrl) {
+                        preview.innerHTML = `<img src="${dataUrl}" alt="Foto adjunta">`;
+                    } else {
+                        preview.classList.add('empty');
+                        preview.innerHTML = `
+                            <div style="font-size: 2rem;">🖼️</div>
+                            <div>No se pudo cargar la vista previa</div>
+                        `;
+                    }
+                } catch (error) {
+                    console.error('Error obteniendo vista previa de la foto:', error);
+                    preview.classList.add('empty');
+                    preview.innerHTML = `
+                        <div style="font-size: 2rem;">⚠️</div>
+                        <div>No se pudo cargar la vista previa</div>
+                    `;
+                }
+            }
+
+            /**
+             * Abre el modal de foto asegurando que la vista previa esté actualizada
+             */
+            function openPhotoModal() {
+                updatePhotoCard();
+                updatePhotoModalControls();
+                openModal('photoModal');
+            }
+
+            /**
+             * Inicia la captura de foto con la cámara
+             */
+            function capturePhotoFromCamera() {
+                if (typeof Android === 'undefined' || !Android.capturePhoto) {
+                    showCustomAlert('Esta función solo está disponible en Android.', '❌ No disponible');
+                    return;
+                }
+                Android.capturePhoto();
+            }
+
+            /**
+             * Permite elegir una imagen desde la galería
+             */
+            function pickPhotoFromGallery() {
+                if (typeof Android === 'undefined' || !Android.pickPhotoFromGallery) {
+                    showCustomAlert('Esta función solo está disponible en Android.', '❌ No disponible');
+                    return;
+                }
+                Android.pickPhotoFromGallery();
+            }
+
+            function viewPhotoAttachment() {
+                if (!currentPhotoFilename) {
+                    showCustomAlert('No hay ninguna imagen adjunta todavía.', '📷 Sin imagen');
+                    return;
+                }
+                if (typeof Android !== 'undefined' && Android.viewPhoto) {
+                    Android.viewPhoto(currentPhotoFilename);
+                }
+            }
+
+            function sharePhotoAttachment() {
+                if (!currentPhotoFilename) {
+                    showCustomAlert('No hay ninguna imagen adjunta que compartir.', '📷 Sin imagen');
+                    return;
+                }
+                if (typeof Android !== 'undefined' && Android.sharePhoto) {
+                    Android.sharePhoto(currentPhotoFilename);
+                }
+            }
+
+            function deletePhotoAttachment() {
+                if (!currentPhotoFilename) {
+                    showCustomAlert('No hay ninguna imagen adjunta que eliminar.', '📷 Sin imagen');
+                    return;
+                }
+
+                showCustomConfirm(
+                    '¿Eliminar la imagen adjunta?',
+                    '🗑️ Eliminar foto',
+                    () => {
+                        if (typeof Android !== 'undefined' && Android.deletePhoto) {
+                            const result = Android.deletePhoto(currentPhotoFilename);
+                            if (result === 'OK') {
+                                currentPhotoFilename = null;
+                                updatePhotoCard();
+                                updatePhotoModalControls();
+                                Android.showToast('🗑️ Foto eliminada');
+                            } else {
+                                showCustomAlert(result || 'No se pudo eliminar la foto.', '❌ Error');
+                            }
+                        }
+                    }
+                );
+            }
+
+            function confirmPhotoAttachment() {
+                if (!currentPhotoFilename) {
+                    showCustomAlert('No hay ninguna imagen para guardar.', '📷 Sin imagen');
+                    return;
+                }
+
+                updatePhotoCard();
+                updatePhotoModalControls();
+                closeModal('photoModal');
+                if (typeof Android !== 'undefined' && Android.showToast) {
+                    Android.showToast('📷 Imagen lista para este registro');
+                }
+            }
+
+            window.onPhotoCaptured = function(filename) {
+                if (!filename) {
+                    return;
+                }
+                currentPhotoFilename = filename;
+                updatePhotoCard();
+                updatePhotoModalControls();
+                if (typeof Android !== 'undefined' && Android.showToast) {
+                    Android.showToast('📷 Foto guardada');
+                }
+            };
+
+            window.onPhotoCaptureError = function(message) {
+                console.error('Error capturando foto:', message);
+                if (message) {
+                    showCustomAlert(message, '❌ Error al capturar foto');
+                }
+            };
+
+            /**
+             * Timer de grabación (actualiza cada 1 segundo)
+             *
+             * CONCEPTO: setInterval en JavaScript
+             * Ejecuta una función cada X milisegundos
+             * Guarda el ID para poder detenerlo con clearInterval()
+             */
+            function startRecordingTimer() {
+                let startTime = Date.now();
+
+                recordingTimerInterval = setInterval(() => {
+                    const elapsed = Date.now() - startTime;
+                    const timerEl = document.getElementById('recordingTimer');
+                    if (timerEl) {
+                        timerEl.textContent = formatTime(elapsed);
+                    }
+                }, 1000);  // Actualizar cada 1 segundo
+            }
+
+            function stopRecordingTimer() {
+                if (recordingTimerInterval) {
+                    clearInterval(recordingTimerInterval);
+                    recordingTimerInterval = null;
+                }
+            }
+
+            /**
+             * Formatea milisegundos a formato "mm:ss"
+             *
+             * CONCEPTO: Manipulación de tiempo
+             * Math.floor() redondea hacia abajo
+             * padStart(2, '0') añade ceros a la izquierda: "5" → "05"
+             *
+             * @param ms Milisegundos
+             * @return String formato "02:35"
+             */
+            function formatTime(ms) {
+                const totalSeconds = Math.floor(ms / 1000);
+                const minutes = Math.floor(totalSeconds / 60);
+                const seconds = totalSeconds % 60;
+                return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+            }
+
             // Función para sincronizar datos desde localStorage
             function syncDataFromStorage() {
                 try {
@@ -2141,6 +4237,8 @@
                             set: entry.set || '',
                             setting: entry.setting || '',
                             notes: entry.notes || '',
+                            audioPath: entry.audioPath || null,
+                            photoPath: entry.photoPath || null,
                             createdAt: entry.createdAt || new Date().toISOString(),
                             updatedAt: entry.updatedAt || ''
                         }));
@@ -2177,8 +4275,85 @@
                     localStorage.setItem('substances', JSON.stringify(substances));
                     localStorage.setItem('entries', JSON.stringify(entries));
                     localStorage.setItem('userProfile', JSON.stringify(userProfile));
+                    notifyBackupDataChanged();
                 } catch (error) {
                     console.error('Error guardando datos:', error);
+                }
+            }
+
+            function safeParseJSON(rawValue, fallback) {
+                if (!rawValue) {
+                    return fallback;
+                }
+                try {
+                    return JSON.parse(rawValue);
+                } catch (error) {
+                    console.warn('No se pudo parsear JSON, usando fallback.', error);
+                    return fallback;
+                }
+            }
+
+            function collectBackupPayload() {
+                return {
+                    substances: substances,
+                    entries: entries,
+                    userProfile: userProfile,
+                    customUnits: safeParseJSON(localStorage.getItem('psychologger_custom_units'), {}),
+                    customSets: safeParseJSON(localStorage.getItem('psychologger_custom_sets'), []),
+                    customSettings: safeParseJSON(localStorage.getItem('psychologger_custom_settings'), []),
+                    timestamp: new Date().toISOString(),
+                    version: '1.0'
+                };
+            }
+
+            function notifyBackupDataChanged() {
+                try {
+                    if (window.Android && typeof Android.cacheLocalStorageSnapshot === 'function') {
+                        const payload = collectBackupPayload();
+                        Android.cacheLocalStorageSnapshot(JSON.stringify(payload));
+                    }
+                } catch (error) {
+                    console.error('Error al notificar snapshot de backup:', error);
+                }
+            }
+
+            function refreshBackupStatus() {
+                const statusEl = document.getElementById('backupStatusText');
+                const pathEl = document.getElementById('backupPathText');
+                if (!statusEl || !pathEl) return;
+
+                let fallbackPath = 'Android/data/com.d4vram.psychologger/files/backups';
+
+                try {
+                    if (window.Android && typeof Android.getBackupsDirectory === 'function') {
+                        const actualPath = Android.getBackupsDirectory();
+                        if (actualPath) {
+                            fallbackPath = actualPath;
+                        }
+                    }
+                } catch (error) {
+                    console.warn('No se pudo obtener la carpeta de backups:', error);
+                }
+
+                pathEl.textContent = fallbackPath;
+
+                try {
+                    if (window.Android && typeof Android.getLastBackupInfo === 'function') {
+                        const raw = Android.getLastBackupInfo();
+                        if (!raw) {
+                            statusEl.textContent = 'Aún no se ha generado un backup.';
+                            return;
+                        }
+                        const info = JSON.parse(raw);
+                        const typeLabel = info.type === 'auto' ? 'Automático' : 'Manual';
+                        const formatted = info.formattedDate || new Date(info.timestamp).toLocaleString();
+                        statusEl.textContent = `${typeLabel} · ${formatted}`;
+                    } else {
+                        statusEl.textContent = 'Aún no se ha generado un backup.';
+                    }
+                } catch (error) {
+                    console.error('Error al consultar el estado del backup:', error);
+                    statusEl.textContent = 'No se pudo leer el estado del backup.';
                 }
             }
 
@@ -2348,32 +4523,6 @@
                 }
             ];
         }
-
-
-
-        // Función para sincronizar datos desde localStorage (para importación)
-        function syncDataFromStorage() {
-            try {
-                const storedSubstances = localStorage.getItem('substances');
-                const storedEntries = localStorage.getItem('entries');
-                const storedProfile = localStorage.getItem('userProfile');
-                
-                if (storedSubstances) {
-                    substances = JSON.parse(storedSubstances);
-                }
-                
-                if (storedEntries) {
-                    entries = JSON.parse(storedEntries);
-                }
-                
-                if (storedProfile) {
-                    userProfile = JSON.parse(storedProfile);
-                }
-            } catch (error) {
-                console.error('Error sincronizando datos:', error);
-            }
-        }
-
         // Función específica para después de importación
         function refreshAfterImport() {
             try {
@@ -2399,6 +4548,7 @@
         document.addEventListener('DOMContentLoaded', function() {
             initializeApp();
             setupEventListeners();
+            refreshBackupStatus();
         });
 
                  function initializeApp() {
@@ -2410,6 +4560,12 @@
                  generateCalendar();
                  renderSubstanceList();
                  renderStats();
+                 
+                 // Cargar unidades personalizadas
+                 loadCustomUnits();
+
+                 // Cargar sets y settings personalizados
+                 loadCustomSetsAndSettings();
 
                  // Set current datetime for entry form
                  const now = new Date();
@@ -2417,7 +4573,13 @@
                  const dateTimeInput = document.getElementById('entryDateTime');
                  if (dateTimeInput) {
                      dateTimeInput.value = localDateTime;
+                     // Actualizar también el display personalizado
+                     currentSelectedDate = new Date(localDateTime);
+                     updateDateTimeDisplay();
                  }
+
+                 // Mantener snapshot actualizado aun después de la carga inicial
+                 notifyBackupDataChanged();
              } catch (error) {
                  console.error('Error initializing app:', error);
                  showCustomAlert(`Error al inicializar la aplicación: ${error.message}`, '❌ Error de Inicialización');
@@ -2453,6 +4615,63 @@
                     document.getElementById('charCount').textContent = this.value.length;
                 });
             }
+
+            // Book items click handlers
+            document.querySelectorAll('.book-item').forEach(bookItem => {
+                bookItem.addEventListener('click', function() {
+                    const title = this.querySelector('h5').textContent;
+                    const author = this.querySelector('.book-author').textContent;
+                    const description = this.querySelector('.book-desc').textContent;
+
+                    showBookModal(title, author, description);
+                });
+            });
+
+            // ========================================
+            // EVENT LISTENERS DE AUDIO
+            // ========================================
+            const btnStartRec = document.getElementById('btnStartRecording');
+            if (btnStartRec) btnStartRec.addEventListener('click', startRecording);
+
+            const btnStopRec = document.getElementById('btnStopRecording');
+            if (btnStopRec) btnStopRec.addEventListener('click', stopRecording);
+
+            const btnPlay = document.getElementById('btnPlayPause');
+            if (btnPlay) btnPlay.addEventListener('click', togglePlayPause);
+
+            const btnDel = document.getElementById('btnDeleteAudio');
+            if (btnDel) btnDel.addEventListener('click', deleteAudio);
+
+            const btnShare = document.getElementById('btnShareAudio');
+            if (btnShare) btnShare.addEventListener('click', shareAudio);
+
+            const btnSaveAudio = document.getElementById('btnSaveAudioAttachment');
+            if (btnSaveAudio) btnSaveAudio.addEventListener('click', confirmAudioAttachment);
+
+            // Inicializar UI de audio
+            updateAudioUI('initial');
+
+            const btnCapturePhoto = document.getElementById('btnCapturePhoto');
+            if (btnCapturePhoto) btnCapturePhoto.addEventListener('click', capturePhotoFromCamera);
+
+            const btnPickPhoto = document.getElementById('btnPickPhoto');
+            if (btnPickPhoto) btnPickPhoto.addEventListener('click', pickPhotoFromGallery);
+
+            const btnViewPhoto = document.getElementById('btnViewPhoto');
+            if (btnViewPhoto) btnViewPhoto.addEventListener('click', viewPhotoAttachment);
+
+            const btnSharePhoto = document.getElementById('btnSharePhoto');
+            if (btnSharePhoto) btnSharePhoto.addEventListener('click', sharePhotoAttachment);
+
+            const btnDeletePhoto = document.getElementById('btnDeletePhoto');
+            if (btnDeletePhoto) btnDeletePhoto.addEventListener('click', deletePhotoAttachment);
+
+            const btnSavePhoto = document.getElementById('btnSavePhotoAttachment');
+            if (btnSavePhoto) btnSavePhoto.addEventListener('click', confirmPhotoAttachment);
+
+            updateVoiceNoteCard();
+            updatePhotoCard();
+            updatePhotoModalControls();
         }
 
         // Navigation functions
@@ -2493,6 +4712,8 @@
             // Regenerate content for specific views
             if (viewName === 'stats') {
                 renderStats();
+            } else if (viewName === 'data') {
+                refreshBackupStatus();
             }
         }
 
@@ -2530,9 +4751,277 @@
         }
 
         function closeModal(modalId) {
-            document.getElementById(modalId).classList.remove('active');
-            document.body.style.overflow = ''; // Restore background scrolling
-            resetEditMode(); // Always reset edit mode when closing entry modal
+            const modal = document.getElementById(modalId);
+            if (!modal) {
+                return;
+            }
+
+            modal.classList.remove('active');
+
+            const anyActiveModal = document.querySelector('.modal.active');
+            document.body.style.overflow = anyActiveModal ? 'hidden' : '';
+
+            if (modalId === 'entryModal') {
+                resetEditMode(); // Solo resetear el formulario principal
+            }
+        }
+
+        // ===== FUNCIONES DEL DATETIME PICKER PERSONALIZADO =====
+
+        // Variables globales para el datetime picker
+        let currentSelectedDate = new Date();
+
+        function toggleDateTimeModal() {
+            const modal = document.getElementById('dateTimeModal');
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+            initializeDateTimePicker();
+        }
+
+        function closeDateTimeModal() {
+            const modal = document.getElementById('dateTimeModal');
+            modal.classList.remove('active');
+            document.body.style.overflow = '';
+            closeAllCustomSelects();
+        }
+
+        function initializeDateTimePicker() {
+            // Obtener fecha actual del input oculto o usar fecha actual
+            const hiddenInput = document.getElementById('entryDateTime');
+            if (hiddenInput.value) {
+                currentSelectedDate = new Date(hiddenInput.value);
+            } else {
+                currentSelectedDate = new Date();
+            }
+
+            populateSelects();
+            updateSelectValues();
+            enhanceDateTimeSelects();
+        }
+
+        function populateSelects() {
+            const currentYear = new Date().getFullYear();
+
+            // Poblar días (1-31)
+            const daySelect = document.getElementById('daySelect');
+            daySelect.innerHTML = '';
+            for (let i = 1; i <= 31; i++) {
+                const option = document.createElement('option');
+                option.value = i;
+                option.textContent = i.toString().padStart(2, '0');
+                daySelect.appendChild(option);
+            }
+
+            // Poblar meses (0-11, pero mostrar 1-12)
+            const monthSelect = document.getElementById('monthSelect');
+            monthSelect.innerHTML = '';
+            const monthNames = ['ene', 'feb', 'mar', 'abr', 'may', 'jun',
+                               'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+            for (let i = 0; i < 12; i++) {
+                const option = document.createElement('option');
+                option.value = i;
+                option.textContent = monthNames[i];
+                monthSelect.appendChild(option);
+            }
+
+            // Poblar años (año actual - 5 hasta año actual + 5)
+            const yearSelect = document.getElementById('yearSelect');
+            yearSelect.innerHTML = '';
+            for (let i = currentYear - 5; i <= currentYear + 5; i++) {
+                const option = document.createElement('option');
+                option.value = i;
+                option.textContent = i;
+                yearSelect.appendChild(option);
+            }
+
+            // Poblar horas (0-23)
+            const hourSelect = document.getElementById('hourSelect');
+            hourSelect.innerHTML = '';
+            for (let i = 0; i < 24; i++) {
+                const option = document.createElement('option');
+                option.value = i;
+                option.textContent = i.toString().padStart(2, '0');
+                hourSelect.appendChild(option);
+            }
+
+            // Poblar minutos (0-59)
+            const minuteSelect = document.getElementById('minuteSelect');
+            minuteSelect.innerHTML = '';
+            for (let i = 0; i < 60; i++) {
+                const option = document.createElement('option');
+                option.value = i;
+                option.textContent = i.toString().padStart(2, '0');
+                minuteSelect.appendChild(option);
+            }
+        }
+
+        function updateSelectValues() {
+            document.getElementById('daySelect').value = currentSelectedDate.getDate();
+            document.getElementById('monthSelect').value = currentSelectedDate.getMonth();
+            document.getElementById('yearSelect').value = currentSelectedDate.getFullYear();
+            document.getElementById('hourSelect').value = currentSelectedDate.getHours();
+            document.getElementById('minuteSelect').value = currentSelectedDate.getMinutes();
+        }
+
+        function enhanceDateTimeSelects() {
+            const selectIds = ['daySelect', 'monthSelect', 'yearSelect', 'hourSelect', 'minuteSelect'];
+            selectIds.forEach(setupCustomSelect);
+        }
+
+        function setupCustomSelect(selectId) {
+            const select = document.getElementById(selectId);
+            if (!select) return;
+
+            const wrapper = select.closest('.custom-select-wrapper');
+            if (!wrapper) return;
+
+            const trigger = wrapper.querySelector('.custom-select-trigger');
+            const dropdown = wrapper.querySelector('.custom-select-dropdown');
+            const valueSpan = wrapper.querySelector('.custom-select-value');
+
+            if (!trigger || !dropdown || !valueSpan) return;
+
+            const dropdownId = `${selectId}Dropdown`;
+            dropdown.id = dropdownId;
+            trigger.setAttribute('aria-controls', dropdownId);
+
+            dropdown.innerHTML = '';
+            Array.from(select.options).forEach(option => {
+                const optionButton = document.createElement('button');
+                optionButton.type = 'button';
+                optionButton.className = 'custom-select-option';
+                optionButton.dataset.value = option.value;
+                optionButton.textContent = option.textContent;
+                if (option.value === select.value) {
+                    optionButton.classList.add('selected');
+                }
+                optionButton.addEventListener('click', event => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    if (select.value !== option.value) {
+                        select.value = option.value;
+                        select.dispatchEvent(new Event('change'));
+                    } else {
+                        updateCustomSelectDisplay(select);
+                    }
+                    wrapper.classList.remove('is-open');
+                    trigger.setAttribute('aria-expanded', 'false');
+                });
+                dropdown.appendChild(optionButton);
+            });
+
+            if (!trigger.dataset.customSelectTriggerBound) {
+                trigger.dataset.customSelectTriggerBound = 'true';
+                trigger.addEventListener('click', event => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    if (wrapper.classList.contains('is-open')) {
+                        wrapper.classList.remove('is-open');
+                        trigger.setAttribute('aria-expanded', 'false');
+                    } else {
+                        closeAllCustomSelects(wrapper);
+                        wrapper.classList.add('is-open');
+                        trigger.setAttribute('aria-expanded', 'true');
+                        const selectedOption = dropdown.querySelector('.custom-select-option.selected');
+                        if (selectedOption) {
+                            selectedOption.scrollIntoView({ block: 'nearest' });
+                        }
+                    }
+                });
+            }
+
+            if (!select.dataset.customSelectBound) {
+                select.dataset.customSelectBound = 'true';
+                select.addEventListener('change', () => {
+                    updateCustomSelectDisplay(select);
+                    updateDateFromSelects();
+                });
+            }
+
+            updateCustomSelectDisplay(select);
+        }
+
+        function updateCustomSelectDisplay(selectElement) {
+            const wrapper = selectElement.closest('.custom-select-wrapper');
+            if (!wrapper) return;
+
+            const triggerValue = wrapper.querySelector('.custom-select-value');
+            const dropdown = wrapper.querySelector('.custom-select-dropdown');
+            const selectedOption = selectElement.options[selectElement.selectedIndex];
+
+            if (triggerValue) {
+                triggerValue.textContent = selectedOption ? selectedOption.textContent : '--';
+            }
+
+            if (dropdown) {
+                dropdown.querySelectorAll('.custom-select-option').forEach(button => {
+                    button.classList.toggle('selected', button.dataset.value === selectElement.value);
+                });
+            }
+        }
+
+        function closeAllCustomSelects(exceptWrapper = null) {
+            document.querySelectorAll('.custom-select-wrapper.is-open').forEach(wrapper => {
+                if (wrapper === exceptWrapper) return;
+                wrapper.classList.remove('is-open');
+                const trigger = wrapper.querySelector('.custom-select-trigger');
+                if (trigger) {
+                    trigger.setAttribute('aria-expanded', 'false');
+                }
+            });
+        }
+
+        document.addEventListener('click', event => {
+            if (!event.target.closest('.custom-select-wrapper')) {
+                closeAllCustomSelects();
+            }
+        });
+
+        document.addEventListener('keydown', event => {
+            if (event.key === 'Escape') {
+                closeAllCustomSelects();
+            }
+        });
+
+        function updateDateFromSelects() {
+            const day = parseInt(document.getElementById('daySelect').value);
+            const month = parseInt(document.getElementById('monthSelect').value);
+            const year = parseInt(document.getElementById('yearSelect').value);
+            const hour = parseInt(document.getElementById('hourSelect').value);
+            const minute = parseInt(document.getElementById('minuteSelect').value);
+
+            currentSelectedDate = new Date(year, month, day, hour, minute);
+        }
+
+        function setDateTime() {
+            // Actualizar input oculto
+            const isoString = currentSelectedDate.toISOString().slice(0, 16);
+            document.getElementById('entryDateTime').value = isoString;
+
+            // Actualizar display
+            updateDateTimeDisplay();
+
+            // Cerrar modal
+            closeDateTimeModal();
+        }
+
+        function clearDateTime() {
+            document.getElementById('entryDateTime').value = '';
+            document.getElementById('dateTimeDisplay').textContent = 'Establecer fecha y hora';
+            closeDateTimeModal();
+        }
+
+        function updateDateTimeDisplay() {
+            const dateDisplay = document.getElementById('dateTimeDisplay');
+            const options = {
+                weekday: 'short',
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            };
+            dateDisplay.textContent = currentSelectedDate.toLocaleDateString('es-ES', options);
         }
 
         // Calendar functions
@@ -2705,6 +5194,13 @@
                             ${entry.set ? `<div class="entry-meta">🧠 Set: ${entry.set}</div>` : ''}
                             ${entry.setting ? `<div class="entry-meta">🏞️ Setting: ${entry.setting}</div>` : ''}
                             ${entry.notes ? `<div class="entry-notes">📝 ${entry.notes}</div>` : ''}
+                            ${(entry.audioPath || entry.photoPath) ? `
+                                <div class="entry-meta">
+                                    📎 Adjuntos:
+                                    ${entry.audioPath ? '<span style="margin-left:4px;">🎤 Nota de voz</span>' : ''}
+                                    ${entry.photoPath ? '<span style="margin-left:8px;">📷 Foto</span>' : ''}
+                                </div>
+                            ` : ''}
                             <div class="entry-actions" style="margin-top: 0.5rem;">
                                 <button class="btn-edit" data-entry-id="${entry.id}">✏️ Editar</button>
                                 <button class="btn-delete" data-entry-id="${entry.id}">🗑️ Eliminar</button>
@@ -2800,23 +5296,50 @@
             isEditMode = true;
             currentEditingEntryId = entryId;
 
-            populateSubstanceDropdown();
-
-            const substanceHeaderText = document.querySelector('#entrySubstanceDropdown .dropdown-text');
-            const substanceHiddenInput = document.getElementById('entrySubstance');
-            if (substanceHeaderText && substanceHiddenInput) {
-                substanceHiddenInput.value = entry.substance;
-                substanceHeaderText.textContent = `${getSubstanceEmoji(entry.substance)} ${entry.substance}`;
+            const modalTitle = document.getElementById('entryModalTitle');
+            if (modalTitle) {
+                modalTitle.textContent = 'Editar Registro';
             }
+
+            populateSubstanceDropdown();
+            restoreDropdownSelection('entrySubstanceDropdown', entry.substance, 'Selecciona una sustancia...');
 
             openModal('entryModal'); // tras esto aún puede tardar 1 frame
 
             waitForElement('entryDose',      el => el.value = entry.dose);
-            waitForElement('entryUnit',      el => el.value = entry.unit);
-            waitForElement('entryDateTime',  el => el.value = entry.date);
-            waitForElement('entrySet',       el => el.value = entry.set || '');
-            waitForElement('entrySetting',   el => el.value = entry.setting || '');
+            waitForElement('entryUnitDropdown', () => {
+                restoreDropdownSelection('entryUnitDropdown', entry.unit, 'Seleccionar unidad...');
+            });
+            waitForElement('entryDateTime',  el => {
+                el.value = entry.date;
+                // Actualizar también el display personalizado cuando se edita
+                currentSelectedDate = new Date(entry.date);
+                updateDateTimeDisplay();
+            });
+            waitForElement('entrySetDropdown', () => {
+                restoreDropdownSelection('entrySetDropdown', entry.set || '', 'Seleccionar...');
+            });
+            waitForElement('entrySettingDropdown', () => {
+                restoreDropdownSelection('entrySettingDropdown', entry.setting || '', 'Seleccionar...');
+            });
             waitForElement('entryNotes',     el => el.value = entry.notes || '');
+
+            // Cargar audio si existe
+            if (entry.audioPath) {
+                currentAudioFilename = entry.audioPath;
+                updateAudioUI('player');
+            } else {
+                currentAudioFilename = null;
+                updateAudioUI('initial');
+            }
+
+            if (entry.photoPath) {
+                currentPhotoFilename = entry.photoPath;
+            } else {
+                currentPhotoFilename = null;
+            }
+            updatePhotoCard();
+            updatePhotoModalControls();
 
             const submitBtn = document.querySelector('#entryForm button[type="submit"]');
             if (submitBtn) {
@@ -2840,6 +5363,14 @@
                 confirmMessage,
                 '🗑️ Confirmar Eliminación',
                                  () => {
+                     // Eliminar archivo de audio si existe
+                     if (entry.audioPath) {
+                         Android.deleteAudio(entry.audioPath);
+                     }
+                     if (entry.photoPath && Android.deletePhoto) {
+                         Android.deletePhoto(entry.photoPath);
+                     }
+
                      entries = entries.filter(e => e.id !== entryId); // Use !== for strict comparison
                      saveDataToStorage();
 
@@ -3039,6 +5570,11 @@
             isEditMode = false;
             currentEditingEntryId = null;
 
+            const modalTitle = document.getElementById('entryModalTitle');
+            if (modalTitle) {
+                modalTitle.textContent = 'Nuevo Registro';
+            }
+
             const submitBtn = document.querySelector('#entryForm button[type="submit"]');
             if (submitBtn) {
                 submitBtn.innerHTML = '💾 Guardar Registro';
@@ -3051,6 +5587,19 @@
             const form = document.getElementById('entryForm');
             if (form) form.reset();
 
+            // Resetear audio
+            if (isPlaying) {
+                Android.stopAudio();
+                isPlaying = false;
+            }
+            currentAudioFilename = null;
+            updateAudioUI('initial');
+            updateVoiceNoteCard();
+
+            currentPhotoFilename = null;
+            updatePhotoCard();
+            updatePhotoModalControls();
+
             // Fecha y hora por defecto: ahora (local)
             const now = new Date();
             const localDateTime = new Date(now.getTime() - now.getTimezoneOffset() * 60000)
@@ -3059,6 +5608,9 @@
             const dateTimeInput = document.getElementById('entryDateTime');
             if (dateTimeInput) {
                 dateTimeInput.value = localDateTime;
+                // Actualizar también el display personalizado
+                currentSelectedDate = new Date(localDateTime);
+                updateDateTimeDisplay();
             }
 
             // Sustancia
@@ -3348,6 +5900,8 @@
                     set: set || null, // Store null if empty
                     setting: setting || null, // Store null if empty
                     notes: notes || null, // Store null if empty
+                    audioPath: currentAudioFilename || null,
+                    photoPath: currentPhotoFilename || null,
                     updatedAt: new Date().toISOString()
                 };
 
@@ -3370,6 +5924,8 @@
                    set: set || null,
                    setting: setting || null,
                    notes: notes || null,
+                   audioPath: currentAudioFilename || null,
+                   photoPath: currentPhotoFilename || null,
                    createdAt: new Date().toISOString()
                };
                entries.push(entry);
@@ -3629,9 +6185,22 @@
                 URL.revokeObjectURL(url);
             }, 100);
 
-            showCustomAlert(`✅ Archivo exportado correctamente\n\n📁 ${fileName}\n\nRevisa tu carpeta de Descargas`),
-            '✅ Exportación Completa'
-            ;
+            // PRIMERO: Abrir ShareSheet inmediatamente
+            shareExportedCSV(csvContent, fileName);
+
+            // DESPUÉS: Mostrar alert de confirmación
+            setTimeout(() => {
+                showCustomAlert(
+                    `✅ Archivo exportado correctamente\n\n📁 ${fileName}\n\nRevisa tu carpeta de Descargas`,
+                    '✅ Exportación Completa'
+                );
+            }, 100);
+        }
+
+        // FUNCIÓN SIMPLE PARA COMPARTIR CSV YA EXPORTADO
+        function shareExportedCSV(csvContent, filename) {
+            // Llamar directamente a la función Android para compartir
+            Android.shareCSV(csvContent, filename);
         }
 
         // FUNCIÓN DE IMPORTACIÓN ACTUALIZADA - Reemplaza la existente
@@ -3902,9 +6471,234 @@
             );
         }
 
+        // ========================================
+        // FUNCIONES DE BACKUP Y EXPORTACIÓN
+        // ========================================
+
+        /**
+         * Crear backup manual (botón en Ajustes)
+         *
+         * CONCEPTO: Serializar localStorage completo
+         * Convertimos todo el localStorage a JSON y lo enviamos a Android
+         */
+        function createManualBackup() {
+            try {
+                // Recopilar todos los datos de localStorage
+                const backupData = collectBackupPayload();
+
+                // Convertir a JSON
+                const jsonString = JSON.stringify(backupData, null, 2);
+
+                if (!window.Android || typeof Android.createManualBackup !== 'function') {
+                    showCustomAlert('La función de backup manual solo está disponible en Android.', 'ℹ️ Información');
+                    return;
+                }
+
+                // Llamar a Android
+                const result = Android.createManualBackup(jsonString);
+
+                if (result.startsWith('OK:')) {
+                    const filename = result.substring(3);
+                    console.log('Backup creado:', filename);
+                    refreshBackupStatus();
+                } else {
+                    console.error('Error en backup:', result);
+                }
+
+            } catch (error) {
+                console.error('Error al crear backup:', error);
+                Android.showToast('❌ Error: ' + error.message);
+            }
+        }
+
+        /**
+         * Abrir modal de exportación de audios
+         */
+        function openAudioExportModal() {
+            openModal('audioExportModal');
+
+            // Setup del checkbox
+            const checkbox = document.getElementById('encryptAudioZip');
+            const passwordGroup = document.getElementById('passwordGroup');
+
+            checkbox.addEventListener('change', function() {
+                passwordGroup.style.display = this.checked ? 'block' : 'none';
+            });
+        }
+
+        /**
+         * Exportar audios en ZIP (con o sin cifrado)
+         */
+        function exportAudiosZip() {
+            try {
+                const encryptCheckbox = document.getElementById('encryptAudioZip');
+                const passwordInput = document.getElementById('audioZipPassword');
+
+                if (encryptCheckbox.checked) {
+                    // Exportar con cifrado
+                    const password = passwordInput.value.trim();
+
+                    if (!password || password.length < 8) {
+                        Android.showToast('⚠️ La contraseña debe tener al menos 8 caracteres');
+                        return;
+                    }
+
+                    const result = Android.exportAudiosZipEncrypted(password);
+
+                    if (result === 'OK') {
+                        closeModal('audioExportModal');
+                        // Reset form
+                        encryptCheckbox.checked = false;
+                        passwordInput.value = '';
+                        document.getElementById('passwordGroup').style.display = 'none';
+                    } else {
+                        console.error('Error:', result);
+                    }
+
+                } else {
+                    // Exportar sin cifrar
+                    const result = Android.exportAudiosZip();
+
+                    if (result === 'OK') {
+                        closeModal('audioExportModal');
+                        Android.showToast('✅ Audios exportados correctamente');
+                    } else {
+                        console.error('Error:', result);
+                    }
+                }
+
+            } catch (error) {
+                console.error('Error al exportar audios:', error);
+                Android.showToast('❌ Error: ' + error.message);
+            }
+        }
+
+        /**
+         * Exportar todas las fotos en un ZIP
+         */
+        function exportPhotosZip() {
+            if (!window.Android || typeof Android.exportPhotosZip !== 'function') {
+                showCustomAlert('Esta función solo está disponible en Android.', 'ℹ️ Información');
+                return;
+            }
+
+            try {
+                const result = Android.exportPhotosZip();
+                if (result !== 'OK') {
+                    console.error('Error exportando fotos:', result);
+                }
+            } catch (error) {
+                console.error('Error exportando fotos:', error);
+                Android.showToast('❌ Error exportando fotos');
+            }
+        }
+
+        /**
+         * Mostrar confirmación e iniciar importación de un backup ZIP
+         */
+        function promptBackupImport() {
+            if (!window.Android || typeof Android.importBackup !== 'function') {
+                showCustomAlert('Importar backup solo está disponible en Android.', 'ℹ️ Información');
+                return;
+            }
+
+            showCustomConfirm(
+                'Esta acción reemplazará tus datos actuales (sustancias, registros, adjuntos).\n\n' +
+                'Te recomendamos crear un backup manual antes de continuar.\n\n' +
+                '¿Quieres importar un archivo de backup ahora?',
+                '📥 Importar Backup',
+                () => Android.importBackup()
+            );
+        }
+
+        /**
+         * Callback desde Android cuando el backup se importó correctamente
+         *
+         * @param payloadJson String con el contenido del data.json del backup
+         * @param infoJson String opcional con información adicional (audios, fotos restauradas)
+         */
+        window.onBackupRestored = function(payloadJson, infoJson) {
+            try {
+                const payload = JSON.parse(payloadJson || '{}');
+                const extraInfo = infoJson ? JSON.parse(infoJson) : {};
+
+                substances = Array.isArray(payload.substances) ? payload.substances : [];
+                entries = Array.isArray(payload.entries) ? payload.entries : [];
+                userProfile = payload.userProfile || {};
+
+                localStorage.setItem('substances', JSON.stringify(substances));
+                localStorage.setItem('entries', JSON.stringify(entries));
+                localStorage.setItem('userProfile', JSON.stringify(userProfile));
+
+                if (payload.customUnits) {
+                    localStorage.setItem('psychologger_custom_units', JSON.stringify(payload.customUnits));
+                }
+                if (payload.customSets) {
+                    localStorage.setItem('psychologger_custom_sets', JSON.stringify(payload.customSets));
+                }
+                if (payload.customSettings) {
+                    localStorage.setItem('psychologger_custom_settings', JSON.stringify(payload.customSettings));
+                }
+
+                saveDataToStorage();
+
+                generateCalendar();
+                renderStats();
+                renderSubstanceList();
+                refreshBackupStatus();
+
+                currentAudioFilename = null;
+                currentPhotoFilename = null;
+                updateVoiceNoteCard();
+                updatePhotoCard();
+                updatePhotoModalControls();
+
+                const restoredAudios = extraInfo && typeof extraInfo.audios === 'number' ? extraInfo.audios : 0;
+                const restoredPhotos = extraInfo && typeof extraInfo.photos === 'number' ? extraInfo.photos : 0;
+                const summary = `✅ Backup importado correctamente.\n\n🎤 Audios restaurados: ${restoredAudios}\n📸 Fotos restauradas: ${restoredPhotos}`;
+
+                showCustomAlert(summary, '📥 Importación completada');
+                switchView('calendar');
+
+            } catch (error) {
+                console.error('Error aplicando backup:', error);
+                showCustomAlert('No se pudo aplicar el backup: ' + error.message, '❌ Error al importar');
+            }
+        };
+
+        /**
+         * Callback desde Android cuando la importación falla
+         */
+        window.onBackupRestoreError = function(message) {
+            const humanMessage = message || 'No se pudo importar el backup seleccionado.';
+            showCustomAlert(humanMessage, '❌ Error al importar backup');
+        };
+
         function openExternalURL(url) {
             // Attempt to open in a new window/tab, which is generally handled by the system browser on mobile
             window.open(url, '_blank', 'noopener,noreferrer');
+        }
+
+        function toggleBooksSection() {
+            const section = document.getElementById('books-section');
+            const isVisible = section.style.display !== 'none';
+            
+            if (isVisible) {
+                // Cerrar sección
+                section.style.display = 'none';
+            } else {
+                // Abrir sección  
+                section.style.display = 'block';
+                
+                // Scroll suave hacia la sección después de un pequeño delay
+                // para que la animación se vea bien
+                setTimeout(() => {
+                    section.scrollIntoView({ 
+                        behavior: 'smooth', 
+                        block: 'start' 
+                    });
+                }, 100);
+            }
         }
 
 
@@ -3913,9 +6707,7 @@
         // Close modals when clicking outside
         document.addEventListener('click', function(e) {
             if (e.target.classList.contains('modal')) {
-                e.target.classList.remove('active');
-                document.body.style.overflow = '';
-                resetEditMode(); // Reset edit mode when any modal is closed by clicking outside
+                closeModal(e.target.id);
             }
         });
 
@@ -4116,6 +6908,96 @@
             closeCustomConfirm();
                 }
 
+        // Función para mostrar modal de libro
+        function showBookModal(title, author, description) {
+            const modalId = 'book-info-modal';
+            const existingModal = document.getElementById(modalId);
+            if (existingModal) {
+                existingModal.remove();
+            }
+
+            const modal = document.createElement('div');
+            modal.id = modalId;
+            modal.className = 'modal active';
+            modal.innerHTML = `
+                <div class="modal-content custom-dialog">
+                    <div class="custom-dialog-header">
+                        <h3>📚 ${title}</h3>
+                        <button class="close-btn" onclick="closeBookModal()">×</button>
+                    </div>
+                    <div class="custom-dialog-body">
+                        <p class="book-author-modal"><strong>Autor:</strong> ${author}</p>
+                        <p class="book-desc-modal">${description}</p>
+                        <div class="book-actions">
+                            <button class="btn-primary" onclick="closeBookModal()">Cerrar</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            document.body.appendChild(modal);
+            document.body.style.overflow = 'hidden';
+
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    closeBookModal();
+                }
+            });
+        }
+
+        function closeBookModal() {
+            const modal = document.getElementById('book-info-modal');
+            if (modal) {
+                modal.remove();
+                document.body.style.overflow = '';
+            }
+        }
+
+
+        function closeBooksElegantModal() {
+            const modal = document.getElementById('books-elegant-modal');
+            if (modal) {
+                modal.remove();
+                document.body.style.overflow = '';
+            }
+        }
+
+        function showBookDetails(index) {
+            try {
+                if (window.currentBooksDataElegant && window.currentBooksDataElegant[index]) {
+                    const book = window.currentBooksDataElegant[index];
+                    showBookModal(book[0], book[1], book[2]);
+                }
+            } catch (error) {
+                console.error('Error mostrando detalles:', error);
+            }
+        }
+
+        // NUEVAS funciones del modal
+        function openBooksModal() {
+            console.log('openBooksModal called');
+            const modal = document.getElementById('books-modal');
+            console.log('Modal element:', modal);
+            if (!modal) return;
+            modal.classList.remove('hidden');
+            document.body.classList.add('modal-open');
+            console.log('Modal should be visible now');
+
+            // cerrar con Esc
+            const onKey = (e) => {
+              if (e.key === 'Escape') closeBooksModal();
+            };
+            modal.dataset.esc = '1';
+            window.addEventListener('keydown', onKey, { once: true });
+        }
+
+        function closeBooksModal() {
+            const modal = document.getElementById('books-modal');
+            if (!modal) return;
+            modal.classList.add('hidden');
+            document.body.classList.remove('modal-open');
+        }
+
             // ===== FUNCIONES PARA DROPDOWNS PERSONALIZADOS =====
 
             // Variable global para controlar qué dropdown está abierto
@@ -4132,18 +7014,33 @@
                 if (openDropdown && openDropdown !== dropdown) {
                     const otherOptions = openDropdown.querySelector('.dropdown-options');
                     const otherHeader = openDropdown.querySelector('.dropdown-header');
+
+                    // Deshabilitar pointer-events temporalmente
+                    if (otherOptions) {
+                        otherOptions.style.pointerEvents = 'none';
+                        setTimeout(() => {
+                            if (otherOptions) otherOptions.style.pointerEvents = '';
+                        }, 200);
+                    }
+
                     otherOptions.classList.remove('show');
                     otherHeader.classList.remove('active');
                 }
 
                 // Toggle del dropdown actual
                 if (options.classList.contains('show')) {
+                    // Deshabilitar pointer-events al cerrar
+                    if (options) {
+                        options.style.pointerEvents = 'none';
+                        setTimeout(() => {
+                            if (options) options.style.pointerEvents = '';
+                        }, 200);
+                    }
 
                     options.classList.remove('show');
                     header.classList.remove('active');
                     openDropdown = null;
                 } else {
-
                     options.classList.add('show');
                     header.classList.add('active');
                     openDropdown = dropdown;
@@ -4160,11 +7057,25 @@
                 headerText.textContent = `${emoji} ${text}`;
 
                 // Actualizar el input hidden
-                hiddenInput.value = value;
+                // Para unidades personalizadas, guardar solo el nombre, no el ID interno
+                if (value.startsWith('custom_')) {
+                    hiddenInput.value = text; // Guardar "Viaje" en lugar de "custom_psicodelicos_Viaje"
+                } else {
+                    hiddenInput.value = value; // Para unidades normales (mg, ug, etc.)
+                }
 
                 // Cerrar el dropdown
                 const options = dropdown.querySelector('.dropdown-options');
                 const header = dropdown.querySelector('.dropdown-header');
+
+                // Deshabilitar pointer-events temporalmente para evitar clicks fantasma
+                if (options) {
+                    options.style.pointerEvents = 'none';
+                    setTimeout(() => {
+                        if (options) options.style.pointerEvents = '';
+                    }, 200);
+                }
+
                 options.classList.remove('show');
                 header.classList.remove('active');
                 openDropdown = null;
@@ -4185,30 +7096,750 @@
                 }
             }
 
+            // === FUNCIONES PARA UNIDADES PERSONALIZADAS ===
+
+            function restoreDropdownSelection(dropdownId, storedValue, fallbackText = 'Seleccionar...') {
+                const dropdown = document.getElementById(dropdownId);
+                if (!dropdown) return;
+
+                const headerText = dropdown.querySelector('.dropdown-text');
+                const hiddenInput = dropdown.querySelector('input[type="hidden"]');
+                const options = dropdown.querySelectorAll('.dropdown-option');
+
+                options.forEach(option => option.classList.remove('selected'));
+
+                if (!storedValue) {
+                    if (headerText) headerText.textContent = fallbackText;
+                    if (hiddenInput) hiddenInput.value = '';
+                    return;
+                }
+
+                let matchedOption = null;
+                options.forEach(option => {
+                    const optionLabel = option.querySelector('.option-text')?.textContent?.trim() || option.textContent.trim();
+                    const optionValue = option.dataset.value || '';
+
+                    if (optionValue === storedValue) {
+                        matchedOption = option;
+                    } else if (!matchedOption && optionLabel.toLowerCase() === storedValue.toLowerCase()) {
+                        matchedOption = option;
+                    }
+                });
+
+                if (matchedOption) {
+                    matchedOption.classList.add('selected');
+                    const emoji = matchedOption.querySelector('.option-emoji')?.textContent?.trim() || '';
+                    const text = matchedOption.querySelector('.option-text')?.textContent?.trim() || matchedOption.textContent.trim();
+
+                    if (headerText) headerText.textContent = emoji ? `${emoji} ${text}` : text;
+
+                    if (hiddenInput) {
+                        if ((matchedOption.dataset.value || '').startsWith('custom_')) {
+                            hiddenInput.value = text;
+                        } else {
+                            hiddenInput.value = matchedOption.dataset.value;
+                        }
+                    }
+                } else {
+                    if (headerText) headerText.textContent = storedValue;
+                    if (hiddenInput) hiddenInput.value = storedValue;
+                }
+            }
+
+            // Función para agregar unidad personalizada
+            function addCustomUnit(category, buttonElement) {
+                const container = buttonElement.closest('.custom-input-container');
+                const input = container.querySelector('.custom-unit-field');
+                const unitName = input.value.trim();
+                
+                // Validar que no esté vacío
+                if (!unitName) {
+                    showAlert('⚠️ Error', 'Por favor ingresa el nombre de la unidad personalizada.');
+                    input.focus();
+                    return;
+                }
+                
+                // Validar longitud máxima
+                if (unitName.length > 25) {
+                    showAlert('⚠️ Error', 'El nombre de la unidad no puede exceder 25 caracteres.');
+                    input.focus();
+                    return;
+                }
+                
+                // Verificar si ya existe
+                if (customUnitExists(category, unitName)) {
+                    showAlert('⚠️ Error', 'Esta unidad personalizada ya existe en esta categoría.');
+                    input.focus();
+                    return;
+                }
+                
+                // Crear la nueva opción
+                const newOption = createCustomUnitOption(category, unitName);
+                
+                // Insertar antes del campo personalizado
+                container.parentNode.insertBefore(newOption, container);
+                
+                // Guardar en localStorage
+                saveCustomUnit(category, unitName);
+                
+                // Limpiar campo y mostrar éxito
+                input.value = '';
+                showAlert('✅ Éxito', `Unidad "${unitName}" agregada correctamente a ${getCategoryDisplayName(category)}.`);
+                
+                // Seleccionar automáticamente la nueva unidad
+                selectOption('entryUnitDropdown', `custom_${category}_${unitName}`, unitName, '✨');
+            }
+            
+            // Crear elemento HTML para unidad personalizada
+            function createCustomUnitOption(category, unitName) {
+                const option = document.createElement('div');
+                option.className = 'dropdown-option custom-unit';
+                option.setAttribute('data-value', `custom_${category}_${unitName}`);
+                option.setAttribute('data-category', category);
+                option.setAttribute('data-unit-name', unitName);
+
+                option.innerHTML = `
+                    <div class="custom-unit-content" onclick="selectOption('entryUnitDropdown', 'custom_${category}_${unitName}', '${unitName}', '✨')">
+                        <span class="option-emoji">✨</span>
+                        <span class="option-text">${unitName}</span>
+                    </div>
+                    <div class="custom-unit-actions">
+                        <button class="custom-unit-btn edit-custom-unit-btn" onclick="editCustomUnit('${category}', '${unitName}', this)" title="Editar unidad">
+                            ✏️
+                        </button>
+                        <button class="custom-unit-btn delete-custom-unit-btn" onclick="deleteCustomUnit('${category}', '${unitName}', this)" title="Eliminar unidad">
+                            🗑️
+                        </button>
+                    </div>
+                `;
+
+                return option;
+            }
+            
+            // Verificar si una unidad personalizada ya existe
+            function customUnitExists(category, unitName) {
+                const existingOptions = document.querySelectorAll(`[data-value="custom_${category}_${unitName}"]`);
+                return existingOptions.length > 0;
+            }
+            
+            // Obtener nombre de categoría para mostrar
+            function getCategoryDisplayName(category) {
+                const categoryNames = {
+                    'psicodelicos': 'PSICODÉLICOS',
+                    'hongos': 'HONGOS/PLANTAS', 
+                    'estimulantes': 'ESTIMULANTES/MDMA',
+                    'polvo': 'POLVO/CRISTAL',
+                    'liquidos': 'LÍQUIDOS',
+                    'otras': 'OTRAS'
+                };
+                return categoryNames[category] || category.toUpperCase();
+            }
+            
+            // Guardar unidad personalizada en localStorage
+            function saveCustomUnit(category, unitName) {
+                let customUnits = JSON.parse(localStorage.getItem('psychologger_custom_units') || '{}');
+                if (!customUnits[category]) {
+                    customUnits[category] = [];
+                }
+                if (!customUnits[category].includes(unitName)) {
+                    customUnits[category].push(unitName);
+                    localStorage.setItem('psychologger_custom_units', JSON.stringify(customUnits));
+                    notifyBackupDataChanged();
+                }
+            }
+            
+            // Cargar unidades personalizadas al inicializar
+            function loadCustomUnits() {
+                const customUnits = JSON.parse(localStorage.getItem('psychologger_custom_units') || '{}');
+
+                Object.keys(customUnits).forEach(category => {
+                    customUnits[category].forEach(unitName => {
+                        // Verificar que no exista ya
+                        if (!customUnitExists(category, unitName)) {
+                            const newOption = createCustomUnitOption(category, unitName);
+
+                            // Buscar el contenedor de input de la categoría
+                            const inputContainer = document.querySelector(`[data-category="${category}"].custom-input-container`);
+                            if (inputContainer) {
+                                inputContainer.parentNode.insertBefore(newOption, inputContainer);
+                            }
+                        }
+                    });
+                });
+            }
+
+            // Función para editar unidad personalizada
+            function editCustomUnit(category, oldUnitName, buttonElement) {
+                // Prevenir que se cierre el dropdown
+                event.stopPropagation();
+
+                const newName = prompt(`Editar nombre de la unidad en ${getCategoryDisplayName(category)}:`, oldUnitName);
+
+                if (newName === null || newName.trim() === '') {
+                    return; // Usuario canceló o no ingresó nada
+                }
+
+                const trimmedName = newName.trim();
+
+                // Validar longitud
+                if (trimmedName.length > 25) {
+                    showAlert('⚠️ Error', 'El nombre de la unidad no puede exceder 25 caracteres.');
+                    return;
+                }
+
+                // Verificar que el nuevo nombre no exista (excepto si es el mismo)
+                if (trimmedName !== oldUnitName && customUnitExists(category, trimmedName)) {
+                    showAlert('⚠️ Error', 'Ya existe una unidad con ese nombre en esta categoría.');
+                    return;
+                }
+
+                // Si el nombre no cambió, no hacer nada
+                if (trimmedName === oldUnitName) {
+                    return;
+                }
+
+                // Actualizar en localStorage
+                let customUnits = JSON.parse(localStorage.getItem('psychologger_custom_units') || '{}');
+                if (customUnits[category]) {
+                    const index = customUnits[category].indexOf(oldUnitName);
+                    if (index !== -1) {
+                        customUnits[category][index] = trimmedName;
+                        localStorage.setItem('psychologger_custom_units', JSON.stringify(customUnits));
+                        notifyBackupDataChanged();
+                    }
+                }
+
+                // Actualizar la opción en el DOM
+                const optionElement = buttonElement.closest('.dropdown-option.custom-unit');
+                optionElement.setAttribute('data-value', `custom_${category}_${trimmedName}`);
+                optionElement.setAttribute('data-unit-name', trimmedName);
+
+                // Actualizar contenido
+                const textSpan = optionElement.querySelector('.option-text');
+                textSpan.textContent = trimmedName;
+
+                // Actualizar eventos de los botones
+                const editBtn = optionElement.querySelector('.edit-custom-unit-btn');
+                const deleteBtn = optionElement.querySelector('.delete-custom-unit-btn');
+                const content = optionElement.querySelector('.custom-unit-content');
+
+                editBtn.setAttribute('onclick', `editCustomUnit('${category}', '${trimmedName}', this)`);
+                deleteBtn.setAttribute('onclick', `deleteCustomUnit('${category}', '${trimmedName}', this)`);
+                content.setAttribute('onclick', `selectOption('entryUnitDropdown', 'custom_${category}_${trimmedName}', '${trimmedName}', '✨')`);
+
+                showAlert('✅ Éxito', `Unidad renombrada a "${trimmedName}" correctamente.`);
+            }
+
+            // Función para eliminar unidad personalizada
+            function deleteCustomUnit(category, unitName, buttonElement) {
+                // Prevenir que se cierre el dropdown
+                event.stopPropagation();
+
+                const confirmed = confirm(`¿Estás seguro de que deseas eliminar la unidad "${unitName}" de ${getCategoryDisplayName(category)}?\n\nEsta acción no se puede deshacer.`);
+
+                if (!confirmed) {
+                    return;
+                }
+
+                // Eliminar del localStorage
+                let customUnits = JSON.parse(localStorage.getItem('psychologger_custom_units') || '{}');
+                if (customUnits[category]) {
+                    const index = customUnits[category].indexOf(unitName);
+                    if (index !== -1) {
+                        customUnits[category].splice(index, 1);
+                        localStorage.setItem('psychologger_custom_units', JSON.stringify(customUnits));
+                        notifyBackupDataChanged();
+                    }
+                }
+
+                // Eliminar del DOM
+                const optionElement = buttonElement.closest('.dropdown-option.custom-unit');
+                optionElement.remove();
+
+                showAlert('✅ Unidad Eliminada', `La unidad "${unitName}" ha sido eliminada correctamente.`);
+            }
+
+            // Función para eliminar unidad personalizada del localStorage
+            function removeCustomUnitFromStorage(category, unitName) {
+                let customUnits = JSON.parse(localStorage.getItem('psychologger_custom_units') || '{}');
+                if (customUnits[category]) {
+                    const index = customUnits[category].indexOf(unitName);
+                    if (index !== -1) {
+                        customUnits[category].splice(index, 1);
+                        localStorage.setItem('psychologger_custom_units', JSON.stringify(customUnits));
+                        notifyBackupDataChanged();
+                        return true;
+                    }
+                }
+                return false;
+            }
+
             // Cerrar dropdowns al hacer clic fuera
             document.addEventListener('click', function(e) {
+                // Verificar si el click fue en un dropdown-option (ignorar esos clicks)
+                if (e.target.closest('.dropdown-option')) {
+                    return;
+                }
+
+                // Verificar si el click fue dentro del dropdown abierto
                 if (openDropdown && !openDropdown.contains(e.target)) {
                     const options = openDropdown.querySelector('.dropdown-options');
                     const header = openDropdown.querySelector('.dropdown-header');
+
+                    // Deshabilitar pointer-events temporalmente para evitar clicks fantasma
+                    if (options) {
+                        options.style.pointerEvents = 'none';
+                        setTimeout(() => {
+                            if (options) options.style.pointerEvents = '';
+                        }, 150);
+                    }
+
                     options.classList.remove('show');
                     header.classList.remove('active');
                     openDropdown = null;
                 }
-            });
+            }, true); // Usar fase de captura para prevenir el problema
 
             // Cerrar dropdowns con la tecla Escape
             document.addEventListener('keydown', function(e) {
                 if (e.key === 'Escape' && openDropdown) {
                     const options = openDropdown.querySelector('.dropdown-options');
                     const header = openDropdown.querySelector('.dropdown-header');
+
+                    // Deshabilitar pointer-events al cerrar
+                    if (options) {
+                        options.style.pointerEvents = 'none';
+                        setTimeout(() => {
+                            if (options) options.style.pointerEvents = '';
+                        }, 200);
+                    }
+
                     options.classList.remove('show');
                     header.classList.remove('active');
                     openDropdown = null;
                 }
             });
 
+            // Prevenir clicks durante el scroll en los dropdowns
+            let isScrolling = false;
+            let scrollTimeout;
+
+            document.addEventListener('scroll', function(e) {
+                if (e.target.classList && e.target.classList.contains('dropdown-options')) {
+                    isScrolling = true;
+                    clearTimeout(scrollTimeout);
+
+                    // Resetear después de que termine el scroll
+                    scrollTimeout = setTimeout(() => {
+                        isScrolling = false;
+                    }, 150);
+                }
+            }, true);
+
+            // Interceptar clicks durante scroll
+            document.addEventListener('mousedown', function(e) {
+                if (isScrolling && e.target.closest('.dropdown-option')) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
+            }, true);
+
+            // === FUNCIONES PARA SETS Y SETTINGS PERSONALIZADOS ===
+            function addCustomSet(buttonElement) {
+                const container = buttonElement.closest('.custom-input-container');
+                const input = container.querySelector('.custom-unit-field');
+                const setName = input.value.trim();
+                if (!setName) {
+                    showAlert('⚠️ Error', 'Por favor ingresa el nombre del estado mental personalizado.');
+                    input.focus();
+                    return;
+                }
+                if (setName.length > 25) {
+                    showAlert('⚠️ Error', 'El nombre del estado mental no puede exceder 25 caracteres.');
+                    input.focus();
+                    return;
+                }
+                if (customSetExists(setName)) {
+                    showAlert('⚠️ Error', 'Este estado mental personalizado ya existe.');
+                    input.focus();
+                    return;
+                }
+                const newOption = createCustomSetOption(setName);
+                container.parentNode.insertBefore(newOption, container);
+                saveCustomSet(setName);
+                input.value = '';
+                showAlert('✅ Éxito', `Estado mental "${setName}" agregado correctamente.`);
+                selectOption('entrySetDropdown', `custom_set_${setName}`, setName, '💭');
+            }
+
+            function addCustomSetting(buttonElement) {
+                const container = buttonElement.closest('.custom-input-container');
+                const input = container.querySelector('.custom-unit-field');
+                const settingName = input.value.trim();
+                if (!settingName) {
+                    showAlert('⚠️ Error', 'Por favor ingresa el nombre del entorno personalizado.');
+                    input.focus();
+                    return;
+                }
+                if (settingName.length > 25) {
+                    showAlert('⚠️ Error', 'El nombre del entorno no puede exceder 25 caracteres.');
+                    input.focus();
+                    return;
+                }
+                if (customSettingExists(settingName)) {
+                    showAlert('⚠️ Error', 'Este entorno personalizado ya existe.');
+                    input.focus();
+                    return;
+                }
+                const newOption = createCustomSettingOption(settingName);
+                container.parentNode.insertBefore(newOption, container);
+                saveCustomSetting(settingName);
+                input.value = '';
+                showAlert('✅ Éxito', `Entorno "${settingName}" agregado correctamente.`);
+                selectOption('entrySettingDropdown', `custom_setting_${settingName}`, settingName, '🌍');
+            }
+
+            function createCustomSetOption(setName) {
+                const option = document.createElement('div');
+                option.className = 'dropdown-option custom-unit';
+                option.setAttribute('data-value', `custom_set_${setName}`);
+                option.setAttribute('data-set-name', setName);
+                option.innerHTML = `
+                    <div class="custom-unit-content" onclick="selectOption('entrySetDropdown', 'custom_set_${setName}', '${setName}', '💭')">
+                        <span class="option-emoji">💭</span>
+                        <span class="option-text">${setName}</span>
+                    </div>
+                    <div class="custom-unit-actions">
+                        <button class="custom-unit-btn edit-custom-unit-btn" onclick="editCustomSet('${setName}', this)" title="Editar estado mental">✏️</button>
+                        <button class="custom-unit-btn delete-custom-unit-btn" onclick="deleteCustomSet('${setName}', this)" title="Eliminar estado mental">🗑️</button>
+                    </div>
+                `;
+                return option;
+            }
+
+            function createCustomSettingOption(settingName) {
+                const option = document.createElement('div');
+                option.className = 'dropdown-option custom-unit';
+                option.setAttribute('data-value', `custom_setting_${settingName}`);
+                option.setAttribute('data-setting-name', settingName);
+                option.innerHTML = `
+                    <div class="custom-unit-content" onclick="selectOption('entrySettingDropdown', 'custom_setting_${settingName}', '${settingName}', '🌍')">
+                        <span class="option-emoji">🌍</span>
+                        <span class="option-text">${settingName}</span>
+                    </div>
+                    <div class="custom-unit-actions">
+                        <button class="custom-unit-btn edit-custom-unit-btn" onclick="editCustomSetting('${settingName}', this)" title="Editar entorno">✏️</button>
+                        <button class="custom-unit-btn delete-custom-unit-btn" onclick="deleteCustomSetting('${settingName}', this)" title="Eliminar entorno">🗑️</button>
+                    </div>
+                `;
+                return option;
+            }
+
+            function customSetExists(setName) {
+                return document.querySelectorAll(`[data-value="custom_set_${setName}"]`).length > 0;
+            }
+
+            function customSettingExists(settingName) {
+                return document.querySelectorAll(`[data-value="custom_setting_${settingName}"]`).length > 0;
+            }
+
+            function saveCustomSet(setName) {
+                let customSets = JSON.parse(localStorage.getItem('psychologger_custom_sets') || '[]');
+                if (!customSets.includes(setName)) {
+                    customSets.push(setName);
+                    localStorage.setItem('psychologger_custom_sets', JSON.stringify(customSets));
+                    notifyBackupDataChanged();
+                }
+            }
+
+            function saveCustomSetting(settingName) {
+                let customSettings = JSON.parse(localStorage.getItem('psychologger_custom_settings') || '[]');
+                if (!customSettings.includes(settingName)) {
+                    customSettings.push(settingName);
+                    localStorage.setItem('psychologger_custom_settings', JSON.stringify(customSettings));
+                    notifyBackupDataChanged();
+                }
+            }
+
+            function editCustomSet(oldSetName, buttonElement) {
+                const newName = prompt('Editar estado mental:', oldSetName);
+                if (!newName || newName.trim() === '') return;
+                const trimmedName = newName.trim();
+                if (trimmedName === oldSetName) return;
+                if (trimmedName.length > 25) {
+                    showAlert('⚠️ Error', 'El nombre del estado mental no puede exceder 25 caracteres.');
+                    return;
+                }
+                if (customSetExists(trimmedName)) {
+                    showAlert('⚠️ Error', 'Ya existe un estado mental con ese nombre.');
+                    return;
+                }
+                let customSets = JSON.parse(localStorage.getItem('psychologger_custom_sets') || '[]');
+                const index = customSets.indexOf(oldSetName);
+                if (index !== -1) {
+                    customSets[index] = trimmedName;
+                    localStorage.setItem('psychologger_custom_sets', JSON.stringify(customSets));
+                    notifyBackupDataChanged();
+                }
+                const optionElement = buttonElement.closest('.dropdown-option.custom-unit');
+                optionElement.setAttribute('data-value', `custom_set_${trimmedName}`);
+                optionElement.setAttribute('data-set-name', trimmedName);
+                optionElement.querySelector('.option-text').textContent = trimmedName;
+                const editBtn = optionElement.querySelector('.edit-custom-unit-btn');
+                const deleteBtn = optionElement.querySelector('.delete-custom-unit-btn');
+                const content = optionElement.querySelector('.custom-unit-content');
+                editBtn.setAttribute('onclick', `editCustomSet('${trimmedName}', this)`);
+                deleteBtn.setAttribute('onclick', `deleteCustomSet('${trimmedName}', this)`);
+                content.setAttribute('onclick', `selectOption('entrySetDropdown', 'custom_set_${trimmedName}', '${trimmedName}', '💭')`);
+                showAlert('✅ Estado Mental Actualizado', `El estado mental ha sido actualizado a "${trimmedName}".`);
+            }
+
+            function editCustomSetting(oldSettingName, buttonElement) {
+                const newName = prompt('Editar entorno:', oldSettingName);
+                if (!newName || newName.trim() === '') return;
+                const trimmedName = newName.trim();
+                if (trimmedName === oldSettingName) return;
+                if (trimmedName.length > 25) {
+                    showAlert('⚠️ Error', 'El nombre del entorno no puede exceder 25 caracteres.');
+                    return;
+                }
+                if (customSettingExists(trimmedName)) {
+                    showAlert('⚠️ Error', 'Ya existe un entorno con ese nombre.');
+                    return;
+                }
+                let customSettings = JSON.parse(localStorage.getItem('psychologger_custom_settings') || '[]');
+                const index = customSettings.indexOf(oldSettingName);
+                if (index !== -1) {
+                    customSettings[index] = trimmedName;
+                    localStorage.setItem('psychologger_custom_settings', JSON.stringify(customSettings));
+                    notifyBackupDataChanged();
+                }
+                const optionElement = buttonElement.closest('.dropdown-option.custom-unit');
+                optionElement.setAttribute('data-value', `custom_setting_${trimmedName}`);
+                optionElement.setAttribute('data-setting-name', trimmedName);
+                optionElement.querySelector('.option-text').textContent = trimmedName;
+                const editBtn = optionElement.querySelector('.edit-custom-unit-btn');
+                const deleteBtn = optionElement.querySelector('.delete-custom-unit-btn');
+                const content = optionElement.querySelector('.custom-unit-content');
+                editBtn.setAttribute('onclick', `editCustomSetting('${trimmedName}', this)`);
+                deleteBtn.setAttribute('onclick', `deleteCustomSetting('${trimmedName}', this)`);
+                content.setAttribute('onclick', `selectOption('entrySettingDropdown', 'custom_setting_${trimmedName}', '${trimmedName}', '🌍')`);
+                showAlert('✅ Entorno Actualizado', `El entorno ha sido actualizado a "${trimmedName}".`);
+            }
+
+            function deleteCustomSet(setName, buttonElement) {
+                if (!confirm(`¿Estás seguro de que quieres eliminar el estado mental "${setName}"?`)) return;
+                let customSets = JSON.parse(localStorage.getItem('psychologger_custom_sets') || '[]');
+                const index = customSets.indexOf(setName);
+                if (index !== -1) {
+                    customSets.splice(index, 1);
+                    localStorage.setItem('psychologger_custom_sets', JSON.stringify(customSets));
+                    notifyBackupDataChanged();
+                }
+                buttonElement.closest('.dropdown-option.custom-unit').remove();
+                showAlert('✅ Estado Mental Eliminado', `El estado mental "${setName}" ha sido eliminado correctamente.`);
+            }
+
+            function deleteCustomSetting(settingName, buttonElement) {
+                if (!confirm(`¿Estás seguro de que quieres eliminar el entorno "${settingName}"?`)) return;
+                let customSettings = JSON.parse(localStorage.getItem('psychologger_custom_settings') || '[]');
+                const index = customSettings.indexOf(settingName);
+                if (index !== -1) {
+                    customSettings.splice(index, 1);
+                    localStorage.setItem('psychologger_custom_settings', JSON.stringify(customSettings));
+                    notifyBackupDataChanged();
+                }
+                buttonElement.closest('.dropdown-option.custom-unit').remove();
+                showAlert('✅ Entorno Eliminado', `El entorno "${settingName}" ha sido eliminado correctamente.`);
+            }
+
+            function loadCustomSetsAndSettings() {
+                const customSets = JSON.parse(localStorage.getItem('psychologger_custom_sets') || '[]');
+                customSets.forEach(setName => {
+                    if (!customSetExists(setName)) {
+                        const newOption = createCustomSetOption(setName);
+                        const inputContainer = document.querySelector('#entrySetOptions .custom-input-container[data-category="set"]');
+                        if (inputContainer) {
+                            inputContainer.parentNode.insertBefore(newOption, inputContainer);
+                        }
+                    }
+                });
+
+                const customSettings = JSON.parse(localStorage.getItem('psychologger_custom_settings') || '[]');
+                customSettings.forEach(settingName => {
+                    if (!customSettingExists(settingName)) {
+                        const newOption = createCustomSettingOption(settingName);
+                        const inputContainer = document.querySelector('#entrySettingOptions .custom-input-container[data-category="setting"]');
+                        if (inputContainer) {
+                            inputContainer.parentNode.insertBefore(newOption, inputContainer);
+                        }
+                    }
+                });
+            }
+
         </script>
 
     </main>
+
+    <!-- Modal de Libros -->
+    <div id="books-modal" class="books-modal hidden" role="dialog" aria-modal="true" aria-labelledby="books-title">
+      <div class="modal__backdrop" onclick="closeBooksModal()"></div>
+
+      <div class="modal__panel" role="document">
+        <div class="modal__header">
+          <div class="modal__title">
+            <span class="modal__emoji">📚</span>
+            <h3 id="books-title">Biblioteca Recomendada</h3>
+          </div>
+          <button class="modal__close" type="button" aria-label="Cerrar" onclick="closeBooksModal()">✕</button>
+        </div>
+
+        <p class="modal__subtitle">
+          Bibliografía para comprender desde la ciencia, la historia y la reducción de riesgos.
+        </p>
+
+        <div class="books-grid">
+          <article class="book">
+            <h4 class="book__title">PiHKAL: A Chemical Love Story</h4>
+            <p class="book__meta">👤 Alexander & Ann Shulgin</p>
+            <p class="book__desc">Obra fundamental sobre feniletilaminas y experiencias psicodélicas.</p>
+          </article>
+
+          <article class="book">
+            <h4 class="book__title">TiHKAL: The Continuation</h4>
+            <p class="book__meta">👤 Alexander & Ann Shulgin</p>
+            <p class="book__desc">Segunda parte dedicada a triptaminas y sus efectos.</p>
+          </article>
+
+          <article class="book">
+            <h4 class="book__title">Food of the Gods</h4>
+            <p class="book__meta">👤 Terence McKenna</p>
+            <p class="book__desc">Plantas psicoactivas y evolución humana.</p>
+          </article>
+
+          <article class="book">
+            <h4 class="book__title">Ketamina: el nuevo milagro médico</h4>
+            <p class="book__meta">👤 Dr. Manuel Sánchez</p>
+            <p class="book__desc">Tratamiento para depresión resistente.</p>
+          </article>
+
+          <article class="book">
+            <h4 class="book__title">Guía del explorador psicodélico</h4>
+            <p class="book__meta">👤 James Fadiman</p>
+            <p class="book__desc">Viajes seguros y terapéuticos.</p>
+          </article>
+
+          <article class="book">
+            <h4 class="book__title">No todas las drogas son iguales</h4>
+            <p class="book__meta">👤 David Nutt</p>
+            <p class="book__desc">Análisis científico objetivo sobre drogas y políticas.</p>
+          </article>
+
+          <article class="book">
+            <h4 class="book__title">Pharmacotheon</h4>
+            <p class="book__meta">👤 Jonathan Ott</p>
+            <p class="book__desc">Drogas enteógenas, fuentes vegetales e historia.</p>
+          </article>
+        </div>
+
+        <div class="modal__note">
+          💡 Estos libros son recomendaciones educativas para comprender mejor el tema desde una perspectiva científica, objetiva y de conocimiento, y no como una incitación al consumo.
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL DE SELECCIÓN DE FECHA Y HORA -->
+    <div class="modal" id="dateTimeModal">
+        <div class="modal-content datetime-modal">
+            <button class="close-btn" onclick="closeDateTimeModal()">×</button>
+            <h3>Establecer fecha y hora</h3>
+
+            <div class="datetime-picker-container">
+                <!-- Selección de Fecha -->
+                <div class="date-section">
+                    <div class="date-display">
+                        <div class="date-row">
+                            <div class="date-field">
+                                <label>Día</label>
+                                <div class="custom-select-wrapper" data-select-id="daySelect">
+                                    <select id="daySelect" class="date-select">
+                                        <!-- Se llena dinámicamente -->
+                                    </select>
+                                    <button type="button" class="custom-select-trigger" aria-haspopup="listbox" aria-expanded="false">
+                                        <span class="custom-select-value">--</span>
+                                    </button>
+                                    <div class="custom-select-dropdown" role="listbox" id="daySelectDropdown"></div>
+                                </div>
+                            </div>
+                            <div class="date-field">
+                                <label>Mes</label>
+                                <div class="custom-select-wrapper" data-select-id="monthSelect">
+                                    <select id="monthSelect" class="date-select">
+                                        <!-- Se llena dinámicamente -->
+                                    </select>
+                                    <button type="button" class="custom-select-trigger" aria-haspopup="listbox" aria-expanded="false">
+                                        <span class="custom-select-value">--</span>
+                                    </button>
+                                    <div class="custom-select-dropdown" role="listbox" id="monthSelectDropdown"></div>
+                                </div>
+                            </div>
+                            <div class="date-field">
+                                <label>Año</label>
+                                <div class="custom-select-wrapper" data-select-id="yearSelect">
+                                    <select id="yearSelect" class="date-select">
+                                        <!-- Se llena dinámicamente -->
+                                    </select>
+                                    <button type="button" class="custom-select-trigger" aria-haspopup="listbox" aria-expanded="false">
+                                        <span class="custom-select-value">--</span>
+                                    </button>
+                                    <div class="custom-select-dropdown" role="listbox" id="yearSelectDropdown"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Selección de Hora -->
+                <div class="time-section">
+                    <div class="time-display">
+                        <div class="time-row">
+                            <div class="time-field">
+                                <label>Hora</label>
+                                <div class="custom-select-wrapper" data-select-id="hourSelect">
+                                    <select id="hourSelect" class="time-select">
+                                        <!-- Se llena dinámicamente -->
+                                    </select>
+                                    <button type="button" class="custom-select-trigger" aria-haspopup="listbox" aria-expanded="false">
+                                        <span class="custom-select-value">--</span>
+                                    </button>
+                                    <div class="custom-select-dropdown" role="listbox" id="hourSelectDropdown"></div>
+                                </div>
+                            </div>
+                            <div class="time-separator">:</div>
+                            <div class="time-field">
+                                <label>Min</label>
+                                <div class="custom-select-wrapper" data-select-id="minuteSelect">
+                                    <select id="minuteSelect" class="time-select">
+                                        <!-- Se llena dinámicamente -->
+                                    </select>
+                                    <button type="button" class="custom-select-trigger" aria-haspopup="listbox" aria-expanded="false">
+                                        <span class="custom-select-value">--</span>
+                                    </button>
+                                    <div class="custom-select-dropdown" role="listbox" id="minuteSelectDropdown"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="datetime-actions">
+                <button class="btn-primary" onclick="setDateTime()">ESTABLECER</button>
+                <button class="btn-secondary" onclick="closeDateTimeModal()">CANCELAR</button>
+                <button class="btn-danger" onclick="clearDateTime()">BORRAR</button>
+            </div>
+        </div>
+    </div>
+
 </body>
 </html>

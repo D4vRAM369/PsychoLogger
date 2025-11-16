@@ -44,7 +44,8 @@ class SecurityCheckActivity : FragmentActivity() {
 
                 // Lanzar biometría 1 sola vez al entrar (si está disponible)
                 LaunchedEffect(Unit) {
-                    if (appLockManager.isBiometricAvailable()) {
+                    kotlinx.coroutines.delay(300) // Pequeño delay para evitar glitches visuales
+                    if (appLockManager.isBiometricAvailable() && appLockManager.canShowPromptNow()) {
                         appLockManager.showBiometricPrompt(
                             activity = this@SecurityCheckActivity,
                             onSuccess = {
@@ -96,7 +97,7 @@ class SecurityCheckActivity : FragmentActivity() {
                         // Botón biometría
                         Button(
                             onClick = {
-                                if (appLockManager.isBiometricAvailable()) {
+                                if (appLockManager.isBiometricAvailable() && appLockManager.canShowPromptNow()) {
                                     appLockManager.showBiometricPrompt(
                                         activity = this@SecurityCheckActivity,
                                         onSuccess = {
@@ -107,7 +108,7 @@ class SecurityCheckActivity : FragmentActivity() {
                                         onError = { /* mostrar un toast si quieres */ }
                                     )
                                 } else {
-                                    // Si no hay biometría, abrimos PIN directamente
+                                    // Si no hay biometría o no se puede mostrar prompt, abrimos PIN directamente
                                     if (appLockManager.hasPinSet()) showPin = true
                                 }
                             },
@@ -172,8 +173,12 @@ class SecurityCheckActivity : FragmentActivity() {
 
     override fun onResume() {
         super.onResume()
-        // Re-chequeo defensivo: si ya se autenticó mientras estábamos en background, saltamos.
         val appLockManager = AppLockManager(this)
+        
+        // ⚠️ FIX CRÍTICO: Resetear estado biométrico al volver del background
+        appLockManager.resetBiometricState()
+        
+        // Re-chequeo defensivo: si ya se autenticó mientras estábamos en background, saltamos.
         if (!appLockManager.needsAuth()) {
             startActivity(Intent(this, MainActivity::class.java))
             finish()
