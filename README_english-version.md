@@ -87,19 +87,6 @@ Includes predefined substances (LSD, Ketamine, Opium), and you can add your own:
 3. Install on your device  
 4. Set your PIN and biometrics on first launch  
 
-### APK Signing & Obfuscation
-
-1. **Prepare your credentials:**  
-Fill in `RELEASE_STORE_FILE`, `RELEASE_STORE_PASSWORD`, `RELEASE_KEY_ALIAS`, and `RELEASE_KEY_PASSWORD` in your local (non-versioned) `gradle.properties`.
-
-2. **Build with R8:**  
-```bash
-./gradlew assembleRelease
-
-3. **Signed APK**: you will find the obfuscated APK in `app/build/outputs/apk/release/`.  
-You can verify the signature with:  
-`apksigner verify --print-certs <apk>`
-
 ## How to Use PsychoLogger
 
 ### First Time
