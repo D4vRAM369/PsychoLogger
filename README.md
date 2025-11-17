@@ -1,4 +1,7 @@
-# PsychoLogger 🧠📊
+# PsychoLogger 🧠💫📊🌌
+
+<img width="512" height="512" alt="psychologger_icon" src="https://github.com/user-attachments/assets/252d71b1-bee1-444d-a859-2c2fabe2cdd8" />
+
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Android](https://img.shields.io/badge/Android-7.0%2B-3DDC84?logo=android&logoColor=white)](https://www.android.com)
@@ -7,6 +10,10 @@
 [![Built with Claude Code](https://img.shields.io/badge/Built%20with-Claude%20Code-8A63D2?logo=anthropic&logoColor=white)](https://claude.ai/code)
 [![ChatGPT](https://img.shields.io/badge/Assisted%20by-ChatGPT-74aa9c?logo=openai&logoColor=white)](https://chat.openai.com)
 [![PBL](https://img.shields.io/badge/Learning-Project%20Based-orange?logo=gradleplay&logoColor=white)](https://en.wikipedia.org/wiki/Project-based_learning)
+<img src="https://img.shields.io/badge/Made_with-Love_&_Coffee-ff69b4"/>
+
+[🌍 English version](README_english-version.md)
+
 
 ## ¿Qué es PsychoLogger?
 
@@ -63,18 +70,51 @@ Viene con sustancias predefinidas (LSD, Ketamina, Opio) pero puedes agregar las 
 - **Auto-bloqueo:** Se cierra automáticamente para protegerte
 - **Punto de entrada seguro:** Verificación antes de acceder
 
+## 📸 Capturas de Pantalla
+
+<p align="center">
+  <img src="screenshots/MainPage.jpg" height="380"/>
+  <img src="screenshots/Calendar.jpg" height="380"/>
+  <img src="screenshots/Stats.jpg" height="380"/>
+</p>
+
+<p align="center">
+  <img src="screenshots/Set stats.jpg" height="380"/>
+  <img src="screenshots/Settings stats.jpg" height="380"/>
+  <img src="screenshots/Resources.jpg" height="380"/>
+</p>
+
+<p align="center">
+  <img src="screenshots/Data management.jpg" height="380"/>
+  <img src="screenshots/Data management2.jpg" height="380"/>
+  <img src="screenshots/Data Management3.jpg" height="380"/>
+</p>
+
+<p align="center">
+  <img src="screenshots/Data Management4.jpg" height="380"/>
+  <img src="screenshots/Books.jpg" height="380"/>
+  <img src="screenshots/About the Dev - D4vRAM.jpg" height="380"/>
+</p>
+
+<p align="center">
+  <img src="screenshots/PIN&Biometric_settings.jpg" height="380"/>
+  <img src="screenshots/LockScreen.jpg" height="380"/>
+  <img src="screenshots/LockScreen2.jpg" height="380"/>
+</p>
+
+
 ## Instalación
 
 ### Lo que Necesitas
 - Android 7.0 o más reciente
-- Unos 50MB de espacio
+- Unos 20MB de espacio
 - Sensor biométrico (recomendado pero no obligatorio)
 
 ### Cómo Instalar
 1. Descarga el APK o clona este repo
 2. Si compilas desde código: Android Studio + Gradle
 3. Instala en tu dispositivo
-4. Configura tu PIN y biometría en el primer uso
+4. Configura tu PIN y biometría en el primer uso para mayor privacidad
 
 ### Firma y ofuscación del APK
 
@@ -124,7 +164,7 @@ PsychoLogger está pensada para:
 - **Package:** com.d4vram.psychologger
 - **Objetivo:** Android 14 (API 36)
 - **Mínimo:** Android 7.0 (API 24)
-- **Tamaño:** ~25MB instalada
+- **Tamaño:** ~20MB instalada
 
 ### Estructura de Datos
 Tus registros se guardan de forma estructurada:
