@@ -78,7 +78,7 @@ Includes predefined substances (LSD, Ketamine, Opium), and you can add your own:
 
 ### Requirements
 - Android 7.0 or higher  
-- About 50MB of storage  
+- About 20MB of storage  
 - Biometric sensor (recommended but not required)  
 
 ### How to Install
