@@ -116,12 +116,6 @@ Viene con sustancias predefinidas (LSD, Ketamina, Opio) pero puedes agregar las 
 3. Instala en tu dispositivo
 4. Configura tu PIN y biometría en el primer uso para mayor privacidad
 
-### Firma y ofuscación del APK
-
-1. **Prepara tus credenciales**: en tu `gradle.properties` local (no versionado) rellena `RELEASE_STORE_FILE`, `RELEASE_STORE_PASSWORD`, `RELEASE_KEY_ALIAS` y `RELEASE_KEY_PASSWORD` con los datos de tu keystore.
-2. **Compila con R8**: ejecuta `./gradlew assembleRelease`. El tipo `release` ya tiene `minifyEnabled` y `shrinkResources` activados, así que R8 optimiza y ofusca automáticamente.
-3. **APK firmado**: encontrarás el APK ofuscado en `app/build/outputs/apk/release/`. Puedes verificar la firma con `apksigner verify --print-certs <apk>`.
-
 ## Cómo Usar PsychoLogger
 
 ### Primera Vez
