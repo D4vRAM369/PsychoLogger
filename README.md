@@ -6,6 +6,7 @@
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Android](https://img.shields.io/badge/Android-7.0%2B-3DDC84?logo=android&logoColor=white)](https://www.android.com)
 [![Kotlin](https://img.shields.io/badge/Kotlin-1.9.24-7F52FF?logo=kotlin&logoColor=white)](https://kotlinlang.org)
+[![Security](https://img.shields.io/badge/Security-AES256-red?logo=security&logoColor=white)](https://en.wikipedia.org/wiki/Advanced_Encryption_Standard)
 [![Open Source](https://img.shields.io/badge/Open%20Source-%E2%9D%A4-red?logo=open-source-initiative&logoColor=white)](https://opensource.org)
 [![Built with Claude Code](https://img.shields.io/badge/Built%20with-Claude%20Code-8A63D2?logo=anthropic&logoColor=white)](https://claude.ai/code)
 [![ChatGPT](https://img.shields.io/badge/Assisted%20by-ChatGPT-74aa9c?logo=openai&logoColor=white)](https://chat.openai.com)
@@ -15,60 +16,69 @@
 [🌍 English version](README_english-version.md)
 
 
+## Tabla de Contenidos
+- [¿Qué es PsychoLogger?](#qué-es-psychologger)
+- [Características Principales](#características-principales)
+- [Instalación](#instalación)
+- [Cómo Usar](#cómo-usar-psychologger)
+- [Tecnología](#tecnología)
+- [Privacidad y Seguridad](#privacidad--seguridad)
+- [Reducción de Daños](#importante-reducción-de-daños)
+- [Desencriptar Backups](#-desencriptar-backups-de-audios-cifrados)
+- [Contribuir](#contribuir)
+
 ## ¿Qué es PsychoLogger?
 
-PsychoLogger es tu bitácora personal para experiencias psiconáuticas. Una app Android diseñada para quienes buscan documentar y entender sus experiencias con sustancias psicoactivas de manera responsable y segura. 
+**PsychoLogger** es una aplicación Android de código abierto diseñada como una bitácora personal segura para experiencias psiconáuticas. Desarrollada en **Kotlin** y **Jetpack Compose**, esta herramienta permite a los usuarios documentar, analizar y entender sus experiencias con sustancias psicoactivas de manera responsable, privada y segura.
+
+Ideal para investigación personal, reducción de riesgos y seguimiento de patrones de consumo.
 
 ## ¿Por qué usar PsychoLogger?
 
-### 🔒 Privacidad Total
-- Todos tus datos quedan en tu dispositivo - nada se sube a internet
-- Protección con huella dactilar o PIN
-- Cifrado de grado militar para tus registros más sensibles
+### 🔒 Privacidad Total y Cifrado
+- **Offline First**: Todos tus datos quedan en tu dispositivo. Nada se sube a la nube.
+- **Seguridad Biométrica**: Protección con huella dactilar o reconocimiento facial.
+- **Cifrado AES-256**: Cifrado de grado militar para tus registros más sensibles y backups.
 
-### 📝 Registro Completo
-- Anota sustancia, dosis, fecha y hora
-- Documenta tu "set" (estado mental) y "setting" (ambiente)
-- Agrega notas personales para cada experiencia, y/o dale un uso complementario de "diaro psiconáutico"
-- Categoriza tus sustancias con colores y emojis
+### 📝 Registro Detallado (Logging)
+- **Bitácora Completa**: Registra sustancia, dosis, fecha, hora, y método de administración.
+- **Set & Setting**: Documenta tu estado mental ("set") y el ambiente ("setting").
+- **Diario Psiconáutico**: Agrega notas personales y observaciones detalladas.
+- **Categorización Visual**: Organiza sustancias con colores y emojis personalizados.
 
-### 📈 Visualiza tus Patrones 
-- Ve tu historial en un calendario interactivo
-- Estadísticas para entender mejor tus hábitos
+### 📈 Análisis y Estadísticas
+- **Visualización de Datos**: Historial interactivo en calendario.
+- **Patrones de Uso**: Estadísticas para entender mejor tus hábitos y promover el consumo responsable.
 
-### 🔗 Recursos anexos sobre RdR (Reducción de Riesgos) e información ### 
-
-Con enlaces en el Panel de Recursos a web muy conocidas sobre información, reducción de riesgos y demás información útil y valiosa. Por el momento se encuentran adjuntadas:
-
-- Erowid: Base de datos completa sobre sustancias psicoactivas, experiencias y efectos.
-
-- TripSit: Información sobre interacciones, dosificación y asistencia en tiempo real.
-- MAPS *(Multidisciplinary Association for Psychedelic Studies)*: Organización sin ánimo de lucro que investiga los potenciales usos médicos, legales y culturales de los psicodélicos.
-- PsychonautWiki: Enciclopedia científica de sustancias psicoactivas y sus efectosz
+### 🔗 Recursos de Reducción de Riesgos (RdR)
+Acceso directo a información vital de fuentes confiables:
+- **Erowid**: Base de datos de sustancias.
+- **TripSit**: Asistencia en tiempo real e interacciones.
+- **MAPS**: Investigación científica sobre psicodélicos.
+- **PsychonautWiki**: Enciclopedia de efectos y dosis.
 
 ## Características Principales
 
-### 🏠 Pantalla Principal
-La app combina lo mejor de Android nativo con una interfaz web fluida. Tu seguridad está garantizada desde el momento en que abres la app.
+### 🏠 Interfaz Híbrida Moderna
+Combina la potencia de Android nativo con una interfaz fluida y responsiva. Diseño intuitivo centrado en la experiencia de usuario (UX).
 
-### 💊 Gestión de Sustancias
-Viene con sustancias predefinidas (LSD, Ketamina, Opio) pero puedes agregar las tuyas:
+### 💊 Gestión Personalizada de Sustancias
+Incluye preajustes (LSD, Ketamina, etc.) y permite crear nuevas entradas:
 - Psicodélicos 🍄
-- Estimulantes/MDMA ⚡  
+- Estimulantes/MDMA ⚡
 - Disociativos 🌀
 - Depresores 😴
 
-### 📊 Tus Datos, Tu Control
-- **Exporta** todo a CSV cuando quieras
-- **Importa** datos de otros formatos
-- **Migra** fácilmente entre dispositivos
-- **Respalda** tu información de forma segura
+### 📊 Control Total de Datos
+- **Exportación CSV**: Tus datos son tuyos. Expórtalos para análisis externo.
+- **Backups Cifrados**: Copias de seguridad seguras.
+- **Migración Sencilla**: Mueve tus datos entre dispositivos fácilmente.
 
-### 🛡️ Seguridad que Importa
-- **Biometría:** Huella, cara, lo que tengas habilitado
-- **PIN de respaldo:** Por si falla la biometría  
-- **Auto-bloqueo:** Se cierra automáticamente para protegerte
-- **Punto de entrada seguro:** Verificación antes de acceder
+### 🛡️ Seguridad Avanzada
+- **Biometría**: Huella/Cara.
+- **PIN de Respaldo**: SHA-256 hashed.
+- **Auto-bloqueo**: Configurable para máxima privacidad.
+- **Stealth Mode**: Diseño discreto.
 
 ## 📸 Capturas de Pantalla
 
@@ -105,6 +115,7 @@ Viene con sustancias predefinidas (LSD, Ketamina, Opio) pero puedes agregar las 
 
 ## Instalación
 
+<<<<<<< HEAD
 ### Lo que Necesitas
 - Android 7.0 o más reciente
 - Unos 20MB de espacio
@@ -115,28 +126,45 @@ Viene con sustancias predefinidas (LSD, Ketamina, Opio) pero puedes agregar las 
 2. Si compilas desde código: Android Studio + Gradle
 3. Instala en tu dispositivo
 4. Configura tu PIN y biometría en el primer uso para mayor privacidad
+=======
+### Requisitos
+- **OS**: Android 7.0 (Nougat) o superior.
+- **Espacio**: ~50MB.
+- **Hardware**: Sensor biométrico recomendado.
+
+### Pasos
+1. Descarga el APK de la sección [Releases](https://github.com/D4VRAM369/PsychoLogger/releases) o clona este repositorio.
+2. Si compilas desde el código fuente:
+   ```bash
+   git clone https://github.com/D4VRAM369/PsychoLogger.git
+   cd PsychoLogger
+   ./gradlew assembleRelease
+   ```
+3. Instala el APK en tu dispositivo.
+4. Configura tu seguridad inicial (PIN/Biometría).
+
+### Firma y Ofuscación
+Para desarrolladores que compilan su propia versión:
+1. Configura `gradle.properties` con tus claves de firma.
+2. Ejecuta `./gradlew assembleRelease`.
+3. R8 optimizará y ofuscará el código automáticamente.
+
 
 ## Cómo Usar PsychoLogger
 
-### Primera Vez
-1. **Configura tu seguridad** - Elige PIN y activa biometría
-2. **Agrega tus sustancias** - Personaliza con colores y emojis  
-3. **Ajusta preferencias** - Tiempo de auto-bloqueo, etc.
-
-### Uso Diario
-1. **Abre la app** - Autentícate con huella o PIN
-2. **Registra tu experiencia** - Sustancia, dosis, contexto, notas
-3. **Revisa tus datos** - Calendar, gráficos, estadísticas
-4. **Exporta** cuando necesites respaldo
+1. **Inicio Seguro**: Autentícate al abrir la app.
+2. **Registro**: Pulsa "+" para nueva entrada. Selecciona sustancia, dosis y añade notas.
+3. **Revisión**: Usa el calendario o las estadísticas para ver tu historial.
+4. **Recursos**: Consulta la sección de información para dudas sobre sustancias.
 
 ## Tecnología
 
-Construida con tecnologías modernas para Android:
-- **Kotlin** como lenguaje principal
-- **Jetpack Compose** para interfaces nativas fluidas
-- **Material 3** para un diseño limpio y familiar
-- **Cifrado AndroidX** para máxima seguridad
-- **WebView híbrido** para la interfaz principal
+Este proyecto es un excelente ejemplo de desarrollo Android moderno:
+- **Lenguaje**: [Kotlin](https://kotlinlang.org/)
+- **UI Toolkit**: [Jetpack Compose](https://developer.android.com/jetpack/compose) & Material Design 3
+- **Seguridad**: AndroidX Security (EncryptedSharedPreferences, MasterKey)
+- **Arquitectura**: MVVM (Model-View-ViewModel)
+- **Build System**: Gradle Kotlin DSL
 
 ## Importante: Reducción de Daños
 
@@ -196,97 +224,49 @@ Tus registros se guardan de forma estructurada:
 - Abre un issue en GitHub
 - Contacta al desarrollador
 - Revisa la documentación técnica
+=======
+PsychoLogger es una herramienta de **Reducción de Riesgos y Daños**.
+- ✅ **Educación e Investigación**
+- ✅ **Autoconocimiento**
+- ❌ **NO promueve el uso ilegal de sustancias**
+- ❌ **NO sustituye consejo médico**
+
 
 ## 🔓 Desencriptar Backups de Audios Cifrados
 
-Cuando exportas audios desde PsychoLogger, se cifran con **AES-256-GCM** para proteger tu privacidad. Aquí te explicamos cómo recuperarlos:
+Los audios exportados se cifran con **AES-256-GCM**. Usa el script de Python incluido para recuperarlos.
 
 ### Requisitos
-
 ```bash
-# Instalar Python 3 (si no lo tienes)
-sudo apt install python3 python3-pip  # Linux/Ubuntu
-# brew install python3                # macOS
-
-# Instalar librería de criptografía
 pip3 install cryptography
 ```
 
-### Comandos de Desencriptación
-
+### Uso
 ```bash
-# Opción 1: Con contraseña en el comando (menos seguro)
-python3 decrypt_psychologger.py audios_encrypted_2025-01-15.zip miContraseña123
-
-# Opción 2: Sin contraseña (te la pedirá de forma oculta - RECOMENDADO)
 python3 decrypt_psychologger.py audios_encrypted_2025-01-15.zip
-🔒 Contraseña: ****
 ```
+El script derivará la clave de tu contraseña y extraerá los audios originales.
 
-### ¿Qué hace el script?
+## Privacidad & Seguridad
 
-1. **Lee el ZIP cifrado** con tus audios exportados
-2. **Extrae los metadatos** (salt, IV, iteraciones PBKDF2)
-3. **Deriva la clave AES-256** desde tu contraseña usando PBKDF2 con 120,000 iteraciones
-4. **Desencripta** los datos con AES-256-GCM
-5. **Extrae los audios** a la carpeta `decrypted_audios/`
+- **Cero Rastreadores**: No hay analytics ni trackers.
+- **Local Storage**: Base de datos SQLite/Room local.
+- **Código Abierto**: Auditable por cualquiera.
 
-### Ejemplo completo
+## Contribuir
 
-```bash
-# 1. Descargar el ZIP cifrado desde tu teléfono
-adb pull /sdcard/Download/audios_encrypted_2025-01-15.zip .
+¡Las contribuciones son bienvenidas! Ayuda a mejorar esta herramienta para la comunidad.
+Consulta [CONTRIBUTING.md](CONTRIBUTING.md) para guías de contribución.
 
-# 2. Desencriptar
-python3 decrypt_psychologger.py audios_encrypted_2025-01-15.zip
-🔒 Contraseña: ****
+1. Haz un Fork.
+2. Crea tu rama (`git checkout -b feature/AmazingFeature`).
+3. Commit (`git commit -m 'Add some AmazingFeature'`).
+4. Push (`git push origin feature/AmazingFeature`).
+5. Abre un Pull Request.
 
-# Salida:
-🔓 Desencriptando: audios_encrypted_2025-01-15.zip
-📄 Metadata:
-   - Algoritmo: AES-256-GCM
-   - Iteraciones: 120000
-   - Salt: 16 bytes
-   - IV: 12 bytes
-📦 Datos cifrados: 2458930 bytes
-🔑 Derivando clave AES-256 con PBKDF2 (120000 iteraciones)...
-🔐 Desencriptando con AES-256-GCM...
-✅ Desencriptado exitoso: 2458802 bytes
-📂 Extrayendo audios a: decrypted_audios/
-🎵 Audios encontrados: 12
-   ✓ audio_2025-01-10_143522.m4a
-   ✓ audio_2025-01-11_092311.m4a
-   ...
-✅ ¡Desencriptado completado!
+## Soporte
 
-# 3. Tus audios están en: decrypted_audios/
-ls decrypted_audios/
-```
-
-### Seguridad del Cifrado
-
-- **Algoritmo:** AES-256-GCM (estándar militar)
-- **Derivación de clave:** PBKDF2-HMAC-SHA256 con 120,000 iteraciones
-- **Salt único:** Generado aleatoriamente por backup
-- **IV único:** Generado aleatoriamente (96 bits)
-- **Autenticación:** GCM incluye verificación de integridad
-
-### Errores Comunes
-
-**❌ Contraseña incorrecta:**
-```
-❌ ERROR: Contraseña incorrecta o datos corruptos
-```
-→ Verifica que la contraseña sea exactamente la que usaste al exportar.
-
-**❌ Librería no instalada:**
-```
-ModuleNotFoundError: No module named 'cryptography'
-```
-→ Ejecuta: `pip3 install cryptography`
+Si encuentras un bug o tienes una idea, por favor abre un [Issue](https://github.com/D4VRAM369/PsychoLogger/issues).
 
 ---
-
-**Recuerda:** Esta herramienta está diseñada para fomentar el uso responsable y la reducción de daños. Siempre infórmate adecuadamente y considera los riesgos antes de experimentar con cualquier sustancia psicoactiva.
-
 *Desarrollado con ❤️ para la comunidad psiconáutica responsable.*
