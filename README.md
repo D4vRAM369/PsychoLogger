@@ -12,6 +12,8 @@
 <img src="https://img.shields.io/badge/Made_with-Love_&_Coffee-ff69b4"/>
 
 [🇪🇸 Versión en español](README_Spanish.md)
+=======
+[🇪🇸 Versión en español](README_español.md)
 
 ---
 
@@ -129,6 +131,9 @@ It is NOT:
 - **Target:** Android 14 (API 36)  
 - **Minimum:** Android 7.0 (API 24)  
 - **Size:** = 3MB installed
+=======
+- **Size:** ~3MB installed
+=
 
 ### Data Structure
 Your entries are stored in a structured way:
