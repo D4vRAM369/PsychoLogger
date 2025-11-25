@@ -74,6 +74,39 @@ Includes predefined substances (LSD, Ketamine, Opium), and you can add your own:
 
 ---
 
+## 📸 Screenshots
+
+<p align="center">
+  <img src="screenshots/MainPage.jpg" height="380"/>
+  <img src="screenshots/Calendar.jpg" height="380"/>
+  <img src="screenshots/Stats.jpg" height="380"/>
+</p>
+
+<p align="center">
+  <img src="screenshots/Set stats.jpg" height="380"/>
+  <img src="screenshots/Settings stats.jpg" height="380"/>
+  <img src="screenshots/Resources.jpg" height="380"/>
+</p>
+
+<p align="center">
+  <img src="screenshots/Data management.jpg" height="380"/>
+  <img src="screenshots/Data management2.jpg" height="380"/>
+  <img src="screenshots/Data Management3.jpg" height="380"/>
+</p>
+
+<p align="center">
+  <img src="screenshots/Data Management4.jpg" height="380"/>
+  <img src="screenshots/Books.jpg" height="380"/>
+  <img src="screenshots/About the Dev - D4vRAM.jpg" height="380"/>
+</p>
+
+<p align="center">
+  <img src="screenshots/PIN&Biometric_settings.jpg" height="380"/>
+  <img src="screenshots/LockScreen.jpg" height="380"/>
+  <img src="screenshots/LockScreen2.jpg" height="380"/>
+</p>
+
+
 ## Installation
 
 ### Requirements
