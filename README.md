@@ -11,7 +11,7 @@
 [![PBL](https://img.shields.io/badge/Learning-Project%20Based-orange?logo=gradleplay&logoColor=white)](https://en.wikipedia.org/wiki/Project-based_learning)
 <img src="https://img.shields.io/badge/Made_with-Love_&_Coffee-ff69b4"/>
 
-[🇪🇸 Versión en español](README.md)
+[🇪🇸 Versión en español](README_Spanish.md)
 
 ---
 
@@ -128,8 +128,7 @@ It is NOT:
 - **Package:** com.d4vram.psychologger  
 - **Target:** Android 14 (API 36)  
 - **Minimum:** Android 7.0 (API 24)  
-- **Size:** ~3MB installed
-=
+- **Size:** = 3MB installed
 
 ### Data Structure
 Your entries are stored in a structured way:
