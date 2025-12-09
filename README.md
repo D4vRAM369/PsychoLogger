@@ -180,7 +180,6 @@ PsychoLogger está pensada para:
 
 ## Datos Técnicos
 
-<<<<<<< HEAD
 ### 💊 Substance Management  
 Includes predefined substances (LSD, Ketamine, Opium), and you can add your own:
 - Psychedelics 🍄  
