@@ -16,6 +16,8 @@ import androidx.compose.ui.unit.sp
 fun SettingsScreen(
     isAppLockEnabled: Boolean,
     onAppLockToggle: (Boolean) -> Unit,
+    isSoftTheme: Boolean,
+    onThemeToggle: (Boolean) -> Unit,
     onAdvancedSettings: () -> Unit,
     onPinSetup: () -> Unit,
     onClose: () -> Unit
@@ -75,6 +77,37 @@ fun SettingsScreen(
                         colors = SwitchDefaults.colors(
                             checkedThumbColor = MaterialTheme.colorScheme.primary,
                             checkedTrackColor = MaterialTheme.colorScheme.primaryContainer
+                        )
+                    )
+                }
+                
+                Spacer(modifier = Modifier.height(24.dp))
+                
+                // Selector de Tema
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column {
+                        Text(
+                            text = "Tema Visual",
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Text(
+                            text = if (isSoftTheme) "Modo Suave (Menos oscuro)" else "Modo Original (Místico)",
+                            fontSize = 14.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    Switch(
+                        checked = isSoftTheme,
+                        onCheckedChange = onThemeToggle,
+                        colors = SwitchDefaults.colors(
+                            checkedThumbColor = Color(0xFF8B5CF6),
+                            checkedTrackColor = Color(0xFF8B5CF6).copy(alpha = 0.3f)
                         )
                     )
                 }

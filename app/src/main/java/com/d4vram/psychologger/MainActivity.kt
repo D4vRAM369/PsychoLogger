@@ -79,6 +79,11 @@ class MainActivity : FragmentActivity() {
     var webAppInterface: WebAppInterface? = null
         private set
 
+    // --- Persistencia de Tema ---
+    private val uiPrefs by lazy { getSharedPreferences("ui_settings", MODE_PRIVATE) }
+    private var _isSoftTheme = mutableStateOf(false)
+    val isSoftTheme: State<Boolean> get() = _isSoftTheme
+
     var webView: WebView? = null
         private set
 
@@ -94,6 +99,9 @@ class MainActivity : FragmentActivity() {
 
         // Inicializar el gestor de bloqueo de aplicación
         appLockManager = AppLockManager(this)
+        
+        // Inicializar tema
+        _isSoftTheme.value = uiPrefs.getBoolean("is_soft_theme", false)
 
         // Programar backups automáticos cada 12 horas
         schedulePeriodicBackups()
@@ -321,6 +329,7 @@ class MainActivity : FragmentActivity() {
                         Box(modifier = Modifier.fillMaxSize()) {
                             WebViewScreen(
                                 context = context,
+                                isSoftTheme = isSoftTheme.value,
                                 onFileChooser = { callback ->
                                     filePathCallback = callback
                                     this@MainActivity.openFileChooser()
@@ -360,6 +369,10 @@ class MainActivity : FragmentActivity() {
                                 } else {
                                     Toast.makeText(context, "🔓 Bloqueo de aplicación desactivado", Toast.LENGTH_SHORT).show()
                                 }
+                            },
+                            isSoftTheme = isSoftTheme.value,
+                            onThemeToggle = { soft ->
+                                toggleTheme(soft)
                             },
                             onAdvancedSettings = { showAdvancedSettings = true },
                             onPinSetup = { showPinSetup = true },
@@ -410,6 +423,15 @@ class MainActivity : FragmentActivity() {
                 }
             }
         }
+    }
+
+    private fun toggleTheme(soft: Boolean) {
+        _isSoftTheme.value = soft
+        uiPrefs.edit().putBoolean("is_soft_theme", soft).apply()
+        
+        // Notificar al WebView
+        val themeName = if (soft) "soft" else "original"
+        executeJavaScript("if (typeof setAppTheme === 'function') { setAppTheme('$themeName'); }")
     }
 
     // ==== SELECTOR DE ARCHIVOS (MÉTODO DE LA ACTIVITY) ====
@@ -1729,6 +1751,7 @@ class WebAppInterface(private val context: Context, private val activity: MainAc
 @Composable
 fun WebViewScreen(
     context: Context,
+    isSoftTheme: Boolean,
     onFileChooser: (ValueCallback<Array<Uri>>) -> Unit,
     onWebViewReady: (WebView) -> Unit
 ) {
@@ -1769,6 +1792,11 @@ fun WebViewScreen(
 
                     override fun onPageFinished(view: WebView?, url: String?) {
                         super.onPageFinished(view, url)
+                        
+                        // Aplicar tema persistido
+                        val themeName = if (isSoftTheme) "soft" else "original"
+                        view?.evaluateJavascript("if (typeof setAppTheme === 'function') { setAppTheme('$themeName'); }", null)
+
                         view?.evaluateJavascript(
                             """
                             // Función de exportación
