@@ -47,3 +47,6 @@ dist/
 *.log
 
 .kotlin/
+
+# --- Notas de implementación locales ---
+implementation_notes.md
