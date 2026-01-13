@@ -50,3 +50,15 @@ dist/
 
 # --- Notas de implementación locales ---
 implementation_notes.md
+
+# --- PBL & AI Documentation (Brain) ---
+task.md
+walkthrough.md
+roadmap.md
+implementation_plan.md
+.brain/
+.agent/
+**/task.md
+**/walkthrough.md
+**/roadmap.md
+**/implementation_plan.md

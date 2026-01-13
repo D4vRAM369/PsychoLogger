@@ -20,12 +20,16 @@ import android.webkit.WebResourceRequest
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import android.widget.EditText
 import android.widget.Toast
+import android.text.InputType
+import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.fragment.app.FragmentActivity
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AlertDialog
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.imePadding
@@ -51,6 +55,7 @@ import androidx.lifecycle.lifecycleScope
 import com.d4vram.psychologger.ui.screens.LockScreen
 import com.d4vram.psychologger.ui.screens.SettingsScreen
 import com.d4vram.psychologger.ui.screens.AdvancedSettingsScreen
+import com.d4vram.psychologger.ui.screens.ProfileSettingsScreen
 import com.d4vram.psychologger.ui.screens.PinSetupScreen
 import com.d4vram.psychologger.ui.screens.PinEntryScreen
 import com.d4vram.psychologger.ui.theme.PsychoLoggerTheme
@@ -86,6 +91,18 @@ class MainActivity : FragmentActivity() {
 
     var webView: WebView? = null
         private set
+
+    // State para mostrar ProfileSettingsScreen (accesible desde el bridge)
+    private val _showProfileSettingsState = mutableStateOf(false)
+    val showProfileSettingsState: State<Boolean> get() = _showProfileSettingsState
+
+    fun showProfileSettingsFromBridge() {
+        _showProfileSettingsState.value = true
+    }
+
+    fun hideProfileSettings() {
+        _showProfileSettingsState.value = false
+    }
 
     data class PhotoResult(
         val success: Boolean,
@@ -180,43 +197,11 @@ class MainActivity : FragmentActivity() {
                     val result = withContext(Dispatchers.IO) {
                         backupManager.restoreBackup(uri)
                     }
-
-                    if (result.success && result.dataJson != null) {
-                        val payloadQuoted = JSONObject.quote(result.dataJson)
-                        val infoJson = JSONObject().apply {
-                            put("audios", result.restoredAudios)
-                            put("photos", result.restoredPhotos)
-                            result.message?.let { put("message", it) }
-                        }.toString()
-                        val infoQuoted = JSONObject.quote(infoJson)
-
-                        executeJavaScript(
-                            """
-                                if (window.onBackupRestored) {
-                                    window.onBackupRestored($payloadQuoted, $infoQuoted);
-                                }
-                            """.trimIndent()
-                        )
-
-                        Toast.makeText(
-                            this@MainActivity,
-                            "✅ Backup importado correctamente",
-                            Toast.LENGTH_SHORT
-                        ).show()
+                    
+                    if (result.needsPassword) {
+                        showRestorePasswordDialog(uri)
                     } else {
-                        val errorMessage = result.message ?: "No se pudo importar el backup"
-                        executeJavaScript(
-                            """
-                                if (window.onBackupRestoreError) {
-                                    window.onBackupRestoreError(${JSONObject.quote(errorMessage)});
-                                }
-                            """.trimIndent()
-                        )
-                        Toast.makeText(
-                            this@MainActivity,
-                            "❌ $errorMessage",
-                            Toast.LENGTH_LONG
-                        ).show()
+                        handleRestoreResult(result)
                     }
                 }
             } else {
@@ -260,6 +245,7 @@ class MainActivity : FragmentActivity() {
                 // Estado de pantallas
                 var showSettings by remember { mutableStateOf(false) }
                 var showAdvancedSettings by remember { mutableStateOf(false) }
+                val showProfileSettings by showProfileSettingsState  // Observa el estado de clase
                 var showPinSetup by remember { mutableStateOf(false) }
                 var showPinEntry by remember { mutableStateOf(false) }
 
@@ -389,6 +375,32 @@ class MainActivity : FragmentActivity() {
                                 Toast.makeText(context, "⏰ Tiempo de bloqueo actualizado", Toast.LENGTH_SHORT).show()
                             },
                             onBack = { showAdvancedSettings = false }
+                        )
+                    }
+
+                    // --- Perfil y Backups ---
+                    if (showProfileSettings) {
+                        ProfileSettingsScreen(
+                            nickname = "Psiconauta", 
+                            onNicknameChange = { /* Guardar localmente si fuera necesario */ },
+                            isDarkTheme = true,
+                            onThemeToggle = { /* Cambiar */ },
+                            isNotificationsEnabled = true,
+                            onNotificationsToggle = { /* Cambiar */ },
+                            isBiometricEnabled = isAppLockEnabled,
+                            onBiometricToggle = { enabled -> 
+                                appLockManager.setAppLockEnabled(enabled)
+                            },
+                            onBack = { hideProfileSettings() },
+                            onExportData = {
+                                getLocalStorageData()
+                            },
+                            onImportData = { csv ->
+                                webAppInterface?.processFileContent(csv, "import_manual.csv")
+                            },
+                            onClearData = {
+                                executeJavaScript("localStorage.clear(); location.reload();")
+                            }
                         )
                     }
 
@@ -549,10 +561,102 @@ class MainActivity : FragmentActivity() {
     fun startBackupImportFlow() {
         importBackupLauncher.launch(arrayOf("application/zip", "application/octet-stream"))
     }
+
+    suspend fun getLocalStorageData(): String = withContext(Dispatchers.Main) {
+        kotlinx.coroutines.suspendCancellableCoroutine { continuation ->
+            val script = """
+                (function() {
+                    return JSON.stringify({
+                        substances: JSON.parse(localStorage.getItem('substances') || '[]'),
+                        entries: JSON.parse(localStorage.getItem('entries') || '[]'),
+                        userProfile: JSON.parse(localStorage.getItem('userProfile') || '{}'),
+                        customUnits: JSON.parse(localStorage.getItem('psychologger_custom_units') || '{}'),
+                        customSets: JSON.parse(localStorage.getItem('psychologger_custom_sets') || '[]'),
+                        customSettings: JSON.parse(localStorage.getItem('psychologger_custom_settings') || '[]')
+                    });
+                })()
+            """.trimIndent()
+            
+            webView?.evaluateJavascript(script) { result ->
+                val rawJson = result?.let { 
+                    if (it.startsWith('"') && it.endsWith('"')) {
+                        org.json.JSONTokener(it).nextValue().toString()
+                    } else it
+                } ?: "{}"
+                continuation.resume(rawJson) { }
+            }
+        }
+    }
+
+    private fun handleRestoreResult(result: BackupManager.RestoreResult) {
+        if (result.success && result.dataJson != null) {
+            val payloadQuoted = JSONObject.quote(result.dataJson)
+            val infoJson = JSONObject().apply {
+                put("audios", result.restoredAudios)
+                put("photos", result.restoredPhotos)
+                result.message?.let { put("message", it) }
+            }.toString()
+            val infoQuoted = JSONObject.quote(infoJson)
+
+            executeJavaScript(
+                """
+                    if (window.onBackupRestored) {
+                        window.onBackupRestored($payloadQuoted, $infoQuoted);
+                    }
+                """.trimIndent()
+            )
+
+            Toast.makeText(
+                this@MainActivity,
+                "✅ Backup importado correctamente",
+                Toast.LENGTH_SHORT
+            ).show()
+        } else {
+            val errorMessage = result.message ?: "No se pudo importar el backup"
+            executeJavaScript(
+                """
+                    if (window.onBackupRestoreError) {
+                        window.onBackupRestoreError(${JSONObject.quote(errorMessage)});
+                    }
+                """.trimIndent()
+            )
+            Toast.makeText(
+                this@MainActivity,
+                "❌ $errorMessage",
+                Toast.LENGTH_LONG
+            ).show()
+        }
+    }
+
+    private fun showRestorePasswordDialog(uri: Uri) {
+        runOnUiThread {
+            val input = EditText(this).apply {
+                inputType = android.text.InputType.TYPE_CLASS_TEXT or android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD
+                hint = "Contraseña del Backup"
+            }
+            
+            AlertDialog.Builder(this, android.R.style.Theme_DeviceDefault_Dialog_Alert)
+                .setTitle("🔒 Backup Cifrado")
+                .setMessage("Introduce la contraseña para restaurar este backup:")
+                .setView(input)
+                .setPositiveButton("RESTAURAR") { _, _ ->
+                    val password = input.text.toString()
+                    lifecycleScope.launch {
+                        val result = withContext(Dispatchers.IO) {
+                            backupManager.restoreBackup(uri, password)
+                        }
+                        handleRestoreResult(result)
+                    }
+                }
+                .setNegativeButton("CANCELAR", null)
+                .show()
+        }
+    }
 }
 
 // ==== INTERFAZ ANDROID-JS ====
 class WebAppInterface(private val context: Context, private val activity: MainActivity) {
+    var onProfileRequest: (() -> Unit)? = null
 
     // === GESTIÓN DE AUDIO ===
     private val audioRecorder = AudioRecorder(context)
@@ -1076,6 +1180,9 @@ class WebAppInterface(private val context: Context, private val activity: MainAc
                             refreshAfterImport();
                         } else if (typeof syncDataFromStorage === 'function') {
                             syncDataFromStorage();
+                            if (typeof rebuildSuggestionsFromEntries === 'function') {
+                                rebuildSuggestionsFromEntries();
+                            }
                             renderSubstanceList(); generateCalendar(); renderStats();
                         } else {
                             window.substances = substances;
@@ -1509,7 +1616,11 @@ class WebAppInterface(private val context: Context, private val activity: MainAc
     @JavascriptInterface
     fun createManualBackup(localStorageJson: String): String {
         return try {
-            val backupFile = backupManager.createBackupWithData(localStorageJson)
+            val backupFile = backupManager.createBackupWithData(
+                localStorageData = localStorageJson,
+                password = null,
+                includeMedia = true
+            )
 
             if (backupFile != null) {
                 val backupPath = backupFile.absolutePath
@@ -1550,6 +1661,71 @@ class WebAppInterface(private val context: Context, private val activity: MainAc
             }.toString()
         } catch (e: Exception) {
             ""
+        }
+    }
+    @JavascriptInterface
+    fun createComprehensiveBackup(localStorageData: String, password: String?, includeMedia: Boolean) {
+        activity.lifecycleScope.launch {
+            val backupFile = withContext(Dispatchers.IO) {
+                backupManager.createBackupWithData(
+                    localStorageData = localStorageData,
+                    password = password?.takeIf { it.isNotBlank() },
+                    includeMedia = includeMedia
+                )
+            }
+
+            if (backupFile != null) {
+                activity.runOnUiThread {
+                    Toast.makeText(context, "✅ Backup creado exitosamente", Toast.LENGTH_SHORT).show()
+                }
+                // Notificar éxito a JS si es necesario
+                activity.executeJavaScript("if(window.onBackupCreated) { window.onBackupCreated('${backupFile.name}'); }")
+            } else {
+                activity.runOnUiThread {
+                    Toast.makeText(context, "❌ Error al crear backup", Toast.LENGTH_LONG).show()
+                }
+            }
+        }
+    }
+
+    @JavascriptInterface
+    fun showProfileSettings() {
+        activity.runOnUiThread {
+            onProfileRequest?.invoke()
+        }
+    }
+
+    fun shareBackup(filename: String) {
+        activity.runOnUiThread {
+            try {
+                val backupDir = backupManager.getBackupsDirectory()
+                val backupFile = File(backupDir, filename)
+
+                if (!backupFile.exists()) {
+                    Toast.makeText(context, "❌ El archivo de backup no existe", Toast.LENGTH_SHORT).show()
+                    return@runOnUiThread
+                }
+
+                val shareUri = FileProvider.getUriForFile(
+                    context,
+                    "${context.packageName}.fileprovider",
+                    backupFile
+                )
+
+                val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                    type = "application/zip"
+                    putExtra(Intent.EXTRA_STREAM, shareUri)
+                    putExtra(Intent.EXTRA_SUBJECT, "Backup PsychoLogger: $filename")
+                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                }
+
+                val chooser = Intent.createChooser(shareIntent, "🚀 Compartir Backup")
+                activity.startActivity(chooser)
+
+            } catch (e: Exception) {
+                android.util.Log.e("WebAppInterface", "Error al compartir backup", e)
+                Toast.makeText(context, "❌ Error al compartir: ${e.message}", Toast.LENGTH_LONG).show()
+            }
         }
     }
 
@@ -1905,6 +2081,12 @@ fun WebViewScreen(
                 val activity = context as MainActivity
                 val interfaceInstance = WebAppInterface(context, activity)
                 activity.setWebAppInterface(interfaceInstance)
+                // Assign callback immediately after setting the interface
+                interfaceInstance.onProfileRequest = {
+                    activity.runOnUiThread {
+                        activity.showProfileSettingsFromBridge()
+                    }
+                }
                 addJavascriptInterface(interfaceInstance, "Android")
 
                 setDownloadListener { url, _, contentDisposition, mimetype, _ ->
@@ -1939,5 +2121,4 @@ fun WebViewScreen(
                 loadUrl("file:///android_asset/index.html")
             }
         }
-    )
-}
+    )}

@@ -32,9 +32,16 @@ android {
         applicationId = "com.d4vram.psychologger"
         minSdk = 24
         targetSdk = 36
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 2
+        versionName = "1.1"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    dependenciesInfo {
+        // Disables dependency metadata when building APKs (for IzzyOnDroid/F-Droid)
+        includeInApk = false
+        // Disables dependency metadata when building Android App Bundles (for Google Play)
+        includeInBundle = false
     }
 
     // --- FIRMA ---
@@ -74,15 +81,15 @@ android {
             isShrinkResources = false
             signingConfig = releaseSigningConfig ?: signingConfigs.getByName("debug")
             // Si quieres que conviva con la release, descomenta:
-            // applicationIdSuffix = ".dev"
-            // versionNameSuffix = "-dev"
+             applicationIdSuffix = ".dev"
+             versionNameSuffix = "-dev"
         }
 
         // Debug “clásico” (si lo usas)
         getByName("debug") {
             isDebuggable = true
             // Si quieres que debug también vaya firmado estable, descomenta:
-            // signingConfig = signingConfigs.getByName("release")
+            // signingConfig = releaseSigningConfig ?: signingConfigs.getByName("debug")
         }
     }
 

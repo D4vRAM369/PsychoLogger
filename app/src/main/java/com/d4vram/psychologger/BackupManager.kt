@@ -19,6 +19,7 @@ import java.util.zip.ZipInputStream
 import java.util.zip.ZipOutputStream
 import javax.crypto.Cipher
 import javax.crypto.CipherOutputStream
+import javax.crypto.CipherInputStream
 import javax.crypto.SecretKeyFactory
 import javax.crypto.spec.GCMParameterSpec
 import javax.crypto.spec.PBEKeySpec
@@ -263,7 +264,8 @@ class BackupManager(private val context: Context) {
         val dataJson: String? = null,
         val restoredAudios: Int = 0,
         val restoredPhotos: Int = 0,
-        val message: String? = null
+        val message: String? = null,
+        val needsPassword: Boolean = false
     )
 
     /**
@@ -272,85 +274,48 @@ class BackupManager(private val context: Context) {
      * @param uri Uri del archivo ZIP seleccionado (usualmente vía SAF)
      * @return RestoreResult con la información necesaria para sincronizar la UI
      */
-    fun restoreBackup(uri: Uri): RestoreResult {
+    fun restoreBackup(uri: Uri, password: String? = null): RestoreResult {
         val resolver = context.contentResolver
         val tempRoot = File(context.cacheDir, "restore_tmp").apply {
-            if (exists()) {
-                deleteRecursively()
-            }
+            if (exists()) deleteRecursively()
             mkdirs()
         }
-        val tempAudioDir = File(tempRoot, "audio_notes").apply { mkdirs() }
-        val tempPhotoDir = File(tempRoot, "entry_photos").apply { mkdirs() }
 
         return try {
-            var dataJson: String? = null
-            var restoredAudios = 0
-            var restoredPhotos = 0
+            // 1. Detectar si es un backup cifrado
+            var isEncrypted = false
+            var metadataEntry: String? = null
 
             resolver.openInputStream(uri)?.use { inputStream ->
                 ZipInputStream(BufferedInputStream(inputStream)).use { zipIn ->
                     var entry = zipIn.nextEntry
-                    val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
-
                     while (entry != null) {
-                        val entryName = entry.name ?: ""
-
-                        when {
-                            entry.isDirectory -> {
-                                // No hacemos nada con directorios vacíos
-                            }
-                            entryName.equals("data.json", ignoreCase = true) -> {
-                                dataJson = zipIn.readBytes().toString(Charsets.UTF_8)
-                            }
-                            entryName.startsWith("audios/") -> {
-                                val fileName = sanitizeEntryName(entryName.substringAfter('/'))
-                                if (!fileName.isNullOrBlank()) {
-                                    val targetFile = File(tempAudioDir, fileName)
-                                    writeZipEntryToFile(zipIn, targetFile, buffer)
-                                    restoredAudios++
-                                }
-                            }
-                            entryName.startsWith("photos/") -> {
-                                val fileName = sanitizeEntryName(entryName.substringAfter('/'))
-                                if (!fileName.isNullOrBlank()) {
-                                    val targetFile = File(tempPhotoDir, fileName)
-                                    writeZipEntryToFile(zipIn, targetFile, buffer)
-                                    restoredPhotos++
-                                }
-                            }
-                            else -> {
-                                Log.d(TAG, "Entrada desconocida en backup: $entryName")
-                            }
+                        if (entry.name == "metadata.json") {
+                            isEncrypted = true
+                            metadataEntry = zipIn.readBytes().toString(Charsets.UTF_8)
+                            break
                         }
-
-                        zipIn.closeEntry()
                         entry = zipIn.nextEntry
                     }
                 }
-            } ?: return RestoreResult(
-                success = false,
-                message = "No se pudo abrir el archivo seleccionado"
-            )
-
-            if (dataJson.isNullOrBlank()) {
-                return RestoreResult(success = false, message = "El backup no contiene data.json")
             }
 
-            // Reemplazar contenido actual con lo extraído en temporal
-            replaceDirectoryContents(audioNotesDir, tempAudioDir)
-            replaceDirectoryContents(photoDir, tempPhotoDir)
+            if (isEncrypted) {
+                if (password == null) {
+                    return RestoreResult(success = false, needsPassword = true, message = "Este backup está cifrado")
+                }
+                
+                // Proceder con la des-cifración
+                val result = restoreEncryptedBackup(uri, password, tempRoot, metadataEntry!!)
+                if (!result.success) return result
+                return result
+            }
 
-            // Actualizar snapshot para futuros autobackups
-            saveLocalStorageSnapshot(dataJson!!)
+            // 2. Backup normal (legacy o directo)
+            resolver.openInputStream(uri)?.use { inputStream ->
+                processZipStream(ZipInputStream(BufferedInputStream(inputStream)), tempRoot)
+            } ?: RestoreResult(success = false, message = "No se pudo abrir el archivo")
 
-            RestoreResult(
-                success = true,
-                dataJson = dataJson,
-                restoredAudios = restoredAudios,
-                restoredPhotos = restoredPhotos,
-                message = "Backup restaurado correctamente"
-            )
         } catch (e: Exception) {
             Log.e(TAG, "Error al restaurar backup", e)
             RestoreResult(success = false, message = e.message ?: "Error al restaurar backup")
@@ -359,45 +324,222 @@ class BackupManager(private val context: Context) {
         }
     }
 
+    private fun restoreEncryptedBackup(uri: Uri, password: String, tempRoot: File, metadataJson: String): RestoreResult {
+        return try {
+            val metadata = JSONObject(metadataJson)
+            val salt = hexToBytes(metadata.getString("salt"))
+            val iv = hexToBytes(metadata.getString("iv"))
+            
+            val key = deriveKey(password, salt)
+            val cipher = Cipher.getInstance(AES_MODE)
+            cipher.init(Cipher.DECRYPT_MODE, key, GCMParameterSpec(GCM_TAG_LENGTH, iv))
+
+            val encryptedFile = File(context.cacheDir, "temp_data.enc")
+            val decryptedZip = File(context.cacheDir, "temp_decrypted.zip")
+
+            // Extraer data.enc del ZIP original
+            context.contentResolver.openInputStream(uri)?.use { inputStream ->
+                ZipInputStream(BufferedInputStream(inputStream)).use { zipIn ->
+                    var entry = zipIn.nextEntry
+                    while (entry != null) {
+                        if (entry.name == "data.enc") {
+                            FileOutputStream(encryptedFile).use { it.write(zipIn.readBytes()) }
+                            break
+                        }
+                        entry = zipIn.nextEntry
+                    }
+                }
+            }
+
+            // Descifrar
+            CipherInputStream(FileInputStream(encryptedFile), cipher).use { cipherIn ->
+                FileOutputStream(decryptedZip).use { it.write(cipherIn.readBytes()) }
+            }
+
+            // Procesar el ZIP descifrado
+            val result = processZipStream(ZipInputStream(BufferedInputStream(FileInputStream(decryptedZip))), tempRoot)
+            
+            encryptedFile.delete()
+            decryptedZip.delete()
+            
+            result
+        } catch (e: Exception) {
+            Log.e(TAG, "Error descifrando backup", e)
+            RestoreResult(success = false, message = "Contraseña incorrecta o archivo corrupto")
+        }
+    }
+
+    private fun processZipStream(zipIn: ZipInputStream, tempRoot: File): RestoreResult {
+        val tempAudioDir = File(tempRoot, "audio_notes").apply { mkdirs() }
+        val tempPhotoDir = File(tempRoot, "entry_photos").apply { mkdirs() }
+        var dataJson: String? = null
+        var restoredAudios = 0
+        var restoredPhotos = 0
+        val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
+
+        zipIn.use { zi ->
+            var entry = zi.nextEntry
+            while (entry != null) {
+                val entryName = entry.name ?: ""
+                when {
+                    entryName.equals("data.json", ignoreCase = true) -> {
+                        dataJson = zi.readBytes().toString(Charsets.UTF_8)
+                    }
+                    entryName.startsWith("audios/") -> {
+                        val fileName = sanitizeEntryName(entryName.substringAfter('/'))
+                        if (!fileName.isNullOrBlank()) {
+                            writeZipEntryToFile(zi, File(tempAudioDir, fileName), buffer)
+                            restoredAudios++
+                        }
+                    }
+                    entryName.startsWith("photos/") -> {
+                        val fileName = sanitizeEntryName(entryName.substringAfter('/'))
+                        if (!fileName.isNullOrBlank()) {
+                            writeZipEntryToFile(zi, File(tempPhotoDir, fileName), buffer)
+                            restoredPhotos++
+                        }
+                    }
+                }
+                zi.closeEntry()
+                entry = zi.nextEntry
+            }
+        }
+
+        if (dataJson.isNullOrBlank()) {
+            return RestoreResult(success = false, message = "El backup no contiene data.json")
+        }
+
+        // Aplicar cambios
+        replaceDirectoryContents(audioNotesDir, tempAudioDir)
+        replaceDirectoryContents(photoDir, tempPhotoDir)
+        saveLocalStorageSnapshot(dataJson!!)
+
+        return RestoreResult(
+            success = true,
+            dataJson = dataJson,
+            restoredAudios = restoredAudios,
+            restoredPhotos = restoredPhotos,
+            message = "Backup restaurado correctamente"
+        )
+    }
+
+    private fun hexToBytes(hex: String): ByteArray {
+        return ByteArray(hex.length / 2) {
+            hex.substring(it * 2, it * 2 + 2).toInt(16).toByte()
+        }
+    }
+
     /**
-     * Crear backup con datos de localStorage (llamado desde JavaScript)
+     * Crear backup con datos de localStorage (llamado desde JavaScript/UI)
      *
      * @param localStorageData JSON string con todo el localStorage
+     * @param password Contraseña opcional para cifrar el backup completo
+     * @param includeMedia Si se deben incluir audios y fotos
      * @return File del backup o null
      */
-    fun createBackupWithData(localStorageData: String): File? {
+    fun createBackupWithData(
+        localStorageData: String,
+        password: String? = null,
+        includeMedia: Boolean = true
+    ): File? {
         return try {
             val timestamp = SimpleDateFormat("yyyy-MM-dd_HH-mm-ss", Locale.getDefault()).format(Date())
-            val backupFile = File(backupsDir, "backup_$timestamp.zip")
+            val baseName = if (password != null) "backup_encrypted_$timestamp" else "backup_$timestamp"
+            val backupFile = File(backupsDir, "$baseName.zip")
 
-            ZipOutputStream(FileOutputStream(backupFile)).use { zipOut ->
+            // Si hay contraseña, creamos primero un ZIP temporal y luego lo ciframos
+            val fileToReturn = if (password != null) {
+                val tempZip = File(context.cacheDir, "temp_backup_$timestamp.zip")
+                createZip(tempZip, localStorageData, includeMedia)
+                
+                val encryptedFile = File(backupsDir, "$baseName.zip")
+                encryptFile(tempZip, encryptedFile, password)
+                
+                tempZip.delete()
+                encryptedFile
+            } else {
+                createZip(backupFile, localStorageData, includeMedia)
+                backupFile
+            }
 
-                // 1. Añadir data.json con los datos reales
-                addLocalStorageToZip(zipOut, localStorageData)
+            // Guardar snapshot para futuros autobackups
+            saveLocalStorageSnapshot(localStorageData)
+            cleanOldBackups()
+            updateLastBackupMetadata(fileToReturn, type = "manual")
 
-                // 2. Añadir data.csv con la exportación tabular
-                addCsvExportToZip(zipOut, localStorageData)
+            fileToReturn
 
+        } catch (e: Exception) {
+            Log.e(TAG, "Error al crear backup con datos", e)
+            null
+        }
+    }
+
+    /**
+     * Helper para crear un ZIP con datos y multimedia
+     */
+    private fun createZip(outputFile: File, localStorageData: String, includeMedia: Boolean) {
+        ZipOutputStream(FileOutputStream(outputFile)).use { zipOut ->
+            // 1. Añadir data.json con los datos reales
+            addLocalStorageToZip(zipOut, localStorageData)
+
+            // 2. Añadir data.csv con la exportación tabular
+            addCsvExportToZip(zipOut, localStorageData)
+
+            if (includeMedia) {
                 // 3. Añadir audios
                 addAudioFilesToZip(zipOut)
 
                 // 4. Añadir fotos
                 addPhotoFilesToZip(zipOut)
             }
-
-            // Guardar snapshot para futuros autobackups
-            saveLocalStorageSnapshot(localStorageData)
-
-            cleanOldBackups()
-
-            updateLastBackupMetadata(backupFile, type = "manual")
-
-            backupFile
-
-        } catch (e: Exception) {
-            Log.e(TAG, "Error al crear backup con datos", e)
-            null
         }
+    }
+
+    /**
+     * Cifra un archivo cualquiera y genera un paquete ZIP compatible (metadata.json + data.enc)
+     */
+    private fun encryptFile(inputFile: File, outputFile: File, password: String) {
+        // 1. Generar salt e IV
+        val salt = generateRandomBytes(SALT_LENGTH)
+        val iv = generateRandomBytes(IV_LENGTH)
+
+        // 2. Derivar clave de la contraseña
+        val key = deriveKey(password, salt)
+
+        // 3. Cifrar el archivo de entrada
+        val cipher = Cipher.getInstance(AES_MODE)
+        cipher.init(Cipher.ENCRYPT_MODE, key, GCMParameterSpec(GCM_TAG_LENGTH, iv))
+
+        val encryptedData = File(context.cacheDir, "data.enc.tmp")
+        CipherOutputStream(FileOutputStream(encryptedData), cipher).use { cipherOut ->
+            FileInputStream(inputFile).use { it.copyTo(cipherOut) }
+        }
+
+        // 4. Crear ZIP final con metadata + datos cifrados
+        ZipOutputStream(FileOutputStream(outputFile)).use { zipOut ->
+            // Metadata
+            val metadata = JSONObject().apply {
+                put("algorithm", "AES-256-GCM")
+                put("salt", bytesToHex(salt))
+                put("iv", bytesToHex(iv))
+                put("iterations", PBKDF2_ITERATIONS)
+                put("timestamp", System.currentTimeMillis())
+                put("type", "comprehensive_backup")
+            }
+
+            zipOut.putNextEntry(ZipEntry("metadata.json"))
+            zipOut.write(metadata.toString(2).toByteArray())
+            zipOut.closeEntry()
+
+            // Datos cifrados
+            zipOut.putNextEntry(ZipEntry("data.enc"))
+            FileInputStream(encryptedData).use { it.copyTo(zipOut) }
+            zipOut.closeEntry()
+        }
+
+        // Limpiar archivo temporal cifrado
+        encryptedData.delete()
     }
 
     /**

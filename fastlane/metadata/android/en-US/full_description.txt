@@ -1,0 +1,1 @@
+PsychoLogger - Psychonaut Logbook is, as its name suggests, a private diary for psychonauts for Android that allows you to record substances, doses, set & setting, and personal notes, with local encryption, calendar, statistics, and resources for harm reduction. All of this is 100% offline and without sending data to any server.

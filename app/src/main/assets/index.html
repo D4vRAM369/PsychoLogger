@@ -3337,7 +3337,9 @@
                         <div class="resource-card">
                             <h4>💾 Backup Manual</h4>
                             <p>Crear backup completo (datos + audios)</p>
-                            <button class="btn-primary" onclick="createManualBackup()">🗄️ Crear Backup</button>
+                            <button class="btn-primary"
+                                onclick="if(window.Android) Android.showProfileSettings(); else alert('Solo en Android');">⚙️
+                                Abrir Backup Avanzado</button>
                         </div>
                         <div class="resource-card">
                             <h4>📥 Importar Backup</h4>
@@ -3348,6 +3350,13 @@
                             <h4>🎤 Exportar Audios</h4>
                             <p>Exportar todas las notas de voz en ZIP</p>
                             <button class="btn-primary" onclick="openAudioExportModal()">📦 Exportar ZIP</button>
+                        </div>
+                        <div class="resource-card">
+                            <h4>🔧 Reparar Sugerencias</h4>
+                            <p>¿Perdiste tus opciones de Set/Setting? Esta función las reconstruye desde tu historial de
+                                registros.</p>
+                            <button class="btn-secondary" onclick="rebuildSuggestionsFromEntries()">🔄 Reconstruir
+                                Opciones</button>
                         </div>
                         <div class="resource-card">
                             <h4>📸 Exportar Fotos</h4>
@@ -6693,12 +6702,19 @@
                     if (!items.length) {
                         return '<p style="color: var(--text-muted);">Sin datos suficientes</p>';
                     }
-                    return items.map(item => `
-                <div class="chart-legend-item">
-                    <span class="chart-legend-color" style="background: ${item.color};"></span>
-                    ${item.label} (${item.percent}%)
-                </div>
-            `).join('');
+                    return items.map(item => {
+                        // Truncamos la etiqueta para que no rompa la UI
+                        const labelText = item.label || 'N/A';
+                        const displayLabel = labelText.length > 25 ? labelText.substring(0, 22) + '...' : labelText;
+
+                        return `
+                        <div class="chart-legend-item" title="${labelText}">
+                            <span class="chart-legend-color" style="background: ${item.color};"></span>
+                            <span class="chart-legend-text">${displayLabel}</span>
+                            <span class="chart-legend-percent">(${item.percent}%)</span>
+                        </div>
+                        `;
+                    }).join('');
                 }
 
                 function drawBarChart(canvasId, dataset, tooltipEl) {
@@ -8553,6 +8569,45 @@
                             }
                         }
                     });
+                }
+
+                /**
+                 * RECONSTRUCCIÓN DE SUGERENCIAS (PBL: Reparación de Entorno)
+                 * Escanea los registros existentes para recuperar sets/settings perdidos,
+                 * ignorando textos corruptos (demasiado largos).
+                 */
+                function rebuildSuggestionsFromEntries() {
+                    console.log("Reconstruyendo sugerencias...");
+                    if (!entries || !entries.length) return;
+
+                    let customSets = JSON.parse(localStorage.getItem('psychologger_custom_sets') || '[]');
+                    let customSettings = JSON.parse(localStorage.getItem('psychologger_custom_settings') || '[]');
+
+                    entries.forEach(entry => {
+                        // Validar SET: No vacío, no demasiado largo (protección), no duplicado
+                        // Subimos a 40 caracteres para dar más margen
+                        if (entry.set && entry.set.trim().length > 0 && entry.set.length <= 40) {
+                            const trimmedSet = entry.set.trim();
+                            if (!customSets.includes(trimmedSet)) customSets.push(trimmedSet);
+                        }
+
+                        // Validar SETTING: No vacío, no demasiado largo, no duplicado
+                        if (entry.setting && entry.setting.trim().length > 0 && entry.setting.length <= 40) {
+                            const trimmedSetting = entry.setting.trim();
+                            if (!customSettings.includes(trimmedSetting)) customSettings.push(trimmedSetting);
+                        }
+                    });
+
+                    localStorage.setItem('psychologger_custom_sets', JSON.stringify(customSets));
+                    localStorage.setItem('psychologger_custom_settings', JSON.stringify(customSettings));
+
+                    // REFRESCAR UI: Esto es lo que faltaba para que aparezcan en los menús
+                    if (typeof loadCustomSetsAndSettings === 'function') {
+                        loadCustomSetsAndSettings();
+                    }
+
+                    renderStats();
+                    Android.showToast('✅ Sugerencias reconstruidas y menús actualizados');
                 }
 
             </script>

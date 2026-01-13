@@ -1,5 +1,6 @@
 package com.d4vram.psychologger.ui.screens
 
+import android.content.Context
 import android.content.Intent
 import android.util.Log
 import android.widget.Toast
@@ -21,6 +22,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.launch
+import org.json.JSONObject
+import com.d4vram.psychologger.MainActivity
+import com.d4vram.psychologger.BackupManager
 import androidx.core.content.FileProvider
 import java.io.File
 import java.text.SimpleDateFormat
@@ -37,7 +44,7 @@ fun ProfileSettingsScreen(
     isBiometricEnabled: Boolean,
     onBiometricToggle: (Boolean) -> Unit,
     onBack: () -> Unit,
-    onExportData: () -> String, // Función para obtener datos en formato CSV
+    onExportData: suspend () -> String, // Función para obtener datos en formato CSV
     onImportData: (String) -> Unit, // Función para importar datos CSV
     onClearData: () -> Unit // Función para limpiar datos
 ) {
@@ -46,6 +53,14 @@ fun ProfileSettingsScreen(
     var showImportDialog by remember { mutableStateOf(false) }
     var importData by remember { mutableStateOf("") }
     var isExporting by remember { mutableStateOf(false) }
+
+    // Estado del diálogo de backup avanzado
+    var showBackupDialog by remember { mutableStateOf(false) }
+    var backupPassword by remember { mutableStateOf("") }
+    var includeMediaInBackup by remember { mutableStateOf(true) }
+    var encryptBackup by remember { mutableStateOf(false) }
+    
+    val coroutineScope = rememberCoroutineScope()
     
     // Launcher para seleccionar archivo CSV
     val filePickerLauncher = rememberLauncherForActivityResult(
@@ -129,7 +144,7 @@ fun ProfileSettingsScreen(
             
             // Subtítulo
             Text(
-                text = "Tu compañero de viaje para un consumo consciente y responsable",
+                text = "Tu compañera vital para un consumo consciente y responsable de sustancias psiconáuticas",
                 fontSize = 14.sp,
                 color = Color.White.copy(alpha = 0.7f),
                 textAlign = TextAlign.Center
@@ -338,44 +353,42 @@ fun ProfileSettingsScreen(
                     
                     Spacer(modifier = Modifier.height(16.dp))
                     
-                    // Exportar datos
+                    // Exportar datos CSV Simple
                     Button(
-                        onClick = {
-                            Log.d("PsychoExport", "🔴 BOTÓN SIMPLE CLICKEADO!")
-                            Toast.makeText(context, "🔴 Click detectado!", Toast.LENGTH_SHORT).show()
+                        onClick = { 
+                            coroutineScope.launch {
+                                val data = onExportData()
+                                val mainActivity = context as? MainActivity
+                                mainActivity?.webAppInterface?.shareCSV(data, "bitacora_${System.currentTimeMillis()}.csv")
+                            }
                         },
                         modifier = Modifier.fillMaxWidth(),
-                        enabled = true,
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = if (isExporting) Color(0xFF06B6D4).copy(alpha = 0.6f) else Color(0xFF06B6D4),
-                            disabledContainerColor = Color(0xFF06B6D4).copy(alpha = 0.6f)
+                            containerColor = Color(0xFF06B6D4)
                         ),
                         shape = RoundedCornerShape(12.dp)
                     ) {
-                        if (isExporting) {
-                            Row(
-                                horizontalArrangement = Arrangement.Center,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                CircularProgressIndicator(
-                                    modifier = Modifier.size(16.dp),
-                                    strokeWidth = 2.dp,
-                                    color = Color.White
-                                )
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Text(
-                                    "Exportando...",
-                                    color = Color.White,
-                                    fontWeight = FontWeight.Medium
-                                )
-                            }
-                        } else {
-                            Text(
-                                "📤 Exportar Mis Datos (CSV)",
-                                color = Color.White,
-                                fontWeight = FontWeight.Medium
-                            )
-                        }
+                        Text(
+                            "📊 Exportar Historial (CSV)",
+                            color = Color.White,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    // Backup Total Encriptado
+                    OutlinedButton(
+                        onClick = { showBackupDialog = true },
+                        modifier = Modifier.fillMaxWidth(),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF06B6D4)),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Text(
+                            "📦 Backup Total (Media + Cifrado)",
+                            color = Color(0xFF06B6D4),
+                            fontWeight = FontWeight.Medium
+                        )
                     }
                     
                     Spacer(modifier = Modifier.height(12.dp))
@@ -535,6 +548,160 @@ fun ProfileSettingsScreen(
             modifier = Modifier.padding(16.dp)
         )
     }
+
+    // Diálogo de Exportación Avanzada (Backup)
+    if (showBackupDialog) {
+        AlertDialog(
+            onDismissRequest = { showBackupDialog = false },
+            title = {
+                Text(
+                    "📦 Exportación Avanzada",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF06B6D4)
+                )
+            },
+            text = {
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    Text(
+                        "Se exportará una base de datos completa con tus notas en formato Markdown, experiencias, fotos, audios, y configuraciones personalizadas (Sets, Settings, etc.). Esto garantiza que si desinstalas la app, recuperarás todo al importar este backup.",
+                        fontSize = 14.sp,
+                        color = Color.White.copy(alpha = 0.8f),
+                        lineHeight = 20.sp
+                    )
+
+                    Spacer(modifier = Modifier.height(20.dp))
+
+                    // Multimedia
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text("Incluir Archivos Multimedia", color = Color.White, fontWeight = FontWeight.Medium)
+                            Text("Fotos y Notas de Voz", fontSize = 12.sp, color = Color.White.copy(alpha = 0.6f))
+                        }
+                        Switch(
+                            checked = includeMediaInBackup,
+                            onCheckedChange = { includeMediaInBackup = it }
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    // Cifrado
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text("Cifrar Backup (AES-256)", color = Color(0xFFEC4899), fontWeight = FontWeight.Medium)
+                            Text("Recomendado para máxima privacidad", fontSize = 12.sp, color = Color.White.copy(alpha = 0.6f))
+                        }
+                        Switch(
+                            checked = encryptBackup,
+                            onCheckedChange = { encryptBackup = it }
+                        )
+                    }
+
+                    if (encryptBackup) {
+                        Spacer(modifier = Modifier.height(8.dp))
+                        OutlinedTextField(
+                            value = backupPassword,
+                            onValueChange = { backupPassword = it },
+                            modifier = Modifier.fillMaxWidth(),
+                            placeholder = { Text("Contraseña de cifrado") },
+                            visualTransformation = androidx.compose.ui.text.input.PasswordVisualTransformation(),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedTextColor = Color.White,
+                                unfocusedTextColor = Color.White
+                            )
+                        )
+                        Text(
+                            "⚠️ Si olvidas esta clave, no podrás restaurar el backup.",
+                            fontSize = 12.sp,
+                            color = Color(0xFFF59E42),
+                            modifier = Modifier.padding(top = 4.dp)
+                        )
+                    }
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        if (encryptBackup && backupPassword.isBlank()) {
+                            Toast.makeText(context, "Introduce una contraseña", Toast.LENGTH_SHORT).show()
+                            return@Button
+                        }
+                        
+                        // Llamar al bridge de Android
+                        val activity = context.findActivity() as? MainActivity
+                        if (activity == null) {
+                            Toast.makeText(context, "❌ Error: No se encontró MainActivity", Toast.LENGTH_LONG).show()
+                        } else if (activity.webAppInterface == null) {
+                            Toast.makeText(context, "❌ Error: WebAppInterface es null", Toast.LENGTH_LONG).show()
+                        }
+
+                        coroutineScope.launch {
+                            val backupManager = BackupManager(context)
+                            val localStorageData = onExportData()
+                            val backupFile = withContext(Dispatchers.IO) {
+                                backupManager.createBackupWithData(
+                                    localStorageData = localStorageData,
+                                    password = if (encryptBackup) backupPassword else null,
+                                    includeMedia = includeMediaInBackup
+                                )
+                            }
+                            
+                            if (backupFile != null) {
+                                showBackupDialog = false
+                                
+                                // LANZAR SHARESHEET DIRECTAMENTE (Bypass WebAppInterface)
+                                activity?.runOnUiThread {
+                                    try {
+                                        val shareUri = FileProvider.getUriForFile(
+                                            context,
+                                            "${context.packageName}.fileprovider",
+                                            backupFile
+                                        )
+
+                                        val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                                            type = "application/zip"
+                                            putExtra(Intent.EXTRA_STREAM, shareUri)
+                                            putExtra(Intent.EXTRA_SUBJECT, "Backup PsychoLogger: ${backupFile.name}")
+                                            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                                        }
+
+                                        val chooser = Intent.createChooser(shareIntent, "🚀 Compartir Backup")
+                                        activity.startActivity(chooser)
+                                        
+                                        Toast.makeText(context, "✅ Backup listo para compartir", Toast.LENGTH_SHORT).show()
+                                    } catch (e: Exception) {
+                                        Toast.makeText(context, "❌ Error al compartir: ${e.message}", Toast.LENGTH_LONG).show()
+                                        e.printStackTrace()
+                                    }
+                                }
+                            } else {
+                                Toast.makeText(context, "❌ Error al generar backup", Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF06B6D4))
+                ) {
+                    Text("CREAR Y COMPARTIR", color = Color.White)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showBackupDialog = false }) {
+                    Text("CANCELAR", color = Color.White.copy(alpha = 0.6f))
+                }
+            },
+            containerColor = Color(0xFF1A1A2E),
+            textContentColor = Color.White
+        )
+    }
 }
 
 // Preview para desarrollo
@@ -554,4 +721,14 @@ fun ProfileSettingsScreenPreview() {
         onImportData = {},
         onClearData = {}
     )
+}
+
+// Extension para encontrar la Activity desde el Contexto (Compose suele wrappearlo)
+fun Context.findActivity(): android.app.Activity? {
+    var context = this
+    while (context is android.content.ContextWrapper) {
+        if (context is android.app.Activity) return context
+        context = context.baseContext
+    }
+    return null
 }

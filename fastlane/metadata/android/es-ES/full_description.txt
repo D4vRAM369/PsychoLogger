@@ -1,0 +1,1 @@
+PsychoLogger - Bitácora Psiconáutica, es como su nombre indica, un diario privado para psiconautas para Android que te permite registrar sustancias, dosis, set&setting y notas personales, con cifrado local, calendario, estadísticas y recursos para la reducción de daños. Todo ello 100% sin conexión y sin envío de datos a ningún servidor.
