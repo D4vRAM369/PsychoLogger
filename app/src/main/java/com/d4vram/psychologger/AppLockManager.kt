@@ -31,6 +31,9 @@ import java.security.MessageDigest
  */
 class AppLockManager(private val context: Context) {
 
+    // --- Historial de accesos ---
+    private val accessHistoryManager = AccessHistoryManager(context)
+
     // --- Almacenamiento seguro ---
     private val masterKey = MasterKey.Builder(context)
         .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
@@ -220,13 +223,29 @@ class AppLockManager(private val context: Context) {
         }
     }
 
-    fun unlockApp() {
+    fun unlockApp(method: String = "biometric") {
         _isAppLocked.value = false
         // Registrar el tiempo de desbloqueo
         encryptedPrefs.edit()
             .putLong(KEY_LAST_UNLOCK_TIME, System.currentTimeMillis())
             .putBoolean(KEY_APP_INITIALIZED, true)
             .apply()
+        // Registrar en historial de accesos
+        accessHistoryManager.logAccess(method)
+    }
+
+    /**
+     * Obtiene el historial de accesos
+     */
+    fun getAccessHistory(): List<AccessHistoryManager.AccessEvent> {
+        return accessHistoryManager.getHistory()
+    }
+
+    /**
+     * Limpia el historial de accesos
+     */
+    fun clearAccessHistory() {
+        accessHistoryManager.clearHistory()
     }
 
     // -------------------------------
@@ -287,7 +306,7 @@ class AppLockManager(private val context: Context) {
                 override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
                     super.onAuthenticationSucceeded(result)
                     isPromptShowing = false
-                    unlockApp()
+                    unlockApp("biometric")
                     onSuccess()
                 }
 

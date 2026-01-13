@@ -32,6 +32,7 @@ import androidx.core.content.FileProvider
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
+import com.d4vram.psychologger.AccessHistoryManager
 
 @Composable
 fun ProfileSettingsScreen(
@@ -46,7 +47,9 @@ fun ProfileSettingsScreen(
     onBack: () -> Unit,
     onExportData: suspend () -> String, // Función para obtener datos en formato CSV
     onImportData: (String) -> Unit, // Función para importar datos CSV
-    onClearData: () -> Unit // Función para limpiar datos
+    onClearData: () -> Unit, // Función para limpiar datos
+    accessHistory: List<AccessHistoryManager.AccessEvent> = emptyList(),
+    onClearAccessHistory: () -> Unit = {}
 ) {
     val context = LocalContext.current
     var showClearDataDialog by remember { mutableStateOf(false) }
@@ -59,6 +62,7 @@ fun ProfileSettingsScreen(
     var backupPassword by remember { mutableStateOf("") }
     var includeMediaInBackup by remember { mutableStateOf(true) }
     var encryptBackup by remember { mutableStateOf(false) }
+    var showAccessHistoryDialog by remember { mutableStateOf(false) }
     
     val coroutineScope = rememberCoroutineScope()
     
@@ -447,7 +451,9 @@ fun ProfileSettingsScreen(
                     
                     // Configuración de privacidad
                     OutlinedButton(
-                        onClick = { /* Abrir configuración de privacidad */ },
+                        onClick = { 
+                            Toast.makeText(context, "🚧 En construcción... 🏗️", Toast.LENGTH_SHORT).show()
+                        },
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(12.dp)
                     ) {
@@ -462,7 +468,7 @@ fun ProfileSettingsScreen(
                     
                     // Historial de accesos
                     OutlinedButton(
-                        onClick = { /* Mostrar historial */ },
+                        onClick = { showAccessHistoryDialog = true },
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(12.dp)
                     ) {
@@ -696,6 +702,76 @@ fun ProfileSettingsScreen(
             dismissButton = {
                 TextButton(onClick = { showBackupDialog = false }) {
                     Text("CANCELAR", color = Color.White.copy(alpha = 0.6f))
+                }
+            },
+            containerColor = Color(0xFF1A1A2E),
+            textContentColor = Color.White
+        )
+    }
+
+    // Diálogo de historial de accesos
+    if (showAccessHistoryDialog) {
+        AlertDialog(
+            onDismissRequest = { showAccessHistoryDialog = false },
+            title = { Text("📊 Historial de Accesos") },
+            text = {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(max = 400.dp)
+                ) {
+                    if (accessHistory.isEmpty()) {
+                        Text(
+                            "No hay accesos registrados aún.",
+                            color = Color.White.copy(alpha = 0.7f),
+                            modifier = Modifier.padding(16.dp)
+                        )
+                    } else {
+                        Text(
+                            "Últimos ${accessHistory.size} accesos:",
+                            color = Color(0xFF8B5CF6),
+                            fontWeight = FontWeight.Medium,
+                            modifier = Modifier.padding(bottom = 8.dp)
+                        )
+                        
+                        androidx.compose.foundation.lazy.LazyColumn {
+                            items(accessHistory.size) { index ->
+                                val event = accessHistory[index]
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(vertical = 4.dp),
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    Text(
+                                        "${event.formattedDate} ${event.formattedTime}",
+                                        color = Color.White.copy(alpha = 0.9f),
+                                        fontSize = 14.sp
+                                    )
+                                    Text(
+                                        event.methodLabel,
+                                        color = Color(0xFF06B6D4),
+                                        fontSize = 12.sp
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { showAccessHistoryDialog = false }) {
+                    Text("CERRAR", color = Color(0xFF06B6D4))
+                }
+            },
+            dismissButton = {
+                if (accessHistory.isNotEmpty()) {
+                    TextButton(onClick = {
+                        onClearAccessHistory()
+                        showAccessHistoryDialog = false
+                    }) {
+                        Text("LIMPIAR", color = Color(0xFFEC4899))
+                    }
                 }
             },
             containerColor = Color(0xFF1A1A2E),

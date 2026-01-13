@@ -19,25 +19,17 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.PsychoLogger">
+        
         <activity
-            android:name=".SecurityCheckActivity"
+            android:name=".MainActivity"
             android:exported="true"
             android:windowSoftInputMode="adjustResize|stateHidden"
             android:label="@string/app_name"
             android:theme="@style/Theme.PsychoLogger">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-        </activity>
-        
-        <activity
-            android:name=".MainActivity"
-            android:exported="false"
-            android:windowSoftInputMode="adjustResize|stateHidden"
-            android:label="@string/app_name"
-            android:theme="@style/Theme.PsychoLogger">
         </activity>
 
         <provider

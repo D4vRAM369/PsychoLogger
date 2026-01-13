@@ -8574,40 +8574,121 @@
                 /**
                  * RECONSTRUCCIÓN DE SUGERENCIAS (PBL: Reparación de Entorno)
                  * Escanea los registros existentes para recuperar sets/settings perdidos,
-                 * ignorando textos corruptos (demasiado largos).
+                 * añadiendo emojis automáticos y evitando duplicados.
                  */
                 function rebuildSuggestionsFromEntries() {
-                    console.log("Reconstruyendo sugerencias...");
-                    if (!entries || !entries.length) return;
+                    console.log("Reconstruyendo sugerencias con emojis...");
+                    if (!entries || !entries.length) {
+                        Android.showToast('❌ No hay registros para analizar');
+                        return;
+                    }
 
+                    // Cargar opciones existentes
                     let customSets = JSON.parse(localStorage.getItem('psychologger_custom_sets') || '[]');
                     let customSettings = JSON.parse(localStorage.getItem('psychologger_custom_settings') || '[]');
 
+                    // Normalizar: convertir strings antiguos a objetos {name, emoji}
+                    customSets = customSets.map(item =>
+                        typeof item === 'string' ? { name: item, emoji: suggestSetEmoji(item) } : item
+                    );
+                    customSettings = customSettings.map(item =>
+                        typeof item === 'string' ? { name: item, emoji: suggestSettingEmoji(item) } : item
+                    );
+
+                    // Extraer nombres existentes para evitar duplicados
+                    const existingSetNames = new Set(customSets.map(s => s.name.toLowerCase().trim()));
+                    const existingSettingNames = new Set(customSettings.map(s => s.name.toLowerCase().trim()));
+
+                    let addedSets = 0;
+                    let addedSettings = 0;
+
                     entries.forEach(entry => {
-                        // Validar SET: No vacío, no demasiado largo (protección), no duplicado
-                        // Subimos a 40 caracteres para dar más margen
+                        // Validar SET: No vacío, no muy largo, no duplicado
                         if (entry.set && entry.set.trim().length > 0 && entry.set.length <= 40) {
                             const trimmedSet = entry.set.trim();
-                            if (!customSets.includes(trimmedSet)) customSets.push(trimmedSet);
+                            const lowerSet = trimmedSet.toLowerCase();
+                            if (!existingSetNames.has(lowerSet)) {
+                                customSets.push({
+                                    name: trimmedSet,
+                                    emoji: suggestSetEmoji(trimmedSet)
+                                });
+                                existingSetNames.add(lowerSet);
+                                addedSets++;
+                            }
                         }
 
-                        // Validar SETTING: No vacío, no demasiado largo, no duplicado
+                        // Validar SETTING: No vacío, no muy largo, no duplicado
                         if (entry.setting && entry.setting.trim().length > 0 && entry.setting.length <= 40) {
                             const trimmedSetting = entry.setting.trim();
-                            if (!customSettings.includes(trimmedSetting)) customSettings.push(trimmedSetting);
+                            const lowerSetting = trimmedSetting.toLowerCase();
+                            if (!existingSettingNames.has(lowerSetting)) {
+                                customSettings.push({
+                                    name: trimmedSetting,
+                                    emoji: suggestSettingEmoji(trimmedSetting)
+                                });
+                                existingSettingNames.add(lowerSetting);
+                                addedSettings++;
+                            }
                         }
                     });
 
                     localStorage.setItem('psychologger_custom_sets', JSON.stringify(customSets));
                     localStorage.setItem('psychologger_custom_settings', JSON.stringify(customSettings));
 
-                    // REFRESCAR UI: Esto es lo que faltaba para que aparezcan en los menús
+                    // REFRESCAR UI
                     if (typeof loadCustomSetsAndSettings === 'function') {
                         loadCustomSetsAndSettings();
                     }
 
                     renderStats();
-                    Android.showToast('✅ Sugerencias reconstruidas y menús actualizados');
+                    Android.showToast(`✅ Reconstruido: +${addedSets} sets, +${addedSettings} settings`);
+                }
+
+                /**
+                 * Sugiere un emoji apropiado para un SET (estado mental)
+                 */
+                function suggestSetEmoji(name) {
+                    const lower = name.toLowerCase();
+                    if (lower.includes('relaj') || lower.includes('calm')) return '😌';
+                    if (lower.includes('ansi') || lower.includes('nervio')) return '😰';
+                    if (lower.includes('feliz') || lower.includes('alegr')) return '😊';
+                    if (lower.includes('triste') || lower.includes('melan')) return '😢';
+                    if (lower.includes('medit') || lower.includes('zen')) return '🧘';
+                    if (lower.includes('energ') || lower.includes('activ')) return '⚡';
+                    if (lower.includes('cansad') || lower.includes('fatiga')) return '😴';
+                    if (lower.includes('creativ') || lower.includes('inspir')) return '🎨';
+                    if (lower.includes('social') || lower.includes('fiesta')) return '🎉';
+                    if (lower.includes('introsp') || lower.includes('reflex')) return '🤔';
+                    if (lower.includes('curios')) return '🔍';
+                    if (lower.includes('paz') || lower.includes('sereno')) return '☮️';
+                    if (lower.includes('amor') || lower.includes('carinˇo')) return '❤️';
+                    if (lower.includes('miedo') || lower.includes('temor')) return '😨';
+                    if (lower.includes('eufori') || lower.includes('excita')) return '🤩';
+                    return '🧠'; // Default para SET
+                }
+
+                /**
+                 * Sugiere un emoji apropiado para un SETTING (entorno físico)
+                 */
+                function suggestSettingEmoji(name) {
+                    const lower = name.toLowerCase();
+                    if (lower.includes('casa') || lower.includes('hogar')) return '🏠';
+                    if (lower.includes('playa') || lower.includes('mar')) return '🏖️';
+                    if (lower.includes('montaña') || lower.includes('campo')) return '🏔️';
+                    if (lower.includes('bosque') || lower.includes('naturaleza')) return '🌲';
+                    if (lower.includes('parque') || lower.includes('jardin')) return '🌳';
+                    if (lower.includes('club') || lower.includes('disco') || lower.includes('fiesta')) return '🎶';
+                    if (lower.includes('concierto') || lower.includes('festival')) return '🎪';
+                    if (lower.includes('amigo') || lower.includes('grupo')) return '👥';
+                    if (lower.includes('solo') || lower.includes('solitario')) return '🧍';
+                    if (lower.includes('noche') || lower.includes('oscur')) return '🌙';
+                    if (lower.includes('dia') || lower.includes('sol')) return '☀️';
+                    if (lower.includes('habitacion') || lower.includes('cuarto')) return '🛏️';
+                    if (lower.includes('ciudad') || lower.includes('urban')) return '🏙️';
+                    if (lower.includes('viaje') || lower.includes('road')) return '🚗';
+                    if (lower.includes('trabajo') || lower.includes('oficina')) return '💼';
+                    if (lower.includes('terapia') || lower.includes('clinica')) return '🏥';
+                    return '📍'; // Default para SETTING
                 }
 
             </script>

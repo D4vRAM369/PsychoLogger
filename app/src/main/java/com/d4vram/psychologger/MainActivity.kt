@@ -260,24 +260,24 @@ class MainActivity : FragmentActivity() {
                         .statusBarsPadding()
                         .imePadding()
                 ) {
-                    // --- LOCKSCREEN + auto-prompt UNA VEZ al mostrarse ---
+                    // --- LOCKSCREEN ÚNICO Y ROBUSTO ---
+                    // Esta es la única pantalla de bloqueo. Se muestra cuando:
+                    // - appLockEnabled && isAppLocked (persistido)
+                    // - forceLocked (bloqueo por inactividad)
                     if ((isAppLockEnabled && isAppLocked) || forceLocked) {
 
-                        // Auto-lanzar el prompt una sola vez cuando aparece LockScreen.
-                        // Si el usuario cancela o hay error, NO reintentamos solos:
-                        LaunchedEffect(isAppLocked) {
-                            if (isAppLocked && appLockManager.isBiometricAvailable() && appLockManager.needsAuth() && appLockManager.canShowPromptNow()) {
+                        // Auto-lanzar biometría UNA VEZ cuando aparece el LockScreen
+                        LaunchedEffect(Unit) {
+                            kotlinx.coroutines.delay(400) // Pequeño delay para evitar glitches
+                            if (appLockManager.isBiometricAvailable() && appLockManager.canShowPromptNow()) {
                                 appLockManager.showBiometricPrompt(
                                     activity = this@MainActivity,
                                     onSuccess = {
-                                        // AppLockManager ya hace unlockApp() internamente
                                         forceLocked = false
                                         Toast.makeText(context, "✅ Aplicación desbloqueada", Toast.LENGTH_SHORT).show()
                                     },
                                     onError = {
-                                        // No reintentamos automáticamente; el usuario puede pulsar botones en LockScreen
-                                        // Puedes mostrar un aviso si quieres:
-                                        // Toast.makeText(context, "🔒 Bloqueada por inactividad", Toast.LENGTH_SHORT).show()
+                                        // No reintentamos automáticamente
                                     }
                                 )
                             }
@@ -400,6 +400,10 @@ class MainActivity : FragmentActivity() {
                             },
                             onClearData = {
                                 executeJavaScript("localStorage.clear(); location.reload();")
+                            },
+                            accessHistory = appLockManager.getAccessHistory(),
+                            onClearAccessHistory = {
+                                appLockManager.clearAccessHistory()
                             }
                         )
                     }
