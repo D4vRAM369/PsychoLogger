@@ -293,7 +293,7 @@
             transform: scale(1.02);
         }
 
-        /* DRAG-HANDLE: Área de arrastre y long-press */
+        /* DRAG-HANDLE: Área de arrastre y triple-tap */
         .drag-handle {
             cursor: grab;
             padding: 8px 10px;
@@ -319,50 +319,69 @@
             transform: scale(0.95);
         }
 
-        /* LONG-PRESS: Animación de progreso visual clara */
-        .substance-item.long-pressing {
-            animation: longPressProgress 3s linear forwards;
-            transform: scale(1.02);
+        /* TRIPLE-TAP: Feedback visual por cada tap */
+        .substance-item.tap-1 {
+            box-shadow: inset 4px 0 0 0 var(--accent-cyan);
+            transition: all 0.15s ease;
         }
 
-        .substance-item.long-pressing .drag-handle {
-            animation: longPressPulse 0.5s ease-in-out infinite, longPressHandleGlow 3s linear forwards;
+        .substance-item.tap-2 {
+            box-shadow: inset 4px 0 0 0 var(--secondary-pink),
+                        0 0 10px rgba(236, 72, 153, 0.3);
+            transition: all 0.15s ease;
+        }
+
+        .substance-item.tap-3 {
+            animation: tapComplete 0.3s ease-out;
+            box-shadow: inset 4px 0 0 0 var(--secondary-pink),
+                        0 0 20px rgba(236, 72, 153, 0.5);
+            background: rgba(236, 72, 153, 0.15);
+        }
+
+        @keyframes tapComplete {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        /* Indicador visual de tap en el drag-handle */
+        .substance-item.tap-1 .drag-handle,
+        .substance-item.tap-2 .drag-handle {
+            animation: tapPulse 0.15s ease-out;
             color: var(--secondary-pink);
+            background: rgba(236, 72, 153, 0.2);
         }
 
-        @keyframes longPressProgress {
-            0% {
-                box-shadow: inset 4px 0 0 0 var(--secondary-pink);
-                border-color: transparent;
-            }
-            25% {
-                box-shadow: inset 4px 0 0 0 var(--secondary-pink),
-                            0 0 10px rgba(236, 72, 153, 0.3);
-            }
-            50% {
-                box-shadow: inset 4px 0 0 0 var(--secondary-pink),
-                            0 0 15px rgba(236, 72, 153, 0.4);
-            }
-            75% {
-                box-shadow: inset 4px 0 0 0 var(--secondary-pink),
-                            0 0 20px rgba(236, 72, 153, 0.5);
-            }
-            100% {
-                box-shadow: inset 4px 0 0 0 var(--secondary-pink),
-                            0 0 25px rgba(236, 72, 153, 0.6);
-                border-color: var(--secondary-pink);
-                background: rgba(236, 72, 153, 0.15);
-            }
+        @keyframes tapPulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
         }
 
-        @keyframes longPressPulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.1); }
+        /* Contador visual de taps (tooltip) */
+        .tap-counter {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: var(--secondary-pink);
+            color: white;
+            font-size: 0.7rem;
+            font-weight: bold;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: tapCounterPop 0.2s ease-out;
+            z-index: 10;
+            box-shadow: 0 2px 8px rgba(236, 72, 153, 0.4);
         }
 
-        @keyframes longPressHandleGlow {
-            0% { background: rgba(236, 72, 153, 0.2); }
-            100% { background: rgba(236, 72, 153, 0.5); }
+        @keyframes tapCounterPop {
+            0% { transform: scale(0); opacity: 0; }
+            70% { transform: scale(1.2); }
+            100% { transform: scale(1); opacity: 1; }
         }
 
         .edit-substance-btn {
@@ -1796,6 +1815,338 @@
 
             .datetime-actions {
                 flex-direction: column;
+            }
+        }
+
+        /* =====================================================
+           NUEVO SELECTOR DE FECHA/HORA "BITÁCORA TEMPORAL"
+           ===================================================== */
+
+        .datetime-modal-v2 {
+            max-width: 380px;
+            width: 95%;
+            padding: 1.5rem;
+        }
+
+        .datetime-modal-v2 h3 {
+            text-align: center;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, var(--primary-purple), var(--accent-cyan));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* Accesos rápidos */
+        .quick-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            justify-content: center;
+            margin-bottom: 1.25rem;
+        }
+
+        .quick-btn {
+            padding: 0.5rem 0.9rem;
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            background: rgba(139, 92, 246, 0.1);
+            color: var(--text-light);
+            border-radius: 20px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .quick-btn:hover {
+            background: rgba(139, 92, 246, 0.3);
+            border-color: var(--primary-purple);
+            transform: scale(1.05);
+        }
+
+        .quick-btn:active {
+            transform: scale(0.98);
+        }
+
+        /* Calendario Mini del DateTimePicker (usa prefijo picker- para no conflictuar con calendario principal) */
+        .mini-calendar {
+            background: rgba(13, 14, 40, 0.6);
+            border-radius: 16px;
+            padding: 1rem;
+            margin-bottom: 1.25rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .picker-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+
+        .picker-nav-btn {
+            background: rgba(139, 92, 246, 0.2);
+            border: none;
+            color: var(--text-light);
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .picker-nav-btn:hover {
+            background: var(--primary-purple);
+            transform: scale(1.1);
+        }
+
+        .picker-month-year {
+            font-weight: 600;
+            color: var(--text-light);
+            font-size: 0.95rem;
+        }
+
+        .picker-weekdays {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 2px;
+            margin-bottom: 0.5rem;
+        }
+
+        .picker-weekday {
+            text-align: center;
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            font-weight: 600;
+            padding: 0.25rem 0;
+        }
+
+        .picker-days {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 3px;
+        }
+
+        .picker-day {
+            aspect-ratio: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            position: relative;
+            background: transparent;
+            border: none;
+            color: var(--text-light);
+        }
+
+        .picker-day:hover:not(.empty):not(.selected) {
+            background: rgba(139, 92, 246, 0.2);
+        }
+
+        .picker-day.empty {
+            cursor: default;
+            color: transparent;
+        }
+
+        .picker-day.today {
+            border: 2px solid var(--accent-cyan);
+        }
+
+        .picker-day.selected {
+            background: linear-gradient(135deg, var(--primary-purple), var(--secondary-pink));
+            color: white;
+            font-weight: 600;
+            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
+        }
+
+        .picker-day.has-entries::after {
+            content: '';
+            position: absolute;
+            bottom: 3px;
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            background: var(--accent-cyan);
+        }
+
+        .picker-day.other-month {
+            color: var(--text-secondary);
+            opacity: 0.4;
+        }
+
+        /* Selector de Hora Digital */
+        .time-picker-digital {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1.25rem;
+            padding: 1rem;
+            background: rgba(13, 14, 40, 0.6);
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+        }
+
+        .time-unit {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .time-adjust-btn {
+            width: 36px;
+            height: 28px;
+            border: none;
+            background: rgba(139, 92, 246, 0.2);
+            color: var(--text-light);
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.15s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .time-adjust-btn:hover {
+            background: var(--primary-purple);
+            transform: scale(1.1);
+        }
+
+        .time-adjust-btn:active {
+            transform: scale(0.95);
+        }
+
+        .time-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--text-light);
+            font-variant-numeric: tabular-nums;
+            min-width: 70px;
+            text-align: center;
+            background: linear-gradient(180deg,
+                rgba(139, 92, 246, 0.1) 0%,
+                rgba(6, 182, 212, 0.1) 100%);
+            border-radius: 12px;
+            padding: 0.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .time-colon {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--accent-cyan);
+            animation: colonBlink 1s infinite;
+        }
+
+        @keyframes colonBlink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        /* Preview de fecha/hora */
+        .datetime-preview {
+            text-align: center;
+            padding: 1rem;
+            background: linear-gradient(135deg,
+                rgba(139, 92, 246, 0.15) 0%,
+                rgba(236, 72, 153, 0.15) 100%);
+            border-radius: 12px;
+            margin-bottom: 1.25rem;
+            border: 1px solid rgba(139, 92, 246, 0.3);
+        }
+
+        .preview-date {
+            font-size: 1rem;
+            color: var(--text-light);
+            margin-bottom: 0.25rem;
+        }
+
+        .preview-time {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary-purple), var(--accent-cyan));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* Botones de acción */
+        .datetime-actions-v2 {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr;
+            gap: 0.75rem;
+        }
+
+        .datetime-actions-v2 button {
+            padding: 0.9rem;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .datetime-actions-v2 .btn-confirm {
+            background: linear-gradient(135deg, var(--primary-purple), var(--accent-cyan));
+            color: white;
+        }
+
+        .datetime-actions-v2 .btn-confirm:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(139, 92, 246, 0.4);
+        }
+
+        .datetime-actions-v2 .btn-cancel {
+            background: rgba(100, 100, 120, 0.3);
+            color: var(--text-light);
+            border: 1px solid var(--border-color);
+        }
+
+        .datetime-actions-v2 .btn-cancel:hover {
+            background: rgba(100, 100, 120, 0.5);
+        }
+
+        .datetime-actions-v2 .btn-clear {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .datetime-actions-v2 .btn-clear:hover {
+            background: rgba(239, 68, 68, 0.4);
+        }
+
+        /* Responsive */
+        @media (max-width: 400px) {
+            .datetime-modal-v2 {
+                padding: 1rem;
+            }
+
+            .time-value {
+                font-size: 2rem;
+                min-width: 55px;
+            }
+
+            .time-colon {
+                font-size: 2rem;
+            }
+
+            .datetime-actions-v2 {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .datetime-actions-v2 .btn-confirm {
+                grid-column: 1 / -1;
             }
         }
 
@@ -3444,13 +3795,18 @@
                                 Opciones</button>
                         </div>
                         <div class="resource-card">
+                            <h4>🧹 Limpiar Datos Corruptos</h4>
+                            <p>¿Tienes fragmentos de notas en campos de sustancia/set/setting? Esta función detecta y limpia esos datos incorrectos.</p>
+                            <button class="btn-secondary" onclick="scanCorruptedEntries()">🔍 Escanear Problemas</button>
+                        </div>
+                        <div class="resource-card">
                             <h4>📸 Exportar Fotos</h4>
                             <p>Descargar todas las imágenes adjuntas en un ZIP</p>
                             <button class="btn-primary" onclick="exportPhotosZip()">🗂️ Exportar Fotos</button>
                         </div>
                         <div class="resource-card">
                             <h4>📦 Sustancias Archivadas</h4>
-                            <p>Recupera sustancias que hayas ocultado con long-press</p>
+                            <p>Recupera sustancias que hayas ocultado con triple-tap</p>
                             <button class="btn-secondary" onclick="openArchivedSubstancesModal()">👁️ Ver Archivadas</button>
                         </div>
                     </div>
@@ -4255,10 +4611,16 @@
                 let selectedSubstanceColor = '#8B5CF6';
                 let selectedSubstanceFilter = null;
 
-                // Variables para drag-and-drop y long-press
+                // Variables para drag-and-drop y triple-tap (archivo secreto)
                 let draggedSubstanceId = null;
-                let longPressTimer = null;
-                const LONG_PRESS_DURATION = 3000;  // 3 segundos para activar función secreta
+
+                // TRIPLE-TAP: Sistema de detección de 3 taps consecutivos
+                let tapCount = 0;                    // Contador de taps (0, 1, 2, 3)
+                let tapTimer = null;                 // Timer para resetear si tarda mucho
+                let lastTapTarget = null;            // ID de sustancia actual (evita mezclar taps)
+                let lastTapElement = null;           // Elemento DOM para limpiar clases
+                const TAP_WINDOW = 500;              // Máximo 500ms entre taps
+                const REQUIRED_TAPS = 3;             // Taps necesarios para archivar
 
                 /**
              * Aplica formato al estilo Telegram/Markdown al texto seleccionado
@@ -5694,25 +6056,29 @@
 
                 // ===== FUNCIONES DEL DATETIME PICKER PERSONALIZADO =====
 
-                // Variables globales para el datetime picker
+                // Variables globales para el datetime picker v2
                 let currentSelectedDate = new Date();
+                let pickerViewMonth = new Date();  // Mes que se está viendo en el calendario
 
                 function toggleDateTimeModal() {
                     const modal = document.getElementById('dateTimeModal');
                     modal.classList.add('active');
                     document.body.style.overflow = 'hidden';
-                    initializeDateTimePicker();
+                    initializeDateTimePickerV2();
                 }
 
                 function closeDateTimeModal() {
                     const modal = document.getElementById('dateTimeModal');
                     modal.classList.remove('active');
                     document.body.style.overflow = '';
-                    closeAllCustomSelects();
                 }
 
-                function initializeDateTimePicker() {
-                    // Obtener fecha actual del input oculto o usar fecha actual
+                // =====================================================
+                // NUEVO DATETIME PICKER v2 "Bitácora Temporal"
+                // =====================================================
+
+                function initializeDateTimePickerV2() {
+                    // Obtener fecha del input oculto o usar fecha actual
                     const hiddenInput = document.getElementById('entryDateTime');
                     if (hiddenInput.value) {
                         currentSelectedDate = new Date(hiddenInput.value);
@@ -5720,9 +6086,223 @@
                         currentSelectedDate = new Date();
                     }
 
-                    populateSelects();
-                    updateSelectValues();
-                    enhanceDateTimeSelects();
+                    // Establecer el mes que se muestra en el calendario
+                    pickerViewMonth = new Date(currentSelectedDate);
+
+                    // Renderizar todo
+                    renderPickerCalendar();
+                    updatePickerTimeDisplay();
+                    updatePickerPreview();
+                }
+
+                /**
+                 * Renderiza el mini-calendario del picker
+                 */
+                function renderPickerCalendar() {
+                    const container = document.getElementById('pickerCalendarDays');
+                    const monthYearLabel = document.getElementById('pickerMonthYear');
+
+                    if (!container || !monthYearLabel) return;
+
+                    // Actualizar label del mes
+                    const monthNames = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+                        'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+                    monthYearLabel.textContent = `${monthNames[pickerViewMonth.getMonth()]} ${pickerViewMonth.getFullYear()}`;
+
+                    // Calcular días
+                    const year = pickerViewMonth.getFullYear();
+                    const month = pickerViewMonth.getMonth();
+                    const firstDay = new Date(year, month, 1);
+                    const lastDay = new Date(year, month + 1, 0);
+                    const daysInMonth = lastDay.getDate();
+
+                    // Ajustar para que Lunes sea el primer día (0 = Lunes)
+                    let startDay = firstDay.getDay() - 1;
+                    if (startDay < 0) startDay = 6;  // Domingo se convierte en 6
+
+                    // Obtener días con registros en este mes
+                    const daysWithEntries = getDaysWithEntriesInMonth(year, month);
+
+                    // Construir HTML
+                    let html = '';
+
+                    // Días vacíos al inicio
+                    for (let i = 0; i < startDay; i++) {
+                        html += '<button class="picker-day empty"></button>';
+                    }
+
+                    // Días del mes
+                    const today = new Date();
+                    for (let day = 1; day <= daysInMonth; day++) {
+                        const isToday = today.getDate() === day &&
+                            today.getMonth() === month &&
+                            today.getFullYear() === year;
+                        const isSelected = currentSelectedDate.getDate() === day &&
+                            currentSelectedDate.getMonth() === month &&
+                            currentSelectedDate.getFullYear() === year;
+                        const hasEntries = daysWithEntries.includes(day);
+
+                        let classes = 'picker-day';
+                        if (isToday) classes += ' today';
+                        if (isSelected) classes += ' selected';
+                        if (hasEntries) classes += ' has-entries';
+
+                        html += `<button class="${classes}" onclick="selectPickerDay(${day})">${day}</button>`;
+                    }
+
+                    container.innerHTML = html;
+                }
+
+                /**
+                 * Obtiene los días que tienen registros en un mes específico
+                 */
+                function getDaysWithEntriesInMonth(year, month) {
+                    const days = [];
+                    entries.forEach(entry => {
+                        const entryDate = new Date(entry.date);
+                        if (entryDate.getFullYear() === year && entryDate.getMonth() === month) {
+                            const day = entryDate.getDate();
+                            if (!days.includes(day)) days.push(day);
+                        }
+                    });
+                    return days;
+                }
+
+                /**
+                 * Selecciona un día en el calendario
+                 */
+                function selectPickerDay(day) {
+                    currentSelectedDate.setFullYear(pickerViewMonth.getFullYear());
+                    currentSelectedDate.setMonth(pickerViewMonth.getMonth());
+                    currentSelectedDate.setDate(day);
+
+                    renderPickerCalendar();
+                    updatePickerPreview();
+                }
+
+                /**
+                 * Navega entre meses en el calendario
+                 */
+                function navigatePickerMonth(direction) {
+                    pickerViewMonth.setMonth(pickerViewMonth.getMonth() + direction);
+                    renderPickerCalendar();
+                }
+
+                /**
+                 * Ajusta la hora o los minutos
+                 */
+                function adjustPickerTime(unit, amount) {
+                    if (unit === 'hour') {
+                        let newHour = currentSelectedDate.getHours() + amount;
+                        if (newHour > 23) newHour = 0;
+                        if (newHour < 0) newHour = 23;
+                        currentSelectedDate.setHours(newHour);
+                    } else if (unit === 'minute') {
+                        let newMinute = currentSelectedDate.getMinutes() + amount;
+                        if (newMinute >= 60) newMinute = 0;
+                        if (newMinute < 0) newMinute = 55;
+                        currentSelectedDate.setMinutes(newMinute);
+                    }
+
+                    updatePickerTimeDisplay();
+                    updatePickerPreview();
+                }
+
+                /**
+                 * Actualiza el display de la hora
+                 */
+                function updatePickerTimeDisplay() {
+                    const hourEl = document.getElementById('pickerHourValue');
+                    const minuteEl = document.getElementById('pickerMinuteValue');
+
+                    if (hourEl) hourEl.textContent = String(currentSelectedDate.getHours()).padStart(2, '0');
+                    if (minuteEl) minuteEl.textContent = String(currentSelectedDate.getMinutes()).padStart(2, '0');
+                }
+
+                /**
+                 * Actualiza el preview de fecha/hora
+                 */
+                function updatePickerPreview() {
+                    const dateEl = document.getElementById('previewDate');
+                    const timeEl = document.getElementById('previewTime');
+
+                    if (dateEl) {
+                        dateEl.textContent = currentSelectedDate.toLocaleDateString('es-ES', {
+                            weekday: 'long',
+                            day: 'numeric',
+                            month: 'long',
+                            year: 'numeric'
+                        });
+                    }
+
+                    if (timeEl) {
+                        timeEl.textContent = currentSelectedDate.toLocaleTimeString('es-ES', {
+                            hour: '2-digit',
+                            minute: '2-digit'
+                        });
+                    }
+                }
+
+                /**
+                 * Accesos rápidos de fecha/hora
+                 */
+                function setQuickDateTime(preset) {
+                    const now = new Date();
+
+                    switch (preset) {
+                        case 'now':
+                            currentSelectedDate = new Date(now);
+                            break;
+                        case '1h':
+                            currentSelectedDate = new Date(now.getTime() - 60 * 60 * 1000);
+                            break;
+                        case 'yesterday':
+                            currentSelectedDate = new Date(now);
+                            currentSelectedDate.setDate(currentSelectedDate.getDate() - 1);
+                            break;
+                        case '2d':
+                            currentSelectedDate = new Date(now);
+                            currentSelectedDate.setDate(currentSelectedDate.getDate() - 2);
+                            break;
+                    }
+
+                    // Actualizar vista del calendario al mes correcto
+                    pickerViewMonth = new Date(currentSelectedDate);
+
+                    renderPickerCalendar();
+                    updatePickerTimeDisplay();
+                    updatePickerPreview();
+                }
+
+                /**
+                 * Confirma la selección de fecha/hora (botón ESTABLECER)
+                 */
+                function confirmDateTimeV2() {
+                    // Construir string de fecha local (sin usar toISOString que convierte a UTC)
+                    const year = currentSelectedDate.getFullYear();
+                    const month = String(currentSelectedDate.getMonth() + 1).padStart(2, '0');
+                    const day = String(currentSelectedDate.getDate()).padStart(2, '0');
+                    const hours = String(currentSelectedDate.getHours()).padStart(2, '0');
+                    const minutes = String(currentSelectedDate.getMinutes()).padStart(2, '0');
+                    const localDateTimeString = `${year}-${month}-${day}T${hours}:${minutes}`;
+
+                    document.getElementById('entryDateTime').value = localDateTimeString;
+                    updateDateTimeDisplay();
+                    closeDateTimeModal();
+                }
+
+                /**
+                 * Borra la fecha/hora seleccionada
+                 */
+                function clearDateTimeV2() {
+                    document.getElementById('entryDateTime').value = '';
+                    document.getElementById('dateTimeDisplay').textContent = 'Establecer fecha y hora';
+                    closeDateTimeModal();
+                }
+
+                // Mantener compatibilidad con funciones antiguas (por si hay llamadas)
+                function initializeDateTimePicker() {
+                    initializeDateTimePickerV2();
                 }
 
                 function populateSelects() {
@@ -6478,7 +7058,7 @@
 
                         item.innerHTML = `
                     <div class="substance-info">
-                        <span class="drag-handle" title="Mantén pulsado 3s para archivar">⋮⋮</span>
+                        <span class="drag-handle" title="Triple tap para archivar">⋮⋮</span>
                         <span>${substance.name}</span>
                     </div>
                     <div class="substance-actions">
@@ -6497,21 +7077,20 @@
                         item.addEventListener('dragleave', handleDragLeave);
                         item.addEventListener('drop', (e) => handleDrop(e, substance.id));
 
-                        // LONG-PRESS (FUNCIÓN SECRETA): Event listeners para touch y mouse
+                        // TRIPLE-TAP (FUNCIÓN SECRETA): Event listener para clicks rápidos
                         const dragHandle = item.querySelector('.drag-handle');
 
-                        // Touch events (móvil)
-                        dragHandle.addEventListener('touchstart', (e) => {
-                            e.preventDefault();  // Prevenir scroll mientras se hace long-press
-                            handleLongPressStart(substance.id, substance.name, item);
+                        // Click event funciona tanto en móvil como desktop
+                        dragHandle.addEventListener('click', (e) => {
+                            e.stopPropagation();  // Evitar que se propague al substance-info
+                            handleTripleTap(substance.id, substance.name, item);
                         });
-                        dragHandle.addEventListener('touchend', () => handleLongPressEnd(item));
-                        dragHandle.addEventListener('touchmove', () => handleLongPressEnd(item));  // Cancelar si mueve
 
-                        // Mouse events (desktop)
-                        dragHandle.addEventListener('mousedown', () => handleLongPressStart(substance.id, substance.name, item));
-                        dragHandle.addEventListener('mouseup', () => handleLongPressEnd(item));
-                        dragHandle.addEventListener('mouseleave', () => handleLongPressEnd(item));
+                        // Touch events: prevenir comportamientos no deseados en móvil
+                        dragHandle.addEventListener('touchstart', (e) => {
+                            // No prevenir default para permitir el tap
+                            e.stopPropagation();
+                        });
 
                         // Add click event for filtering (exclude the delete button)
                         item.querySelector('.substance-info').addEventListener('click', (e) => {
@@ -6540,7 +7119,7 @@
                 // ========================================
                 // SISTEMA DE SUSTANCIAS ARCHIVADAS
                 // ========================================
-                // CONCEPTO PBL: "Función secreta" - long-press de 3 segundos
+                // CONCEPTO PBL: "Función secreta" - triple-tap rápido (3 taps en <500ms)
                 // para archivar sustancias sin eliminarlas permanentemente
 
                 /**
@@ -6772,41 +7351,97 @@
                 }
 
                 // ========================================
-                // SISTEMA DE LONG-PRESS (FUNCIÓN SECRETA)
+                // SISTEMA DE TRIPLE-TAP (FUNCIÓN SECRETA)
                 // ========================================
-                // CONCEPTO PBL: Touch events para detectar presión prolongada
+                // CONCEPTO PBL: Detección de clicks consecutivos en ventana de tiempo
+                //
+                // CÓMO FUNCIONA:
+                // 1. Usuario hace tap en drag-handle → tapCount++
+                // 2. Si es diferente sustancia → resetear contador
+                // 3. Si pasan más de TAP_WINDOW ms → resetear contador
+                // 4. Si tapCount >= 3 → archivar sustancia
+                //
+                // VENTAJA vs LONG-PRESS: No conflicta con drag-and-drop
 
                 /**
-                 * Inicia el temporizador de long-press
+                 * Maneja un tap en el drag-handle para detección de triple-tap
                  */
-                function handleLongPressStart(substanceId, substanceName, element) {
-                    // Cancelar cualquier timer previo
-                    if (longPressTimer) {
-                        clearTimeout(longPressTimer);
+                function handleTripleTap(substanceId, substanceName, element) {
+                    // Si cambió de sustancia, resetear contador
+                    if (lastTapTarget !== substanceId) {
+                        resetTapCounter();
+                        lastTapTarget = substanceId;
+                        lastTapElement = element;
                     }
 
-                    // Añadir indicador visual de progreso
-                    element.classList.add('long-pressing');
+                    // Cancelar timer previo (reiniciar ventana de tiempo)
+                    if (tapTimer) {
+                        clearTimeout(tapTimer);
+                    }
 
-                    longPressTimer = setTimeout(() => {
-                        element.classList.remove('long-pressing');
-                        // Vibrar si está disponible (feedback táctil)
+                    // Incrementar contador
+                    tapCount++;
+
+                    // Limpiar clases previas
+                    element.classList.remove('tap-1', 'tap-2', 'tap-3');
+
+                    // Remover contador visual previo si existe
+                    const oldCounter = element.querySelector('.tap-counter');
+                    if (oldCounter) oldCounter.remove();
+
+                    // Feedback visual según número de taps
+                    if (tapCount >= REQUIRED_TAPS) {
+                        // ¡TRIPLE TAP COMPLETADO!
+                        element.classList.add('tap-3');
+
+                        // Vibrar si está disponible
                         if (navigator.vibrate) {
-                            navigator.vibrate(100);
+                            navigator.vibrate([50, 50, 100]);  // Patrón de vibración especial
                         }
+
+                        // Mostrar confirmación y resetear
                         showArchiveConfirmation(substanceId, substanceName);
-                    }, LONG_PRESS_DURATION);
+
+                        // Resetear después de un pequeño delay para ver la animación
+                        setTimeout(() => resetTapCounter(), 300);
+                    } else {
+                        // Tap 1 o 2: mostrar progreso
+                        element.classList.add(`tap-${tapCount}`);
+
+                        // Añadir contador visual
+                        const counter = document.createElement('span');
+                        counter.className = 'tap-counter';
+                        counter.textContent = tapCount;
+                        element.style.position = 'relative';
+                        element.appendChild(counter);
+
+                        // Iniciar timer de timeout
+                        tapTimer = setTimeout(() => {
+                            resetTapCounter();
+                        }, TAP_WINDOW);
+                    }
                 }
 
                 /**
-                 * Cancela el long-press si se suelta antes de tiempo
+                 * Resetea el contador de triple-tap
                  */
-                function handleLongPressEnd(element) {
-                    if (longPressTimer) {
-                        clearTimeout(longPressTimer);
-                        longPressTimer = null;
+                function resetTapCounter() {
+                    tapCount = 0;
+
+                    if (tapTimer) {
+                        clearTimeout(tapTimer);
+                        tapTimer = null;
                     }
-                    element.classList.remove('long-pressing');
+
+                    // Limpiar clases visuales del elemento anterior
+                    if (lastTapElement) {
+                        lastTapElement.classList.remove('tap-1', 'tap-2', 'tap-3');
+                        const counter = lastTapElement.querySelector('.tap-counter');
+                        if (counter) counter.remove();
+                    }
+
+                    lastTapTarget = null;
+                    lastTapElement = null;
                 }
 
                 function resetEditMode() {
@@ -9414,6 +10049,261 @@
                     return '📍'; // Default para SETTING
                 }
 
+                /**
+                 * LIMPIEZA DE DATOS CORRUPTOS (PBL: Reparación de Datos)
+                 * Detecta y limpia fragmentos de notas que se colaron en campos
+                 * de sustancia, set o setting durante importaciones defectuosas.
+                 */
+
+                // Criterios para detectar datos corruptos
+                function isCorruptedFieldValue(value, fieldType) {
+                    if (!value || typeof value !== 'string') return false;
+                    const trimmed = value.trim();
+                    if (trimmed.length === 0) return false;
+
+                    // Criterio 1: Demasiado largo para ser un nombre de sustancia/set/setting
+                    if (trimmed.length > 50) return true;
+
+                    // Criterio 2: Contiene "..." indicando texto truncado
+                    if (trimmed.includes('...')) return true;
+
+                    // Criterio 3: Patrones de oraciones/notas en español
+                    const sentencePatterns = [
+                        /\bque\s+le\b/i,        // "que le jodan"
+                        /\bme\s+joden\b/i,      // "me joden"
+                        /\bdebo\s+ir\b/i,       // "debo ir"
+                        /\bacabo\s+de\b/i,      // "acabo de"
+                        /\bsi\s+no\b/i,         // "si no"
+                        /\bsino\s+\w+\b/i,      // "sino debo"
+                        /\bpero\s+\w+\b/i,      // "pero que"
+                        /\bbastante\s+\w+\b/i,  // "bastante me"
+                        /\btengo\s+que\b/i,     // "tengo que"
+                        /\bhay\s+que\b/i,       // "hay que"
+                        /\bcreo\s+que\b/i,      // "creo que"
+                        /\bporque\s+\w+\b/i,    // "porque..."
+                        /\bcuando\s+\w+\b/i,    // "cuando..."
+                    ];
+
+                    for (const pattern of sentencePatterns) {
+                        if (pattern.test(trimmed)) return true;
+                    }
+
+                    // Criterio 4: Valores específicos conocidos como corruptos
+                    const knownCorrupted = [
+                        'sino debo ir',
+                        'acabo de tene',
+                        'pero que le jodan',
+                        'bastante me joden'
+                    ];
+
+                    const lower = trimmed.toLowerCase();
+                    for (const known of knownCorrupted) {
+                        if (lower.includes(known)) return true;
+                    }
+
+                    return false;
+                }
+
+                // Escanear entries en busca de datos corruptos
+                function scanCorruptedEntries() {
+                    if (!entries || !entries.length) {
+                        showAlert('📋 Sin datos', 'No hay registros para analizar.');
+                        return;
+                    }
+
+                    const corrupted = {
+                        substances: [],
+                        sets: [],
+                        settings: []
+                    };
+
+                    entries.forEach((entry, index) => {
+                        if (isCorruptedFieldValue(entry.substance, 'substance')) {
+                            corrupted.substances.push({
+                                index,
+                                value: entry.substance,
+                                date: entry.date
+                            });
+                        }
+                        if (isCorruptedFieldValue(entry.set, 'set')) {
+                            corrupted.sets.push({
+                                index,
+                                value: entry.set,
+                                date: entry.date
+                            });
+                        }
+                        if (isCorruptedFieldValue(entry.setting, 'setting')) {
+                            corrupted.settings.push({
+                                index,
+                                value: entry.setting,
+                                date: entry.date
+                            });
+                        }
+                    });
+
+                    const totalCorrupted = corrupted.substances.length + corrupted.sets.length + corrupted.settings.length;
+
+                    if (totalCorrupted === 0) {
+                        showAlert('✅ Todo limpio', 'No se encontraron datos corruptos en tus registros.');
+                        return;
+                    }
+
+                    // Mostrar modal con los datos encontrados
+                    showCorruptedDataModal(corrupted);
+                }
+
+                /**
+                 * Modal para mostrar y confirmar limpieza de datos corruptos
+                 * PATRÓN: Modal estático + contenido dinámico (misma técnica que archivedSubstancesModal)
+                 *
+                 * POR QUÉ USAMOS MODAL ESTÁTICO:
+                 * - insertAdjacentHTML puede fallar en WebView de Android
+                 * - Los modales estáticos heredan correctamente los estilos CSS
+                 * - Más fácil de debuggear y mantener
+                 */
+                function showCorruptedDataModal(corrupted) {
+                    const modal = document.getElementById('corruptedDataModal');
+                    const summaryEl = document.getElementById('corrupted-summary');
+                    const listEl = document.getElementById('corrupted-list');
+
+                    if (!modal || !summaryEl || !listEl) {
+                        console.error('[CorruptedData] Modal elements not found');
+                        showAlert('❌ Error', 'No se pudo abrir el modal. Intenta recargar la app.');
+                        return;
+                    }
+
+                    const totalCorrupted = corrupted.substances.length + corrupted.sets.length + corrupted.settings.length;
+
+                    // Actualizar resumen
+                    summaryEl.innerHTML = `Se encontraron <strong>${totalCorrupted}</strong> campos con datos que parecen ser fragmentos de notas:`;
+
+                    // Construir lista de datos corruptos
+                    let listHtml = '';
+
+                    if (corrupted.substances.length > 0) {
+                        listHtml += `<h5 style="margin-top: 12px; color: var(--accent-purple);">💊 Sustancias corruptas (${corrupted.substances.length})</h5><ul style="margin: 8px 0; padding-left: 20px;">`;
+                        corrupted.substances.forEach(item => {
+                            listHtml += `<li style="margin: 4px 0; font-size: 0.9rem;"><code style="background: rgba(139,92,246,0.2); padding: 2px 6px; border-radius: 4px;">${escapeHtml(item.value)}</code></li>`;
+                        });
+                        listHtml += '</ul>';
+                    }
+
+                    if (corrupted.sets.length > 0) {
+                        listHtml += `<h5 style="margin-top: 12px; color: var(--secondary-pink);">🧠 Sets corruptos (${corrupted.sets.length})</h5><ul style="margin: 8px 0; padding-left: 20px;">`;
+                        corrupted.sets.forEach(item => {
+                            listHtml += `<li style="margin: 4px 0; font-size: 0.9rem;"><code style="background: rgba(236,72,153,0.2); padding: 2px 6px; border-radius: 4px;">${escapeHtml(item.value)}</code></li>`;
+                        });
+                        listHtml += '</ul>';
+                    }
+
+                    if (corrupted.settings.length > 0) {
+                        listHtml += `<h5 style="margin-top: 12px; color: var(--accent-teal);">🌐 Settings corruptos (${corrupted.settings.length})</h5><ul style="margin: 8px 0; padding-left: 20px;">`;
+                        corrupted.settings.forEach(item => {
+                            listHtml += `<li style="margin: 4px 0; font-size: 0.9rem;"><code style="background: rgba(20,184,166,0.2); padding: 2px 6px; border-radius: 4px;">${escapeHtml(item.value)}</code></li>`;
+                        });
+                        listHtml += '</ul>';
+                    }
+
+                    listEl.innerHTML = listHtml;
+
+                    // Guardar datos para la limpieza
+                    window._corruptedData = corrupted;
+
+                    // Mostrar modal con classList (patrón correcto)
+                    modal.classList.add('active');
+                    document.body.style.overflow = 'hidden';
+                }
+
+                /**
+                 * Cierra el modal de datos corruptos
+                 */
+                function closeCorruptedDataModal() {
+                    const modal = document.getElementById('corruptedDataModal');
+                    if (modal) {
+                        modal.classList.remove('active');
+                    }
+                    document.body.style.overflow = '';
+                    window._corruptedData = null;
+                }
+
+                // Ejecutar limpieza de datos corruptos
+                function executeCleanCorruptedEntries() {
+                    const corrupted = window._corruptedData;
+                    if (!corrupted) {
+                        closeCorruptedDataModal();
+                        return;
+                    }
+
+                    let cleanedCount = 0;
+
+                    // Limpiar sustancias corruptas
+                    corrupted.substances.forEach(item => {
+                        if (entries[item.index]) {
+                            entries[item.index].substance = '';
+                            cleanedCount++;
+                        }
+                    });
+
+                    // Limpiar sets corruptos
+                    corrupted.sets.forEach(item => {
+                        if (entries[item.index]) {
+                            entries[item.index].set = '';
+                            cleanedCount++;
+                        }
+                    });
+
+                    // Limpiar settings corruptos
+                    corrupted.settings.forEach(item => {
+                        if (entries[item.index]) {
+                            entries[item.index].setting = '';
+                            cleanedCount++;
+                        }
+                    });
+
+                    // Guardar cambios
+                    localStorage.setItem('entries', JSON.stringify(entries));
+                    notifyBackupDataChanged();
+
+                    // También limpiar las listas de sugerencias custom que tengan valores corruptos
+                    cleanCorruptedSuggestions();
+
+                    closeCorruptedDataModal();
+
+                    // Refrescar vistas
+                    renderStats();
+                    renderHistory();
+
+                    showAlert('✅ Limpieza completada', `Se limpiaron ${cleanedCount} campos corruptos. Las estadísticas ahora mostrarán datos correctos.`);
+                }
+
+                // Limpiar también las listas de sugerencias personalizadas
+                function cleanCorruptedSuggestions() {
+                    // Limpiar custom sets
+                    let customSets = JSON.parse(localStorage.getItem('psychologger_custom_sets') || '[]');
+                    const cleanedSets = customSets.filter(item => {
+                        const name = typeof item === 'string' ? item : item.name;
+                        return !isCorruptedFieldValue(name, 'set');
+                    });
+                    localStorage.setItem('psychologger_custom_sets', JSON.stringify(cleanedSets));
+
+                    // Limpiar custom settings
+                    let customSettings = JSON.parse(localStorage.getItem('psychologger_custom_settings') || '[]');
+                    const cleanedSettings = customSettings.filter(item => {
+                        const name = typeof item === 'string' ? item : item.name;
+                        return !isCorruptedFieldValue(name, 'setting');
+                    });
+                    localStorage.setItem('psychologger_custom_settings', JSON.stringify(cleanedSettings));
+
+                    console.log(`Sugerencias limpiadas: ${customSets.length - cleanedSets.length} sets, ${customSettings.length - cleanedSettings.length} settings`);
+                }
+
+                // Helper para escapar HTML
+                function escapeHtml(text) {
+                    const div = document.createElement('div');
+                    div.textContent = text;
+                    return div.innerHTML;
+                }
+
             </script>
 
         </main>
@@ -9487,109 +10377,98 @@
             </div>
         </div>
 
-        <!-- MODAL DE SELECCIÓN DE FECHA Y HORA -->
+        <!-- MODAL DE SELECCIÓN DE FECHA Y HORA v2 "Bitácora Temporal" -->
         <div class="modal" id="dateTimeModal">
-            <div class="modal-content datetime-modal">
+            <div class="modal-content datetime-modal-v2">
                 <button class="close-btn" onclick="closeDateTimeModal()">×</button>
-                <h3>Establecer fecha y hora</h3>
+                <h3>📅 Seleccionar Fecha y Hora</h3>
 
-                <div class="datetime-picker-container">
-                    <!-- Selección de Fecha -->
-                    <div class="date-section">
-                        <div class="date-display">
-                            <div class="date-row">
-                                <div class="date-field">
-                                    <label>Día</label>
-                                    <div class="custom-select-wrapper" data-select-id="daySelect">
-                                        <select id="daySelect" class="date-select">
-                                            <!-- Se llena dinámicamente -->
-                                        </select>
-                                        <button type="button" class="custom-select-trigger" aria-haspopup="listbox"
-                                            aria-expanded="false">
-                                            <span class="custom-select-value">--</span>
-                                        </button>
-                                        <div class="custom-select-dropdown" role="listbox" id="daySelectDropdown"></div>
-                                    </div>
-                                </div>
-                                <div class="date-field">
-                                    <label>Mes</label>
-                                    <div class="custom-select-wrapper" data-select-id="monthSelect">
-                                        <select id="monthSelect" class="date-select">
-                                            <!-- Se llena dinámicamente -->
-                                        </select>
-                                        <button type="button" class="custom-select-trigger" aria-haspopup="listbox"
-                                            aria-expanded="false">
-                                            <span class="custom-select-value">--</span>
-                                        </button>
-                                        <div class="custom-select-dropdown" role="listbox" id="monthSelectDropdown">
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="date-field">
-                                    <label>Año</label>
-                                    <div class="custom-select-wrapper" data-select-id="yearSelect">
-                                        <select id="yearSelect" class="date-select">
-                                            <!-- Se llena dinámicamente -->
-                                        </select>
-                                        <button type="button" class="custom-select-trigger" aria-haspopup="listbox"
-                                            aria-expanded="false">
-                                            <span class="custom-select-value">--</span>
-                                        </button>
-                                        <div class="custom-select-dropdown" role="listbox" id="yearSelectDropdown">
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                <!-- Accesos Rápidos -->
+                <div class="quick-actions">
+                    <button class="quick-btn" onclick="setQuickDateTime('now')">⏱️ Ahora</button>
+                    <button class="quick-btn" onclick="setQuickDateTime('1h')">↩️ Hace 1h</button>
+                    <button class="quick-btn" onclick="setQuickDateTime('yesterday')">📆 Ayer</button>
+                    <button class="quick-btn" onclick="setQuickDateTime('2d')">📆 Hace 2 días</button>
+                </div>
+
+                <!-- Mini Calendario -->
+                <div class="mini-calendar">
+                    <div class="picker-nav">
+                        <button class="picker-nav-btn" onclick="navigatePickerMonth(-1)">◀</button>
+                        <span class="picker-month-year" id="pickerMonthYear">Enero 2026</span>
+                        <button class="picker-nav-btn" onclick="navigatePickerMonth(1)">▶</button>
                     </div>
-
-                    <!-- Selección de Hora -->
-                    <div class="time-section">
-                        <div class="time-display">
-                            <div class="time-row">
-                                <div class="time-field">
-                                    <label>Hora</label>
-                                    <div class="custom-select-wrapper" data-select-id="hourSelect">
-                                        <select id="hourSelect" class="time-select">
-                                            <!-- Se llena dinámicamente -->
-                                        </select>
-                                        <button type="button" class="custom-select-trigger" aria-haspopup="listbox"
-                                            aria-expanded="false">
-                                            <span class="custom-select-value">--</span>
-                                        </button>
-                                        <div class="custom-select-dropdown" role="listbox" id="hourSelectDropdown">
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="time-separator">:</div>
-                                <div class="time-field">
-                                    <label>Min</label>
-                                    <div class="custom-select-wrapper" data-select-id="minuteSelect">
-                                        <select id="minuteSelect" class="time-select">
-                                            <!-- Se llena dinámicamente -->
-                                        </select>
-                                        <button type="button" class="custom-select-trigger" aria-haspopup="listbox"
-                                            aria-expanded="false">
-                                            <span class="custom-select-value">--</span>
-                                        </button>
-                                        <div class="custom-select-dropdown" role="listbox" id="minuteSelectDropdown">
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                    <div class="picker-weekdays">
+                        <span class="picker-weekday">L</span>
+                        <span class="picker-weekday">M</span>
+                        <span class="picker-weekday">X</span>
+                        <span class="picker-weekday">J</span>
+                        <span class="picker-weekday">V</span>
+                        <span class="picker-weekday">S</span>
+                        <span class="picker-weekday">D</span>
+                    </div>
+                    <div class="picker-days" id="pickerCalendarDays">
+                        <!-- Se llena dinámicamente -->
                     </div>
                 </div>
 
-                <div class="datetime-actions">
-                    <button class="btn-primary" onclick="setDateTime()">ESTABLECER</button>
-                    <button class="btn-secondary" onclick="closeDateTimeModal()">CANCELAR</button>
-                    <button class="btn-danger" onclick="clearDateTime()">BORRAR</button>
+                <!-- Selector de Hora Digital -->
+                <div class="time-picker-digital">
+                    <div class="time-unit">
+                        <button class="time-adjust-btn" onclick="adjustPickerTime('hour', 1)">▲</button>
+                        <span class="time-value" id="pickerHourValue">00</span>
+                        <button class="time-adjust-btn" onclick="adjustPickerTime('hour', -1)">▼</button>
+                    </div>
+                    <span class="time-colon">:</span>
+                    <div class="time-unit">
+                        <button class="time-adjust-btn" onclick="adjustPickerTime('minute', 5)">▲</button>
+                        <span class="time-value" id="pickerMinuteValue">00</span>
+                        <button class="time-adjust-btn" onclick="adjustPickerTime('minute', -5)">▼</button>
+                    </div>
+                </div>
+
+                <!-- Preview -->
+                <div class="datetime-preview">
+                    <div class="preview-date" id="previewDate">Viernes, 17 de enero 2026</div>
+                    <div class="preview-time" id="previewTime">00:00</div>
+                </div>
+
+                <!-- Acciones -->
+                <div class="datetime-actions-v2">
+                    <button class="btn-confirm" onclick="confirmDateTimeV2()">✓ ESTABLECER</button>
+                    <button class="btn-cancel" onclick="closeDateTimeModal()">CANCELAR</button>
+                    <button class="btn-clear" onclick="clearDateTimeV2()">BORRAR</button>
                 </div>
             </div>
         </div>
 
     <!-- Modal de Sustancias Archivadas (FUERA de cualquier view para que position:fixed funcione) -->
+    <!-- Modal de Datos Corruptos (estructura estática, contenido dinámico) -->
+    <div id="corruptedDataModal" class="modal">
+        <div class="modal-content" style="max-width: 500px;">
+            <div class="modal-header">
+                <h3>🧹 Datos Corruptos Encontrados</h3>
+                <button class="close-btn" onclick="closeCorruptedDataModal()">×</button>
+            </div>
+            <div class="modal-body" style="max-height: 60vh; overflow-y: auto;">
+                <p id="corrupted-summary" style="margin-bottom: 12px;">
+                    <!-- Se actualiza dinámicamente -->
+                </p>
+                <div id="corrupted-list">
+                    <!-- Se llena dinámicamente con showCorruptedDataModal() -->
+                </div>
+                <div style="margin-top: 16px; padding: 12px; background: rgba(251, 191, 36, 0.1); border-radius: 8px; border-left: 3px solid #fbbf24;">
+                    <p style="font-size: 0.85rem; margin: 0;">⚠️ <strong>¿Qué hace la limpieza?</strong><br>
+                    Los campos corruptos se vaciarán (quedarán como "Sin sustancia", "Sin set", "Sin setting"). Los registros NO se eliminan.</p>
+                </div>
+            </div>
+            <div class="modal-footer" style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border-color);">
+                <button class="btn-secondary" onclick="closeCorruptedDataModal()">Cancelar</button>
+                <button class="btn-primary" onclick="executeCleanCorruptedEntries()">🧹 Limpiar Ahora</button>
+            </div>
+        </div>
+    </div>
+
     <div id="archivedSubstancesModal" class="modal">
         <div class="modal-content" style="max-width: 500px;">
             <div class="modal-header">
@@ -9598,7 +10477,7 @@
             </div>
             <div class="modal-body" style="max-height: 60vh; overflow-y: auto;">
                 <p style="color: var(--text-secondary); margin-bottom: 16px; font-size: 0.9em;">
-                    Aquí aparecen las sustancias que has archivado manteniendo pulsado 3 segundos sobre el ícono ⋮⋮ en la lista principal.
+                    Aquí aparecen las sustancias que has archivado con triple-tap sobre el ícono ⋮⋮ en la lista principal.
                     Los registros de estas sustancias siguen existiendo.
                 </p>
                 <div id="archived-substances-list">
