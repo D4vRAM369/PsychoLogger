@@ -10582,13 +10582,14 @@
         </div>
 
         <div id="archivedSubstancesModal" class="modal">
-            <div class="modal-content" style="max-width: 500px;">
+            <div class="modal-content"
+                style="max-width: 500px; -webkit-transform: translateZ(0); transform: translateZ(0);">
                 <div class="modal-header">
                     <h3>📦 Sustancias Archivadas</h3>
                     <button class="close-btn" onclick="closeArchivedSubstancesModal()">×</button>
                 </div>
-                <div class="modal-body" style="max-height: 60vh; overflow-y: auto;">
-                    <p style="color: var(--text-secondary); margin-bottom: 16px; font-size: 0.9em;">
+                <div class="modal-body" style="max-height: 60vh; overflow-y: auto; -webkit-overflow-scrolling: touch;">
+                    <p style="color: var(--text-muted); margin-bottom: 16px; font-size: 0.9em;">
                         Aquí aparecen las sustancias que has archivado con triple-tap sobre el ícono ⋮⋮ en la lista
                         principal.
                         Los registros de estas sustancias siguen existiendo.
@@ -10596,6 +10597,10 @@
                     <div id="archived-substances-list">
                         <!-- Se llena dinámicamente con renderArchivedSubstances() -->
                     </div>
+                </div>
+                <div class="modal-footer"
+                    style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border-color);">
+                    <button class="btn-secondary" onclick="closeArchivedSubstancesModal()">Cerrar</button>
                 </div>
             </div>
         </div>
