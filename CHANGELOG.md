@@ -7,6 +7,43 @@ y este proyecto adhiere a [Semantic Versioning](https://semver.org/lang/es/).
 
 ---
 
+## [1.2] - 2026-01-17
+
+### ✨ Añadido
+- **Selector de Fecha/Hora "Bitácora Temporal"**
+  - Mini-calendario visual para seleccionar fechas pasadas
+  - Botones rápidos: Ayer, Hace 2 días, Hace 1 hora, etc.
+  - Ideal para registrar experiencias olvidadas
+
+- **Drag-and-Drop para Sustancias**
+  - Arrastra y suelta para reordenar tu lista de sustancias
+  - El orden se guarda automáticamente
+
+- **Archivar Sustancias (Función Secreta)**
+  - Triple-tap en el ícono ⋮⋮ para archivar sustancias
+  - Los registros se mantienen, solo se oculta de la lista principal
+  - Recupera desde Ajustes > Sustancias Archivadas
+
+- **Herramienta de Limpieza de Datos Corruptos**
+  - Nueva herramienta en Ajustes > Datos
+  - Detecta y limpia fragmentos de notas en campos incorrectos
+  - Toasts informativos durante el escaneo
+
+- **Modal de Confirmación para Reconstruir Opciones**
+  - Ahora explica qué hace la función antes de ejecutarla
+  - Advierte sobre posible copia de datos corruptos
+
+### 🐛 Corregido
+- Modal de Sustancias Archivadas no renderizaba contenido (variable CSS no definida)
+- Bug de hora 00:00 al editar registros
+- Conflicto CSS entre calendario principal y mini-calendario del picker
+
+### 🔧 Cambiado
+- Triple-tap reemplaza long-press para archivar (evita conflicto con drag-and-drop)
+- Clases CSS separadas: `.calendar-*` (principal) vs `.picker-*` (mini-calendario)
+
+---
+
 ## [1.1] - 2026-01-13
 
 ### ✨ Añadido
