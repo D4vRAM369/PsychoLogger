@@ -7294,8 +7294,9 @@
                 function openArchivedSubstancesModal() {
                     const modal = document.getElementById('archivedSubstancesModal');
                     if (modal) {
+                        modal.style.display = 'flex'; // Forzar display flex (sobreescribe el inline none)
                         modal.classList.add('active');
-                        document.body.style.overflow = 'hidden';  // Prevenir scroll del fondo
+                        document.body.style.overflow = 'hidden';
                         renderArchivedSubstances();
                     }
                 }
@@ -7306,8 +7307,9 @@
                 function closeArchivedSubstancesModal() {
                     const modal = document.getElementById('archivedSubstancesModal');
                     if (modal) {
+                        modal.style.display = 'none'; // Volver a ocultar
                         modal.classList.remove('active');
-                        document.body.style.overflow = '';  // Restaurar scroll
+                        document.body.style.overflow = '';
                     }
                 }
 
