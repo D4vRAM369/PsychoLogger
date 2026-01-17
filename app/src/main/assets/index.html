@@ -327,21 +327,29 @@
 
         .substance-item.tap-2 {
             box-shadow: inset 4px 0 0 0 var(--secondary-pink),
-                        0 0 10px rgba(236, 72, 153, 0.3);
+                0 0 10px rgba(236, 72, 153, 0.3);
             transition: all 0.15s ease;
         }
 
         .substance-item.tap-3 {
             animation: tapComplete 0.3s ease-out;
             box-shadow: inset 4px 0 0 0 var(--secondary-pink),
-                        0 0 20px rgba(236, 72, 153, 0.5);
+                0 0 20px rgba(236, 72, 153, 0.5);
             background: rgba(236, 72, 153, 0.15);
         }
 
         @keyframes tapComplete {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
+
+            100% {
+                transform: scale(1);
+            }
         }
 
         /* Indicador visual de tap en el drag-handle */
@@ -353,9 +361,17 @@
         }
 
         @keyframes tapPulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.2); }
-            100% { transform: scale(1); }
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.2);
+            }
+
+            100% {
+                transform: scale(1);
+            }
         }
 
         /* Contador visual de taps (tooltip) */
@@ -379,9 +395,19 @@
         }
 
         @keyframes tapCounterPop {
-            0% { transform: scale(0); opacity: 0; }
-            70% { transform: scale(1.2); }
-            100% { transform: scale(1); opacity: 1; }
+            0% {
+                transform: scale(0);
+                opacity: 0;
+            }
+
+            70% {
+                transform: scale(1.2);
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
         }
 
         .edit-substance-btn {
@@ -614,7 +640,7 @@
             font-weight: 500;
         }
 
-        /* Modal fixes for Android */
+        /* Modal fixes for Android WebView */
         .modal {
             display: none;
             position: fixed;
@@ -622,9 +648,11 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.8);
+            background: rgba(0, 0, 0, 0.85);
             z-index: 9999;
-            backdrop-filter: blur(5px);
+            /* NOTA: backdrop-filter puede causar bugs en WebView, usar con cuidado */
+            backdrop-filter: blur(3px);
+            -webkit-backdrop-filter: blur(3px);
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
         }
@@ -633,23 +661,27 @@
             display: flex;
             align-items: flex-start;
             justify-content: center;
-            padding: 0.5rem;
+            padding: 1rem;
+            padding-top: 3rem;
             overflow-y: auto;
         }
 
         .modal-content {
             background: var(--card-bg);
             border-radius: 20px;
-            padding: 2rem;
+            padding: 1.5rem;
             max-width: 500px;
             width: calc(100% - 2rem);
-            margin: 2rem auto;
             min-height: auto;
             border: 1px solid var(--border-color);
             position: relative;
             animation: modalSlideIn 0.3s ease;
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
-            z-index: 1000;
+            /* FIX WebView: forzar nuevo layer de composición */
+            -webkit-transform: translateZ(0);
+            transform: translateZ(0);
+            /* z-index alto para asegurar visibilidad sobre backdrop */
+            z-index: 10000;
         }
 
 
@@ -2033,8 +2065,8 @@
             min-width: 70px;
             text-align: center;
             background: linear-gradient(180deg,
-                rgba(139, 92, 246, 0.1) 0%,
-                rgba(6, 182, 212, 0.1) 100%);
+                    rgba(139, 92, 246, 0.1) 0%,
+                    rgba(6, 182, 212, 0.1) 100%);
             border-radius: 12px;
             padding: 0.5rem;
             border: 1px solid var(--border-color);
@@ -2048,8 +2080,15 @@
         }
 
         @keyframes colonBlink {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.3; }
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.3;
+            }
         }
 
         /* Preview de fecha/hora */
@@ -2057,8 +2096,8 @@
             text-align: center;
             padding: 1rem;
             background: linear-gradient(135deg,
-                rgba(139, 92, 246, 0.15) 0%,
-                rgba(236, 72, 153, 0.15) 100%);
+                    rgba(139, 92, 246, 0.15) 0%,
+                    rgba(236, 72, 153, 0.15) 100%);
             border-radius: 12px;
             margin-bottom: 1.25rem;
             border: 1px solid rgba(139, 92, 246, 0.3);
@@ -3791,13 +3830,15 @@
                             <h4>🔧 Reparar Sugerencias</h4>
                             <p>¿Perdiste tus opciones de Set/Setting? Esta función las reconstruye desde tu historial de
                                 registros.</p>
-                            <button class="btn-secondary" onclick="rebuildSuggestionsFromEntries()">🔄 Reconstruir
+                            <button class="btn-secondary" onclick="openRebuildConfirmModal()">🔄 Reconstruir
                                 Opciones</button>
                         </div>
                         <div class="resource-card">
                             <h4>🧹 Limpiar Datos Corruptos</h4>
-                            <p>¿Tienes fragmentos de notas en campos de sustancia/set/setting? Esta función detecta y limpia esos datos incorrectos.</p>
-                            <button class="btn-secondary" onclick="scanCorruptedEntries()">🔍 Escanear Problemas</button>
+                            <p>¿Tienes fragmentos de notas en campos de sustancia/set/setting? Esta función detecta y
+                                limpia esos datos incorrectos.</p>
+                            <button class="btn-secondary" onclick="scanCorruptedEntries()">🔍 Escanear
+                                Problemas</button>
                         </div>
                         <div class="resource-card">
                             <h4>📸 Exportar Fotos</h4>
@@ -3807,7 +3848,8 @@
                         <div class="resource-card">
                             <h4>📦 Sustancias Archivadas</h4>
                             <p>Recupera sustancias que hayas ocultado con triple-tap</p>
-                            <button class="btn-secondary" onclick="openArchivedSubstancesModal()">👁️ Ver Archivadas</button>
+                            <button class="btn-secondary" onclick="openArchivedSubstancesModal()">👁️ Ver
+                                Archivadas</button>
                         </div>
                     </div>
 
@@ -10111,45 +10153,67 @@
                         return;
                     }
 
-                    const corrupted = {
-                        substances: [],
-                        sets: [],
-                        settings: []
-                    };
-
-                    entries.forEach((entry, index) => {
-                        if (isCorruptedFieldValue(entry.substance, 'substance')) {
-                            corrupted.substances.push({
-                                index,
-                                value: entry.substance,
-                                date: entry.date
-                            });
-                        }
-                        if (isCorruptedFieldValue(entry.set, 'set')) {
-                            corrupted.sets.push({
-                                index,
-                                value: entry.set,
-                                date: entry.date
-                            });
-                        }
-                        if (isCorruptedFieldValue(entry.setting, 'setting')) {
-                            corrupted.settings.push({
-                                index,
-                                value: entry.setting,
-                                date: entry.date
-                            });
-                        }
-                    });
-
-                    const totalCorrupted = corrupted.substances.length + corrupted.sets.length + corrupted.settings.length;
-
-                    if (totalCorrupted === 0) {
-                        showAlert('✅ Todo limpio', 'No se encontraron datos corruptos en tus registros.');
-                        return;
+                    // Toast inicial
+                    if (window.Android && Android.showToast) {
+                        Android.showToast('🔍 Iniciando análisis...');
                     }
 
-                    // Mostrar modal con los datos encontrados
-                    showCorruptedDataModal(corrupted);
+                    // Usar setTimeout para permitir que el Toast se muestre antes de procesar
+                    setTimeout(() => {
+                        // Toast de progreso
+                        if (window.Android && Android.showToast) {
+                            Android.showToast(`📊 Analizando ${entries.length} registros...`);
+                        }
+
+                        const corrupted = {
+                            substances: [],
+                            sets: [],
+                            settings: []
+                        };
+
+                        entries.forEach((entry, index) => {
+                            if (isCorruptedFieldValue(entry.substance, 'substance')) {
+                                corrupted.substances.push({
+                                    index,
+                                    value: entry.substance,
+                                    date: entry.date
+                                });
+                            }
+                            if (isCorruptedFieldValue(entry.set, 'set')) {
+                                corrupted.sets.push({
+                                    index,
+                                    value: entry.set,
+                                    date: entry.date
+                                });
+                            }
+                            if (isCorruptedFieldValue(entry.setting, 'setting')) {
+                                corrupted.settings.push({
+                                    index,
+                                    value: entry.setting,
+                                    date: entry.date
+                                });
+                            }
+                        });
+
+                        const totalCorrupted = corrupted.substances.length + corrupted.sets.length + corrupted.settings.length;
+
+                        // Toast de resultado
+                        if (window.Android && Android.showToast) {
+                            if (totalCorrupted === 0) {
+                                Android.showToast('✅ Análisis completado: Sin problemas');
+                            } else {
+                                Android.showToast(`⚠️ Encontrados ${totalCorrupted} datos sospechosos`);
+                            }
+                        }
+
+                        if (totalCorrupted === 0) {
+                            showAlert('✅ Todo limpio', 'No se encontraron datos corruptos en tus registros.');
+                            return;
+                        }
+
+                        // Mostrar modal con los datos encontrados
+                        showCorruptedDataModal(corrupted);
+                    }, 100);  // Pequeño delay para que el Toast inicial sea visible
                 }
 
                 /**
@@ -10224,6 +10288,51 @@
                     }
                     document.body.style.overflow = '';
                     window._corruptedData = null;
+                }
+
+                // ========================================
+                // MODAL DE CONFIRMACIÓN: RECONSTRUIR OPCIONES
+                // ========================================
+                // CONCEPTO PBL: Modal de confirmación antes de ejecutar acciones
+                // que modifican datos del usuario
+
+                /**
+                 * Abre el modal de confirmación para Reconstruir Opciones
+                 */
+                function openRebuildConfirmModal() {
+                    const modal = document.getElementById('rebuildConfirmModal');
+                    if (modal) {
+                        modal.classList.add('active');
+                        document.body.style.overflow = 'hidden';
+                    }
+                }
+
+                /**
+                 * Cierra el modal de confirmación para Reconstruir Opciones
+                 */
+                function closeRebuildConfirmModal() {
+                    const modal = document.getElementById('rebuildConfirmModal');
+                    if (modal) {
+                        modal.classList.remove('active');
+                        document.body.style.overflow = '';
+                    }
+                }
+
+                /**
+                 * Confirma y ejecuta la reconstrucción de sugerencias
+                 */
+                function confirmRebuildSuggestions() {
+                    closeRebuildConfirmModal();
+
+                    // Toast de inicio
+                    if (window.Android && Android.showToast) {
+                        Android.showToast('🔄 Reconstruyendo sugerencias...');
+                    }
+
+                    // Pequeño delay para que el toast sea visible antes de procesar
+                    setTimeout(() => {
+                        rebuildSuggestionsFromEntries();
+                    }, 100);
                 }
 
                 // Ejecutar limpieza de datos corruptos
@@ -10442,50 +10551,93 @@
             </div>
         </div>
 
-    <!-- Modal de Sustancias Archivadas (FUERA de cualquier view para que position:fixed funcione) -->
-    <!-- Modal de Datos Corruptos (estructura estática, contenido dinámico) -->
-    <div id="corruptedDataModal" class="modal">
-        <div class="modal-content" style="max-width: 500px;">
-            <div class="modal-header">
-                <h3>🧹 Datos Corruptos Encontrados</h3>
-                <button class="close-btn" onclick="closeCorruptedDataModal()">×</button>
-            </div>
-            <div class="modal-body" style="max-height: 60vh; overflow-y: auto;">
-                <p id="corrupted-summary" style="margin-bottom: 12px;">
-                    <!-- Se actualiza dinámicamente -->
-                </p>
-                <div id="corrupted-list">
-                    <!-- Se llena dinámicamente con showCorruptedDataModal() -->
+        <!-- Modal de Sustancias Archivadas (FUERA de cualquier view para que position:fixed funcione) -->
+        <!-- Modal de Datos Corruptos (estructura estática, contenido dinámico) -->
+        <div id="corruptedDataModal" class="modal">
+            <div class="modal-content" style="max-width: 500px;">
+                <div class="modal-header">
+                    <h3>🧹 Datos Corruptos Encontrados</h3>
+                    <button class="close-btn" onclick="closeCorruptedDataModal()">×</button>
                 </div>
-                <div style="margin-top: 16px; padding: 12px; background: rgba(251, 191, 36, 0.1); border-radius: 8px; border-left: 3px solid #fbbf24;">
-                    <p style="font-size: 0.85rem; margin: 0;">⚠️ <strong>¿Qué hace la limpieza?</strong><br>
-                    Los campos corruptos se vaciarán (quedarán como "Sin sustancia", "Sin set", "Sin setting"). Los registros NO se eliminan.</p>
+                <div class="modal-body" style="max-height: 60vh; overflow-y: auto;">
+                    <p id="corrupted-summary" style="margin-bottom: 12px;">
+                        <!-- Se actualiza dinámicamente -->
+                    </p>
+                    <div id="corrupted-list">
+                        <!-- Se llena dinámicamente con showCorruptedDataModal() -->
+                    </div>
+                    <div
+                        style="margin-top: 16px; padding: 12px; background: rgba(251, 191, 36, 0.1); border-radius: 8px; border-left: 3px solid #fbbf24;">
+                        <p style="font-size: 0.85rem; margin: 0;">⚠️ <strong>¿Qué hace la limpieza?</strong><br>
+                            Los campos corruptos se vaciarán (quedarán como "Sin sustancia", "Sin set", "Sin setting").
+                            Los registros NO se eliminan.</p>
+                    </div>
                 </div>
-            </div>
-            <div class="modal-footer" style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border-color);">
-                <button class="btn-secondary" onclick="closeCorruptedDataModal()">Cancelar</button>
-                <button class="btn-primary" onclick="executeCleanCorruptedEntries()">🧹 Limpiar Ahora</button>
+                <div class="modal-footer"
+                    style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border-color);">
+                    <button class="btn-secondary" onclick="closeCorruptedDataModal()">Cancelar</button>
+                    <button class="btn-primary" onclick="executeCleanCorruptedEntries()">🧹 Limpiar Ahora</button>
+                </div>
             </div>
         </div>
-    </div>
 
-    <div id="archivedSubstancesModal" class="modal">
-        <div class="modal-content" style="max-width: 500px;">
-            <div class="modal-header">
-                <h3>📦 Sustancias Archivadas</h3>
-                <button class="close-btn" onclick="closeArchivedSubstancesModal()">×</button>
-            </div>
-            <div class="modal-body" style="max-height: 60vh; overflow-y: auto;">
-                <p style="color: var(--text-secondary); margin-bottom: 16px; font-size: 0.9em;">
-                    Aquí aparecen las sustancias que has archivado con triple-tap sobre el ícono ⋮⋮ en la lista principal.
-                    Los registros de estas sustancias siguen existiendo.
-                </p>
-                <div id="archived-substances-list">
-                    <!-- Se llena dinámicamente con renderArchivedSubstances() -->
+        <div id="archivedSubstancesModal" class="modal">
+            <div class="modal-content" style="max-width: 500px;">
+                <div class="modal-header">
+                    <h3>📦 Sustancias Archivadas</h3>
+                    <button class="close-btn" onclick="closeArchivedSubstancesModal()">×</button>
+                </div>
+                <div class="modal-body" style="max-height: 60vh; overflow-y: auto;">
+                    <p style="color: var(--text-secondary); margin-bottom: 16px; font-size: 0.9em;">
+                        Aquí aparecen las sustancias que has archivado con triple-tap sobre el ícono ⋮⋮ en la lista
+                        principal.
+                        Los registros de estas sustancias siguen existiendo.
+                    </p>
+                    <div id="archived-substances-list">
+                        <!-- Se llena dinámicamente con renderArchivedSubstances() -->
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
+
+        <!-- Modal de Confirmación para Reconstruir Opciones -->
+        <div id="rebuildConfirmModal" class="modal">
+            <div class="modal-content" style="max-width: 450px;">
+                <div class="modal-header">
+                    <h3>🔧 Reconstruir Opciones</h3>
+                    <button class="close-btn" onclick="closeRebuildConfirmModal()">×</button>
+                </div>
+                <div class="modal-body">
+                    <p style="margin-bottom: 16px;">
+                        <strong>¿Qué hace esta función?</strong>
+                    </p>
+                    <p style="color: var(--text-secondary); font-size: 0.9em; margin-bottom: 12px;">
+                        Escanea todos tus registros históricos y extrae los valores de <strong>Set</strong> (estado
+                        mental)
+                        y <strong>Setting</strong> (entorno) que hayas usado, añadiéndolos a las listas de sugerencias.
+                    </p>
+                    <div
+                        style="background: rgba(139, 92, 246, 0.1); border-radius: 8px; padding: 12px; margin-bottom: 12px;">
+                        <p style="font-size: 0.85rem; margin: 0;">
+                            ✅ <strong>Útil para:</strong> Recuperar opciones que perdiste al reinstalar o limpiar datos.
+                        </p>
+                    </div>
+                    <div
+                        style="background: rgba(251, 191, 36, 0.1); border-radius: 8px; padding: 12px; border-left: 3px solid #fbbf24;">
+                        <p style="font-size: 0.85rem; margin: 0;">
+                            ⚠️ <strong>Nota:</strong> Si tus registros tienen datos corruptos (fragmentos de notas en
+                            campos incorrectos),
+                            estos también se añadirán. Usa primero "Limpiar Datos Corruptos" si es necesario.
+                        </p>
+                    </div>
+                </div>
+                <div class="modal-footer"
+                    style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border-color);">
+                    <button class="btn-secondary" onclick="closeRebuildConfirmModal()">Cancelar</button>
+                    <button class="btn-primary" onclick="confirmRebuildSuggestions()">🔄 Sí, Reconstruir</button>
+                </div>
+            </div>
+        </div>
 
 </body>
 
