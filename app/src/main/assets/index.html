@@ -10582,17 +10582,33 @@
         </div>
 
         <div id="archivedSubstancesModal" class="modal">
-            <div class="modal-content"
-                style="max-width: 500px; -webkit-transform: translateZ(0); transform: translateZ(0); background: #1A1A2E; border-radius: 20px; padding: 1.5rem; border: 1px solid rgba(139, 92, 246, 0.3);">
-                <div class="modal-header"
-                    style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                    <h3 style="margin: 0; color: #E5E7EB;">📦 Sustancias Archivadas</h3>
-                    <button class="close-btn" onclick="closeArchivedSubstancesModal()"
-                        style="background: none; border: none; color: #9CA3AF; font-size: 1.5rem; cursor: pointer;">×</button>
-                </div>
+            <div style="
+                width: calc(100% - 2rem);
+                max-width: 500px;
+                min-height: 200px;
+                max-height: 80vh;
+                margin: 1rem;
+                background: #1A1A2E;
+                border-radius: 20px;
+                padding: 1.5rem;
+                border: 1px solid rgba(139, 92, 246, 0.3);
+                box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+                display: flex;
+                flex-direction: column;
+                -webkit-transform: translateZ(0);
+                transform: translateZ(0);
+            ">
+                <!-- Header -->
                 <div
-                    style="max-height: 60vh; overflow-y: auto; -webkit-overflow-scrolling: touch; background: rgba(26, 26, 46, 0.5); padding: 12px; border-radius: 8px;">
-                    <p style="color: #9CA3AF; margin-bottom: 16px; font-size: 0.9em;">
+                    style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-shrink: 0;">
+                    <h3 style="margin: 0; color: #E5E7EB; font-size: 1.25rem;">📦 Sustancias Archivadas</h3>
+                    <button onclick="closeArchivedSubstancesModal()"
+                        style="background: none; border: none; color: #9CA3AF; font-size: 1.5rem; cursor: pointer; padding: 0.5rem;">×</button>
+                </div>
+
+                <!-- Body - scrollable -->
+                <div style="flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding-right: 4px;">
+                    <p style="color: #9CA3AF; margin-bottom: 16px; font-size: 0.9em; line-height: 1.5;">
                         Aquí aparecen las sustancias que has archivado con triple-tap sobre el ícono ⋮⋮ en la lista
                         principal.
                         Los registros de estas sustancias siguen existiendo.
@@ -10601,10 +10617,12 @@
                         <!-- Se llena dinámicamente con renderArchivedSubstances() -->
                     </div>
                 </div>
+
+                <!-- Footer -->
                 <div
-                    style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 16px; padding-top: 16px; border-top: 1px solid rgba(139, 92, 246, 0.3);">
-                    <button class="btn-secondary" onclick="closeArchivedSubstancesModal()"
-                        style="background: rgba(139, 92, 246, 0.2); border: 1px solid rgba(139, 92, 246, 0.4); color: #E5E7EB; padding: 10px 20px; border-radius: 12px; cursor: pointer;">Cerrar</button>
+                    style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 16px; padding-top: 16px; border-top: 1px solid rgba(139, 92, 246, 0.3); flex-shrink: 0;">
+                    <button onclick="closeArchivedSubstancesModal()"
+                        style="background: rgba(139, 92, 246, 0.2); border: 1px solid rgba(139, 92, 246, 0.4); color: #E5E7EB; padding: 10px 24px; border-radius: 12px; cursor: pointer; font-size: 1rem;">Cerrar</button>
                 </div>
             </div>
         </div>
