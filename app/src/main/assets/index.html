@@ -3776,6 +3776,11 @@
                                 Opciones</button>
                         </div>
                         <div class="resource-card">
+                            <h4>🧹 Limpiar Datos Corruptos</h4>
+                            <p>¿Tienes fragmentos de notas en campos de sustancia/set/setting? Esta función detecta y limpia esos datos incorrectos.</p>
+                            <button class="btn-secondary" onclick="scanCorruptedEntries()">🔍 Escanear Problemas</button>
+                        </div>
+                        <div class="resource-card">
                             <h4>📸 Exportar Fotos</h4>
                             <p>Descargar todas las imágenes adjuntas en un ZIP</p>
                             <button class="btn-primary" onclick="exportPhotosZip()">🗂️ Exportar Fotos</button>
@@ -9962,6 +9967,255 @@
                     if (lower.includes('trabajo') || lower.includes('oficina')) return '💼';
                     if (lower.includes('terapia') || lower.includes('clinica')) return '🏥';
                     return '📍'; // Default para SETTING
+                }
+
+                /**
+                 * LIMPIEZA DE DATOS CORRUPTOS (PBL: Reparación de Datos)
+                 * Detecta y limpia fragmentos de notas que se colaron en campos
+                 * de sustancia, set o setting durante importaciones defectuosas.
+                 */
+
+                // Criterios para detectar datos corruptos
+                function isCorruptedFieldValue(value, fieldType) {
+                    if (!value || typeof value !== 'string') return false;
+                    const trimmed = value.trim();
+                    if (trimmed.length === 0) return false;
+
+                    // Criterio 1: Demasiado largo para ser un nombre de sustancia/set/setting
+                    if (trimmed.length > 50) return true;
+
+                    // Criterio 2: Contiene "..." indicando texto truncado
+                    if (trimmed.includes('...')) return true;
+
+                    // Criterio 3: Patrones de oraciones/notas en español
+                    const sentencePatterns = [
+                        /\bque\s+le\b/i,        // "que le jodan"
+                        /\bme\s+joden\b/i,      // "me joden"
+                        /\bdebo\s+ir\b/i,       // "debo ir"
+                        /\bacabo\s+de\b/i,      // "acabo de"
+                        /\bsi\s+no\b/i,         // "si no"
+                        /\bsino\s+\w+\b/i,      // "sino debo"
+                        /\bpero\s+\w+\b/i,      // "pero que"
+                        /\bbastante\s+\w+\b/i,  // "bastante me"
+                        /\btengo\s+que\b/i,     // "tengo que"
+                        /\bhay\s+que\b/i,       // "hay que"
+                        /\bcreo\s+que\b/i,      // "creo que"
+                        /\bporque\s+\w+\b/i,    // "porque..."
+                        /\bcuando\s+\w+\b/i,    // "cuando..."
+                    ];
+
+                    for (const pattern of sentencePatterns) {
+                        if (pattern.test(trimmed)) return true;
+                    }
+
+                    // Criterio 4: Valores específicos conocidos como corruptos
+                    const knownCorrupted = [
+                        'sino debo ir',
+                        'acabo de tene',
+                        'pero que le jodan',
+                        'bastante me joden'
+                    ];
+
+                    const lower = trimmed.toLowerCase();
+                    for (const known of knownCorrupted) {
+                        if (lower.includes(known)) return true;
+                    }
+
+                    return false;
+                }
+
+                // Escanear entries en busca de datos corruptos
+                function scanCorruptedEntries() {
+                    if (!entries || !entries.length) {
+                        showAlert('📋 Sin datos', 'No hay registros para analizar.');
+                        return;
+                    }
+
+                    const corrupted = {
+                        substances: [],
+                        sets: [],
+                        settings: []
+                    };
+
+                    entries.forEach((entry, index) => {
+                        if (isCorruptedFieldValue(entry.substance, 'substance')) {
+                            corrupted.substances.push({
+                                index,
+                                value: entry.substance,
+                                date: entry.date
+                            });
+                        }
+                        if (isCorruptedFieldValue(entry.set, 'set')) {
+                            corrupted.sets.push({
+                                index,
+                                value: entry.set,
+                                date: entry.date
+                            });
+                        }
+                        if (isCorruptedFieldValue(entry.setting, 'setting')) {
+                            corrupted.settings.push({
+                                index,
+                                value: entry.setting,
+                                date: entry.date
+                            });
+                        }
+                    });
+
+                    const totalCorrupted = corrupted.substances.length + corrupted.sets.length + corrupted.settings.length;
+
+                    if (totalCorrupted === 0) {
+                        showAlert('✅ Todo limpio', 'No se encontraron datos corruptos en tus registros.');
+                        return;
+                    }
+
+                    // Mostrar modal con los datos encontrados
+                    showCorruptedDataModal(corrupted);
+                }
+
+                // Modal para mostrar y confirmar limpieza
+                function showCorruptedDataModal(corrupted) {
+                    const totalCorrupted = corrupted.substances.length + corrupted.sets.length + corrupted.settings.length;
+
+                    let listHtml = '';
+
+                    if (corrupted.substances.length > 0) {
+                        listHtml += `<h5 style="margin-top: 12px; color: var(--accent-purple);">💊 Sustancias corruptas (${corrupted.substances.length})</h5><ul style="margin: 8px 0; padding-left: 20px;">`;
+                        corrupted.substances.forEach(item => {
+                            listHtml += `<li style="margin: 4px 0; font-size: 0.9rem;"><code style="background: rgba(139,92,246,0.2); padding: 2px 6px; border-radius: 4px;">${escapeHtml(item.value)}</code></li>`;
+                        });
+                        listHtml += '</ul>';
+                    }
+
+                    if (corrupted.sets.length > 0) {
+                        listHtml += `<h5 style="margin-top: 12px; color: var(--secondary-pink);">🧠 Sets corruptos (${corrupted.sets.length})</h5><ul style="margin: 8px 0; padding-left: 20px;">`;
+                        corrupted.sets.forEach(item => {
+                            listHtml += `<li style="margin: 4px 0; font-size: 0.9rem;"><code style="background: rgba(236,72,153,0.2); padding: 2px 6px; border-radius: 4px;">${escapeHtml(item.value)}</code></li>`;
+                        });
+                        listHtml += '</ul>';
+                    }
+
+                    if (corrupted.settings.length > 0) {
+                        listHtml += `<h5 style="margin-top: 12px; color: var(--accent-teal);">🌐 Settings corruptos (${corrupted.settings.length})</h5><ul style="margin: 8px 0; padding-left: 20px;">`;
+                        corrupted.settings.forEach(item => {
+                            listHtml += `<li style="margin: 4px 0; font-size: 0.9rem;"><code style="background: rgba(20,184,166,0.2); padding: 2px 6px; border-radius: 4px;">${escapeHtml(item.value)}</code></li>`;
+                        });
+                        listHtml += '</ul>';
+                    }
+
+                    const modalHtml = `
+                        <div id="corruptedDataModal" class="modal active" style="z-index: 10000;">
+                            <div class="modal-content" style="max-width: 500px; max-height: 80vh; overflow-y: auto;">
+                                <div class="modal-header">
+                                    <h3>🧹 Datos Corruptos Encontrados</h3>
+                                    <button class="close-btn" onclick="closeCorruptedDataModal()">×</button>
+                                </div>
+                                <div class="modal-body">
+                                    <p style="margin-bottom: 12px;">Se encontraron <strong>${totalCorrupted}</strong> campos con datos que parecen ser fragmentos de notas:</p>
+                                    ${listHtml}
+                                    <div style="margin-top: 16px; padding: 12px; background: rgba(251, 191, 36, 0.1); border-radius: 8px; border-left: 3px solid #fbbf24;">
+                                        <p style="font-size: 0.85rem; margin: 0;">⚠️ <strong>¿Qué hace la limpieza?</strong><br>
+                                        Los campos corruptos se vaciarán (quedarán como "Sin sustancia", "Sin set", "Sin setting"). Los registros NO se eliminan.</p>
+                                    </div>
+                                </div>
+                                <div class="modal-footer" style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 16px;">
+                                    <button class="btn-secondary" onclick="closeCorruptedDataModal()">Cancelar</button>
+                                    <button class="btn-primary" onclick="executeCleanCorruptedEntries()">🧹 Limpiar Ahora</button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+
+                    // Guardar datos para la limpieza
+                    window._corruptedData = corrupted;
+
+                    // Insertar modal
+                    document.body.insertAdjacentHTML('beforeend', modalHtml);
+                    document.body.style.overflow = 'hidden';
+                }
+
+                function closeCorruptedDataModal() {
+                    const modal = document.getElementById('corruptedDataModal');
+                    if (modal) modal.remove();
+                    document.body.style.overflow = '';
+                    window._corruptedData = null;
+                }
+
+                // Ejecutar limpieza de datos corruptos
+                function executeCleanCorruptedEntries() {
+                    const corrupted = window._corruptedData;
+                    if (!corrupted) {
+                        closeCorruptedDataModal();
+                        return;
+                    }
+
+                    let cleanedCount = 0;
+
+                    // Limpiar sustancias corruptas
+                    corrupted.substances.forEach(item => {
+                        if (entries[item.index]) {
+                            entries[item.index].substance = '';
+                            cleanedCount++;
+                        }
+                    });
+
+                    // Limpiar sets corruptos
+                    corrupted.sets.forEach(item => {
+                        if (entries[item.index]) {
+                            entries[item.index].set = '';
+                            cleanedCount++;
+                        }
+                    });
+
+                    // Limpiar settings corruptos
+                    corrupted.settings.forEach(item => {
+                        if (entries[item.index]) {
+                            entries[item.index].setting = '';
+                            cleanedCount++;
+                        }
+                    });
+
+                    // Guardar cambios
+                    localStorage.setItem('entries', JSON.stringify(entries));
+                    notifyBackupDataChanged();
+
+                    // También limpiar las listas de sugerencias custom que tengan valores corruptos
+                    cleanCorruptedSuggestions();
+
+                    closeCorruptedDataModal();
+
+                    // Refrescar vistas
+                    renderStats();
+                    renderHistory();
+
+                    showAlert('✅ Limpieza completada', `Se limpiaron ${cleanedCount} campos corruptos. Las estadísticas ahora mostrarán datos correctos.`);
+                }
+
+                // Limpiar también las listas de sugerencias personalizadas
+                function cleanCorruptedSuggestions() {
+                    // Limpiar custom sets
+                    let customSets = JSON.parse(localStorage.getItem('psychologger_custom_sets') || '[]');
+                    const cleanedSets = customSets.filter(item => {
+                        const name = typeof item === 'string' ? item : item.name;
+                        return !isCorruptedFieldValue(name, 'set');
+                    });
+                    localStorage.setItem('psychologger_custom_sets', JSON.stringify(cleanedSets));
+
+                    // Limpiar custom settings
+                    let customSettings = JSON.parse(localStorage.getItem('psychologger_custom_settings') || '[]');
+                    const cleanedSettings = customSettings.filter(item => {
+                        const name = typeof item === 'string' ? item : item.name;
+                        return !isCorruptedFieldValue(name, 'setting');
+                    });
+                    localStorage.setItem('psychologger_custom_settings', JSON.stringify(cleanedSettings));
+
+                    console.log(`Sugerencias limpiadas: ${customSets.length - cleanedSets.length} sets, ${customSettings.length - cleanedSettings.length} settings`);
+                }
+
+                // Helper para escapar HTML
+                function escapeHtml(text) {
+                    const div = document.createElement('div');
+                    div.textContent = text;
+                    return div.innerHTML;
                 }
 
             </script>
