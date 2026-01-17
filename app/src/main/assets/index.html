@@ -293,7 +293,7 @@
             transform: scale(1.02);
         }
 
-        /* DRAG-HANDLE: Área de arrastre y long-press */
+        /* DRAG-HANDLE: Área de arrastre y triple-tap */
         .drag-handle {
             cursor: grab;
             padding: 8px 10px;
@@ -319,50 +319,69 @@
             transform: scale(0.95);
         }
 
-        /* LONG-PRESS: Animación de progreso visual clara */
-        .substance-item.long-pressing {
-            animation: longPressProgress 3s linear forwards;
-            transform: scale(1.02);
+        /* TRIPLE-TAP: Feedback visual por cada tap */
+        .substance-item.tap-1 {
+            box-shadow: inset 4px 0 0 0 var(--accent-cyan);
+            transition: all 0.15s ease;
         }
 
-        .substance-item.long-pressing .drag-handle {
-            animation: longPressPulse 0.5s ease-in-out infinite, longPressHandleGlow 3s linear forwards;
+        .substance-item.tap-2 {
+            box-shadow: inset 4px 0 0 0 var(--secondary-pink),
+                        0 0 10px rgba(236, 72, 153, 0.3);
+            transition: all 0.15s ease;
+        }
+
+        .substance-item.tap-3 {
+            animation: tapComplete 0.3s ease-out;
+            box-shadow: inset 4px 0 0 0 var(--secondary-pink),
+                        0 0 20px rgba(236, 72, 153, 0.5);
+            background: rgba(236, 72, 153, 0.15);
+        }
+
+        @keyframes tapComplete {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        /* Indicador visual de tap en el drag-handle */
+        .substance-item.tap-1 .drag-handle,
+        .substance-item.tap-2 .drag-handle {
+            animation: tapPulse 0.15s ease-out;
             color: var(--secondary-pink);
+            background: rgba(236, 72, 153, 0.2);
         }
 
-        @keyframes longPressProgress {
-            0% {
-                box-shadow: inset 4px 0 0 0 var(--secondary-pink);
-                border-color: transparent;
-            }
-            25% {
-                box-shadow: inset 4px 0 0 0 var(--secondary-pink),
-                            0 0 10px rgba(236, 72, 153, 0.3);
-            }
-            50% {
-                box-shadow: inset 4px 0 0 0 var(--secondary-pink),
-                            0 0 15px rgba(236, 72, 153, 0.4);
-            }
-            75% {
-                box-shadow: inset 4px 0 0 0 var(--secondary-pink),
-                            0 0 20px rgba(236, 72, 153, 0.5);
-            }
-            100% {
-                box-shadow: inset 4px 0 0 0 var(--secondary-pink),
-                            0 0 25px rgba(236, 72, 153, 0.6);
-                border-color: var(--secondary-pink);
-                background: rgba(236, 72, 153, 0.15);
-            }
+        @keyframes tapPulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
         }
 
-        @keyframes longPressPulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.1); }
+        /* Contador visual de taps (tooltip) */
+        .tap-counter {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: var(--secondary-pink);
+            color: white;
+            font-size: 0.7rem;
+            font-weight: bold;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: tapCounterPop 0.2s ease-out;
+            z-index: 10;
+            box-shadow: 0 2px 8px rgba(236, 72, 153, 0.4);
         }
 
-        @keyframes longPressHandleGlow {
-            0% { background: rgba(236, 72, 153, 0.2); }
-            100% { background: rgba(236, 72, 153, 0.5); }
+        @keyframes tapCounterPop {
+            0% { transform: scale(0); opacity: 0; }
+            70% { transform: scale(1.2); }
+            100% { transform: scale(1); opacity: 1; }
         }
 
         .edit-substance-btn {
@@ -1848,7 +1867,7 @@
             transform: scale(0.98);
         }
 
-        /* Calendario Mini */
+        /* Calendario Mini del DateTimePicker (usa prefijo picker- para no conflictuar con calendario principal) */
         .mini-calendar {
             background: rgba(13, 14, 40, 0.6);
             border-radius: 16px;
@@ -1857,14 +1876,14 @@
             border: 1px solid var(--border-color);
         }
 
-        .calendar-nav {
+        .picker-nav {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 0.75rem;
         }
 
-        .calendar-nav-btn {
+        .picker-nav-btn {
             background: rgba(139, 92, 246, 0.2);
             border: none;
             color: var(--text-light);
@@ -1879,25 +1898,25 @@
             justify-content: center;
         }
 
-        .calendar-nav-btn:hover {
+        .picker-nav-btn:hover {
             background: var(--primary-purple);
             transform: scale(1.1);
         }
 
-        .calendar-month-year {
+        .picker-month-year {
             font-weight: 600;
             color: var(--text-light);
             font-size: 0.95rem;
         }
 
-        .calendar-weekdays {
+        .picker-weekdays {
             display: grid;
             grid-template-columns: repeat(7, 1fr);
             gap: 2px;
             margin-bottom: 0.5rem;
         }
 
-        .calendar-weekday {
+        .picker-weekday {
             text-align: center;
             font-size: 0.7rem;
             color: var(--text-secondary);
@@ -1905,13 +1924,13 @@
             padding: 0.25rem 0;
         }
 
-        .calendar-days {
+        .picker-days {
             display: grid;
             grid-template-columns: repeat(7, 1fr);
             gap: 3px;
         }
 
-        .calendar-day {
+        .picker-day {
             aspect-ratio: 1;
             display: flex;
             flex-direction: column;
@@ -1927,27 +1946,27 @@
             color: var(--text-light);
         }
 
-        .calendar-day:hover:not(.empty):not(.selected) {
+        .picker-day:hover:not(.empty):not(.selected) {
             background: rgba(139, 92, 246, 0.2);
         }
 
-        .calendar-day.empty {
+        .picker-day.empty {
             cursor: default;
             color: transparent;
         }
 
-        .calendar-day.today {
+        .picker-day.today {
             border: 2px solid var(--accent-cyan);
         }
 
-        .calendar-day.selected {
+        .picker-day.selected {
             background: linear-gradient(135deg, var(--primary-purple), var(--secondary-pink));
             color: white;
             font-weight: 600;
             box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
         }
 
-        .calendar-day.has-entries::after {
+        .picker-day.has-entries::after {
             content: '';
             position: absolute;
             bottom: 3px;
@@ -1957,7 +1976,7 @@
             background: var(--accent-cyan);
         }
 
-        .calendar-day.other-month {
+        .picker-day.other-month {
             color: var(--text-secondary);
             opacity: 0.4;
         }
@@ -3787,7 +3806,7 @@
                         </div>
                         <div class="resource-card">
                             <h4>📦 Sustancias Archivadas</h4>
-                            <p>Recupera sustancias que hayas ocultado con long-press</p>
+                            <p>Recupera sustancias que hayas ocultado con triple-tap</p>
                             <button class="btn-secondary" onclick="openArchivedSubstancesModal()">👁️ Ver Archivadas</button>
                         </div>
                     </div>
@@ -4592,10 +4611,16 @@
                 let selectedSubstanceColor = '#8B5CF6';
                 let selectedSubstanceFilter = null;
 
-                // Variables para drag-and-drop y long-press
+                // Variables para drag-and-drop y triple-tap (archivo secreto)
                 let draggedSubstanceId = null;
-                let longPressTimer = null;
-                const LONG_PRESS_DURATION = 3000;  // 3 segundos para activar función secreta
+
+                // TRIPLE-TAP: Sistema de detección de 3 taps consecutivos
+                let tapCount = 0;                    // Contador de taps (0, 1, 2, 3)
+                let tapTimer = null;                 // Timer para resetear si tarda mucho
+                let lastTapTarget = null;            // ID de sustancia actual (evita mezclar taps)
+                let lastTapElement = null;           // Elemento DOM para limpiar clases
+                const TAP_WINDOW = 500;              // Máximo 500ms entre taps
+                const REQUIRED_TAPS = 3;             // Taps necesarios para archivar
 
                 /**
              * Aplica formato al estilo Telegram/Markdown al texto seleccionado
@@ -6103,7 +6128,7 @@
 
                     // Días vacíos al inicio
                     for (let i = 0; i < startDay; i++) {
-                        html += '<button class="calendar-day empty"></button>';
+                        html += '<button class="picker-day empty"></button>';
                     }
 
                     // Días del mes
@@ -6117,7 +6142,7 @@
                             currentSelectedDate.getFullYear() === year;
                         const hasEntries = daysWithEntries.includes(day);
 
-                        let classes = 'calendar-day';
+                        let classes = 'picker-day';
                         if (isToday) classes += ' today';
                         if (isSelected) classes += ' selected';
                         if (hasEntries) classes += ' has-entries';
@@ -7033,7 +7058,7 @@
 
                         item.innerHTML = `
                     <div class="substance-info">
-                        <span class="drag-handle" title="Mantén pulsado 3s para archivar">⋮⋮</span>
+                        <span class="drag-handle" title="Triple tap para archivar">⋮⋮</span>
                         <span>${substance.name}</span>
                     </div>
                     <div class="substance-actions">
@@ -7052,21 +7077,20 @@
                         item.addEventListener('dragleave', handleDragLeave);
                         item.addEventListener('drop', (e) => handleDrop(e, substance.id));
 
-                        // LONG-PRESS (FUNCIÓN SECRETA): Event listeners para touch y mouse
+                        // TRIPLE-TAP (FUNCIÓN SECRETA): Event listener para clicks rápidos
                         const dragHandle = item.querySelector('.drag-handle');
 
-                        // Touch events (móvil)
-                        dragHandle.addEventListener('touchstart', (e) => {
-                            e.preventDefault();  // Prevenir scroll mientras se hace long-press
-                            handleLongPressStart(substance.id, substance.name, item);
+                        // Click event funciona tanto en móvil como desktop
+                        dragHandle.addEventListener('click', (e) => {
+                            e.stopPropagation();  // Evitar que se propague al substance-info
+                            handleTripleTap(substance.id, substance.name, item);
                         });
-                        dragHandle.addEventListener('touchend', () => handleLongPressEnd(item));
-                        dragHandle.addEventListener('touchmove', () => handleLongPressEnd(item));  // Cancelar si mueve
 
-                        // Mouse events (desktop)
-                        dragHandle.addEventListener('mousedown', () => handleLongPressStart(substance.id, substance.name, item));
-                        dragHandle.addEventListener('mouseup', () => handleLongPressEnd(item));
-                        dragHandle.addEventListener('mouseleave', () => handleLongPressEnd(item));
+                        // Touch events: prevenir comportamientos no deseados en móvil
+                        dragHandle.addEventListener('touchstart', (e) => {
+                            // No prevenir default para permitir el tap
+                            e.stopPropagation();
+                        });
 
                         // Add click event for filtering (exclude the delete button)
                         item.querySelector('.substance-info').addEventListener('click', (e) => {
@@ -7095,7 +7119,7 @@
                 // ========================================
                 // SISTEMA DE SUSTANCIAS ARCHIVADAS
                 // ========================================
-                // CONCEPTO PBL: "Función secreta" - long-press de 3 segundos
+                // CONCEPTO PBL: "Función secreta" - triple-tap rápido (3 taps en <500ms)
                 // para archivar sustancias sin eliminarlas permanentemente
 
                 /**
@@ -7327,41 +7351,97 @@
                 }
 
                 // ========================================
-                // SISTEMA DE LONG-PRESS (FUNCIÓN SECRETA)
+                // SISTEMA DE TRIPLE-TAP (FUNCIÓN SECRETA)
                 // ========================================
-                // CONCEPTO PBL: Touch events para detectar presión prolongada
+                // CONCEPTO PBL: Detección de clicks consecutivos en ventana de tiempo
+                //
+                // CÓMO FUNCIONA:
+                // 1. Usuario hace tap en drag-handle → tapCount++
+                // 2. Si es diferente sustancia → resetear contador
+                // 3. Si pasan más de TAP_WINDOW ms → resetear contador
+                // 4. Si tapCount >= 3 → archivar sustancia
+                //
+                // VENTAJA vs LONG-PRESS: No conflicta con drag-and-drop
 
                 /**
-                 * Inicia el temporizador de long-press
+                 * Maneja un tap en el drag-handle para detección de triple-tap
                  */
-                function handleLongPressStart(substanceId, substanceName, element) {
-                    // Cancelar cualquier timer previo
-                    if (longPressTimer) {
-                        clearTimeout(longPressTimer);
+                function handleTripleTap(substanceId, substanceName, element) {
+                    // Si cambió de sustancia, resetear contador
+                    if (lastTapTarget !== substanceId) {
+                        resetTapCounter();
+                        lastTapTarget = substanceId;
+                        lastTapElement = element;
                     }
 
-                    // Añadir indicador visual de progreso
-                    element.classList.add('long-pressing');
+                    // Cancelar timer previo (reiniciar ventana de tiempo)
+                    if (tapTimer) {
+                        clearTimeout(tapTimer);
+                    }
 
-                    longPressTimer = setTimeout(() => {
-                        element.classList.remove('long-pressing');
-                        // Vibrar si está disponible (feedback táctil)
+                    // Incrementar contador
+                    tapCount++;
+
+                    // Limpiar clases previas
+                    element.classList.remove('tap-1', 'tap-2', 'tap-3');
+
+                    // Remover contador visual previo si existe
+                    const oldCounter = element.querySelector('.tap-counter');
+                    if (oldCounter) oldCounter.remove();
+
+                    // Feedback visual según número de taps
+                    if (tapCount >= REQUIRED_TAPS) {
+                        // ¡TRIPLE TAP COMPLETADO!
+                        element.classList.add('tap-3');
+
+                        // Vibrar si está disponible
                         if (navigator.vibrate) {
-                            navigator.vibrate(100);
+                            navigator.vibrate([50, 50, 100]);  // Patrón de vibración especial
                         }
+
+                        // Mostrar confirmación y resetear
                         showArchiveConfirmation(substanceId, substanceName);
-                    }, LONG_PRESS_DURATION);
+
+                        // Resetear después de un pequeño delay para ver la animación
+                        setTimeout(() => resetTapCounter(), 300);
+                    } else {
+                        // Tap 1 o 2: mostrar progreso
+                        element.classList.add(`tap-${tapCount}`);
+
+                        // Añadir contador visual
+                        const counter = document.createElement('span');
+                        counter.className = 'tap-counter';
+                        counter.textContent = tapCount;
+                        element.style.position = 'relative';
+                        element.appendChild(counter);
+
+                        // Iniciar timer de timeout
+                        tapTimer = setTimeout(() => {
+                            resetTapCounter();
+                        }, TAP_WINDOW);
+                    }
                 }
 
                 /**
-                 * Cancela el long-press si se suelta antes de tiempo
+                 * Resetea el contador de triple-tap
                  */
-                function handleLongPressEnd(element) {
-                    if (longPressTimer) {
-                        clearTimeout(longPressTimer);
-                        longPressTimer = null;
+                function resetTapCounter() {
+                    tapCount = 0;
+
+                    if (tapTimer) {
+                        clearTimeout(tapTimer);
+                        tapTimer = null;
                     }
-                    element.classList.remove('long-pressing');
+
+                    // Limpiar clases visuales del elemento anterior
+                    if (lastTapElement) {
+                        lastTapElement.classList.remove('tap-1', 'tap-2', 'tap-3');
+                        const counter = lastTapElement.querySelector('.tap-counter');
+                        if (counter) counter.remove();
+                    }
+
+                    lastTapTarget = null;
+                    lastTapElement = null;
                 }
 
                 function resetEditMode() {
@@ -10072,10 +10152,32 @@
                     showCorruptedDataModal(corrupted);
                 }
 
-                // Modal para mostrar y confirmar limpieza
+                /**
+                 * Modal para mostrar y confirmar limpieza de datos corruptos
+                 * PATRÓN: Modal estático + contenido dinámico (misma técnica que archivedSubstancesModal)
+                 *
+                 * POR QUÉ USAMOS MODAL ESTÁTICO:
+                 * - insertAdjacentHTML puede fallar en WebView de Android
+                 * - Los modales estáticos heredan correctamente los estilos CSS
+                 * - Más fácil de debuggear y mantener
+                 */
                 function showCorruptedDataModal(corrupted) {
+                    const modal = document.getElementById('corruptedDataModal');
+                    const summaryEl = document.getElementById('corrupted-summary');
+                    const listEl = document.getElementById('corrupted-list');
+
+                    if (!modal || !summaryEl || !listEl) {
+                        console.error('[CorruptedData] Modal elements not found');
+                        showAlert('❌ Error', 'No se pudo abrir el modal. Intenta recargar la app.');
+                        return;
+                    }
+
                     const totalCorrupted = corrupted.substances.length + corrupted.sets.length + corrupted.settings.length;
 
+                    // Actualizar resumen
+                    summaryEl.innerHTML = `Se encontraron <strong>${totalCorrupted}</strong> campos con datos que parecen ser fragmentos de notas:`;
+
+                    // Construir lista de datos corruptos
                     let listHtml = '';
 
                     if (corrupted.substances.length > 0) {
@@ -10102,40 +10204,24 @@
                         listHtml += '</ul>';
                     }
 
-                    const modalHtml = `
-                        <div id="corruptedDataModal" class="modal active" style="z-index: 10000;">
-                            <div class="modal-content" style="max-width: 500px; max-height: 80vh; overflow-y: auto;">
-                                <div class="modal-header">
-                                    <h3>🧹 Datos Corruptos Encontrados</h3>
-                                    <button class="close-btn" onclick="closeCorruptedDataModal()">×</button>
-                                </div>
-                                <div class="modal-body">
-                                    <p style="margin-bottom: 12px;">Se encontraron <strong>${totalCorrupted}</strong> campos con datos que parecen ser fragmentos de notas:</p>
-                                    ${listHtml}
-                                    <div style="margin-top: 16px; padding: 12px; background: rgba(251, 191, 36, 0.1); border-radius: 8px; border-left: 3px solid #fbbf24;">
-                                        <p style="font-size: 0.85rem; margin: 0;">⚠️ <strong>¿Qué hace la limpieza?</strong><br>
-                                        Los campos corruptos se vaciarán (quedarán como "Sin sustancia", "Sin set", "Sin setting"). Los registros NO se eliminan.</p>
-                                    </div>
-                                </div>
-                                <div class="modal-footer" style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 16px;">
-                                    <button class="btn-secondary" onclick="closeCorruptedDataModal()">Cancelar</button>
-                                    <button class="btn-primary" onclick="executeCleanCorruptedEntries()">🧹 Limpiar Ahora</button>
-                                </div>
-                            </div>
-                        </div>
-                    `;
+                    listEl.innerHTML = listHtml;
 
                     // Guardar datos para la limpieza
                     window._corruptedData = corrupted;
 
-                    // Insertar modal
-                    document.body.insertAdjacentHTML('beforeend', modalHtml);
+                    // Mostrar modal con classList (patrón correcto)
+                    modal.classList.add('active');
                     document.body.style.overflow = 'hidden';
                 }
 
+                /**
+                 * Cierra el modal de datos corruptos
+                 */
                 function closeCorruptedDataModal() {
                     const modal = document.getElementById('corruptedDataModal');
-                    if (modal) modal.remove();
+                    if (modal) {
+                        modal.classList.remove('active');
+                    }
                     document.body.style.overflow = '';
                     window._corruptedData = null;
                 }
@@ -10307,21 +10393,21 @@
 
                 <!-- Mini Calendario -->
                 <div class="mini-calendar">
-                    <div class="calendar-nav">
-                        <button class="calendar-nav-btn" onclick="navigatePickerMonth(-1)">◀</button>
-                        <span class="calendar-month-year" id="pickerMonthYear">Enero 2026</span>
-                        <button class="calendar-nav-btn" onclick="navigatePickerMonth(1)">▶</button>
+                    <div class="picker-nav">
+                        <button class="picker-nav-btn" onclick="navigatePickerMonth(-1)">◀</button>
+                        <span class="picker-month-year" id="pickerMonthYear">Enero 2026</span>
+                        <button class="picker-nav-btn" onclick="navigatePickerMonth(1)">▶</button>
                     </div>
-                    <div class="calendar-weekdays">
-                        <span class="calendar-weekday">L</span>
-                        <span class="calendar-weekday">M</span>
-                        <span class="calendar-weekday">X</span>
-                        <span class="calendar-weekday">J</span>
-                        <span class="calendar-weekday">V</span>
-                        <span class="calendar-weekday">S</span>
-                        <span class="calendar-weekday">D</span>
+                    <div class="picker-weekdays">
+                        <span class="picker-weekday">L</span>
+                        <span class="picker-weekday">M</span>
+                        <span class="picker-weekday">X</span>
+                        <span class="picker-weekday">J</span>
+                        <span class="picker-weekday">V</span>
+                        <span class="picker-weekday">S</span>
+                        <span class="picker-weekday">D</span>
                     </div>
-                    <div class="calendar-days" id="pickerCalendarDays">
+                    <div class="picker-days" id="pickerCalendarDays">
                         <!-- Se llena dinámicamente -->
                     </div>
                 </div>
@@ -10357,6 +10443,32 @@
         </div>
 
     <!-- Modal de Sustancias Archivadas (FUERA de cualquier view para que position:fixed funcione) -->
+    <!-- Modal de Datos Corruptos (estructura estática, contenido dinámico) -->
+    <div id="corruptedDataModal" class="modal">
+        <div class="modal-content" style="max-width: 500px;">
+            <div class="modal-header">
+                <h3>🧹 Datos Corruptos Encontrados</h3>
+                <button class="close-btn" onclick="closeCorruptedDataModal()">×</button>
+            </div>
+            <div class="modal-body" style="max-height: 60vh; overflow-y: auto;">
+                <p id="corrupted-summary" style="margin-bottom: 12px;">
+                    <!-- Se actualiza dinámicamente -->
+                </p>
+                <div id="corrupted-list">
+                    <!-- Se llena dinámicamente con showCorruptedDataModal() -->
+                </div>
+                <div style="margin-top: 16px; padding: 12px; background: rgba(251, 191, 36, 0.1); border-radius: 8px; border-left: 3px solid #fbbf24;">
+                    <p style="font-size: 0.85rem; margin: 0;">⚠️ <strong>¿Qué hace la limpieza?</strong><br>
+                    Los campos corruptos se vaciarán (quedarán como "Sin sustancia", "Sin set", "Sin setting"). Los registros NO se eliminan.</p>
+                </div>
+            </div>
+            <div class="modal-footer" style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border-color);">
+                <button class="btn-secondary" onclick="closeCorruptedDataModal()">Cancelar</button>
+                <button class="btn-primary" onclick="executeCleanCorruptedEntries()">🧹 Limpiar Ahora</button>
+            </div>
+        </div>
+    </div>
+
     <div id="archivedSubstancesModal" class="modal">
         <div class="modal-content" style="max-width: 500px;">
             <div class="modal-header">
@@ -10365,7 +10477,7 @@
             </div>
             <div class="modal-body" style="max-height: 60vh; overflow-y: auto;">
                 <p style="color: var(--text-secondary); margin-bottom: 16px; font-size: 0.9em;">
-                    Aquí aparecen las sustancias que has archivado manteniendo pulsado 3 segundos sobre el ícono ⋮⋮ en la lista principal.
+                    Aquí aparecen las sustancias que has archivado con triple-tap sobre el ícono ⋮⋮ en la lista principal.
                     Los registros de estas sustancias siguen existiendo.
                 </p>
                 <div id="archived-substances-list">
