@@ -280,6 +280,55 @@
             box-shadow: 0 0 10px var(--accent-cyan);
         }
 
+        /* DRAG-AND-DROP: Estilos para arrastrar sustancias */
+        .substance-item.dragging {
+            opacity: 0.5;
+            transform: scale(0.98);
+            border: 2px dashed var(--accent-cyan);
+        }
+
+        .substance-item.drag-over {
+            background: rgba(6, 182, 212, 0.2);
+            border: 2px solid var(--accent-cyan);
+            transform: scale(1.02);
+        }
+
+        .drag-handle {
+            cursor: grab;
+            padding: 4px 8px;
+            margin-right: 4px;
+            color: var(--text-secondary);
+            font-size: 1rem;
+            letter-spacing: -2px;
+            user-select: none;
+            opacity: 0.5;
+            transition: all 0.3s ease;
+        }
+
+        .drag-handle:hover {
+            opacity: 1;
+            color: var(--accent-cyan);
+        }
+
+        .drag-handle:active {
+            cursor: grabbing;
+        }
+
+        /* LONG-PRESS: Animación de progreso al mantener pulsado */
+        .substance-item.long-pressing {
+            animation: longPressProgress 3s linear forwards;
+        }
+
+        @keyframes longPressProgress {
+            0% {
+                box-shadow: inset 0 0 0 0 rgba(236, 72, 153, 0.3);
+            }
+            100% {
+                box-shadow: inset 0 0 0 100px rgba(236, 72, 153, 0.3);
+                border-color: var(--secondary-pink);
+            }
+        }
+
         .edit-substance-btn {
             background: var(--accent-cyan);
             border: none;
@@ -3363,6 +3412,30 @@
                             <p>Descargar todas las imágenes adjuntas en un ZIP</p>
                             <button class="btn-primary" onclick="exportPhotosZip()">🗂️ Exportar Fotos</button>
                         </div>
+                        <div class="resource-card">
+                            <h4>📦 Sustancias Archivadas</h4>
+                            <p>Recupera sustancias que hayas ocultado con long-press</p>
+                            <button class="btn-secondary" onclick="openArchivedSubstancesModal()">👁️ Ver Archivadas</button>
+                        </div>
+                    </div>
+
+                    <!-- Modal de Sustancias Archivadas -->
+                    <div id="archivedSubstancesModal" class="modal" style="display: none;">
+                        <div class="modal-content" style="max-width: 500px;">
+                            <div class="modal-header">
+                                <h3>📦 Sustancias Archivadas</h3>
+                                <button class="close-btn" onclick="closeArchivedSubstancesModal()">×</button>
+                            </div>
+                            <div class="modal-body" style="max-height: 400px; overflow-y: auto;">
+                                <p style="color: var(--text-secondary); margin-bottom: 16px; font-size: 0.9em;">
+                                    Aquí aparecen las sustancias que has archivado manteniendo pulsado 3 segundos en la lista principal.
+                                    Los registros de estas sustancias siguen existiendo.
+                                </p>
+                                <div id="archived-substances-list">
+                                    <!-- Se llena dinámicamente con renderArchivedSubstances() -->
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <section class="dev-panel">
@@ -4159,10 +4232,16 @@
                 let isEditMode = false;
                 let currentEditingEntryId = null;
                 let substances = [];
+                let archivedSubstances = [];  // Sustancias archivadas (ocultas)
                 let entries = [];
                 let userProfile = {};
                 let selectedSubstanceColor = '#8B5CF6';
                 let selectedSubstanceFilter = null;
+
+                // Variables para drag-and-drop y long-press
+                let draggedSubstanceId = null;
+                let longPressTimer = null;
+                const LONG_PRESS_DURATION = 3000;  // 3 segundos para activar función secreta
 
                 /**
              * Aplica formato al estilo Telegram/Markdown al texto seleccionado
@@ -4217,6 +4296,203 @@
                 let currentPhotoFilename = null;  // Nombre del archivo de foto actual
                 let recordingTimerInterval = null;  // Intervalo del timer de grabación
                 let isPlaying = false;  // Estado de reproducción
+
+                // ========================================
+                // SISTEMA DE BORRADOR (DRAFT) - Persistencia del Modal
+                // ========================================
+                // CONCEPTO PBL: Guardamos el estado del formulario en localStorage
+                // para que sobreviva a: cámara, galería, bloqueo de pantalla, etc.
+
+                const DRAFT_KEY = 'psychologger_entry_draft';  // Clave en localStorage
+                let isRestoringDraft = false;  // Flag para evitar loops al restaurar
+
+                /**
+                 * Guarda el estado actual del formulario como borrador
+                 * Se llama automáticamente en cada cambio de cualquier campo
+                 */
+                function saveDraft() {
+                    // No guardar si estamos en medio de una restauración
+                    if (isRestoringDraft) return;
+
+                    // Solo guardar si el modal está abierto
+                    const modal = document.getElementById('entryModal');
+                    if (!modal || !modal.classList.contains('active')) return;
+
+                    const draft = {
+                        // Datos del formulario
+                        substance: document.getElementById('entrySubstance')?.value || '',
+                        dose: document.getElementById('entryDose')?.value || '',
+                        unit: document.getElementById('entryUnit')?.value || '',
+                        dateTime: document.getElementById('entryDateTime')?.value || '',
+                        set: document.getElementById('entrySet')?.value || '',
+                        setting: document.getElementById('entrySetting')?.value || '',
+                        notes: document.getElementById('entryNotes')?.value || '',
+                        // Archivos adjuntos
+                        audioFilename: currentAudioFilename,
+                        photoFilename: currentPhotoFilename,
+                        // Metadatos
+                        isEditMode: isEditMode,
+                        editingEntryId: currentEditingEntryId,
+                        savedAt: new Date().toISOString(),
+                        modalWasOpen: true  // Marca que el modal estaba abierto
+                    };
+
+                    localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+                    console.log('[Draft] Borrador guardado:', draft.substance, draft.dose);
+                }
+
+                /**
+                 * Carga y restaura un borrador guardado
+                 * @returns {boolean} true si había borrador y se restauró
+                 */
+                function loadDraft() {
+                    const draftJson = localStorage.getItem(DRAFT_KEY);
+                    if (!draftJson) return false;
+
+                    try {
+                        const draft = JSON.parse(draftJson);
+
+                        // Verificar que el borrador no sea muy viejo (más de 24 horas)
+                        const savedAt = new Date(draft.savedAt);
+                        const hoursOld = (Date.now() - savedAt.getTime()) / (1000 * 60 * 60);
+                        if (hoursOld > 24) {
+                            console.log('[Draft] Borrador muy antiguo, descartando');
+                            clearDraft();
+                            return false;
+                        }
+
+                        console.log('[Draft] Restaurando borrador...');
+                        isRestoringDraft = true;  // Evitar que saveDraft se llame durante restauración
+
+                        // Restaurar modo edición si aplica
+                        if (draft.isEditMode && draft.editingEntryId) {
+                            isEditMode = true;
+                            currentEditingEntryId = draft.editingEntryId;
+                            const modalTitle = document.getElementById('entryModalTitle');
+                            if (modalTitle) modalTitle.textContent = 'Editar Registro';
+                        }
+
+                        // Restaurar archivos adjuntos
+                        currentAudioFilename = draft.audioFilename;
+                        currentPhotoFilename = draft.photoFilename;
+                        updateVoiceNoteCard();
+                        updatePhotoCard();
+
+                        // Restaurar campos del formulario (con pequeño delay para asegurar que el DOM esté listo)
+                        setTimeout(() => {
+                            // Sustancia
+                            if (draft.substance) {
+                                const substanceInput = document.getElementById('entrySubstance');
+                                if (substanceInput) substanceInput.value = draft.substance;
+                                restoreDropdownSelection('entrySubstanceDropdown', draft.substance, 'Selecciona una sustancia...');
+                            }
+
+                            // Dosis
+                            if (draft.dose) {
+                                const doseInput = document.getElementById('entryDose');
+                                if (doseInput) doseInput.value = draft.dose;
+                            }
+
+                            // Unidad
+                            if (draft.unit) {
+                                const unitInput = document.getElementById('entryUnit');
+                                if (unitInput) unitInput.value = draft.unit;
+                                restoreDropdownSelection('entryUnitDropdown', draft.unit, 'Seleccionar unidad...');
+                            }
+
+                            // Fecha y hora
+                            if (draft.dateTime) {
+                                const dateTimeInput = document.getElementById('entryDateTime');
+                                if (dateTimeInput) {
+                                    dateTimeInput.value = draft.dateTime;
+                                    currentSelectedDate = new Date(draft.dateTime);
+                                    updateDateTimeDisplay();
+                                }
+                            }
+
+                            // Set (estado mental)
+                            if (draft.set) {
+                                const setInput = document.getElementById('entrySet');
+                                if (setInput) setInput.value = draft.set;
+                                restoreDropdownSelection('entrySetDropdown', draft.set, 'Seleccionar...');
+                            }
+
+                            // Setting (entorno)
+                            if (draft.setting) {
+                                const settingInput = document.getElementById('entrySetting');
+                                if (settingInput) settingInput.value = draft.setting;
+                                restoreDropdownSelection('entrySettingDropdown', draft.setting, 'Seleccionar...');
+                            }
+
+                            // Notas
+                            if (draft.notes) {
+                                const notesInput = document.getElementById('entryNotes');
+                                if (notesInput) notesInput.value = draft.notes;
+                            }
+
+                            isRestoringDraft = false;
+                            console.log('[Draft] Borrador restaurado completamente');
+
+                            if (typeof Android !== 'undefined' && Android.showToast) {
+                                Android.showToast('📝 Borrador recuperado');
+                            }
+                        }, 100);
+
+                        return true;
+                    } catch (e) {
+                        console.error('[Draft] Error al cargar borrador:', e);
+                        clearDraft();
+                        isRestoringDraft = false;
+                        return false;
+                    }
+                }
+
+                /**
+                 * Limpia el borrador guardado
+                 * Se llama al: guardar exitosamente, cerrar modal manualmente
+                 */
+                function clearDraft() {
+                    localStorage.removeItem(DRAFT_KEY);
+                    console.log('[Draft] Borrador eliminado');
+                }
+
+                /**
+                 * Verifica si hay un borrador pendiente (modal estaba abierto)
+                 * @returns {boolean}
+                 */
+                function hasPendingDraft() {
+                    const draftJson = localStorage.getItem(DRAFT_KEY);
+                    if (!draftJson) return false;
+
+                    try {
+                        const draft = JSON.parse(draftJson);
+                        return draft.modalWasOpen === true;
+                    } catch {
+                        return false;
+                    }
+                }
+
+                /**
+                 * Configura los listeners para auto-guardar en cada cambio
+                 * CONCEPTO PBL: Event delegation y múltiples eventos
+                 */
+                function setupDraftAutoSave() {
+                    const fieldsToWatch = [
+                        'entrySubstance', 'entryDose', 'entryUnit',
+                        'entryDateTime', 'entrySet', 'entrySetting', 'entryNotes'
+                    ];
+
+                    fieldsToWatch.forEach(fieldId => {
+                        const field = document.getElementById(fieldId);
+                        if (field) {
+                            // 'input' se dispara en cada tecla, 'change' al perder foco
+                            field.addEventListener('input', saveDraft);
+                            field.addEventListener('change', saveDraft);
+                        }
+                    });
+
+                    console.log('[Draft] Auto-guardado configurado');
+                }
 
                 // ========================================
                 // FUNCIONES DE AUDIO - Grabación
@@ -4595,23 +4871,38 @@
 
                 /**
                  * Inicia la captura de foto con la cámara
+                 *
+                 * CONCEPTO PBL: Antes de abrir la cámara, guardamos el borrador
+                 * porque la app pasará a background y podría perder estado
                  */
                 function capturePhotoFromCamera() {
                     if (typeof Android === 'undefined' || !Android.capturePhoto) {
                         showCustomAlert('Esta función solo está disponible en Android.', '❌ No disponible');
                         return;
                     }
+
+                    // SISTEMA DE BORRADOR: Guardar antes de ir a la cámara
+                    saveDraft();
+                    console.log('[Foto] Guardando borrador antes de abrir cámara');
+
                     Android.capturePhoto();
                 }
 
                 /**
                  * Permite elegir una imagen desde la galería
+                 *
+                 * CONCEPTO PBL: Igual que con cámara, guardamos borrador primero
                  */
                 function pickPhotoFromGallery() {
                     if (typeof Android === 'undefined' || !Android.pickPhotoFromGallery) {
                         showCustomAlert('Esta función solo está disponible en Android.', '❌ No disponible');
                         return;
                     }
+
+                    // SISTEMA DE BORRADOR: Guardar antes de ir a la galería
+                    saveDraft();
+                    console.log('[Foto] Guardando borrador antes de abrir galería');
+
                     Android.pickPhotoFromGallery();
                 }
 
@@ -4674,20 +4965,65 @@
                     }
                 }
 
+                /**
+                 * Callback cuando se captura una foto exitosamente
+                 *
+                 * CONCEPTO PBL: Este callback viene desde Kotlin después de que
+                 * el usuario tomó/eligió una foto. Puede que el modal esté cerrado
+                 * (por LockScreen u otras razones), así que verificamos y restauramos.
+                 */
                 window.onPhotoCaptured = function (filename) {
                     if (!filename) {
+                        console.log('[Foto] Callback sin filename, ignorando');
                         return;
                     }
+
+                    console.log('[Foto] Foto recibida:', filename);
                     currentPhotoFilename = filename;
+
+                    // SISTEMA DE BORRADOR: Verificar si el modal de entrada está abierto
+                    const entryModal = document.getElementById('entryModal');
+                    const entryModalOpen = entryModal && entryModal.classList.contains('active');
+
+                    if (!entryModalOpen && hasPendingDraft()) {
+                        // El modal se cerró (probablemente por LockScreen), restaurar todo
+                        console.log('[Foto] Modal cerrado, restaurando desde borrador...');
+
+                        // Primero abrimos el modal
+                        openModal('entryModal', true);  // true = skipDraftCheck, lo haremos manualmente
+
+                        // Luego cargamos el borrador
+                        loadDraft();
+
+                        // Actualizamos la foto actual (puede ser diferente a la del borrador)
+                        currentPhotoFilename = filename;
+                    }
+
+                    // Actualizar UI de foto
                     updatePhotoCard();
                     updatePhotoModalControls();
+
+                    // Guardar en borrador con la nueva foto
+                    saveDraft();
+
                     if (typeof Android !== 'undefined' && Android.showToast) {
                         Android.showToast('📷 Foto guardada');
                     }
                 };
 
                 window.onPhotoCaptureError = function (message) {
-                    console.error('Error capturando foto:', message);
+                    console.error('[Foto] Error capturando foto:', message);
+
+                    // SISTEMA DE BORRADOR: Aunque hubo error, si hay borrador pendiente restaurar
+                    const entryModal = document.getElementById('entryModal');
+                    const entryModalOpen = entryModal && entryModal.classList.contains('active');
+
+                    if (!entryModalOpen && hasPendingDraft()) {
+                        console.log('[Foto] Error pero hay borrador, restaurando...');
+                        openModal('entryModal', true);
+                        loadDraft();
+                    }
+
                     if (message) {
                         showCustomAlert(message, '❌ Error al capturar foto');
                     }
@@ -4748,6 +5084,14 @@
                             localStorage.setItem('substances', JSON.stringify(substances));
                         }
 
+                        // Cargar sustancias archivadas
+                        const storedArchived = localStorage.getItem('archivedSubstances');
+                        if (storedArchived) {
+                            archivedSubstances = JSON.parse(storedArchived);
+                        } else {
+                            archivedSubstances = [];
+                        }
+
                         // Cargar entradas
                         const storedEntries = localStorage.getItem('entries');
                         if (storedEntries) {
@@ -4798,6 +5142,7 @@
                 function saveDataToStorage() {
                     try {
                         localStorage.setItem('substances', JSON.stringify(substances));
+                        localStorage.setItem('archivedSubstances', JSON.stringify(archivedSubstances));
                         localStorage.setItem('entries', JSON.stringify(entries));
                         localStorage.setItem('userProfile', JSON.stringify(userProfile));
                         notifyBackupDataChanged();
@@ -4821,13 +5166,14 @@
                 function collectBackupPayload() {
                     return {
                         substances: substances,
+                        archivedSubstances: archivedSubstances,
                         entries: entries,
                         userProfile: userProfile,
                         customUnits: safeParseJSON(localStorage.getItem('psychologger_custom_units'), {}),
                         customSets: safeParseJSON(localStorage.getItem('psychologger_custom_sets'), []),
                         customSettings: safeParseJSON(localStorage.getItem('psychologger_custom_settings'), []),
                         timestamp: new Date().toISOString(),
-                        version: '1.0'
+                        version: '1.1'  // Incrementado por soporte de archivedSubstances
                     };
                 }
 
@@ -5079,6 +5425,20 @@
                     initializeApp();
                     setupEventListeners();
                     refreshBackupStatus();
+
+                    // SISTEMA DE BORRADOR: Configurar auto-guardado
+                    setupDraftAutoSave();
+
+                    // SISTEMA DE BORRADOR: Verificar si hay borrador pendiente
+                    // (por si la app se cerró/reinició con un modal abierto)
+                    if (hasPendingDraft()) {
+                        console.log('[Init] Borrador pendiente detectado al iniciar');
+                        // Dar tiempo a que la UI se cargue, luego preguntar
+                        setTimeout(() => {
+                            openModal('entryModal', true);  // skipDraftCheck = true
+                            loadDraft();
+                        }, 500);
+                    }
                 });
 
                 function initializeApp() {
@@ -5098,13 +5458,20 @@
                         loadCustomSetsAndSettings();
 
                         // Set current datetime for entry form
+                        // BUGFIX: Construir string de fecha manualmente para evitar problemas de timezone
                         const now = new Date();
-                        const localDateTime = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+                        const year = now.getFullYear();
+                        const month = String(now.getMonth() + 1).padStart(2, '0');
+                        const day = String(now.getDate()).padStart(2, '0');
+                        const hours = String(now.getHours()).padStart(2, '0');
+                        const minutes = String(now.getMinutes()).padStart(2, '0');
+                        const localDateTime = `${year}-${month}-${day}T${hours}:${minutes}`;
+
                         const dateTimeInput = document.getElementById('entryDateTime');
                         if (dateTimeInput) {
                             dateTimeInput.value = localDateTime;
                             // Actualizar también el display personalizado
-                            currentSelectedDate = new Date(localDateTime);
+                            currentSelectedDate = new Date(now.getTime());  // Copia del objeto Date
                             updateDateTimeDisplay();
                         }
 
@@ -5248,7 +5615,7 @@
                 }
 
                 // Modal functions
-                function openModal(modalId) {
+                function openModal(modalId, skipDraftCheck = false) {
                     const modal = document.getElementById(modalId);
                     modal.classList.add('active');
                     document.body.style.overflow = 'hidden'; // Prevent background scrolling
@@ -5256,8 +5623,14 @@
                     // Populate dropdowns when opening modals
                     if (modalId === 'entryModal') {
                         populateSubstanceDropdown();
-                        // Reset form for new entry, or prepare for edit if already in edit mode
-                        if (!isEditMode) {
+
+                        // SISTEMA DE BORRADOR: Verificar si hay borrador pendiente
+                        // skipDraftCheck es true cuando ya estamos restaurando
+                        if (!skipDraftCheck && !isEditMode && hasPendingDraft()) {
+                            console.log('[Modal] Detectado borrador pendiente, restaurando...');
+                            loadDraft();
+                        } else if (!isEditMode) {
+                            // Reset form for new entry solo si no hay borrador
                             resetEntryForm();
                         }
                     } else if (modalId === 'substanceModal') {
@@ -5280,7 +5653,7 @@
                     }
                 }
 
-                function closeModal(modalId) {
+                function closeModal(modalId, isManualClose = true) {
                     const modal = document.getElementById(modalId);
                     if (!modal) {
                         return;
@@ -5292,6 +5665,12 @@
                     document.body.style.overflow = anyActiveModal ? 'hidden' : '';
 
                     if (modalId === 'entryModal') {
+                        // SISTEMA DE BORRADOR: Solo limpiar si es cierre manual del usuario
+                        // Si es cierre automático (por guardar) no limpiamos aquí, se limpia en addEntry
+                        if (isManualClose) {
+                            clearDraft();
+                            console.log('[Modal] Cierre manual, borrador eliminado');
+                        }
                         resetEditMode(); // Solo resetear el formulario principal
                     }
                 }
@@ -6061,6 +6440,10 @@
                         const item = document.createElement('li');
                         item.className = 'substance-item';
 
+                        // DRAG-AND-DROP: Hacer el item arrastrable
+                        item.draggable = true;
+                        item.dataset.substanceId = substance.id;
+
                         // Add active class if this substance is selected
                         if (selectedSubstanceFilter === substance.name) {
                             item.classList.add('active');
@@ -6068,6 +6451,7 @@
 
                         item.innerHTML = `
                     <div class="substance-info">
+                        <span class="drag-handle" title="Mantén pulsado 3s para archivar">⋮⋮</span>
                         <span>${substance.name}</span>
                     </div>
                     <div class="substance-actions">
@@ -6079,8 +6463,33 @@
                         item.style.borderLeft = `4px solid ${substance.color}`;
                         item.style.backgroundColor = `${substance.color}15`; // Lighten color for background
 
+                        // DRAG-AND-DROP: Event listeners
+                        item.addEventListener('dragstart', (e) => handleDragStart(e, substance.id));
+                        item.addEventListener('dragend', handleDragEnd);
+                        item.addEventListener('dragover', handleDragOver);
+                        item.addEventListener('dragleave', handleDragLeave);
+                        item.addEventListener('drop', (e) => handleDrop(e, substance.id));
+
+                        // LONG-PRESS (FUNCIÓN SECRETA): Event listeners para touch y mouse
+                        const dragHandle = item.querySelector('.drag-handle');
+
+                        // Touch events (móvil)
+                        dragHandle.addEventListener('touchstart', (e) => {
+                            e.preventDefault();  // Prevenir scroll mientras se hace long-press
+                            handleLongPressStart(substance.id, substance.name, item);
+                        });
+                        dragHandle.addEventListener('touchend', () => handleLongPressEnd(item));
+                        dragHandle.addEventListener('touchmove', () => handleLongPressEnd(item));  // Cancelar si mueve
+
+                        // Mouse events (desktop)
+                        dragHandle.addEventListener('mousedown', () => handleLongPressStart(substance.id, substance.name, item));
+                        dragHandle.addEventListener('mouseup', () => handleLongPressEnd(item));
+                        dragHandle.addEventListener('mouseleave', () => handleLongPressEnd(item));
+
                         // Add click event for filtering (exclude the delete button)
-                        item.querySelector('.substance-info').addEventListener('click', () => {
+                        item.querySelector('.substance-info').addEventListener('click', (e) => {
+                            // No filtrar si se hizo click en el drag handle
+                            if (e.target.classList.contains('drag-handle')) return;
                             filterBySubstance(substance.name);
                         });
 
@@ -6099,6 +6508,272 @@
 
                         list.appendChild(item);
                     });
+                }
+
+                // ========================================
+                // SISTEMA DE SUSTANCIAS ARCHIVADAS
+                // ========================================
+                // CONCEPTO PBL: "Función secreta" - long-press de 3 segundos
+                // para archivar sustancias sin eliminarlas permanentemente
+
+                /**
+                 * Archiva una sustancia (la mueve a la lista oculta)
+                 * @param {string} substanceId - ID de la sustancia a archivar
+                 */
+                function archiveSubstance(substanceId) {
+                    const index = substances.findIndex(s => s.id === substanceId);
+                    if (index === -1) return;
+
+                    const substance = substances[index];
+
+                    // Mover a archivadas
+                    archivedSubstances.push({
+                        ...substance,
+                        archivedAt: new Date().toISOString()
+                    });
+
+                    // Remover de activas
+                    substances.splice(index, 1);
+
+                    saveDataToStorage();
+                    renderSubstanceList();
+
+                    if (typeof Android !== 'undefined' && Android.showToast) {
+                        Android.showToast(`📦 ${substance.name} archivada`);
+                    }
+
+                    console.log('[Archive] Sustancia archivada:', substance.name);
+                }
+
+                /**
+                 * Restaura una sustancia archivada
+                 * @param {string} substanceId - ID de la sustancia a restaurar
+                 */
+                function restoreSubstance(substanceId) {
+                    const index = archivedSubstances.findIndex(s => s.id === substanceId);
+                    if (index === -1) return;
+
+                    const substance = archivedSubstances[index];
+
+                    // Quitar la marca de archivado
+                    delete substance.archivedAt;
+
+                    // Mover a activas
+                    substances.push(substance);
+
+                    // Remover de archivadas
+                    archivedSubstances.splice(index, 1);
+
+                    saveDataToStorage();
+                    renderSubstanceList();
+                    renderArchivedSubstances();
+
+                    if (typeof Android !== 'undefined' && Android.showToast) {
+                        Android.showToast(`✨ ${substance.name} restaurada`);
+                    }
+
+                    console.log('[Archive] Sustancia restaurada:', substance.name);
+                }
+
+                /**
+                 * Muestra el diálogo de confirmación para archivar
+                 * @param {string} substanceId - ID de la sustancia
+                 * @param {string} substanceName - Nombre para mostrar
+                 */
+                function showArchiveConfirmation(substanceId, substanceName) {
+                    showCustomConfirm(
+                        `¿Archivar "${substanceName}"?\n\nLa sustancia se ocultará de la lista principal pero sus registros se mantendrán. Podrás restaurarla desde el menú de ajustes.`,
+                        '📦 Archivar Sustancia',
+                        () => archiveSubstance(substanceId),
+                        null,
+                        'Archivar',
+                        'Cancelar'
+                    );
+                }
+
+                /**
+                 * Renderiza la lista de sustancias archivadas (para el modal de ajustes)
+                 */
+                function renderArchivedSubstances() {
+                    const container = document.getElementById('archived-substances-list');
+                    if (!container) return;
+
+                    if (archivedSubstances.length === 0) {
+                        container.innerHTML = '<p style="text-align: center; color: var(--text-secondary); padding: 20px;">No hay sustancias archivadas</p>';
+                        return;
+                    }
+
+                    container.innerHTML = archivedSubstances.map(substance => {
+                        const count = entries.filter(e => e.substance === substance.name).length;
+                        return `
+                            <div class="archived-substance-item" style="
+                                display: flex;
+                                justify-content: space-between;
+                                align-items: center;
+                                padding: 12px;
+                                background: var(--surface-elevated);
+                                border-radius: 8px;
+                                margin-bottom: 8px;
+                                border-left: 4px solid ${substance.color};
+                            ">
+                                <div>
+                                    <strong>${substance.name}</strong>
+                                    <span style="color: var(--text-secondary); font-size: 0.85em; margin-left: 8px;">
+                                        ${count} registro${count !== 1 ? 's' : ''}
+                                    </span>
+                                </div>
+                                <button onclick="restoreSubstance('${substance.id}')" style="
+                                    background: linear-gradient(135deg, var(--primary-purple), var(--secondary-pink));
+                                    border: none;
+                                    color: white;
+                                    padding: 6px 12px;
+                                    border-radius: 6px;
+                                    cursor: pointer;
+                                    font-size: 0.9em;
+                                ">✨ Restaurar</button>
+                            </div>
+                        `;
+                    }).join('');
+                }
+
+                /**
+                 * Abre el modal de sustancias archivadas
+                 */
+                function openArchivedSubstancesModal() {
+                    const modal = document.getElementById('archivedSubstancesModal');
+                    if (modal) {
+                        modal.style.display = 'flex';
+                        renderArchivedSubstances();
+                    }
+                }
+
+                /**
+                 * Cierra el modal de sustancias archivadas
+                 */
+                function closeArchivedSubstancesModal() {
+                    const modal = document.getElementById('archivedSubstancesModal');
+                    if (modal) {
+                        modal.style.display = 'none';
+                    }
+                }
+
+                // ========================================
+                // SISTEMA DE DRAG-AND-DROP PARA SUSTANCIAS
+                // ========================================
+                // CONCEPTO PBL: HTML5 Drag and Drop API
+
+                /**
+                 * Inicia el arrastre de una sustancia
+                 */
+                function handleDragStart(e, substanceId) {
+                    draggedSubstanceId = substanceId;
+                    e.target.classList.add('dragging');
+                    e.dataTransfer.effectAllowed = 'move';
+                    e.dataTransfer.setData('text/plain', substanceId);
+                }
+
+                /**
+                 * Finaliza el arrastre
+                 */
+                function handleDragEnd(e) {
+                    e.target.classList.remove('dragging');
+                    draggedSubstanceId = null;
+
+                    // Limpiar indicadores visuales
+                    document.querySelectorAll('.substance-item').forEach(item => {
+                        item.classList.remove('drag-over');
+                    });
+                }
+
+                /**
+                 * Cuando se arrastra sobre otro elemento
+                 */
+                function handleDragOver(e) {
+                    e.preventDefault();
+                    e.dataTransfer.dropEffect = 'move';
+
+                    const target = e.target.closest('.substance-item');
+                    if (target && !target.classList.contains('dragging')) {
+                        target.classList.add('drag-over');
+                    }
+                }
+
+                /**
+                 * Cuando se sale del área de drop
+                 */
+                function handleDragLeave(e) {
+                    const target = e.target.closest('.substance-item');
+                    if (target) {
+                        target.classList.remove('drag-over');
+                    }
+                }
+
+                /**
+                 * Cuando se suelta el elemento
+                 */
+                function handleDrop(e, targetSubstanceId) {
+                    e.preventDefault();
+
+                    const target = e.target.closest('.substance-item');
+                    if (target) {
+                        target.classList.remove('drag-over');
+                    }
+
+                    if (!draggedSubstanceId || draggedSubstanceId === targetSubstanceId) return;
+
+                    // Encontrar índices
+                    const draggedIndex = substances.findIndex(s => s.id === draggedSubstanceId);
+                    const targetIndex = substances.findIndex(s => s.id === targetSubstanceId);
+
+                    if (draggedIndex === -1 || targetIndex === -1) return;
+
+                    // Reordenar el array
+                    const [draggedItem] = substances.splice(draggedIndex, 1);
+                    substances.splice(targetIndex, 0, draggedItem);
+
+                    // Guardar y re-renderizar
+                    saveDataToStorage();
+                    renderSubstanceList();
+
+                    console.log('[Drag] Sustancias reordenadas');
+                }
+
+                // ========================================
+                // SISTEMA DE LONG-PRESS (FUNCIÓN SECRETA)
+                // ========================================
+                // CONCEPTO PBL: Touch events para detectar presión prolongada
+
+                /**
+                 * Inicia el temporizador de long-press
+                 */
+                function handleLongPressStart(substanceId, substanceName, element) {
+                    // Cancelar cualquier timer previo
+                    if (longPressTimer) {
+                        clearTimeout(longPressTimer);
+                    }
+
+                    // Añadir indicador visual de progreso
+                    element.classList.add('long-pressing');
+
+                    longPressTimer = setTimeout(() => {
+                        element.classList.remove('long-pressing');
+                        // Vibrar si está disponible (feedback táctil)
+                        if (navigator.vibrate) {
+                            navigator.vibrate(100);
+                        }
+                        showArchiveConfirmation(substanceId, substanceName);
+                    }, LONG_PRESS_DURATION);
+                }
+
+                /**
+                 * Cancela el long-press si se suelta antes de tiempo
+                 */
+                function handleLongPressEnd(element) {
+                    if (longPressTimer) {
+                        clearTimeout(longPressTimer);
+                        longPressTimer = null;
+                    }
+                    element.classList.remove('long-pressing');
                 }
 
                 function resetEditMode() {
@@ -6136,15 +6811,23 @@
                     updatePhotoModalControls();
 
                     // Fecha y hora por defecto: ahora (local)
+                    // BUGFIX: Usar componentes de fecha directamente para evitar problemas de timezone
+                    // CONCEPTO PBL: new Date(string) puede interpretarse como UTC en algunos navegadores
+                    // La solución es construir el string manualmente con los componentes locales
                     const now = new Date();
-                    const localDateTime = new Date(now.getTime() - now.getTimezoneOffset() * 60000)
-                        .toISOString()
-                        .slice(0, 16);
+                    const year = now.getFullYear();
+                    const month = String(now.getMonth() + 1).padStart(2, '0');  // Meses van de 0-11
+                    const day = String(now.getDate()).padStart(2, '0');
+                    const hours = String(now.getHours()).padStart(2, '0');
+                    const minutes = String(now.getMinutes()).padStart(2, '0');
+                    const localDateTime = `${year}-${month}-${day}T${hours}:${minutes}`;
+
                     const dateTimeInput = document.getElementById('entryDateTime');
                     if (dateTimeInput) {
                         dateTimeInput.value = localDateTime;
                         // Actualizar también el display personalizado
-                        currentSelectedDate = new Date(localDateTime);
+                        // BUGFIX: Usar el objeto Date original, no parsear el string
+                        currentSelectedDate = new Date(now.getTime());  // Copia del objeto Date actual
                         updateDateTimeDisplay();
                     }
 
@@ -6441,7 +7124,11 @@
                         };
 
                         showAutoCloseAlert(`✅ Registro actualizado: ${dose} ${unit} de ${substance}`, '✅ Registro Actualizado', 2000);
-                        closeModal('entryModal');
+
+                        // SISTEMA DE BORRADOR: Limpiar porque guardamos exitosamente
+                        clearDraft();
+
+                        closeModal('entryModal', false);  // false = no es cierre manual
                         // Redirect to calendar view
                         switchView('calendar');
                         generateCalendar();
@@ -6466,7 +7153,10 @@
                         entries.push(entry);
                         showAutoCloseAlert(`✅ Registro guardado: ${dose} ${unit} de ${substance}`, '✅ Registro Guardado', 2000);
 
-                        closeModal('entryModal');
+                        // SISTEMA DE BORRADOR: Limpiar porque guardamos exitosamente
+                        clearDraft();
+
+                        closeModal('entryModal', false);  // false = no es cierre manual
                         // Redirect to calendar view
                         switchView('calendar');
                         generateCalendar();
@@ -6483,7 +7173,7 @@
 
                     // Clean up and redirect to calendar
                     setTimeout(() => {
-                        closeModal('entryModal');
+                        closeModal('entryModal', false);  // false = no es cierre manual
                         resetEditMode();
                         // Redirect to calendar view
                         switchView('calendar');
