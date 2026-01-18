@@ -33,6 +33,7 @@ import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
 import com.d4vram.psychologger.AccessHistoryManager
+import android.provider.OpenableColumns
 
 @Composable
 fun ProfileSettingsScreen(
@@ -71,9 +72,19 @@ fun ProfileSettingsScreen(
         contract = ActivityResultContracts.OpenDocument()
     ) { uri ->
         uri?.let { selectedUri ->
+            // Obtener el nombre REAL del archivo desde el ContentResolver
+            var fileName: String? = null
+            context.contentResolver.query(selectedUri, arrayOf(OpenableColumns.DISPLAY_NAME), null, null, null)?.use { cursor ->
+                if (cursor.moveToFirst()) {
+                    val nameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+                    if (nameIndex >= 0) {
+                        fileName = cursor.getString(nameIndex)
+                    }
+                }
+            }
+
             // Validar extensión .csv
-            val fileName = selectedUri.lastPathSegment ?: ""
-            if (!fileName.lowercase().endsWith(".csv")) {
+            if (fileName == null || !fileName!!.lowercase().endsWith(".csv")) {
                 Toast.makeText(context, "❌ Solo se permiten archivos .csv", Toast.LENGTH_SHORT).show()
                 return@let
             }

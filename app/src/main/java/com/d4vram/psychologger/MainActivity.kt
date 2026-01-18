@@ -194,7 +194,7 @@ class MainActivity : FragmentActivity() {
                 }
 
                 lifecycleScope.launch {
-                    Toast.makeText(this@MainActivity, "🔄 Procesando backup...", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this@MainActivity, "📥 Importando backup, espera unos segundos...", Toast.LENGTH_LONG).show()
 
                     val result = withContext(Dispatchers.IO) {
                         backupManager.restoreBackup(uri)
@@ -647,7 +647,7 @@ class MainActivity : FragmentActivity() {
                 .setView(input)
                 .setPositiveButton("RESTAURAR") { _, _ ->
                     val password = input.text.toString()
-                    Toast.makeText(this, "🔐 Descifrando backup...", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "🔐 Descifrando y restaurando backup, espera unos segundos...", Toast.LENGTH_LONG).show()
                     lifecycleScope.launch {
                         val result = withContext(Dispatchers.IO) {
                             backupManager.restoreBackup(uri, password)
