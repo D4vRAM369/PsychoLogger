@@ -2072,6 +2072,19 @@
             border: 1px solid var(--border-color);
         }
 
+        /* Estilos para input editable de hora/minuto */
+        input.time-input {
+            width: 70px;
+            outline: none;
+            caret-color: var(--accent-cyan);
+            cursor: pointer;
+        }
+
+        input.time-input:focus {
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 0 2px rgba(6, 182, 212, 0.3);
+        }
+
         .time-colon {
             font-size: 2.5rem;
             font-weight: 700;
@@ -6265,8 +6278,27 @@
                     const hourEl = document.getElementById('pickerHourValue');
                     const minuteEl = document.getElementById('pickerMinuteValue');
 
-                    if (hourEl) hourEl.textContent = String(currentSelectedDate.getHours()).padStart(2, '0');
-                    if (minuteEl) minuteEl.textContent = String(currentSelectedDate.getMinutes()).padStart(2, '0');
+                    if (hourEl) hourEl.value = String(currentSelectedDate.getHours()).padStart(2, '0');
+                    if (minuteEl) minuteEl.value = String(currentSelectedDate.getMinutes()).padStart(2, '0');
+                }
+
+                /**
+                 * Maneja input manual de hora/minuto
+                 */
+                function handleTimeInput(type, value) {
+                    let num = parseInt(value, 10);
+                    if (isNaN(num)) num = 0;
+
+                    if (type === 'hour') {
+                        num = Math.max(0, Math.min(23, num));
+                        currentSelectedDate.setHours(num);
+                    } else if (type === 'minute') {
+                        num = Math.max(0, Math.min(59, num));
+                        currentSelectedDate.setMinutes(num);
+                    }
+
+                    updatePickerTimeDisplay();
+                    updatePickerPreview();
                 }
 
                 /**
@@ -10552,14 +10584,14 @@
                 <div class="time-picker-digital">
                     <div class="time-unit">
                         <button class="time-adjust-btn" onclick="adjustPickerTime('hour', 1)">▲</button>
-                        <span class="time-value" id="pickerHourValue">00</span>
+                        <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="2" class="time-value time-input" id="pickerHourValue" value="00" onclick="this.select()" onchange="handleTimeInput('hour', this.value)" onblur="handleTimeInput('hour', this.value)">
                         <button class="time-adjust-btn" onclick="adjustPickerTime('hour', -1)">▼</button>
                     </div>
                     <span class="time-colon">:</span>
                     <div class="time-unit">
-                        <button class="time-adjust-btn" onclick="adjustPickerTime('minute', 5)">▲</button>
-                        <span class="time-value" id="pickerMinuteValue">00</span>
-                        <button class="time-adjust-btn" onclick="adjustPickerTime('minute', -5)">▼</button>
+                        <button class="time-adjust-btn" onclick="adjustPickerTime('minute', 1)">▲</button>
+                        <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="2" class="time-value time-input" id="pickerMinuteValue" value="00" onclick="this.select()" onchange="handleTimeInput('minute', this.value)" onblur="handleTimeInput('minute', this.value)">
+                        <button class="time-adjust-btn" onclick="adjustPickerTime('minute', -1)">▼</button>
                     </div>
                 </div>
 
