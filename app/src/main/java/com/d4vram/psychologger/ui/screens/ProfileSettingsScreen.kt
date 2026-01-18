@@ -66,20 +66,31 @@ fun ProfileSettingsScreen(
     
     val coroutineScope = rememberCoroutineScope()
     
-    // Launcher para seleccionar archivo CSV
+    // Launcher para seleccionar archivo CSV (OpenDocument es más flexible con MIME types)
     val filePickerLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent()
+        contract = ActivityResultContracts.OpenDocument()
     ) { uri ->
         uri?.let { selectedUri ->
+            // Validar extensión .csv
+            val fileName = selectedUri.lastPathSegment ?: ""
+            if (!fileName.lowercase().endsWith(".csv")) {
+                Toast.makeText(context, "❌ Solo se permiten archivos .csv", Toast.LENGTH_SHORT).show()
+                return@let
+            }
+
+            Toast.makeText(context, "🔄 Procesando CSV...", Toast.LENGTH_SHORT).show()
+
             try {
                 val inputStream = context.contentResolver.openInputStream(selectedUri)
                 val content = inputStream?.bufferedReader().use { it?.readText() } ?: ""
                 if (content.isNotEmpty()) {
                     importData = content
                     showImportDialog = true
+                } else {
+                    Toast.makeText(context, "❌ El archivo está vacío", Toast.LENGTH_SHORT).show()
                 }
             } catch (e: Exception) {
-                // Manejar error
+                Toast.makeText(context, "❌ Error al leer archivo: ${e.message}", Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -397,9 +408,17 @@ fun ProfileSettingsScreen(
                     
                     Spacer(modifier = Modifier.height(12.dp))
                     
-                    // Importar datos
+                    // Importar datos CSV (múltiples MIME types para compatibilidad)
                     OutlinedButton(
-                        onClick = { filePickerLauncher.launch("text/csv") },
+                        onClick = {
+                            filePickerLauncher.launch(arrayOf(
+                                "text/csv",
+                                "text/comma-separated-values",
+                                "text/plain",
+                                "application/csv",
+                                "*/*"
+                            ))
+                        },
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(12.dp)
                     ) {

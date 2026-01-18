@@ -194,10 +194,12 @@ class MainActivity : FragmentActivity() {
                 }
 
                 lifecycleScope.launch {
+                    Toast.makeText(this@MainActivity, "🔄 Procesando backup...", Toast.LENGTH_SHORT).show()
+
                     val result = withContext(Dispatchers.IO) {
                         backupManager.restoreBackup(uri)
                     }
-                    
+
                     if (result.needsPassword) {
                         showRestorePasswordDialog(uri)
                     } else {
@@ -645,6 +647,7 @@ class MainActivity : FragmentActivity() {
                 .setView(input)
                 .setPositiveButton("RESTAURAR") { _, _ ->
                     val password = input.text.toString()
+                    Toast.makeText(this, "🔐 Descifrando backup...", Toast.LENGTH_SHORT).show()
                     lifecycleScope.launch {
                         val result = withContext(Dispatchers.IO) {
                             backupManager.restoreBackup(uri, password)
