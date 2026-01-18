@@ -1,7 +1,7 @@
 # PsychoLogger 🧠📊
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
-[![Android](https://img.shields.io/badge/Android-7.0%2B-3DDC84?logo=android&logoColor=white)](https://www.android.com)
+[![Android](https://img.shields.io/badge/Android-8.0%2B-3DDC84?logo=android&logoColor=white)](https://www.android.com)
 [![Kotlin](https://img.shields.io/badge/Kotlin-1.9.24-7F52FF?logo=kotlin&logoColor=white)](https://kotlinlang.org)
 [![Open Source](https://img.shields.io/badge/Open%20Source-%E2%9D%A4-red?logo=open-source-initiative&logoColor=white)](https://opensource.org)
 [![Built with Claude Code](https://img.shields.io/badge/Built%20with-Claude%20Code-8A63D2?logo=anthropic&logoColor=white)](https://claude.ai/code)
@@ -106,8 +106,8 @@ Incluye sustancias predefinidas (LSD, Ketamina, Opio), y puedes añadir las tuya
 ## Instalación
 
 ### Requisitos
-- Android 7.0 o superior  
-- Alrededor de 20 MB de almacenamiento  
+- Android 8.0 o superior
+- Alrededor de 20 MB de almacenamiento
 - Sensor biométrico (recomendado, pero no obligatorio)  
 
 ### Cómo Instalar
@@ -153,10 +153,10 @@ PsychoLogger está diseñada para:
 
 ## Detalles Técnicos
 
-### Versión Actual: 1.0
-- **Paquete:** com.d4vram.psychologger  
-- **Objetivo:** Android 14 (API 36)  
-- **Mínimo:** Android 7.0 (API 24)  
+### Versión Actual: 1.2
+- **Paquete:** com.d4vram.psychologger
+- **Objetivo:** Android 15 (API 36)
+- **Mínimo:** Android 8.0 (API 26)
 - **Tamaño:** ~3 MB instalada
 
 ### Estructura de Datos

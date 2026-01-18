@@ -30,7 +30,7 @@ android {
 
     defaultConfig {
         applicationId = "com.d4vram.psychologger"
-        minSdk = 24
+        minSdk = 26
         targetSdk = 36
         versionCode = 3
         versionName = "1.2"
@@ -77,8 +77,8 @@ android {
         create("dev") {
             initWith(getByName("release"))
             isDebuggable = true
-            isMinifyEnabled = false
-            isShrinkResources = false
+            isMinifyEnabled = true
+            isShrinkResources = true
             signingConfig = releaseSigningConfig ?: signingConfigs.getByName("debug")
             // Si quieres que conviva con la release, descomenta:
              applicationIdSuffix = ".dev"
