@@ -15,6 +15,22 @@
 
 ---
 
+## 🆕 What's New in v1.2
+
+| Feature | Description |
+|---------|-------------|
+| ⏰ **Time Travel Picker** | Log forgotten experiences with visual calendar and quick date buttons (Yesterday, 2 days ago, etc.) |
+| 🔀 **Drag & Drop** | Reorder your substance list by dragging |
+| 📦 **Archive Substances** | Triple-tap on ⋮⋮ to hide substances without losing records |
+| 🧹 **Data Cleanup Tool** | Scan and fix corrupted entries in Settings > Data |
+| ⏱️ **Precise Time Input** | 1-minute increments + direct keyboard entry |
+| 📂 **Improved CSV Import** | Now works with all file managers |
+| 🔗 **GitHub Button** | Quick access to repository from About section |
+
+> 📋 [Full changelog](CHANGELOG.md) · 📥 [Download latest release](https://github.com/D4vRAM369/PsychoLogger/releases/latest)
+
+---
+
 ## What is PsychoLogger?
 
 PsychoLogger is your personal logbook for psychonaut experiences. An Android app designed for those who want to document and understand their experiences with psychoactive substances in a responsible and safe way.

@@ -12,6 +12,22 @@
 
 ---
 
+## 🆕 Novedades en v1.2
+
+| Función | Descripción |
+|---------|-------------|
+| ⏰ **Bitácora Temporal** | Registra experiencias olvidadas con calendario visual y botones rápidos (Ayer, Hace 2 días, etc.) |
+| 🔀 **Arrastrar y Soltar** | Reordena tu lista de sustancias arrastrando |
+| 📦 **Archivar Sustancias** | Triple-tap en ⋮⋮ para ocultar sustancias sin perder registros |
+| 🧹 **Limpieza de Datos** | Escanea y corrige entradas corruptas en Ajustes > Datos |
+| ⏱️ **Hora Precisa** | Incrementos de 1 minuto + entrada directa con teclado |
+| 📂 **Importar CSV Mejorado** | Ahora funciona con todos los gestores de archivos |
+| 🔗 **Botón GitHub** | Acceso rápido al repositorio desde la sección Acerca de |
+
+> 📋 [Changelog completo](CHANGELOG.md) · 📥 [Descargar última versión](https://github.com/D4vRAM369/PsychoLogger/releases/latest)
+
+---
+
 ## ¿Qué es PsychoLogger?
 
 PsychoLogger es tu bitácora personal para experiencias psiconáuticas. Una aplicación Android diseñada para quienes desean documentar y comprender sus experiencias con sustancias psicoactivas de forma responsable y segura.
