@@ -3,6 +3,7 @@ package com.d4vram.psychologger
 import android.content.Context
 import android.net.Uri
 import android.util.Log
+import androidx.documentfile.provider.DocumentFile
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
@@ -982,5 +983,187 @@ class BackupManager(private val context: Context) {
             lower.contains("cafe") || lower.contains("té") -> "☕"
             else -> "💊"
         }
+    }
+
+    // =========================================================================
+    // MÉTODOS SAF (Storage Access Framework)
+    // =========================================================================
+
+    /**
+     * Crear backup en caché temporal (para luego mover via SAF)
+     *
+     * CONCEPTO: Creamos el ZIP en cacheDir primero porque:
+     * 1. Es rápido (almacenamiento interno)
+     * 2. Si el usuario cancela SAF, no perdemos el trabajo
+     * 3. Podemos reintentar guardar en otra ubicación
+     *
+     * @param localStorageData JSON string con localStorage del WebView
+     * @param password Contraseña para cifrar (null = sin cifrar)
+     * @param includeMedia Si incluir audios y fotos
+     * @return File del backup temporal o null si falla
+     */
+    fun createBackupInCache(
+        localStorageData: String,
+        password: String? = null,
+        includeMedia: Boolean = true
+    ): File? {
+        return try {
+            val timestamp = SimpleDateFormat("yyyy-MM-dd_HH-mm-ss", Locale.getDefault()).format(Date())
+            val baseName = if (password != null) "backup_encrypted_$timestamp" else "backup_$timestamp"
+            val backupFile = File(context.cacheDir, "$baseName.zip")
+
+            if (password != null) {
+                // Crear ZIP temporal sin cifrar
+                val tempZip = File(context.cacheDir, "temp_backup_$timestamp.zip")
+                createZip(tempZip, localStorageData, includeMedia)
+
+                // Cifrar y guardar
+                encryptFile(tempZip, backupFile, password)
+                tempZip.delete()
+            } else {
+                createZip(backupFile, localStorageData, includeMedia)
+            }
+
+            // Guardar snapshot para futuros autobackups
+            saveLocalStorageSnapshot(localStorageData)
+
+            Log.d(TAG, "Backup creado en caché: ${backupFile.absolutePath} (${backupFile.length()} bytes)")
+            backupFile
+
+        } catch (e: Exception) {
+            Log.e(TAG, "Error al crear backup en caché", e)
+            null
+        }
+    }
+
+    /**
+     * Escribir archivo de backup a un URI de SAF
+     *
+     * CONCEPTO: ContentResolver + OutputStream
+     * SAF no trabaja con File paths tradicionales, sino con URIs.
+     * Usamos ContentResolver para abrir un OutputStream hacia el destino.
+     *
+     * @param sourceFile Archivo origen (en cacheDir)
+     * @param destinationUri URI destino obtenido de SAF picker
+     * @return true si se copió correctamente
+     */
+    fun writeBackupToUri(sourceFile: File, destinationUri: Uri): Boolean {
+        return try {
+            context.contentResolver.openOutputStream(destinationUri)?.use { outputStream ->
+                FileInputStream(sourceFile).use { inputStream ->
+                    inputStream.copyTo(outputStream)
+                }
+            } ?: throw Exception("No se pudo abrir OutputStream para URI: $destinationUri")
+
+            Log.d(TAG, "Backup escrito a URI: $destinationUri")
+            true
+
+        } catch (e: Exception) {
+            Log.e(TAG, "Error escribiendo backup a URI", e)
+            false
+        }
+    }
+
+    /**
+     * Crear archivo de backup en una carpeta SAF (para autobackups)
+     *
+     * @param folderUri URI de la carpeta obtenida de OpenDocumentTree
+     * @param sourceFile Archivo fuente en cacheDir
+     * @param fileName Nombre del archivo a crear
+     * @return true si se creó y copió correctamente
+     */
+    fun createBackupInSafFolder(folderUri: Uri, sourceFile: File, fileName: String): Boolean {
+        return try {
+            val folder = DocumentFile.fromTreeUri(context, folderUri)
+                ?: throw Exception("No se pudo acceder a la carpeta SAF")
+
+            // Crear el archivo en la carpeta
+            val newFile = folder.createFile("application/zip", fileName)
+                ?: throw Exception("No se pudo crear archivo en carpeta SAF")
+
+            // Copiar contenido
+            context.contentResolver.openOutputStream(newFile.uri)?.use { output ->
+                FileInputStream(sourceFile).use { input ->
+                    input.copyTo(output)
+                }
+            }
+
+            Log.d(TAG, "Backup creado en carpeta SAF: $fileName")
+            true
+
+        } catch (e: Exception) {
+            Log.e(TAG, "Error creando backup en carpeta SAF", e)
+            false
+        }
+    }
+
+    /**
+     * Listar backups en una carpeta SAF
+     *
+     * @param folderUri URI de la carpeta
+     * @return Lista de DocumentFile ordenados por fecha (más antiguo primero)
+     */
+    fun listBackupsInSafFolder(folderUri: Uri): List<DocumentFile> {
+        return try {
+            val folder = DocumentFile.fromTreeUri(context, folderUri) ?: return emptyList()
+
+            folder.listFiles()
+                .filter { it.isFile && it.name?.endsWith(".zip") == true }
+                .filter { it.name?.contains("backup") == true || it.name?.contains("autobackup") == true }
+                .sortedBy { it.lastModified() }  // Más antiguo primero
+
+        } catch (e: Exception) {
+            Log.e(TAG, "Error listando backups en SAF", e)
+            emptyList()
+        }
+    }
+
+    /**
+     * Limpiar backups antiguos en carpeta SAF (rotación)
+     *
+     * CONCEPTO: Mantener solo los últimos N backups para no llenar storage.
+     *
+     * @param folderUri URI de la carpeta
+     * @param keepCount Cantidad de backups a mantener (default 7)
+     */
+    fun cleanOldBackupsInSaf(folderUri: Uri, keepCount: Int = MAX_BACKUPS) {
+        try {
+            val backups = listBackupsInSafFolder(folderUri)
+            val toDelete = backups.dropLast(keepCount)  // Mantener los últimos keepCount
+
+            toDelete.forEach { file ->
+                val deleted = file.delete()
+                Log.d(TAG, "Eliminando backup antiguo SAF: ${file.name} -> ${if (deleted) "OK" else "FAIL"}")
+            }
+
+            if (toDelete.isNotEmpty()) {
+                Log.d(TAG, "Rotación SAF: eliminados ${toDelete.size} backups antiguos")
+            }
+
+        } catch (e: Exception) {
+            Log.e(TAG, "Error en rotación de backups SAF", e)
+        }
+    }
+
+    /**
+     * Eliminar archivo temporal de caché
+     */
+    fun deleteTempBackup(file: File): Boolean {
+        return try {
+            val deleted = file.delete()
+            Log.d(TAG, "Backup temporal eliminado: ${file.name} -> ${if (deleted) "OK" else "FAIL"}")
+            deleted
+        } catch (e: Exception) {
+            Log.e(TAG, "Error eliminando backup temporal", e)
+            false
+        }
+    }
+
+    /**
+     * Generar nombre de archivo para autobackup
+     */
+    fun generateAutobackupFileName(): String {
+        val timestamp = SimpleDateFormat("yyyy-MM-dd_HH-mm-ss", Locale.getDefault()).format(Date())
+        return "autobackup_$timestamp.zip"
     }
 }

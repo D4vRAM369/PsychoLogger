@@ -3807,21 +3807,8 @@
                             <button class="btn-danger" onclick="clearAllData()">Limpiar Todo</button>
                         </div>
                         <div class="resource-card">
-                            <h4>🔄 Auto-Backup</h4>
-                            <p>La app crea una copia completa cada 12 horas cuando detecta cambios recientes.</p>
-                            <div>
-                                <strong>Último backup:</strong>
-                                <span id="backupStatusText">Aún no se ha generado.</span>
-                            </div>
-                            <div class="backup-folder-row">
-                                <strong>Carpeta:</strong>
-                                <code id="backupPathText" class="backup-path-chip"
-                                    title="Android/data/com.d4vram.psychologger/files/backups">Android/data/com.d4vram.psychologger/files/backups</code>
-                            </div>
-                        </div>
-                        <div class="resource-card">
-                            <h4>💾 Backup Manual</h4>
-                            <p>Crear backup completo (datos + audios)</p>
+                            <h4>💾 Backup Manual + Auto-Backup</h4>
+                            <p>Crear backup completo con o sin cifrado, configuración de Auto-Backup y selección de directorio de guardado</p>
                             <button class="btn-primary"
                                 onclick="if(window.Android) Android.showProfileSettings(); else alert('Solo en Android');">⚙️
                                 Abrir Backup Avanzado</button>

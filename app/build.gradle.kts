@@ -32,8 +32,8 @@ android {
         applicationId = "com.d4vram.psychologger"
         minSdk = 26
         targetSdk = 36
-        versionCode = 4
-        versionName = "1.2.1"
+        versionCode = 5
+        versionName = "1.2.2"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -124,6 +124,9 @@ dependencies {
 
     // WorkManager
     implementation("androidx.work:work-runtime-ktx:2.9.0")
+
+    // DocumentFile (SAF - Storage Access Framework)
+    implementation("androidx.documentfile:documentfile:1.0.1")
 
     // Biometric & Security
     implementation(libs.androidx.biometric)

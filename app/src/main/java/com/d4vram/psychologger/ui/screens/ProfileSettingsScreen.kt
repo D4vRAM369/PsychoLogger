@@ -2,10 +2,12 @@ package com.d4vram.psychologger.ui.screens
 
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.documentfile.provider.DocumentFile
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -28,6 +30,7 @@ import kotlinx.coroutines.launch
 import org.json.JSONObject
 import com.d4vram.psychologger.MainActivity
 import com.d4vram.psychologger.BackupManager
+import com.d4vram.psychologger.BackupPreferences
 import androidx.core.content.FileProvider
 import java.io.File
 import java.text.SimpleDateFormat
@@ -64,8 +67,81 @@ fun ProfileSettingsScreen(
     var includeMediaInBackup by remember { mutableStateOf(true) }
     var encryptBackup by remember { mutableStateOf(false) }
     var showAccessHistoryDialog by remember { mutableStateOf(false) }
-    
+
+    // Estados SAF para backups
+    val backupPreferences = remember { BackupPreferences(context) }
+    var autobackupEnabled by remember { mutableStateOf(backupPreferences.isAutobackupEnabled()) }
+    var autobackupFolderName by remember { mutableStateOf(backupPreferences.getAutobackupFolderName()) }
+    var pendingBackupFile by remember { mutableStateOf<File?>(null) }
+
     val coroutineScope = rememberCoroutineScope()
+
+    // Launcher SAF para backup manual (elegir dónde guardar el archivo)
+    val backupSafLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.CreateDocument("application/zip")
+    ) { uri ->
+        uri?.let { destinationUri ->
+            val backupFile = pendingBackupFile
+            if (backupFile != null) {
+                coroutineScope.launch {
+                    Toast.makeText(context, "💾 Guardando backup...", Toast.LENGTH_SHORT).show()
+
+                    val success = withContext(Dispatchers.IO) {
+                        val backupManager = BackupManager(context)
+                        val result = backupManager.writeBackupToUri(backupFile, destinationUri)
+                        backupManager.deleteTempBackup(backupFile)
+                        result
+                    }
+
+                    pendingBackupFile = null
+
+                    if (success) {
+                        Toast.makeText(context, "✅ Backup guardado correctamente", Toast.LENGTH_SHORT).show()
+                    } else {
+                        Toast.makeText(context, "❌ Error al guardar backup", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+        } ?: run {
+            // Usuario canceló el picker
+            pendingBackupFile?.let { file ->
+                coroutineScope.launch(Dispatchers.IO) {
+                    BackupManager(context).deleteTempBackup(file)
+                }
+                pendingBackupFile = null
+            }
+            Toast.makeText(context, "❌ Backup cancelado", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    // Launcher SAF para configurar carpeta de autobackups
+    val autobackupFolderLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocumentTree()
+    ) { uri ->
+        uri?.let { folderUri ->
+            // Persistir permisos SAF
+            val persisted = backupPreferences.persistUriPermissions(folderUri)
+
+            if (persisted) {
+                // Obtener nombre legible de la carpeta
+                val folderName = DocumentFile.fromTreeUri(context, folderUri)?.name ?: "Carpeta seleccionada"
+
+                // Guardar configuración
+                backupPreferences.saveAutobackupFolderUri(folderUri, folderName)
+                backupPreferences.setAutobackupEnabled(true)
+
+                // Actualizar UI
+                autobackupFolderName = folderName
+                autobackupEnabled = true
+
+                Toast.makeText(context, "✅ Carpeta de autobackup configurada: $folderName", Toast.LENGTH_SHORT).show()
+            } else {
+                Toast.makeText(context, "❌ No se pudieron obtener permisos", Toast.LENGTH_SHORT).show()
+            }
+        } ?: run {
+            Toast.makeText(context, "❌ No se seleccionó carpeta", Toast.LENGTH_SHORT).show()
+        }
+    }
     
     // Launcher para seleccionar archivo CSV (OpenDocument es más flexible con MIME types)
     val filePickerLauncher = rememberLauncherForActivityResult(
@@ -416,9 +492,108 @@ fun ProfileSettingsScreen(
                             fontWeight = FontWeight.Medium
                         )
                     }
-                    
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // Separador visual
+                    HorizontalDivider(
+                        color = Color.White.copy(alpha = 0.1f),
+                        thickness = 1.dp
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // Sección Autobackup
+                    Text(
+                        text = "Backup Automático",
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = Color(0xFF8B5CF6)
+                    )
+
                     Spacer(modifier = Modifier.height(12.dp))
-                    
+
+                    // Configurar carpeta de autobackup
+                    OutlinedButton(
+                        onClick = { autobackupFolderLauncher.launch(null) },
+                        modifier = Modifier.fillMaxWidth(),
+                        border = androidx.compose.foundation.BorderStroke(
+                            1.dp,
+                            if (autobackupFolderName != null) Color(0xFF10B981) else Color(0xFF8B5CF6)
+                        ),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Column(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalAlignment = Alignment.Start
+                        ) {
+                            Text(
+                                "📁 Carpeta de Autobackup",
+                                color = if (autobackupFolderName != null) Color(0xFF10B981) else Color(0xFF8B5CF6),
+                                fontWeight = FontWeight.Medium
+                            )
+                            Text(
+                                if (autobackupFolderName != null) "✅ $autobackupFolderName" else "❌ No configurada",
+                                fontSize = 12.sp,
+                                color = Color.White.copy(alpha = 0.6f)
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    // Toggle autobackup cada 12h
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = "Autobackup cada 12h",
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Medium,
+                                color = Color.White
+                            )
+                            Text(
+                                text = if (autobackupEnabled) "Activo" else "Desactivado",
+                                fontSize = 12.sp,
+                                color = if (autobackupEnabled) Color(0xFF10B981) else Color.White.copy(alpha = 0.5f)
+                            )
+                        }
+                        Switch(
+                            checked = autobackupEnabled,
+                            onCheckedChange = { enabled ->
+                                if (enabled && autobackupFolderName == null) {
+                                    Toast.makeText(context, "⚠️ Primero configura una carpeta", Toast.LENGTH_SHORT).show()
+                                    autobackupFolderLauncher.launch(null)
+                                } else {
+                                    backupPreferences.setAutobackupEnabled(enabled)
+                                    autobackupEnabled = enabled
+                                    Toast.makeText(
+                                        context,
+                                        if (enabled) "✅ Autobackup activado" else "❌ Autobackup desactivado",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                }
+                            },
+                            colors = SwitchDefaults.colors(
+                                checkedThumbColor = Color(0xFF10B981),
+                                checkedTrackColor = Color(0xFF10B981).copy(alpha = 0.3f)
+                            )
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // Separador visual
+                    HorizontalDivider(
+                        color = Color.White.copy(alpha = 0.1f),
+                        thickness = 1.dp
+                    )
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
                     // Importar datos CSV (múltiples MIME types para compatibilidad)
                     OutlinedButton(
                         onClick = {
@@ -671,62 +846,38 @@ fun ProfileSettingsScreen(
                             Toast.makeText(context, "Introduce una contraseña", Toast.LENGTH_SHORT).show()
                             return@Button
                         }
-                        
-                        // Llamar al bridge de Android
-                        val activity = context.findActivity() as? MainActivity
-                        if (activity == null) {
-                            Toast.makeText(context, "❌ Error: No se encontró MainActivity", Toast.LENGTH_LONG).show()
-                        } else if (activity.webAppInterface == null) {
-                            Toast.makeText(context, "❌ Error: WebAppInterface es null", Toast.LENGTH_LONG).show()
-                        }
 
+                        // Usar SAF para guardar el backup
                         coroutineScope.launch {
+                            Toast.makeText(context, "🔄 Preparando backup...", Toast.LENGTH_SHORT).show()
+
                             val backupManager = BackupManager(context)
                             val localStorageData = onExportData()
-                            val backupFile = withContext(Dispatchers.IO) {
-                                backupManager.createBackupWithData(
+
+                            val tempFile = withContext(Dispatchers.IO) {
+                                backupManager.createBackupInCache(
                                     localStorageData = localStorageData,
                                     password = if (encryptBackup) backupPassword else null,
                                     includeMedia = includeMediaInBackup
                                 )
                             }
-                            
-                            if (backupFile != null) {
+
+                            if (tempFile != null) {
                                 showBackupDialog = false
-                                
-                                // LANZAR SHARESHEET DIRECTAMENTE (Bypass WebAppInterface)
-                                activity?.runOnUiThread {
-                                    try {
-                                        val shareUri = FileProvider.getUriForFile(
-                                            context,
-                                            "${context.packageName}.fileprovider",
-                                            backupFile
-                                        )
+                                pendingBackupFile = tempFile
 
-                                        val shareIntent = Intent(Intent.ACTION_SEND).apply {
-                                            type = "application/zip"
-                                            putExtra(Intent.EXTRA_STREAM, shareUri)
-                                            putExtra(Intent.EXTRA_SUBJECT, "Backup PsychoLogger: ${backupFile.name}")
-                                            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                                        }
+                                Toast.makeText(context, "✅ Backup creado. Selecciona dónde guardarlo...", Toast.LENGTH_SHORT).show()
 
-                                        val chooser = Intent.createChooser(shareIntent, "🚀 Compartir Backup")
-                                        activity.startActivity(chooser)
-                                        
-                                        Toast.makeText(context, "✅ Backup listo para compartir", Toast.LENGTH_SHORT).show()
-                                    } catch (e: Exception) {
-                                        Toast.makeText(context, "❌ Error al compartir: ${e.message}", Toast.LENGTH_LONG).show()
-                                        e.printStackTrace()
-                                    }
-                                }
+                                // Lanzar SAF picker con nombre sugerido
+                                backupSafLauncher.launch(tempFile.name)
                             } else {
-                                Toast.makeText(context, "❌ Error al generar backup", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, "❌ Error al crear backup", Toast.LENGTH_SHORT).show()
                             }
                         }
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF06B6D4))
                 ) {
-                    Text("CREAR Y COMPARTIR", color = Color.White)
+                    Text("CREAR BACKUP", color = Color.White)
                 }
             },
             dismissButton = {
