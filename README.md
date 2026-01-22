@@ -46,8 +46,9 @@ PsychoLogger is your personal logbook for psychonaut experiences. An Android app
 
 ### 📝 Complete Logging
 - Record substance, dose, date, and time  
-- Document your **set** (mindset) and **setting** (environment)  
-- Add personal notes and/or use it as a complementary “psychonaut diary”  
+- Document your **set** (mindset) and **setting** (environment). Add custom sets and settings to your apk.
+- Add personal daily notes with each entry, and/or use it as a complementary “psychonaut diary”. Markdown buttons and format are implemented on them.
+- Audio record and pictures uploads/camera are available to save and able to use in personal notes.
 - Categorize your substances with colors and emojis  
 
 ### 📈 Visualize Your Patterns
