@@ -43,8 +43,10 @@ PsychoLogger es tu bitácora personal para experiencias psiconáuticas. Una apli
 
 ### 📝 Registro Completo
 - Registra sustancia, dosis, fecha y hora  
-- Documenta tu **set** (estado mental) y **setting** (entorno)  
-- Añade notas personales o úsalo como diario psiconáutico complementario  
+- Documenta tu **set** (estado mental) y **setting** (entorno)
+- Añade sets y settings personalizados a tu apk.
+- Añade notas personales diarias con cada entrada y/o utilízalo como un «diario psiconauta» complementario. Se han implementado botones y formatos Markdown en ellos.
+- La grabación de audio y la subida de imágenes/cámara están disponibles para guardar y poder utilizarlas en notas personales.
 - Clasifica tus sustancias con colores y emojis  
 
 ### 📈 Visualiza Tus Patrones
@@ -57,8 +59,13 @@ Enlaces directos a sitios confiables de reducción de riesgos e información:
 - **Erowid** – Base de datos extensa sobre sustancias psicoactivas  
 - **TripSit** – Información sobre interacciones, guías de dosis y asistencia en tiempo real  
 - **MAPS** – Investigación sobre usos médicos, legales y culturales de psicodélicos  
-- **PsychonautWiki** – Enciclopedia científica de sustancias psicoactivas  
+- **PsychonautWiki** – Enciclopedia científica de sustancias psicoactivas
 
+  > - ⚠️ Ésta es la única razón por la que la apk pide permisos de Internet. Pueden recompilarla por vuestra cuenta (siguiendo las directrices de la licencia siempre) y quitando el redireccionamiento a las web que yo consideré apropiadas, y prescinden así del permiso a Internet.
+  > - 🤔 A los escépticos les animo amistosamente a que busquen en el código fuente o se lo manden a cualquier IA, que lo que podrán encontrar es que lo que digo es cierto.
+  > - 🗣 Entiendo que los permisos a Internet en ésta aplicación pueden hacer arquar las cejas a alguno, por la privacidad necesaria e intrínseca que una app de registro personal sea de la índole que sea requiere.
+  > - 🔎 Además de animarles a buscar en el código y/o mandarlo a cualquier IA a que revise todo el código fuente, también les animo a que si siguen teniendo alguna reticencia, opten por una de estas dos opciones: bloquear permisos a Interent de la app si el Sistema Operativo de vuestro móvil lo permite. Si no, les recomiendo Netguard: código libre, confiable, poco espacio y efectiva.
+  > - ‼️ En última instancia de que existan usuarios que quieren usar la aplicación, y la usarían de no ser por eso, por favor abrid un issue y dejadmelo saber diciendo que a pesar de todo lo expuesto, lo seguís considerando un problema para vuestra privacidad. De momento, el único permiso a Internet que requiere la aplicación es redirección de enlaces, aunque tengo futuros planes de poder vincular datos con la nube quizás más adelante. Por el momento, quuería dejar esto patente ✍️📌
 ---
 
 ## Características Principales
