@@ -71,9 +71,6 @@ Links to well-known harm-reduction and information websites:
   > - ‼️ Ultimately, if there are users who want to use the app and would use it if it weren't for this, please open an issue and let me know that despite everything I've said, you still consider it a problem for your privacy. At the moment, the only Internet permission required by the application is link redirection, although I have future plans to be able to link data to the cloud perhaps later on. For now, I wanted to make this clear ✍️📌
 ---
 
-Translated with DeepL.com (free version)
-
----
 
 ## Main Features
 
