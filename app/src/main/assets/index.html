@@ -2386,6 +2386,8 @@
         }
 
         .dev-panel__coffee img {
+            max-width: 200px;
+            height: auto;
             border-radius: 12px;
             box-shadow: 0 12px 25px rgba(95, 127, 255, 0.35);
             transition: transform 0.2s ease, box-shadow 0.2s ease;
@@ -2651,7 +2653,7 @@
         }
 
         /* Eliminar espacio extra del último elemento */
-        .entry-notes > *:last-child {
+        .entry-notes>*:last-child {
             margin-bottom: 0;
         }
 
@@ -3835,7 +3837,8 @@
                         </div>
                         <div class="resource-card">
                             <h4>💾 Backup Manual + Auto-Backup</h4>
-                            <p>Crear backup completo con o sin cifrado, configuración de Auto-Backup y selección de directorio de guardado</p>
+                            <p>Crear backup completo con o sin cifrado, configuración de Auto-Backup y selección de
+                                directorio de guardado</p>
                             <button class="btn-primary"
                                 onclick="if(window.Android) Android.showProfileSettings(); else alert('Solo en Android');">⚙️
                                 Abrir Backup Avanzado</button>
@@ -4962,6 +4965,12 @@
                     try {
                         const result = Android.startRecording();
 
+                        if (result === 'REQUESTING_PERMISSION') {
+                            // El sistema está pidiendo permiso, esperar callback
+                            console.log('Solicitando permiso de micrófono...');
+                            return;
+                        }
+
                         if (result.startsWith('ERROR:')) {
                             console.error('Error al grabar:', result);
                             return;
@@ -4981,6 +4990,12 @@
                         Android.showToast('❌ Error: ' + error.message);
                     }
                 }
+
+                // Callback cuando el usuario concede permiso de micrófono
+                window.onAudioPermissionGranted = function () {
+                    console.log('Permiso de micrófono concedido, iniciando grabación...');
+                    startRecording();
+                };
 
                 /**
                  * Detener grabación y guardar
@@ -5340,6 +5355,12 @@
 
                     Android.capturePhoto();
                 }
+
+                // Callback cuando el usuario concede permiso de cámara
+                window.onCameraPermissionGranted = function () {
+                    console.log('Permiso de cámara concedido, abriendo cámara...');
+                    capturePhotoFromCamera();
+                };
 
                 /**
                  * Permite elegir una imagen desde la galería

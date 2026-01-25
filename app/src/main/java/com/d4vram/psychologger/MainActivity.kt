@@ -2005,7 +2005,7 @@ fun WebViewScreen(
     AndroidView(
         modifier = Modifier
             .fillMaxSize()
-            .systemBarsPadding(),
+            .statusBarsPadding(),
         factory = { _ ->
             WebView(context).apply {
                 onWebViewReady(this)
