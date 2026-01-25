@@ -46,8 +46,9 @@ PsychoLogger is your personal logbook for psychonaut experiences. An Android app
 
 ### 📝 Complete Logging
 - Record substance, dose, date, and time  
-- Document your **set** (mindset) and **setting** (environment)  
-- Add personal notes and/or use it as a complementary “psychonaut diary”  
+- Document your **set** (mindset) and **setting** (environment). Add custom sets and settings to your apk.
+- Add personal daily notes with each entry, and/or use it as a complementary “psychonaut diary”. Markdown buttons and format are implemented on them.
+- Audio record and pictures uploads/camera are available to save and able to use in personal notes.
 - Categorize your substances with colors and emojis  
 
 ### 📈 Visualize Your Patterns
@@ -60,9 +61,16 @@ Links to well-known harm-reduction and information websites:
 - **Erowid** – Extensive database on psychoactive substances  
 - **TripSit** – Interaction info, dosage guidelines, and real-time assistance  
 - **MAPS** – Research on medical, legal, and cultural uses of psychedelics  
-- **PsychonautWiki** – Scientific encyclopedia of psychoactive substances  
+- **PsychonautWiki** – Scientific encyclopedia of psychoactive substances
 
+  > - ⚠️ This is the only reason why the apk requests Internet permissions. You can recompile it on your own (always following the license guidelines) and remove the redirection to the websites that I considered appropriate, thus dispensing with the Internet permission.
+  > - 🤔 I kindly encourage skeptics to search the source code or send it to any AI, and they will find that what I say is true.
+  > - 🗣 I understand that Internet permissions in this application may raise some eyebrows, given the necessary and intrinsic privacy that a personal registration app of any kind requires.
+  > - 🔎 In addition to encouraging you to look at the code and/or send it to any AI to review the entire source code, I also encourage you, if you still have any reservations, to choose one of these two options: block the app's Internet permissions if your mobile operating system allows it.
+  > - If not, I recommend Netguard: open source, reliable, space-efficient, and effective.
+  > - ‼️ Ultimately, if there are users who want to use the app and would use it if it weren't for this, please open an issue and let me know that despite everything I've said, you still consider it a problem for your privacy. At the moment, the only Internet permission required by the application is link redirection, although I have future plans to be able to link data to the cloud perhaps later on. For now, I wanted to make this clear ✍️📌
 ---
+
 
 ## Main Features
 
