@@ -34,6 +34,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
@@ -76,6 +77,14 @@ class MainActivity : FragmentActivity() {
     private lateinit var capturePhotoLauncher: ActivityResultLauncher<Uri>
     private lateinit var pickPhotoLauncher: ActivityResultLauncher<String>
     private lateinit var importBackupLauncher: ActivityResultLauncher<Array<String>>
+
+    // Launchers para permisos (se piden en contexto, no al abrir la app)
+    private lateinit var audioPermissionLauncher: ActivityResultLauncher<String>
+    private lateinit var cameraPermissionLauncher: ActivityResultLauncher<String>
+    // Callbacks que se ejecutan cuando el usuario concede el permiso
+    var onAudioPermissionGranted: (() -> Unit)? = null
+    var onCameraPermissionGranted: (() -> Unit)? = null
+
     private var pendingPhotoResult: ((PhotoResult) -> Unit)? = null
     private var pendingPhotoFile: File? = null
     private val photoManager by lazy { PhotoManager(this) }
@@ -212,6 +221,30 @@ class MainActivity : FragmentActivity() {
                     "Importación cancelada",
                     Toast.LENGTH_SHORT
                 ).show()
+            }
+        }
+
+        // Launcher para permiso de AUDIO - se pide solo cuando el usuario quiere grabar
+        audioPermissionLauncher = registerForActivityResult(
+            ActivityResultContracts.RequestPermission()
+        ) { granted ->
+            if (granted) {
+                onAudioPermissionGranted?.invoke()
+                onAudioPermissionGranted = null
+            } else {
+                Toast.makeText(this, "⚠️ Sin permiso de micrófono no puedes grabar notas de voz", Toast.LENGTH_LONG).show()
+            }
+        }
+
+        // Launcher para permiso de CÁMARA - se pide solo cuando el usuario quiere tomar foto
+        cameraPermissionLauncher = registerForActivityResult(
+            ActivityResultContracts.RequestPermission()
+        ) { granted ->
+            if (granted) {
+                onCameraPermissionGranted?.invoke()
+                onCameraPermissionGranted = null
+            } else {
+                Toast.makeText(this, "⚠️ Sin permiso de cámara no puedes adjuntar fotos", Toast.LENGTH_LONG).show()
             }
         }
 
@@ -568,6 +601,38 @@ class MainActivity : FragmentActivity() {
         importBackupLauncher.launch(arrayOf("application/zip", "application/octet-stream"))
     }
 
+    /**
+     * Solicita permiso de micrófono EN CONTEXTO (cuando el usuario quiere grabar)
+     * @param onGranted Callback que se ejecuta si el usuario concede el permiso
+     */
+    fun requestAudioPermission(onGranted: () -> Unit) {
+        if (checkSelfPermission(android.Manifest.permission.RECORD_AUDIO) ==
+            android.content.pm.PackageManager.PERMISSION_GRANTED) {
+            // Ya tiene permiso, ejecutar directamente
+            onGranted()
+        } else {
+            // Guardar callback y pedir permiso
+            onAudioPermissionGranted = onGranted
+            audioPermissionLauncher.launch(android.Manifest.permission.RECORD_AUDIO)
+        }
+    }
+
+    /**
+     * Solicita permiso de cámara EN CONTEXTO (cuando el usuario quiere tomar foto)
+     * @param onGranted Callback que se ejecuta si el usuario concede el permiso
+     */
+    fun requestCameraPermission(onGranted: () -> Unit) {
+        if (checkSelfPermission(android.Manifest.permission.CAMERA) ==
+            android.content.pm.PackageManager.PERMISSION_GRANTED) {
+            // Ya tiene permiso, ejecutar directamente
+            onGranted()
+        } else {
+            // Guardar callback y pedir permiso
+            onCameraPermissionGranted = onGranted
+            cameraPermissionLauncher.launch(android.Manifest.permission.CAMERA)
+        }
+    }
+
     suspend fun getLocalStorageData(): String = withContext(Dispatchers.Main) {
         kotlinx.coroutines.suspendCancellableCoroutine { continuation ->
             val script = """
@@ -674,9 +739,6 @@ class WebAppInterface(private val context: Context, private val activity: MainAc
 
     // === GESTIÓN DE BACKUPS ===
     private val backupManager = BackupManager(context)
-
-    // Launcher para solicitar permisos de audio
-    private var recordAudioPermissionLauncher: ActivityResultLauncher<String>? = null
 
     init {
         // Configurar callbacks del reproductor
@@ -1232,8 +1294,14 @@ class WebAppInterface(private val context: Context, private val activity: MainAc
         return try {
             // Verificar permiso de audio
             if (!hasRecordAudioPermission()) {
-                Toast.makeText(context, "⚠️ Se requiere permiso de micrófono. Ve a Ajustes → Permisos", Toast.LENGTH_LONG).show()
-                return "ERROR: Sin permiso de micrófono"
+                // Pedir permiso EN CONTEXTO (el usuario entiende para qué es)
+                activity.runOnUiThread {
+                    activity.requestAudioPermission {
+                        // Cuando el usuario conceda el permiso, notificar a JavaScript
+                        activity.executeJavaScript("if (window.onAudioPermissionGranted) window.onAudioPermissionGranted();")
+                    }
+                }
+                return "REQUESTING_PERMISSION"
             }
 
             // Iniciar grabación
@@ -1453,15 +1521,11 @@ class WebAppInterface(private val context: Context, private val activity: MainAc
     fun capturePhoto() {
         activity.runOnUiThread {
             if (!hasCameraPermission()) {
-                Toast.makeText(context, "⚠️ Se requiere permiso de cámara. Ve a Ajustes → Permisos", Toast.LENGTH_LONG).show()
-                val message = JSONObject.quote("Permiso de cámara denegado")
-                activity.executeJavaScript(
-                    """
-                        if (window.onPhotoCaptureError) {
-                            window.onPhotoCaptureError($message);
-                        }
-                    """.trimIndent()
-                )
+                // Pedir permiso EN CONTEXTO (el usuario entiende para qué es)
+                activity.requestCameraPermission {
+                    // Cuando el usuario conceda el permiso, notificar a JavaScript
+                    activity.executeJavaScript("if (window.onCameraPermissionGranted) window.onCameraPermissionGranted();")
+                }
                 return@runOnUiThread
             }
 
@@ -1941,7 +2005,7 @@ fun WebViewScreen(
     AndroidView(
         modifier = Modifier
             .fillMaxSize()
-            .statusBarsPadding(),
+            .systemBarsPadding(),
         factory = { _ ->
             WebView(context).apply {
                 onWebViewReady(this)
