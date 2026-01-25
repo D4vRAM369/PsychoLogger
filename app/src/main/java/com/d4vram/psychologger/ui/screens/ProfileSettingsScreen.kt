@@ -455,14 +455,11 @@ fun ProfileSettingsScreen(
                     
                     Spacer(modifier = Modifier.height(16.dp))
                     
-                    // Exportar datos CSV Simple
+                    // Exportar datos CSV Simple - Usa el mismo método que funciona en Gestión de Datos
                     Button(
-                        onClick = { 
-                            coroutineScope.launch {
-                                val data = onExportData()
-                                val mainActivity = context as? MainActivity
-                                mainActivity?.webAppInterface?.shareCSV(data, "bitacora_${System.currentTimeMillis()}.csv")
-                            }
+                        onClick = {
+                            val mainActivity = context as? MainActivity
+                            mainActivity?.executeJavaScript("exportToCSV()")
                         },
                         modifier = Modifier.fillMaxWidth(),
                         colors = ButtonDefaults.buttonColors(
