@@ -2591,20 +2591,21 @@
 
         .entry-notes {
             color: var(--text-light);
-            /* Mejor visibilidad para Markdown */
             font-size: 0.95rem;
-            white-space: pre-wrap;
-            /* Mantiene los saltos de línea del usuario */
             line-height: 1.5;
-            margin-top: 0.8rem;
-            padding: 0.8rem;
+            margin-top: 0.6rem;
+            padding: 0.6rem 0.8rem;
             background: rgba(255, 255, 255, 0.05);
             border-radius: 8px;
         }
 
         /* Estilos básicos para Markdown dentro de las notas */
         .entry-notes p {
-            margin-bottom: 0.5rem;
+            margin: 0 0 0.4rem 0;
+        }
+
+        .entry-notes p:first-of-type {
+            margin-top: 0;
         }
 
         .entry-notes ul,
@@ -2627,9 +2628,35 @@
 
         .entry-notes code {
             background: rgba(0, 0, 0, 0.3);
-            padding: 2px 4px;
+            padding: 2px 6px;
             border-radius: 4px;
             font-family: monospace;
+            font-size: 0.9em;
+            white-space: normal;
+        }
+
+        .entry-notes pre {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 8px 10px;
+            border-radius: 6px;
+            overflow-x: auto;
+            margin: 0.4rem 0;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .entry-notes pre code {
+            background: none;
+            padding: 0;
+        }
+
+        /* Eliminar espacio extra del último elemento */
+        .entry-notes > *:last-child {
+            margin-bottom: 0;
+        }
+
+        .entry-notes p:last-child {
+            margin-bottom: 0;
         }
 
         /* Barra de formato estilo Telegram */
