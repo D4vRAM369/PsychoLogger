@@ -8,9 +8,11 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.d4vram.psychologger.R
 
 @Composable
 fun SettingsScreen(
@@ -44,15 +46,14 @@ fun SettingsScreen(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = "🔒 Configuración de Seguridad",
+                    text = stringResource(R.string.security_title),
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface
                 )
-                
+
                 Spacer(modifier = Modifier.height(24.dp))
-                
-                // Interruptor para activar/desactivar el bloqueo
+
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -60,13 +61,13 @@ fun SettingsScreen(
                 ) {
                     Column {
                         Text(
-                            text = "Bloqueo de Aplicación",
+                            text = stringResource(R.string.security_app_lock),
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Medium,
                             color = MaterialTheme.colorScheme.onSurface
                         )
                         Text(
-                            text = "Requiere huella dactilar o PIN para acceder",
+                            text = stringResource(R.string.security_app_lock_desc),
                             fontSize = 14.sp,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -80,10 +81,9 @@ fun SettingsScreen(
                         )
                     )
                 }
-                
+
                 Spacer(modifier = Modifier.height(24.dp))
-                
-                // Selector de Tema
+
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -91,13 +91,13 @@ fun SettingsScreen(
                 ) {
                     Column {
                         Text(
-                            text = "Tema Visual",
+                            text = stringResource(R.string.security_theme),
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Medium,
                             color = MaterialTheme.colorScheme.onSurface
                         )
                         Text(
-                            text = if (isSoftTheme) "Modo Suave (Menos oscuro)" else "Modo Original (Místico)",
+                            text = if (isSoftTheme) stringResource(R.string.security_theme_soft) else stringResource(R.string.security_theme_original),
                             fontSize = 14.sp,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -111,10 +111,9 @@ fun SettingsScreen(
                         )
                     )
                 }
-                
+
                 Spacer(modifier = Modifier.height(24.dp))
-                
-                // Botón para configuraciones avanzadas
+
                 Button(
                     onClick = onAdvancedSettings,
                     modifier = Modifier.fillMaxWidth(),
@@ -123,12 +122,11 @@ fun SettingsScreen(
                         containerColor = MaterialTheme.colorScheme.secondary
                     )
                 ) {
-                    Text("⚙️ Configuraciones Avanzadas")
+                    Text(stringResource(R.string.security_advanced))
                 }
-                
+
                 Spacer(modifier = Modifier.height(16.dp))
-                
-                // Botón para configurar PIN
+
                 Button(
                     onClick = onPinSetup,
                     modifier = Modifier.fillMaxWidth(),
@@ -137,12 +135,11 @@ fun SettingsScreen(
                         containerColor = MaterialTheme.colorScheme.tertiary
                     )
                 ) {
-                    Text("🔢 Configurar PIN")
+                    Text(stringResource(R.string.security_setup_pin))
                 }
-                
+
                 Spacer(modifier = Modifier.height(16.dp))
-                
-                // Botón para cerrar
+
                 OutlinedButton(
                     onClick = onClose,
                     modifier = Modifier.fillMaxWidth(),
@@ -150,7 +147,7 @@ fun SettingsScreen(
                         contentColor = MaterialTheme.colorScheme.onSurface
                     )
                 ) {
-                    Text("Cerrar")
+                    Text(stringResource(R.string.close))
                 }
             }
         }

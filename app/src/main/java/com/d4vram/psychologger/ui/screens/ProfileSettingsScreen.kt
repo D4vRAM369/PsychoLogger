@@ -20,6 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -31,6 +32,7 @@ import org.json.JSONObject
 import com.d4vram.psychologger.MainActivity
 import com.d4vram.psychologger.BackupManager
 import com.d4vram.psychologger.BackupPreferences
+import com.d4vram.psychologger.R
 import androidx.core.content.FileProvider
 import java.io.File
 import java.text.SimpleDateFormat
@@ -49,9 +51,9 @@ fun ProfileSettingsScreen(
     isBiometricEnabled: Boolean,
     onBiometricToggle: (Boolean) -> Unit,
     onBack: () -> Unit,
-    onExportData: suspend () -> String, // Función para obtener datos en formato CSV
-    onImportData: (String) -> Unit, // Función para importar datos CSV
-    onClearData: () -> Unit, // Función para limpiar datos
+    onExportData: suspend () -> String,
+    onImportData: (String) -> Unit,
+    onClearData: () -> Unit,
     accessHistory: List<AccessHistoryManager.AccessEvent> = emptyList(),
     onClearAccessHistory: () -> Unit = {}
 ) {
@@ -61,14 +63,12 @@ fun ProfileSettingsScreen(
     var importData by remember { mutableStateOf("") }
     var isExporting by remember { mutableStateOf(false) }
 
-    // Estado del diálogo de backup avanzado
     var showBackupDialog by remember { mutableStateOf(false) }
     var backupPassword by remember { mutableStateOf("") }
     var includeMediaInBackup by remember { mutableStateOf(true) }
     var encryptBackup by remember { mutableStateOf(false) }
     var showAccessHistoryDialog by remember { mutableStateOf(false) }
 
-    // Estados SAF para backups
     val backupPreferences = remember { BackupPreferences(context) }
     var autobackupEnabled by remember { mutableStateOf(backupPreferences.isAutobackupEnabled()) }
     var autobackupFolderName by remember { mutableStateOf(backupPreferences.getAutobackupFolderName()) }
@@ -76,7 +76,6 @@ fun ProfileSettingsScreen(
 
     val coroutineScope = rememberCoroutineScope()
 
-    // Launcher SAF para backup manual (elegir dónde guardar el archivo)
     val backupSafLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.CreateDocument("application/zip")
     ) { uri ->
@@ -84,7 +83,7 @@ fun ProfileSettingsScreen(
             val backupFile = pendingBackupFile
             if (backupFile != null) {
                 coroutineScope.launch {
-                    Toast.makeText(context, "💾 Guardando backup...", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, context.getString(R.string.toast_saving_backup), Toast.LENGTH_SHORT).show()
 
                     val success = withContext(Dispatchers.IO) {
                         val backupManager = BackupManager(context)
@@ -96,59 +95,51 @@ fun ProfileSettingsScreen(
                     pendingBackupFile = null
 
                     if (success) {
-                        Toast.makeText(context, "✅ Backup guardado correctamente", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, context.getString(R.string.toast_backup_saved), Toast.LENGTH_SHORT).show()
                     } else {
-                        Toast.makeText(context, "❌ Error al guardar backup", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, context.getString(R.string.toast_backup_error), Toast.LENGTH_SHORT).show()
                     }
                 }
             }
         } ?: run {
-            // Usuario canceló el picker
             pendingBackupFile?.let { file ->
                 coroutineScope.launch(Dispatchers.IO) {
                     BackupManager(context).deleteTempBackup(file)
                 }
                 pendingBackupFile = null
             }
-            Toast.makeText(context, "❌ Backup cancelado", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, context.getString(R.string.toast_backup_cancelled), Toast.LENGTH_SHORT).show()
         }
     }
 
-    // Launcher SAF para configurar carpeta de autobackups
     val autobackupFolderLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocumentTree()
     ) { uri ->
         uri?.let { folderUri ->
-            // Persistir permisos SAF
             val persisted = backupPreferences.persistUriPermissions(folderUri)
 
             if (persisted) {
-                // Obtener nombre legible de la carpeta
-                val folderName = DocumentFile.fromTreeUri(context, folderUri)?.name ?: "Carpeta seleccionada"
+                val folderName = DocumentFile.fromTreeUri(context, folderUri)?.name ?: "Folder"
 
-                // Guardar configuración
                 backupPreferences.saveAutobackupFolderUri(folderUri, folderName)
                 backupPreferences.setAutobackupEnabled(true)
 
-                // Actualizar UI
                 autobackupFolderName = folderName
                 autobackupEnabled = true
 
-                Toast.makeText(context, "✅ Carpeta de autobackup configurada: $folderName", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, context.getString(R.string.toast_autobackup_configured, folderName), Toast.LENGTH_SHORT).show()
             } else {
-                Toast.makeText(context, "❌ No se pudieron obtener permisos", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, context.getString(R.string.toast_permissions_error), Toast.LENGTH_SHORT).show()
             }
         } ?: run {
-            Toast.makeText(context, "❌ No se seleccionó carpeta", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, context.getString(R.string.toast_no_folder_selected), Toast.LENGTH_SHORT).show()
         }
     }
-    
-    // Launcher para seleccionar archivo CSV (OpenDocument es más flexible con MIME types)
+
     val filePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument()
     ) { uri ->
         uri?.let { selectedUri ->
-            // Obtener el nombre REAL del archivo desde el ContentResolver
             var fileName: String? = null
             context.contentResolver.query(selectedUri, arrayOf(OpenableColumns.DISPLAY_NAME), null, null, null)?.use { cursor ->
                 if (cursor.moveToFirst()) {
@@ -159,13 +150,12 @@ fun ProfileSettingsScreen(
                 }
             }
 
-            // Validar extensión .csv
             if (fileName == null || !fileName!!.lowercase().endsWith(".csv")) {
-                Toast.makeText(context, "❌ Solo se permiten archivos .csv", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, context.getString(R.string.toast_csv_only), Toast.LENGTH_SHORT).show()
                 return@let
             }
 
-            Toast.makeText(context, "🔄 Procesando CSV...", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, context.getString(R.string.toast_processing_csv), Toast.LENGTH_SHORT).show()
 
             try {
                 val inputStream = context.contentResolver.openInputStream(selectedUri)
@@ -174,10 +164,10 @@ fun ProfileSettingsScreen(
                     importData = content
                     showImportDialog = true
                 } else {
-                    Toast.makeText(context, "❌ El archivo está vacío", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, context.getString(R.string.toast_file_empty), Toast.LENGTH_SHORT).show()
                 }
             } catch (e: Exception) {
-                Toast.makeText(context, "❌ Error al leer archivo: ${e.message}", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, context.getString(R.string.toast_file_read_error, e.message ?: ""), Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -194,13 +184,11 @@ fun ProfileSettingsScreen(
                 .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Header con icono y título
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Icono del ojo (como en otros paneles)
                 Box(
                     modifier = Modifier
                         .size(48.dp)
@@ -215,17 +203,15 @@ fun ProfileSettingsScreen(
                         fontSize = 24.sp
                     )
                 }
-                
-                // Título principal
+
                 Text(
-                    text = "Mi Perfil Psiconáutico",
+                    text = stringResource(R.string.profile_title),
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color.White,
                     textAlign = TextAlign.Center
                 )
-                
-                // Botón de configuración
+
                 Box(
                     modifier = Modifier
                         .size(40.dp)
@@ -241,19 +227,18 @@ fun ProfileSettingsScreen(
                     )
                 }
             }
-            
+
             Spacer(modifier = Modifier.height(8.dp))
-            
-            // Subtítulo
+
             Text(
-                text = "Tu compañera vital para un consumo consciente y responsable de sustancias psiconáuticas",
+                text = stringResource(R.string.profile_subtitle),
                 fontSize = 14.sp,
                 color = Color.White.copy(alpha = 0.7f),
                 textAlign = TextAlign.Center
             )
-            
+
             Spacer(modifier = Modifier.height(32.dp))
-            
+
             // SECCIÓN 1: Información Personal
             Card(
                 modifier = Modifier.fillMaxWidth(),
@@ -266,29 +251,28 @@ fun ProfileSettingsScreen(
                     modifier = Modifier.padding(20.dp)
                 ) {
                     Text(
-                        text = "Información Personal",
+                        text = stringResource(R.string.profile_personal_info),
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Medium,
                         color = Color(0xFF06B6D4)
                     )
-                    
+
                     Spacer(modifier = Modifier.height(16.dp))
-                    
-                    // Campo de nickname
+
                     Text(
-                        text = "Nickname",
+                        text = stringResource(R.string.profile_nickname),
                         fontSize = 14.sp,
                         color = Color(0xFF8B5CF6),
                         fontWeight = FontWeight.Medium
                     )
-                    
+
                     Spacer(modifier = Modifier.height(8.dp))
-                    
+
                     OutlinedTextField(
                         value = nickname,
                         onValueChange = onNicknameChange,
                         modifier = Modifier.fillMaxWidth(),
-                        placeholder = { Text("Tu nickname") },
+                        placeholder = { Text(stringResource(R.string.profile_nickname_placeholder)) },
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = Color(0xFF8B5CF6),
                             unfocusedBorderColor = Color(0xFF8B5CF6).copy(alpha = 0.5f),
@@ -297,10 +281,9 @@ fun ProfileSettingsScreen(
                         ),
                         shape = RoundedCornerShape(12.dp)
                     )
-                    
+
                     Spacer(modifier = Modifier.height(16.dp))
-                    
-                    // Botón guardar perfil
+
                     Button(
                         onClick = { /* Guardar nickname */ },
                         modifier = Modifier.fillMaxWidth(),
@@ -310,16 +293,16 @@ fun ProfileSettingsScreen(
                         shape = RoundedCornerShape(12.dp)
                     ) {
                         Text(
-                            "Guardar Perfil",
+                            stringResource(R.string.profile_save),
                             color = Color.White,
                             fontWeight = FontWeight.Medium
                         )
                     }
                 }
             }
-            
+
             Spacer(modifier = Modifier.height(24.dp))
-            
+
             // SECCIÓN 2: Configuración de la App
             Card(
                 modifier = Modifier.fillMaxWidth(),
@@ -332,15 +315,14 @@ fun ProfileSettingsScreen(
                     modifier = Modifier.padding(20.dp)
                 ) {
                     Text(
-                        text = "Configuración de la App",
+                        text = stringResource(R.string.config_title),
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Medium,
                         color = Color(0xFF06B6D4)
                     )
-                    
+
                     Spacer(modifier = Modifier.height(20.dp))
-                    
-                    // Tema oscuro
+
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
@@ -348,13 +330,13 @@ fun ProfileSettingsScreen(
                     ) {
                         Column {
                             Text(
-                                text = "Tema Oscuro",
+                                text = stringResource(R.string.config_dark_theme),
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.Medium,
                                 color = Color.White
                             )
                             Text(
-                                text = "Interfaz en modo oscuro",
+                                text = stringResource(R.string.config_dark_theme_desc),
                                 fontSize = 14.sp,
                                 color = Color.White.copy(alpha = 0.7f)
                             )
@@ -368,10 +350,9 @@ fun ProfileSettingsScreen(
                             )
                         )
                     }
-                    
+
                     Spacer(modifier = Modifier.height(20.dp))
-                    
-                    // Notificaciones
+
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
@@ -379,13 +360,13 @@ fun ProfileSettingsScreen(
                     ) {
                         Column {
                             Text(
-                                text = "Notificaciones",
+                                text = stringResource(R.string.config_notifications),
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.Medium,
                                 color = Color.White
                             )
                             Text(
-                                text = "Recordatorios y alertas",
+                                text = stringResource(R.string.config_notifications_desc),
                                 fontSize = 14.sp,
                                 color = Color.White.copy(alpha = 0.7f)
                             )
@@ -399,10 +380,9 @@ fun ProfileSettingsScreen(
                             )
                         )
                     }
-                    
+
                     Spacer(modifier = Modifier.height(20.dp))
-                    
-                    // Autenticación biométrica
+
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
@@ -410,13 +390,13 @@ fun ProfileSettingsScreen(
                     ) {
                         Column {
                             Text(
-                                text = "Huella Digital",
+                                text = stringResource(R.string.config_fingerprint),
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.Medium,
                                 color = Color.White
                             )
                             Text(
-                                text = "Acceso con biometría",
+                                text = stringResource(R.string.config_fingerprint_desc),
                                 fontSize = 14.sp,
                                 color = Color.White.copy(alpha = 0.7f)
                             )
@@ -432,10 +412,10 @@ fun ProfileSettingsScreen(
                     }
                 }
             }
-            
+
             Spacer(modifier = Modifier.height(24.dp))
-            
-            // SECCIÓN 3: Gestión de Datos (COMBINADA)
+
+            // SECCIÓN 3: Gestión de Datos
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(16.dp),
@@ -447,15 +427,14 @@ fun ProfileSettingsScreen(
                     modifier = Modifier.padding(20.dp)
                 ) {
                     Text(
-                        text = "Gestión de Datos",
+                        text = stringResource(R.string.data_title),
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Medium,
                         color = Color(0xFF06B6D4)
                     )
-                    
+
                     Spacer(modifier = Modifier.height(16.dp))
-                    
-                    // Exportar datos CSV Simple - Usa el mismo método que funciona en Gestión de Datos
+
                     Button(
                         onClick = {
                             val mainActivity = context as? MainActivity
@@ -468,7 +447,7 @@ fun ProfileSettingsScreen(
                         shape = RoundedCornerShape(12.dp)
                     ) {
                         Text(
-                            "📊 Exportar Historial (CSV)",
+                            stringResource(R.string.data_export_csv),
                             color = Color.White,
                             fontWeight = FontWeight.Medium
                         )
@@ -476,7 +455,6 @@ fun ProfileSettingsScreen(
 
                     Spacer(modifier = Modifier.height(12.dp))
 
-                    // Backup Total Encriptado
                     OutlinedButton(
                         onClick = { showBackupDialog = true },
                         modifier = Modifier.fillMaxWidth(),
@@ -484,7 +462,7 @@ fun ProfileSettingsScreen(
                         shape = RoundedCornerShape(12.dp)
                     ) {
                         Text(
-                            "📦 Backup Total (Media + Cifrado)",
+                            stringResource(R.string.data_backup_full),
                             color = Color(0xFF06B6D4),
                             fontWeight = FontWeight.Medium
                         )
@@ -492,7 +470,6 @@ fun ProfileSettingsScreen(
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // Separador visual
                     HorizontalDivider(
                         color = Color.White.copy(alpha = 0.1f),
                         thickness = 1.dp
@@ -500,9 +477,8 @@ fun ProfileSettingsScreen(
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // Sección Autobackup
                     Text(
-                        text = "Backup Automático",
+                        text = stringResource(R.string.data_autobackup),
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Medium,
                         color = Color(0xFF8B5CF6)
@@ -510,7 +486,6 @@ fun ProfileSettingsScreen(
 
                     Spacer(modifier = Modifier.height(12.dp))
 
-                    // Configurar carpeta de autobackup
                     OutlinedButton(
                         onClick = { autobackupFolderLauncher.launch(null) },
                         modifier = Modifier.fillMaxWidth(),
@@ -525,12 +500,12 @@ fun ProfileSettingsScreen(
                             horizontalAlignment = Alignment.Start
                         ) {
                             Text(
-                                "📁 Carpeta de Autobackup",
+                                stringResource(R.string.data_autobackup_folder),
                                 color = if (autobackupFolderName != null) Color(0xFF10B981) else Color(0xFF8B5CF6),
                                 fontWeight = FontWeight.Medium
                             )
                             Text(
-                                if (autobackupFolderName != null) "✅ $autobackupFolderName" else "❌ No configurada",
+                                if (autobackupFolderName != null) "✅ $autobackupFolderName" else stringResource(R.string.data_autobackup_not_configured),
                                 fontSize = 12.sp,
                                 color = Color.White.copy(alpha = 0.6f)
                             )
@@ -539,7 +514,6 @@ fun ProfileSettingsScreen(
 
                     Spacer(modifier = Modifier.height(12.dp))
 
-                    // Toggle autobackup cada 12h
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
@@ -547,13 +521,13 @@ fun ProfileSettingsScreen(
                     ) {
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
-                                text = "Autobackup cada 12h",
+                                text = stringResource(R.string.data_autobackup_12h),
                                 fontSize = 14.sp,
                                 fontWeight = FontWeight.Medium,
                                 color = Color.White
                             )
                             Text(
-                                text = if (autobackupEnabled) "Activo" else "Desactivado",
+                                text = if (autobackupEnabled) stringResource(R.string.data_autobackup_active) else stringResource(R.string.data_autobackup_inactive),
                                 fontSize = 12.sp,
                                 color = if (autobackupEnabled) Color(0xFF10B981) else Color.White.copy(alpha = 0.5f)
                             )
@@ -562,14 +536,14 @@ fun ProfileSettingsScreen(
                             checked = autobackupEnabled,
                             onCheckedChange = { enabled ->
                                 if (enabled && autobackupFolderName == null) {
-                                    Toast.makeText(context, "⚠️ Primero configura una carpeta", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(context, context.getString(R.string.toast_configure_folder_first), Toast.LENGTH_SHORT).show()
                                     autobackupFolderLauncher.launch(null)
                                 } else {
                                     backupPreferences.setAutobackupEnabled(enabled)
                                     autobackupEnabled = enabled
                                     Toast.makeText(
                                         context,
-                                        if (enabled) "✅ Autobackup activado" else "❌ Autobackup desactivado",
+                                        if (enabled) context.getString(R.string.toast_autobackup_enabled) else context.getString(R.string.toast_autobackup_disabled),
                                         Toast.LENGTH_SHORT
                                     ).show()
                                 }
@@ -583,7 +557,6 @@ fun ProfileSettingsScreen(
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // Separador visual
                     HorizontalDivider(
                         color = Color.White.copy(alpha = 0.1f),
                         thickness = 1.dp
@@ -591,7 +564,6 @@ fun ProfileSettingsScreen(
 
                     Spacer(modifier = Modifier.height(12.dp))
 
-                    // Importar datos CSV (múltiples MIME types para compatibilidad)
                     OutlinedButton(
                         onClick = {
                             filePickerLauncher.launch(arrayOf(
@@ -606,31 +578,30 @@ fun ProfileSettingsScreen(
                         shape = RoundedCornerShape(12.dp)
                     ) {
                         Text(
-                            "📁 Seleccionar CSV para Importar",
+                            stringResource(R.string.data_import_csv),
                             fontWeight = FontWeight.Medium,
                             color = Color(0xFFF59E42)
                         )
                     }
-                    
+
                     Spacer(modifier = Modifier.height(12.dp))
-                    
-                    // Limpiar datos
+
                     OutlinedButton(
                         onClick = { showClearDataDialog = true },
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(12.dp)
                     ) {
                         Text(
-                            "🗑️ Limpiar Todos los Datos",
+                            stringResource(R.string.data_clear_all),
                             fontWeight = FontWeight.Medium,
                             color = Color(0xFFEC4899)
                         )
                     }
                 }
             }
-            
+
             Spacer(modifier = Modifier.height(24.dp))
-            
+
             // SECCIÓN 4: Privacidad y Seguridad
             Card(
                 modifier = Modifier.fillMaxWidth(),
@@ -643,71 +614,68 @@ fun ProfileSettingsScreen(
                     modifier = Modifier.padding(20.dp)
                 ) {
                     Text(
-                        text = "Privacidad y Seguridad",
+                        text = stringResource(R.string.privacy_title),
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Medium,
                         color = Color(0xFF06B6D4)
                     )
-                    
+
                     Spacer(modifier = Modifier.height(16.dp))
-                    
-                    // Configuración de privacidad
+
                     OutlinedButton(
-                        onClick = { 
-                            Toast.makeText(context, "🚧 En construcción... 🏗️", Toast.LENGTH_SHORT).show()
+                        onClick = {
+                            Toast.makeText(context, context.getString(R.string.toast_under_construction), Toast.LENGTH_SHORT).show()
                         },
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(12.dp)
                     ) {
                         Text(
-                            "🔒 Configuración de Privacidad",
+                            stringResource(R.string.privacy_settings),
                             fontWeight = FontWeight.Medium,
                             color = Color(0xFFEC4899)
                         )
                     }
-                    
+
                     Spacer(modifier = Modifier.height(12.dp))
-                    
-                    // Historial de accesos
+
                     OutlinedButton(
                         onClick = { showAccessHistoryDialog = true },
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(12.dp)
                     ) {
                         Text(
-                            "📊 Historial de Accesos",
+                            stringResource(R.string.privacy_access_history),
                             fontWeight = FontWeight.Medium,
                             color = Color(0xFF8B5CF6)
                         )
                     }
                 }
             }
-            
+
             Spacer(modifier = Modifier.height(24.dp))
-            
-            // Botón de volver
+
             OutlinedButton(
                 onClick = onBack,
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp)
             ) {
                 Text(
-                    "Volver",
+                    stringResource(R.string.back),
                     fontWeight = FontWeight.Medium,
                     color = Color.White
                 )
             }
-            
+
             Spacer(modifier = Modifier.height(32.dp))
         }
     }
-    
+
     // Diálogo de confirmación para limpiar datos
     if (showClearDataDialog) {
         AlertDialog(
             onDismissRequest = { showClearDataDialog = false },
-            title = { Text("⚠️ Confirmar Limpieza") },
-            text = { Text("¿Estás seguro de que quieres eliminar TODOS los datos almacenados? Esta acción no se puede deshacer.") },
+            title = { Text(stringResource(R.string.dialog_clear_title)) },
+            text = { Text(stringResource(R.string.dialog_clear_message)) },
             confirmButton = {
                 TextButton(
                     onClick = {
@@ -715,23 +683,23 @@ fun ProfileSettingsScreen(
                         showClearDataDialog = false
                     }
                 ) {
-                    Text("SÍ, LIMPIAR TODO", color = Color(0xFFEC4899))
+                    Text(stringResource(R.string.dialog_clear_confirm), color = Color(0xFFEC4899))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showClearDataDialog = false }) {
-                    Text("CANCELAR")
+                    Text(stringResource(R.string.cancel))
                 }
             }
         )
     }
-    
+
     // Diálogo de confirmación para importar datos
     if (showImportDialog) {
         AlertDialog(
             onDismissRequest = { showImportDialog = false },
-            title = { Text("📂 Importar Datos CSV") },
-            text = { Text("¿Qué deseas hacer con los datos actuales?\n\n• AÑADIR: Agregar datos nuevos\n• REEMPLAZAR: Borrar todo y usar datos del CSV") },
+            title = { Text(stringResource(R.string.dialog_import_title)) },
+            text = { Text(stringResource(R.string.dialog_import_message)) },
             confirmButton = {
                 TextButton(
                     onClick = {
@@ -740,7 +708,7 @@ fun ProfileSettingsScreen(
                         importData = ""
                     }
                 ) {
-                    Text("AÑADIR", color = Color(0xFF06B6D4))
+                    Text(stringResource(R.string.dialog_import_add), color = Color(0xFF06B6D4))
                 }
             },
             dismissButton = {
@@ -750,7 +718,7 @@ fun ProfileSettingsScreen(
                         importData = ""
                     }
                 ) {
-                    Text("CANCELAR")
+                    Text(stringResource(R.string.cancel))
                 }
             },
             modifier = Modifier.padding(16.dp)
@@ -763,7 +731,7 @@ fun ProfileSettingsScreen(
             onDismissRequest = { showBackupDialog = false },
             title = {
                 Text(
-                    "📦 Exportación Avanzada",
+                    stringResource(R.string.dialog_backup_title),
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color(0xFF06B6D4)
@@ -772,7 +740,7 @@ fun ProfileSettingsScreen(
             text = {
                 Column(modifier = Modifier.fillMaxWidth()) {
                     Text(
-                        "Se exportará una base de datos completa con tus notas en formato Markdown, experiencias, fotos, audios, y configuraciones personalizadas (Sets, Settings, etc.). Esto garantiza que si desinstalas la app, recuperarás todo al importar este backup.",
+                        stringResource(R.string.dialog_backup_description),
                         fontSize = 14.sp,
                         color = Color.White.copy(alpha = 0.8f),
                         lineHeight = 20.sp
@@ -780,15 +748,14 @@ fun ProfileSettingsScreen(
 
                     Spacer(modifier = Modifier.height(20.dp))
 
-                    // Multimedia
                     Row(
                         modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Column(modifier = Modifier.weight(1f)) {
-                            Text("Incluir Archivos Multimedia", color = Color.White, fontWeight = FontWeight.Medium)
-                            Text("Fotos y Notas de Voz", fontSize = 12.sp, color = Color.White.copy(alpha = 0.6f))
+                            Text(stringResource(R.string.dialog_backup_include_media), color = Color.White, fontWeight = FontWeight.Medium)
+                            Text(stringResource(R.string.dialog_backup_include_media_desc), fontSize = 12.sp, color = Color.White.copy(alpha = 0.6f))
                         }
                         Switch(
                             checked = includeMediaInBackup,
@@ -798,15 +765,14 @@ fun ProfileSettingsScreen(
 
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    // Cifrado
                     Row(
                         modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Column(modifier = Modifier.weight(1f)) {
-                            Text("Cifrar Backup (AES-256)", color = Color(0xFFEC4899), fontWeight = FontWeight.Medium)
-                            Text("Recomendado para máxima privacidad", fontSize = 12.sp, color = Color.White.copy(alpha = 0.6f))
+                            Text(stringResource(R.string.dialog_backup_encrypt), color = Color(0xFFEC4899), fontWeight = FontWeight.Medium)
+                            Text(stringResource(R.string.dialog_backup_encrypt_desc), fontSize = 12.sp, color = Color.White.copy(alpha = 0.6f))
                         }
                         Switch(
                             checked = encryptBackup,
@@ -820,7 +786,7 @@ fun ProfileSettingsScreen(
                             value = backupPassword,
                             onValueChange = { backupPassword = it },
                             modifier = Modifier.fillMaxWidth(),
-                            placeholder = { Text("Contraseña de cifrado") },
+                            placeholder = { Text(stringResource(R.string.dialog_backup_password_placeholder)) },
                             visualTransformation = androidx.compose.ui.text.input.PasswordVisualTransformation(),
                             colors = OutlinedTextFieldDefaults.colors(
                                 focusedTextColor = Color.White,
@@ -828,7 +794,7 @@ fun ProfileSettingsScreen(
                             )
                         )
                         Text(
-                            "⚠️ Si olvidas esta clave, no podrás restaurar el backup.",
+                            stringResource(R.string.dialog_backup_password_warning),
                             fontSize = 12.sp,
                             color = Color(0xFFF59E42),
                             modifier = Modifier.padding(top = 4.dp)
@@ -840,13 +806,12 @@ fun ProfileSettingsScreen(
                 Button(
                     onClick = {
                         if (encryptBackup && backupPassword.isBlank()) {
-                            Toast.makeText(context, "Introduce una contraseña", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, context.getString(R.string.dialog_backup_password_required), Toast.LENGTH_SHORT).show()
                             return@Button
                         }
 
-                        // Usar SAF para guardar el backup
                         coroutineScope.launch {
-                            Toast.makeText(context, "🔄 Preparando backup...", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, context.getString(R.string.toast_preparing_backup), Toast.LENGTH_SHORT).show()
 
                             val backupManager = BackupManager(context)
                             val localStorageData = onExportData()
@@ -863,23 +828,22 @@ fun ProfileSettingsScreen(
                                 showBackupDialog = false
                                 pendingBackupFile = tempFile
 
-                                Toast.makeText(context, "✅ Backup creado. Selecciona dónde guardarlo...", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, context.getString(R.string.toast_backup_created), Toast.LENGTH_SHORT).show()
 
-                                // Lanzar SAF picker con nombre sugerido
                                 backupSafLauncher.launch(tempFile.name)
                             } else {
-                                Toast.makeText(context, "❌ Error al crear backup", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, context.getString(R.string.toast_backup_create_error), Toast.LENGTH_SHORT).show()
                             }
                         }
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF06B6D4))
                 ) {
-                    Text("CREAR BACKUP", color = Color.White)
+                    Text(stringResource(R.string.dialog_backup_create), color = Color.White)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showBackupDialog = false }) {
-                    Text("CANCELAR", color = Color.White.copy(alpha = 0.6f))
+                    Text(stringResource(R.string.cancel), color = Color.White.copy(alpha = 0.6f))
                 }
             },
             containerColor = Color(0xFF1A1A2E),
@@ -891,7 +855,7 @@ fun ProfileSettingsScreen(
     if (showAccessHistoryDialog) {
         AlertDialog(
             onDismissRequest = { showAccessHistoryDialog = false },
-            title = { Text("📊 Historial de Accesos") },
+            title = { Text(stringResource(R.string.dialog_access_history_title)) },
             text = {
                 Column(
                     modifier = Modifier
@@ -900,18 +864,18 @@ fun ProfileSettingsScreen(
                 ) {
                     if (accessHistory.isEmpty()) {
                         Text(
-                            "No hay accesos registrados aún.",
+                            stringResource(R.string.dialog_access_history_empty),
                             color = Color.White.copy(alpha = 0.7f),
                             modifier = Modifier.padding(16.dp)
                         )
                     } else {
                         Text(
-                            "Últimos ${accessHistory.size} accesos:",
+                            stringResource(R.string.dialog_access_history_count, accessHistory.size),
                             color = Color(0xFF8B5CF6),
                             fontWeight = FontWeight.Medium,
                             modifier = Modifier.padding(bottom = 8.dp)
                         )
-                        
+
                         androidx.compose.foundation.lazy.LazyColumn {
                             items(accessHistory.size) { index ->
                                 val event = accessHistory[index]
@@ -939,7 +903,7 @@ fun ProfileSettingsScreen(
             },
             confirmButton = {
                 TextButton(onClick = { showAccessHistoryDialog = false }) {
-                    Text("CERRAR", color = Color(0xFF06B6D4))
+                    Text(stringResource(R.string.close), color = Color(0xFF06B6D4))
                 }
             },
             dismissButton = {
@@ -948,7 +912,7 @@ fun ProfileSettingsScreen(
                         onClearAccessHistory()
                         showAccessHistoryDialog = false
                     }) {
-                        Text("LIMPIAR", color = Color(0xFFEC4899))
+                        Text(stringResource(R.string.clear), color = Color(0xFFEC4899))
                     }
                 }
             },
@@ -958,7 +922,6 @@ fun ProfileSettingsScreen(
     }
 }
 
-// Preview para desarrollo
 @Composable
 fun ProfileSettingsScreenPreview() {
     ProfileSettingsScreen(
@@ -971,13 +934,12 @@ fun ProfileSettingsScreenPreview() {
         isBiometricEnabled = false,
         onBiometricToggle = {},
         onBack = {},
-        onExportData = { "SUSTANCIAS\nID,Nombre,Color,Fecha_Creacion\n1,LSD,#FF0000,2024-01-01\n\nREGISTROS\nID,Sustancia,Dosis,Unidad,Fecha_Hora,Set,Setting,Notas,Fecha_Creacion,Fecha_Actualizacion" },
+        onExportData = { "" },
         onImportData = {},
         onClearData = {}
     )
 }
 
-// Extension para encontrar la Activity desde el Contexto (Compose suele wrappearlo)
 fun Context.findActivity(): android.app.Activity? {
     var context = this
     while (context is android.content.ContextWrapper) {

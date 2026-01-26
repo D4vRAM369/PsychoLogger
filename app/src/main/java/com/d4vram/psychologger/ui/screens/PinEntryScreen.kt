@@ -8,11 +8,13 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.d4vram.psychologger.R
 
 @Composable
 fun PinEntryScreen(
@@ -23,7 +25,7 @@ fun PinEntryScreen(
     var errorMessage by remember { mutableStateOf("") }
     var attempts by remember { mutableStateOf(0) }
     val maxAttempts = 3
-    
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -36,56 +38,51 @@ fun PinEntryScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            // Icono
             Text(
                 text = "🔢",
                 fontSize = 80.sp
             )
-            
+
             Spacer(modifier = Modifier.height(24.dp))
-            
-            // Título
+
             Text(
-                text = "Ingresa tu PIN",
+                text = stringResource(R.string.pin_entry_title),
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onBackground,
                 textAlign = TextAlign.Center
             )
-            
+
             Spacer(modifier = Modifier.height(16.dp))
-            
-            // Descripción
+
             Text(
-                text = "Ingresa tu PIN de 4-6 dígitos para desbloquear la aplicación",
+                text = stringResource(R.string.pin_entry_description),
                 fontSize = 16.sp,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center
             )
-            
-            // Mostrar intentos restantes
+
             if (attempts > 0) {
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
-                    text = "Intentos restantes: ${maxAttempts - attempts}",
+                    text = stringResource(R.string.pin_entry_attempts_remaining, maxAttempts - attempts),
                     fontSize = 14.sp,
                     color = MaterialTheme.colorScheme.error,
                     textAlign = TextAlign.Center
                 )
             }
-            
+
             Spacer(modifier = Modifier.height(32.dp))
-            
-            // Campo de entrada PIN
+
             OutlinedTextField(
                 value = pin,
-                onValueChange = { 
+                onValueChange = {
                     if (it.length <= 6) {
                         pin = it
                         errorMessage = ""
                     }
                 },
-                label = { Text("PIN") },
+                label = { Text(stringResource(R.string.pin_entry_label)) },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
@@ -95,8 +92,7 @@ fun PinEntryScreen(
                     unfocusedBorderColor = MaterialTheme.colorScheme.outline
                 )
             )
-            
-            // Mensaje de error
+
             if (errorMessage.isNotEmpty()) {
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
@@ -106,19 +102,20 @@ fun PinEntryScreen(
                     textAlign = TextAlign.Center
                 )
             }
-            
+
             Spacer(modifier = Modifier.height(32.dp))
-            
-            // Botones
+
+            // Pre-load string for use in onClick (non-composable context)
+            val minDigitsError = stringResource(R.string.pin_entry_min_digits)
+
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Button(
                     onClick = {
                         if (pin.length < 4) {
-                            errorMessage = "El PIN debe tener al menos 4 dígitos"
+                            errorMessage = minDigitsError
                         } else {
-                            // Aquí se validará el PIN (se implementará en AppLockManager)
                             onPinCorrect(pin)
                         }
                     },
@@ -130,11 +127,11 @@ fun PinEntryScreen(
                         containerColor = MaterialTheme.colorScheme.primary
                     )
                 ) {
-                    Text("🔓 Desbloquear")
+                    Text(stringResource(R.string.pin_entry_unlock))
                 }
-                
+
                 Spacer(modifier = Modifier.height(16.dp))
-                
+
                 OutlinedButton(
                     onClick = onBackToBiometric,
                     modifier = Modifier.fillMaxWidth(),
@@ -142,11 +139,10 @@ fun PinEntryScreen(
                         contentColor = MaterialTheme.colorScheme.onSurface
                     )
                 ) {
-                    Text("🔐 Usar Huella Dactilar")
+                    Text(stringResource(R.string.pin_entry_use_fingerprint))
                 }
             }
-            
-            // Información de seguridad
+
             Spacer(modifier = Modifier.height(32.dp))
             Card(
                 modifier = Modifier.fillMaxWidth(),
@@ -160,14 +156,14 @@ fun PinEntryScreen(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = "⚠️ Importante",
+                        text = stringResource(R.string.pin_entry_important),
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Medium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = "Si olvidas tu PIN, tendrás que reinstalar la aplicación. La huella dactilar es más segura y conveniente.",
+                        text = stringResource(R.string.pin_entry_important_text),
                         fontSize = 12.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         textAlign = TextAlign.Center

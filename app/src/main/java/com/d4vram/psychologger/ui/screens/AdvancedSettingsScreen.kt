@@ -9,10 +9,12 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.d4vram.psychologger.R
 
 @Composable
 fun AdvancedSettingsScreen(
@@ -21,14 +23,14 @@ fun AdvancedSettingsScreen(
     onBack: () -> Unit
 ) {
     val autoLockOptions = listOf(
-        0 to "Inmediato",
-        30 to "30 segundos",
-        60 to "1 minuto",
-        300 to "5 minutos",
-        600 to "10 minutos",
-        1800 to "30 minutos"
+        0 to stringResource(R.string.advanced_autolock_immediate),
+        30 to stringResource(R.string.advanced_autolock_30s),
+        60 to stringResource(R.string.advanced_autolock_1m),
+        300 to stringResource(R.string.advanced_autolock_5m),
+        600 to stringResource(R.string.advanced_autolock_10m),
+        1800 to stringResource(R.string.advanced_autolock_30m)
     )
-    
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -41,18 +43,16 @@ fun AdvancedSettingsScreen(
                 .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Título
             Text(
-                text = "⚙️ Configuraciones Avanzadas",
+                text = stringResource(R.string.advanced_title),
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onBackground,
                 textAlign = TextAlign.Center
             )
-            
+
             Spacer(modifier = Modifier.height(32.dp))
-            
-            // Configuración de tiempo de bloqueo automático
+
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(16.dp),
@@ -64,24 +64,23 @@ fun AdvancedSettingsScreen(
                     modifier = Modifier.padding(20.dp)
                 ) {
                     Text(
-                        text = "⏰ Bloqueo Automático",
+                        text = stringResource(R.string.advanced_autolock),
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Medium,
                         color = MaterialTheme.colorScheme.onSurface
                     )
-                    
+
                     Spacer(modifier = Modifier.height(12.dp))
-                    
+
                     Text(
-                        text = "Configura cuándo se bloqueará automáticamente la aplicación después de que pase a segundo plano",
+                        text = stringResource(R.string.advanced_autolock_desc),
                         fontSize = 14.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         textAlign = TextAlign.Start
                     )
-                    
+
                     Spacer(modifier = Modifier.height(20.dp))
-                    
-                    // Selector de tiempo
+
                     Column {
                         autoLockOptions.forEach { (seconds, label) ->
                             Row(
@@ -97,9 +96,9 @@ fun AdvancedSettingsScreen(
                                         selectedColor = MaterialTheme.colorScheme.primary
                                     )
                                 )
-                                
+
                                 Spacer(modifier = Modifier.width(12.dp))
-                                
+
                                 Text(
                                     text = label,
                                     fontSize = 16.sp,
@@ -110,10 +109,9 @@ fun AdvancedSettingsScreen(
                     }
                 }
             }
-            
+
             Spacer(modifier = Modifier.height(24.dp))
-            
-            // Información adicional sobre seguridad
+
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(16.dp),
@@ -125,28 +123,25 @@ fun AdvancedSettingsScreen(
                     modifier = Modifier.padding(20.dp)
                 ) {
                     Text(
-                        text = "🔒 Información de Seguridad",
+                        text = stringResource(R.string.advanced_security_info),
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Medium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-                    
+
                     Spacer(modifier = Modifier.height(12.dp))
-                    
+
                     Text(
-                        text = "• Tiempo inmediato: La app se bloquea tan pronto como pase a segundo plano\n" +
-                               "• Tiempo personalizado: La app se bloquea después del tiempo especificado\n" +
-                               "• Recomendamos usar tiempos cortos para mayor seguridad",
+                        text = stringResource(R.string.advanced_security_info_text),
                         fontSize = 14.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         textAlign = TextAlign.Start
                     )
                 }
             }
-            
+
             Spacer(modifier = Modifier.height(32.dp))
-            
-            // Botón para volver
+
             OutlinedButton(
                 onClick = onBack,
                 modifier = Modifier
@@ -158,12 +153,12 @@ fun AdvancedSettingsScreen(
                 )
             ) {
                 Text(
-                    text = "← Volver a Ajustes",
+                    text = stringResource(R.string.advanced_back),
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Medium
                 )
             }
-            
+
             Spacer(modifier = Modifier.height(24.dp))
         }
     }
