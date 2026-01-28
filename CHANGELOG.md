@@ -7,6 +7,29 @@ y este proyecto adhiere a [Semantic Versioning](https://semver.org/lang/es/).
 
 ---
 
+## [1.3] - 2026-01-28
+
+### ✨ Añadido
+- **Enviado a IzzyOnDroid**
+  - App en proceso de revisión para el repositorio F-Droid IzzyOnDroid
+
+### 🐛 Corregido
+- **Exportación CSV en Backup Avanzado**
+  - La función exportToCSV() ahora funciona correctamente en el backup avanzado
+
+- **Renderizado de Notas Markdown**
+  - Mejora en bloques de código al seleccionar y formatear texto
+
+### 🔧 Cambiado
+- **Migración a SAF (Storage Access Framework)**
+  - Selector de archivos migrado a SAF para mejor compatibilidad
+  - Cumple requisitos de IzzyOnDroid
+
+- **UI Responsiva en DateTime Picker**
+  - Botones del selector de fecha/hora ahora se adaptan correctamente a pantallas móviles
+
+---
+
 ## [1.2] - 2026-01-17
 
 ### ✨ Añadido
