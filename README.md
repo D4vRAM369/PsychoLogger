@@ -15,17 +15,24 @@
 
 ---
 
-## 🆕 What's New in v1.2
+## 🆕 What's New in v1.3
 
 | Feature | Description |
 |---------|-------------|
-| ⏰ **Time Travel Picker** | Log forgotten experiences with visual calendar and quick date buttons (Yesterday, 2 days ago, etc.) |
+| ✍️ **Better Markdown Notes** | Improved code block rendering when selecting and formatting text |
+| 📁 **SAF File Picker** | Migrated to Storage Access Framework for better compatibility |
+| 📐 **Responsive DateTime Picker** | Buttons now adapt properly to mobile screens |
+| 💾 **Backup Export Fix** | CSV export now works correctly in Advanced Backup |
+| 🏪 **IzzyOnDroid** | Submitted for review on F-Droid's IzzyOnDroid repository |
+
+### v1.2 Highlights
+
+| Feature | Description |
+|---------|-------------|
+| ⏰ **Time Travel Picker** | Log forgotten experiences with visual calendar and quick date buttons |
 | 🔀 **Drag & Drop** | Reorder your substance list by dragging |
 | 📦 **Archive Substances** | Triple-tap on ⋮⋮ to hide substances without losing records |
 | 🧹 **Data Cleanup Tool** | Scan and fix corrupted entries in Settings > Data |
-| ⏱️ **Precise Time Input** | 1-minute increments + direct keyboard entry |
-| 📂 **Improved CSV Import** | Now works with all file managers |
-| 🔗 **GitHub Button** | Quick access to repository from About section |
 
 > 📋 [Full changelog](CHANGELOG.md) · 📥 [Download latest release](https://github.com/D4vRAM369/PsychoLogger/releases/latest)
 
