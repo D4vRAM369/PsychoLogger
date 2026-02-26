@@ -2,6 +2,7 @@ package com.d4vram.psychologger
 
 import android.content.Context
 import android.os.SystemClock
+import com.d4vram.psychologger.R
 import android.util.Base64
 import androidx.biometric.BiometricManager
 import androidx.biometric.BiometricPrompt
@@ -30,9 +31,6 @@ import java.security.MessageDigest
  *   - Llamar a appLockManager.onAppBackgrounded() / onAppForegrounded() en los eventos de lifecycle apropiados si usas auto-lock diferido.
  */
 class AppLockManager(private val context: Context) {
-
-    // --- Historial de accesos ---
-    private val accessHistoryManager = AccessHistoryManager(context)
 
     // --- Almacenamiento seguro ---
     private val masterKey = MasterKey.Builder(context)
@@ -223,29 +221,13 @@ class AppLockManager(private val context: Context) {
         }
     }
 
-    fun unlockApp(method: String = "biometric") {
+    fun unlockApp() {
         _isAppLocked.value = false
         // Registrar el tiempo de desbloqueo
         encryptedPrefs.edit()
             .putLong(KEY_LAST_UNLOCK_TIME, System.currentTimeMillis())
             .putBoolean(KEY_APP_INITIALIZED, true)
             .apply()
-        // Registrar en historial de accesos
-        accessHistoryManager.logAccess(method)
-    }
-
-    /**
-     * Obtiene el historial de accesos
-     */
-    fun getAccessHistory(): List<AccessHistoryManager.AccessEvent> {
-        return accessHistoryManager.getHistory()
-    }
-
-    /**
-     * Limpia el historial de accesos
-     */
-    fun clearAccessHistory() {
-        accessHistoryManager.clearHistory()
     }
 
     // -------------------------------
@@ -306,7 +288,7 @@ class AppLockManager(private val context: Context) {
                 override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
                     super.onAuthenticationSucceeded(result)
                     isPromptShowing = false
-                    unlockApp("biometric")
+                    unlockApp()
                     onSuccess()
                 }
 
@@ -333,8 +315,8 @@ class AppLockManager(private val context: Context) {
                     BiometricManager.Authenticators.DEVICE_CREDENTIAL
 
         val promptInfo = BiometricPrompt.PromptInfo.Builder()
-            .setTitle("🔒 Desbloquear aplicación")
-            .setSubtitle("Usa biometría o tu bloqueo del sistema")
+            .setTitle(activity.getString(R.string.biometric_prompt_title))
+            .setSubtitle(activity.getString(R.string.biometric_prompt_subtitle))
             .setAllowedAuthenticators(authenticators)
             .build()
 

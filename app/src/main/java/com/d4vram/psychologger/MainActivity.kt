@@ -2,7 +2,6 @@ package com.d4vram.psychologger
 
 import android.annotation.SuppressLint
 import android.app.DownloadManager
-import android.content.ActivityNotFoundException
 import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
@@ -20,21 +19,16 @@ import android.webkit.WebResourceRequest
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
-import android.widget.EditText
 import android.widget.Toast
-import android.text.InputType
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.fragment.app.FragmentActivity
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.app.AlertDialog
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
@@ -52,72 +46,27 @@ import androidx.core.content.FileProvider
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
-import androidx.lifecycle.lifecycleScope
 import com.d4vram.psychologger.ui.screens.LockScreen
 import com.d4vram.psychologger.ui.screens.SettingsScreen
 import com.d4vram.psychologger.ui.screens.AdvancedSettingsScreen
-import com.d4vram.psychologger.ui.screens.ProfileSettingsScreen
 import com.d4vram.psychologger.ui.screens.PinSetupScreen
 import com.d4vram.psychologger.ui.screens.PinEntryScreen
 import com.d4vram.psychologger.ui.theme.PsychoLoggerTheme
-import org.json.JSONObject
 import java.io.File
 import java.io.FileOutputStream
 import java.text.SimpleDateFormat
-import java.util.Date
 import java.util.Locale
-import java.util.TimeZone
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import java.util.Date
 
 class MainActivity : FragmentActivity() {
     private var filePathCallback: ValueCallback<Array<Uri>>? = null
     private lateinit var fileChooserLauncher: ActivityResultLauncher<Intent>
-    private lateinit var capturePhotoLauncher: ActivityResultLauncher<Uri>
-    private lateinit var pickPhotoLauncher: ActivityResultLauncher<String>
-    private lateinit var importBackupLauncher: ActivityResultLauncher<Array<String>>
-
-    // Launchers para permisos (se piden en contexto, no al abrir la app)
-    private lateinit var audioPermissionLauncher: ActivityResultLauncher<String>
-    private lateinit var cameraPermissionLauncher: ActivityResultLauncher<String>
-    // Callbacks que se ejecutan cuando el usuario concede el permiso
-    var onAudioPermissionGranted: (() -> Unit)? = null
-    var onCameraPermissionGranted: (() -> Unit)? = null
-
-    private var pendingPhotoResult: ((PhotoResult) -> Unit)? = null
-    private var pendingPhotoFile: File? = null
-    private val photoManager by lazy { PhotoManager(this) }
-    private val backupManager by lazy { BackupManager(this) }
     private lateinit var appLockManager: AppLockManager
     var webAppInterface: WebAppInterface? = null
         private set
 
-    // --- Persistencia de Tema ---
-    private val uiPrefs by lazy { getSharedPreferences("ui_settings", MODE_PRIVATE) }
-    private var _isSoftTheme = mutableStateOf(false)
-    val isSoftTheme: State<Boolean> get() = _isSoftTheme
-
     var webView: WebView? = null
         private set
-
-    // State para mostrar ProfileSettingsScreen (accesible desde el bridge)
-    private val _showProfileSettingsState = mutableStateOf(false)
-    val showProfileSettingsState: State<Boolean> get() = _showProfileSettingsState
-
-    fun showProfileSettingsFromBridge() {
-        _showProfileSettingsState.value = true
-    }
-
-    fun hideProfileSettings() {
-        _showProfileSettingsState.value = false
-    }
-
-    data class PhotoResult(
-        val success: Boolean,
-        val filename: String? = null,
-        val error: String? = null
-    )
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -125,9 +74,6 @@ class MainActivity : FragmentActivity() {
 
         // Inicializar el gestor de bloqueo de aplicación
         appLockManager = AppLockManager(this)
-        
-        // Inicializar tema
-        _isSoftTheme.value = uiPrefs.getBoolean("is_soft_theme", false)
 
         // Programar backups automáticos cada 12 horas
         schedulePeriodicBackups()
@@ -143,109 +89,6 @@ class MainActivity : FragmentActivity() {
             } else null
             filePathCallback?.onReceiveValue(results)
             filePathCallback = null
-        }
-
-        capturePhotoLauncher = registerForActivityResult(
-            ActivityResultContracts.TakePicture()
-        ) { success ->
-            val callback = pendingPhotoResult
-            val file = pendingPhotoFile
-            pendingPhotoResult = null
-            pendingPhotoFile = null
-
-            if (success && file != null && file.exists()) {
-                callback?.invoke(PhotoResult(success = true, filename = file.name))
-            } else {
-                file?.takeIf { it.exists() }?.delete()
-                callback?.invoke(
-                    PhotoResult(
-                        success = false,
-                        error = if (success) "No se pudo guardar la foto" else null
-                    )
-                )
-            }
-        }
-
-        pickPhotoLauncher = registerForActivityResult(
-            ActivityResultContracts.GetContent()
-        ) { uri ->
-            val callback = pendingPhotoResult
-            pendingPhotoResult = null
-
-            if (uri != null) {
-                try {
-                    val copiedFile = photoManager.copyUriToPhoto(uri)
-                    callback?.invoke(PhotoResult(success = true, filename = copiedFile.name))
-                } catch (e: Exception) {
-                    callback?.invoke(
-                        PhotoResult(
-                            success = false,
-                            error = e.message ?: "Error al importar imagen"
-                        )
-                    )
-                }
-            } else {
-                callback?.invoke(PhotoResult(success = false, error = null))
-            }
-        }
-
-        importBackupLauncher = registerForActivityResult(
-            ActivityResultContracts.OpenDocument()
-        ) { uri ->
-            if (uri != null) {
-                try {
-                    contentResolver.takePersistableUriPermission(
-                        uri,
-                        Intent.FLAG_GRANT_READ_URI_PERMISSION
-                    )
-                } catch (_: SecurityException) {
-                    // Algunos proveedores no permiten persistir el permiso; ignorar
-                }
-
-                lifecycleScope.launch {
-                    Toast.makeText(this@MainActivity, "📥 Importando backup, espera unos segundos...", Toast.LENGTH_LONG).show()
-
-                    val result = withContext(Dispatchers.IO) {
-                        backupManager.restoreBackup(uri)
-                    }
-
-                    if (result.needsPassword) {
-                        showRestorePasswordDialog(uri)
-                    } else {
-                        handleRestoreResult(result)
-                    }
-                }
-            } else {
-                Toast.makeText(
-                    this@MainActivity,
-                    "Importación cancelada",
-                    Toast.LENGTH_SHORT
-                ).show()
-            }
-        }
-
-        // Launcher para permiso de AUDIO - se pide solo cuando el usuario quiere grabar
-        audioPermissionLauncher = registerForActivityResult(
-            ActivityResultContracts.RequestPermission()
-        ) { granted ->
-            if (granted) {
-                onAudioPermissionGranted?.invoke()
-                onAudioPermissionGranted = null
-            } else {
-                Toast.makeText(this, "⚠️ Sin permiso de micrófono no puedes grabar notas de voz", Toast.LENGTH_LONG).show()
-            }
-        }
-
-        // Launcher para permiso de CÁMARA - se pide solo cuando el usuario quiere tomar foto
-        cameraPermissionLauncher = registerForActivityResult(
-            ActivityResultContracts.RequestPermission()
-        ) { granted ->
-            if (granted) {
-                onCameraPermissionGranted?.invoke()
-                onCameraPermissionGranted = null
-            } else {
-                Toast.makeText(this, "⚠️ Sin permiso de cámara no puedes adjuntar fotos", Toast.LENGTH_LONG).show()
-            }
         }
 
         setContent {
@@ -280,7 +123,6 @@ class MainActivity : FragmentActivity() {
                 // Estado de pantallas
                 var showSettings by remember { mutableStateOf(false) }
                 var showAdvancedSettings by remember { mutableStateOf(false) }
-                val showProfileSettings by showProfileSettingsState  // Observa el estado de clase
                 var showPinSetup by remember { mutableStateOf(false) }
                 var showPinEntry by remember { mutableStateOf(false) }
 
@@ -295,24 +137,23 @@ class MainActivity : FragmentActivity() {
                         .statusBarsPadding()
                         .imePadding()
                 ) {
-                    // --- LOCKSCREEN ÚNICO Y ROBUSTO ---
-                    // Esta es la única pantalla de bloqueo. Se muestra cuando:
-                    // - appLockEnabled && isAppLocked (persistido)
-                    // - forceLocked (bloqueo por inactividad)
+                    // --- LOCKSCREEN + auto-prompt UNA VEZ al mostrarse ---
                     if ((isAppLockEnabled && isAppLocked) || forceLocked) {
 
-                        // Auto-lanzar biometría UNA VEZ cuando aparece el LockScreen
-                        LaunchedEffect(Unit) {
-                            kotlinx.coroutines.delay(400) // Pequeño delay para evitar glitches
-                            if (appLockManager.isBiometricAvailable() && appLockManager.canShowPromptNow()) {
+                        // Auto-lanzar el prompt una sola vez cuando aparece LockScreen.
+                        // Si el usuario cancela o hay error, NO reintentamos solos:
+                        LaunchedEffect(isAppLocked) {
+                            if (isAppLocked && appLockManager.isBiometricAvailable() && appLockManager.needsAuth() && appLockManager.canShowPromptNow()) {
                                 appLockManager.showBiometricPrompt(
                                     activity = this@MainActivity,
                                     onSuccess = {
+                                        // AppLockManager ya hace unlockApp() internamente
                                         forceLocked = false
-                                        Toast.makeText(context, "✅ Aplicación desbloqueada", Toast.LENGTH_SHORT).show()
+                                        Toast.makeText(context, context.getString(R.string.app_unlocked_toast), Toast.LENGTH_SHORT).show()
                                     },
                                     onError = {
-                                        // No reintentamos automáticamente
+                                        // No reintentamos automáticamente; el usuario puede pulsar botones en LockScreen
+                                        // Puedes mostrar un aviso si quieres:
                                     }
                                 )
                             }
@@ -326,14 +167,14 @@ class MainActivity : FragmentActivity() {
                                         onSuccess = {
                                             // AppLockManager ya hace unlockApp()
                                             forceLocked = false
-                                            Toast.makeText(context, "✅ Aplicación desbloqueada", Toast.LENGTH_SHORT).show()
+                                            Toast.makeText(context, context.getString(R.string.app_unlocked_toast), Toast.LENGTH_SHORT).show()
                                         },
                                         onError = { error ->
                                             Toast.makeText(context, error, Toast.LENGTH_LONG).show()
                                         }
                                     )
                                 } else if (!appLockManager.isBiometricAvailable()) {
-                                    Toast.makeText(context, "❌ Biometría no disponible", Toast.LENGTH_LONG).show()
+                                    Toast.makeText(context, context.getString(R.string.biometric_not_available_toast), Toast.LENGTH_LONG).show()
                                 }
                                 // Si no canShowPromptNow(), simplemente no hace nada (evita spam)
                             },
@@ -341,7 +182,7 @@ class MainActivity : FragmentActivity() {
                                 if (appLockManager.hasPinSet()) {
                                     showPinEntry = true
                                 } else {
-                                    Toast.makeText(context, "🔢 Primero debes configurar un PIN en Ajustes", Toast.LENGTH_LONG).show()
+                                    Toast.makeText(context, context.getString(R.string.configure_pin_first_toast), Toast.LENGTH_LONG).show()
                                 }
                             }
                         )
@@ -350,7 +191,6 @@ class MainActivity : FragmentActivity() {
                         Box(modifier = Modifier.fillMaxSize()) {
                             WebViewScreen(
                                 context = context,
-                                isSoftTheme = isSoftTheme.value,
                                 onFileChooser = { callback ->
                                     filePathCallback = callback
                                     this@MainActivity.openFileChooser()
@@ -371,7 +211,7 @@ class MainActivity : FragmentActivity() {
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.Settings,
-                                    contentDescription = "Configuración"
+                                    contentDescription = context.getString(R.string.settings_fab_content_description)
                                 )
                             }
                         }
@@ -386,14 +226,10 @@ class MainActivity : FragmentActivity() {
                                 if (enabled) {
                                     // Recomendación: bloquear en el acto para dejar claro el nuevo estado
                                     appLockManager.lockApp()
-                                    Toast.makeText(context, "🔒 Bloqueo de aplicación activado", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(context, context.getString(R.string.app_lock_enabled_toast), Toast.LENGTH_SHORT).show()
                                 } else {
-                                    Toast.makeText(context, "🔓 Bloqueo de aplicación desactivado", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(context, context.getString(R.string.app_lock_disabled_toast), Toast.LENGTH_SHORT).show()
                                 }
-                            },
-                            isSoftTheme = isSoftTheme.value,
-                            onThemeToggle = { soft ->
-                                toggleTheme(soft)
                             },
                             onAdvancedSettings = { showAdvancedSettings = true },
                             onPinSetup = { showPinSetup = true },
@@ -407,39 +243,9 @@ class MainActivity : FragmentActivity() {
                             autoLockDelay = autoLockDelay,
                             onAutoLockDelayChange = { delay ->
                                 appLockManager.setAutoLockDelay(delay)
-                                Toast.makeText(context, "⏰ Tiempo de bloqueo actualizado", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, context.getString(R.string.auto_lock_time_updated_toast), Toast.LENGTH_SHORT).show()
                             },
                             onBack = { showAdvancedSettings = false }
-                        )
-                    }
-
-                    // --- Perfil y Backups ---
-                    if (showProfileSettings) {
-                        ProfileSettingsScreen(
-                            nickname = "Psiconauta", 
-                            onNicknameChange = { /* Guardar localmente si fuera necesario */ },
-                            isDarkTheme = true,
-                            onThemeToggle = { /* Cambiar */ },
-                            isNotificationsEnabled = true,
-                            onNotificationsToggle = { /* Cambiar */ },
-                            isBiometricEnabled = isAppLockEnabled,
-                            onBiometricToggle = { enabled -> 
-                                appLockManager.setAppLockEnabled(enabled)
-                            },
-                            onBack = { hideProfileSettings() },
-                            onExportData = {
-                                getLocalStorageData()
-                            },
-                            onImportData = { csv ->
-                                webAppInterface?.processFileContent(csv, "import_manual.csv")
-                            },
-                            onClearData = {
-                                executeJavaScript("localStorage.clear(); location.reload();")
-                            },
-                            accessHistory = appLockManager.getAccessHistory(),
-                            onClearAccessHistory = {
-                                appLockManager.clearAccessHistory()
-                            }
                         )
                     }
 
@@ -449,7 +255,7 @@ class MainActivity : FragmentActivity() {
                             onPinSet = { pin ->
                                 appLockManager.setPin(pin)
                                 showPinSetup = false
-                                Toast.makeText(context, "🔢 PIN configurado correctamente", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, context.getString(R.string.pin_configured_success_toast), Toast.LENGTH_SHORT).show()
                             },
                             onCancel = { showPinSetup = false }
                         )
@@ -463,9 +269,9 @@ class MainActivity : FragmentActivity() {
                                     appLockManager.unlockApp()
                                     forceLocked = false
                                     showPinEntry = false
-                                    Toast.makeText(context, "✅ PIN correcto", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(context, context.getString(R.string.pin_correct_toast), Toast.LENGTH_SHORT).show()
                                 } else {
-                                    Toast.makeText(context, "❌ PIN incorrecto", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(context, context.getString(R.string.pin_incorrect_toast), Toast.LENGTH_SHORT).show()
                                 }
                             },
                             onBackToBiometric = { showPinEntry = false }
@@ -474,15 +280,6 @@ class MainActivity : FragmentActivity() {
                 }
             }
         }
-    }
-
-    private fun toggleTheme(soft: Boolean) {
-        _isSoftTheme.value = soft
-        uiPrefs.edit().putBoolean("is_soft_theme", soft).apply()
-        
-        // Notificar al WebView
-        val themeName = if (soft) "soft" else "original"
-        executeJavaScript("if (typeof setAppTheme === 'function') { setAppTheme('$themeName'); }")
     }
 
     // ==== SELECTOR DE ARCHIVOS (MÉTODO DE LA ACTIVITY) ====
@@ -502,45 +299,11 @@ class MainActivity : FragmentActivity() {
         }
 
         try {
-            val chooser = Intent.createChooser(intent, "Seleccionar archivo CSV")
+            val chooser = Intent.createChooser(intent, getString(R.string.select_csv_file_chooser_title))
             fileChooserLauncher.launch(chooser)
         } catch (e: Exception) {
             filePathCallback?.onReceiveValue(null)
-            Toast.makeText(this, "Error al abrir selector: ${e.message}", Toast.LENGTH_SHORT).show()
-        }
-    }
-
-    fun requestPhotoFromCamera(onResult: (PhotoResult) -> Unit) {
-        if (pendingPhotoResult != null) {
-            onResult(PhotoResult(success = false, error = "Ya hay una operación de imagen en curso"))
-            return
-        }
-
-        try {
-            val file = photoManager.createPhotoFile()
-            val uri = FileProvider.getUriForFile(this, "$packageName.fileprovider", file)
-            pendingPhotoFile = file
-            pendingPhotoResult = onResult
-            capturePhotoLauncher.launch(uri)
-        } catch (e: Exception) {
-            pendingPhotoFile = null
-            pendingPhotoResult = null
-            onResult(PhotoResult(success = false, error = e.message ?: "No se pudo iniciar la cámara"))
-        }
-    }
-
-    fun requestPhotoFromGallery(onResult: (PhotoResult) -> Unit) {
-        if (pendingPhotoResult != null) {
-            onResult(PhotoResult(success = false, error = "Ya hay una operación de imagen en curso"))
-            return
-        }
-
-        try {
-            pendingPhotoResult = onResult
-            pickPhotoLauncher.launch("image/*")
-        } catch (e: Exception) {
-            pendingPhotoResult = null
-            onResult(PhotoResult(success = false, error = e.message ?: "No se pudo abrir la galería"))
+            Toast.makeText(this, getString(R.string.file_chooser_open_error_toast, e.message ?: ""), Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -596,149 +359,20 @@ class MainActivity : FragmentActivity() {
     fun setWebAppInterface(instance: WebAppInterface) {
         webAppInterface = instance
     }
-
-    fun startBackupImportFlow() {
-        importBackupLauncher.launch(arrayOf("application/zip", "application/octet-stream"))
-    }
-
-    /**
-     * Solicita permiso de micrófono EN CONTEXTO (cuando el usuario quiere grabar)
-     * @param onGranted Callback que se ejecuta si el usuario concede el permiso
-     */
-    fun requestAudioPermission(onGranted: () -> Unit) {
-        if (checkSelfPermission(android.Manifest.permission.RECORD_AUDIO) ==
-            android.content.pm.PackageManager.PERMISSION_GRANTED) {
-            // Ya tiene permiso, ejecutar directamente
-            onGranted()
-        } else {
-            // Guardar callback y pedir permiso
-            onAudioPermissionGranted = onGranted
-            audioPermissionLauncher.launch(android.Manifest.permission.RECORD_AUDIO)
-        }
-    }
-
-    /**
-     * Solicita permiso de cámara EN CONTEXTO (cuando el usuario quiere tomar foto)
-     * @param onGranted Callback que se ejecuta si el usuario concede el permiso
-     */
-    fun requestCameraPermission(onGranted: () -> Unit) {
-        if (checkSelfPermission(android.Manifest.permission.CAMERA) ==
-            android.content.pm.PackageManager.PERMISSION_GRANTED) {
-            // Ya tiene permiso, ejecutar directamente
-            onGranted()
-        } else {
-            // Guardar callback y pedir permiso
-            onCameraPermissionGranted = onGranted
-            cameraPermissionLauncher.launch(android.Manifest.permission.CAMERA)
-        }
-    }
-
-    suspend fun getLocalStorageData(): String = withContext(Dispatchers.Main) {
-        kotlinx.coroutines.suspendCancellableCoroutine { continuation ->
-            val script = """
-                (function() {
-                    return JSON.stringify({
-                        substances: JSON.parse(localStorage.getItem('substances') || '[]'),
-                        entries: JSON.parse(localStorage.getItem('entries') || '[]'),
-                        userProfile: JSON.parse(localStorage.getItem('userProfile') || '{}'),
-                        customUnits: JSON.parse(localStorage.getItem('psychologger_custom_units') || '{}'),
-                        customSets: JSON.parse(localStorage.getItem('psychologger_custom_sets') || '[]'),
-                        customSettings: JSON.parse(localStorage.getItem('psychologger_custom_settings') || '[]')
-                    });
-                })()
-            """.trimIndent()
-            
-            webView?.evaluateJavascript(script) { result ->
-                val rawJson = result?.let { 
-                    if (it.startsWith('"') && it.endsWith('"')) {
-                        org.json.JSONTokener(it).nextValue().toString()
-                    } else it
-                } ?: "{}"
-                continuation.resume(rawJson) { }
-            }
-        }
-    }
-
-    private fun handleRestoreResult(result: BackupManager.RestoreResult) {
-        if (result.success && result.dataJson != null) {
-            val payloadQuoted = JSONObject.quote(result.dataJson)
-            val infoJson = JSONObject().apply {
-                put("audios", result.restoredAudios)
-                put("photos", result.restoredPhotos)
-                result.message?.let { put("message", it) }
-            }.toString()
-            val infoQuoted = JSONObject.quote(infoJson)
-
-            executeJavaScript(
-                """
-                    if (window.onBackupRestored) {
-                        window.onBackupRestored($payloadQuoted, $infoQuoted);
-                    }
-                """.trimIndent()
-            )
-
-            Toast.makeText(
-                this@MainActivity,
-                "✅ Backup importado correctamente",
-                Toast.LENGTH_SHORT
-            ).show()
-        } else {
-            val errorMessage = result.message ?: "No se pudo importar el backup"
-            executeJavaScript(
-                """
-                    if (window.onBackupRestoreError) {
-                        window.onBackupRestoreError(${JSONObject.quote(errorMessage)});
-                    }
-                """.trimIndent()
-            )
-            Toast.makeText(
-                this@MainActivity,
-                "❌ $errorMessage",
-                Toast.LENGTH_LONG
-            ).show()
-        }
-    }
-
-    private fun showRestorePasswordDialog(uri: Uri) {
-        runOnUiThread {
-            val input = EditText(this).apply {
-                inputType = android.text.InputType.TYPE_CLASS_TEXT or android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD
-                hint = "Contraseña del Backup"
-            }
-            
-            AlertDialog.Builder(this, android.R.style.Theme_DeviceDefault_Dialog_Alert)
-                .setTitle("🔒 Backup Cifrado")
-                .setMessage("Introduce la contraseña para restaurar este backup:")
-                .setView(input)
-                .setPositiveButton("RESTAURAR") { _, _ ->
-                    val password = input.text.toString()
-                    Toast.makeText(this, "🔐 Descifrando y restaurando backup, espera unos segundos...", Toast.LENGTH_LONG).show()
-                    lifecycleScope.launch {
-                        val result = withContext(Dispatchers.IO) {
-                            backupManager.restoreBackup(uri, password)
-                        }
-                        handleRestoreResult(result)
-                    }
-                }
-                .setNegativeButton("CANCELAR", null)
-                .show()
-        }
-    }
 }
 
 // ==== INTERFAZ ANDROID-JS ====
 class WebAppInterface(private val context: Context, private val activity: MainActivity) {
-    var onProfileRequest: (() -> Unit)? = null
 
     // === GESTIÓN DE AUDIO ===
     private val audioRecorder = AudioRecorder(context)
     private val audioPlayer = AudioPlayer()
 
-    // === GESTIÓN DE FOTOS ===
-    private val photoManager = PhotoManager(context)
-
     // === GESTIÓN DE BACKUPS ===
     private val backupManager = BackupManager(context)
+
+    // Launcher para solicitar permisos de audio
+    private var recordAudioPermissionLauncher: ActivityResultLauncher<String>? = null
 
     init {
         // Configurar callbacks del reproductor
@@ -770,171 +404,6 @@ class WebAppInterface(private val context: Context, private val activity: MainAc
         }
     }
 
-    private data class SubstanceCsv(
-        val id: String,
-        val name: String,
-        val color: String,
-        val emoji: String?,
-        val createdAt: String,
-        val updatedAt: String?
-    )
-
-    private data class EntryCsv(
-        val id: String,
-        val substance: String,
-        val dose: Double,
-        val unit: String,
-        val date: String,
-        val set: String?,
-        val setting: String?,
-        val notes: String?,
-        val createdAt: String?,
-        val updatedAt: String?
-    )
-
-    private fun normaliseLine(raw: String): String =
-        raw.trim().removePrefix("\uFEFF")
-
-    private fun isHeaderLine(line: String): Boolean {
-        val upper = line.uppercase(Locale.getDefault())
-        return upper.startsWith("ID,") ||
-                upper.startsWith("ID;") ||
-                upper.startsWith("CAMPO,") ||
-                upper.startsWith("CAMPO;")
-    }
-
-    private fun parseCsvLine(rawLine: String): List<String> {
-        if (rawLine.isEmpty()) return emptyList()
-
-        val line = normaliseLine(rawLine)
-        if (line.isEmpty()) return emptyList()
-
-        val delimiter = detectDelimiter(line)
-        val result = mutableListOf<String>()
-        val current = StringBuilder()
-        var inQuotes = false
-        var quoteChar = '"'
-        var i = 0
-
-        fun flush() {
-            result.add(current.toString())
-            current.setLength(0)
-        }
-
-        while (i < line.length) {
-            val ch = line[i]
-            when {
-                (ch == '"' || ch == '\'') && (!inQuotes) -> {
-                    inQuotes = true
-                    quoteChar = ch
-                }
-                ch == quoteChar && inQuotes -> {
-                    val nextChar = line.getOrNull(i + 1)
-                    if (nextChar == quoteChar) {
-                        current.append(quoteChar)
-                        i++
-                    } else {
-                        inQuotes = false
-                    }
-                }
-                ch == delimiter && !inQuotes -> {
-                    flush()
-                }
-                else -> current.append(ch)
-            }
-            i++
-        }
-
-        flush()
-        return result
-    }
-
-    private fun detectDelimiter(line: String): Char {
-        val semicolons = line.count { it == ';' }
-        val commas = line.count { it == ',' }
-        return when {
-            semicolons > 0 && semicolons >= commas -> ';'
-            commas > 0 -> ','
-            else -> ';'
-        }
-    }
-
-    private fun parseSubstance(columns: List<String>): SubstanceCsv? {
-        if (columns.size < 3) return null
-
-        val id = columns.getOrNull(0)?.trim().orEmpty().ifBlank {
-            "${System.currentTimeMillis()}-${kotlin.random.Random.nextInt(1000, 9999)}"
-        }
-        val name = columns.getOrNull(1)?.trim('"', '\'').orEmpty()
-        val color = columns.getOrNull(2)?.trim('"', '\'').orEmpty()
-        if (name.isEmpty()) return null
-
-        val thirdColumn = columns.getOrNull(3)?.trim('"', '\'')
-        val (emoji, createdAtIndex) = if (isLikelyDate(thirdColumn)) {
-            null to 3
-        } else {
-            (thirdColumn?.ifBlank { null }) to 4
-        }
-
-        val createdAtRaw = columns.getOrNull(createdAtIndex)?.trim('"', '\'')
-        val updatedAtRaw = columns.getOrNull(createdAtIndex + 1)?.trim('"', '\'')
-
-        return SubstanceCsv(
-            id = id,
-            name = name,
-            color = color,
-            emoji = emoji,
-            createdAt = createdAtRaw?.takeUnless { it.isBlank() } ?: Date().toInstantString(),
-            updatedAt = updatedAtRaw?.takeUnless { it.isBlank() }
-        )
-    }
-
-    private fun parseEntry(columns: List<String>): EntryCsv? {
-        if (columns.size < 5) return null
-
-        val id = columns.getOrNull(0)?.trim().orEmpty().ifBlank {
-            System.currentTimeMillis().toString()
-        }
-        val substance = columns.getOrNull(1)?.trim('"', '\'').orEmpty()
-        if (substance.isEmpty()) return null
-
-        val doseValue = columns.getOrNull(2)?.trim()?.replace(',', '.') ?: "0"
-        val dose = doseValue.toDoubleOrNull() ?: 0.0
-
-        val unit = columns.getOrNull(3)?.trim('"', '\'').orEmpty()
-        val date = columns.getOrNull(4)?.trim('"', '\'').orEmpty()
-
-        val set = columns.getOrNull(5)?.trim('"', '\'')?.takeUnless { it.isBlank() }
-        val setting = columns.getOrNull(6)?.trim('"', '\'')?.takeUnless { it.isBlank() }
-        val notes = columns.getOrNull(7)?.trim('"', '\'')?.takeUnless { it.isBlank() }
-        val createdAt = columns.getOrNull(8)?.trim('"', '\'')?.takeUnless { it.isBlank() }
-        val updatedAt = columns.getOrNull(9)?.trim('"', '\'')?.takeUnless { it.isBlank() }
-
-        return EntryCsv(
-            id = id,
-            substance = substance,
-            dose = dose,
-            unit = unit,
-            date = date,
-            set = set,
-            setting = setting,
-            notes = notes,
-            createdAt = createdAt,
-            updatedAt = updatedAt
-        )
-    }
-
-    private fun isLikelyDate(value: String?): Boolean {
-        if (value.isNullOrBlank()) return false
-        val normalized = value.trim()
-        return normalized.contains("-") || normalized.contains("T") || normalized.contains(":")
-    }
-
-    private fun Date.toInstantString(): String =
-        SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault()).apply {
-            timeZone = TimeZone.getTimeZone("UTC")
-        }.format(this)
-
     @JavascriptInterface
     fun downloadCSV(csvContent: String, filename: String) {
         try {
@@ -955,7 +424,7 @@ class WebAppInterface(private val context: Context, private val activity: MainAc
                     resolver.openOutputStream(fileUri)?.use { outputStream ->
                         outputStream.write(csvContent.toByteArray(Charsets.UTF_8))
                     }
-                    Toast.makeText(context, "✅ CSV exportado: $finalFilename", Toast.LENGTH_LONG).show()
+                    Toast.makeText(context, context.getString(R.string.csv_export_success_toast, finalFilename), Toast.LENGTH_LONG).show()
 
                     // Después de exportar exitosamente, abrir ShareSheet automáticamente
                     activity.runOnUiThread {
@@ -967,17 +436,17 @@ class WebAppInterface(private val context: Context, private val activity: MainAc
                             val shareIntent = Intent(Intent.ACTION_SEND).apply {
                                 type = "text/csv"
                                 putExtra(Intent.EXTRA_STREAM, shareUri)
-                                putExtra(Intent.EXTRA_SUBJECT, "Bitácora Psiconáutica")
+                                putExtra(Intent.EXTRA_SUBJECT, context.getString(R.string.csv_share_subject))
                                 addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                             }
-                            val chooser = Intent.createChooser(shareIntent, "🚀 Compartir CSV")
+                            val chooser = Intent.createChooser(shareIntent, context.getString(R.string.csv_share_chooser_title))
                             activity.startActivity(chooser)
                         } catch (e: Exception) {
                             e.printStackTrace()
                         }
                     }
                 } ?: run {
-                    Toast.makeText(context, "❌ Error al crear archivo", Toast.LENGTH_LONG).show()
+                    Toast.makeText(context, context.getString(R.string.file_create_error_toast), Toast.LENGTH_LONG).show()
                 }
             } else {
                 // Android 9 y anteriores - método tradicional
@@ -993,7 +462,7 @@ class WebAppInterface(private val context: Context, private val activity: MainAc
                 }
                 context.sendBroadcast(intent)
 
-                Toast.makeText(context, "✅ CSV exportado: $finalFilename", Toast.LENGTH_LONG).show()
+                Toast.makeText(context, context.getString(R.string.csv_export_success_toast, finalFilename), Toast.LENGTH_LONG).show()
 
                 // Después de exportar exitosamente, abrir ShareSheet automáticamente
                 activity.runOnUiThread {
@@ -1005,10 +474,10 @@ class WebAppInterface(private val context: Context, private val activity: MainAc
                         val shareIntent = Intent(Intent.ACTION_SEND).apply {
                             type = "text/csv"
                             putExtra(Intent.EXTRA_STREAM, shareUri)
-                            putExtra(Intent.EXTRA_SUBJECT, "Bitácora Psiconáutica")
+                            putExtra(Intent.EXTRA_SUBJECT, context.getString(R.string.csv_share_subject))
                             addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                         }
-                        val chooser = Intent.createChooser(shareIntent, "🚀 Compartir CSV")
+                        val chooser = Intent.createChooser(shareIntent, context.getString(R.string.csv_share_chooser_title))
                         activity.startActivity(chooser)
                     } catch (e: Exception) {
                         e.printStackTrace()
@@ -1016,7 +485,7 @@ class WebAppInterface(private val context: Context, private val activity: MainAc
                 }
             }
         } catch (e: Exception) {
-            Toast.makeText(context, "❌ Error al exportar CSV: ${e.message}", Toast.LENGTH_LONG).show()
+            Toast.makeText(context, context.getString(R.string.csv_export_error_toast, e.message ?: ""), Toast.LENGTH_LONG).show()
             e.printStackTrace()
         }
     }
@@ -1044,20 +513,20 @@ class WebAppInterface(private val context: Context, private val activity: MainAc
                 val shareIntent = Intent(Intent.ACTION_SEND).apply {
                     type = "text/csv"
                     putExtra(Intent.EXTRA_STREAM, uri)
-                    putExtra(Intent.EXTRA_SUBJECT, "Bitácora Psiconáutica - $timestamp")
-                    putExtra(Intent.EXTRA_TEXT, "📊 Mis datos exportados de PsychoLogger 🧠✨\n\nArchivo: $finalFilename")
+                    putExtra(Intent.EXTRA_SUBJECT, context.getString(R.string.csv_share_subject_with_timestamp, timestamp))
+                    putExtra(Intent.EXTRA_TEXT, context.getString(R.string.csv_share_body_text, finalFilename))
                     addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                 }
 
                 // Crear chooser y mostrarlo desde la Activity
-                val chooserIntent = Intent.createChooser(shareIntent, "🚀 Compartir mi bitácora psiconáutica")
+                val chooserIntent = Intent.createChooser(shareIntent, context.getString(R.string.csv_share_full_chooser_title))
                 chooserIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 activity.startActivity(chooserIntent)
 
-                Toast.makeText(context, "✅ ShareSheet abierto", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, context.getString(R.string.sharesheet_opened_toast), Toast.LENGTH_SHORT).show()
 
             } catch (e: Exception) {
-                Toast.makeText(context, "❌ Error al compartir: ${e.message}", Toast.LENGTH_LONG).show()
+                Toast.makeText(context, context.getString(R.string.share_error_toast, e.message ?: ""), Toast.LENGTH_LONG).show()
                 e.printStackTrace()
             }
         }
@@ -1072,47 +541,39 @@ class WebAppInterface(private val context: Context, private val activity: MainAc
     fun processFileContent(content: String, filename: String) {
         try {
             if (content.isBlank()) {
-                Toast.makeText(context, "❌ El archivo está vacío", Toast.LENGTH_LONG).show()
+                Toast.makeText(context, context.getString(R.string.imported_file_empty_toast), Toast.LENGTH_LONG).show()
                 return
             }
 
-            val lines = content
-                .replace("\r\n", "\n")
-                .replace("\r", "\n")
-                .split("\n")
+            val lines = content.split("\n")
             var substanceCount = 0
             var entryCount = 0
             var currentSection = ""
 
             for (line in lines) {
-                val trimmedLine = normaliseLine(line)
-                if (trimmedLine.isEmpty()) continue
-
-                val upper = trimmedLine.uppercase(Locale.getDefault())
+                val trimmedLine = line.trim()
                 when {
-                    upper == "SUSTANCIAS" -> { currentSection = "substances"; continue }
-                    upper == "REGISTROS"  -> { currentSection = "entries"; continue }
-                    upper == "PERFIL"     -> { currentSection = "profile"; continue }
-                }
+                    trimmedLine == "SUSTANCIAS" -> { currentSection = "substances"; continue }
+                    trimmedLine == "REGISTROS"  -> { currentSection = "entries"; continue }
+                    trimmedLine == "PERFIL"     -> { currentSection = "profile"; continue }
+                    trimmedLine.isEmpty() ||
+                            trimmedLine.startsWith("ID,") ||
+                            trimmedLine.startsWith("Campo,") -> continue
 
-                if (isHeaderLine(trimmedLine)) continue
-
-                val columns = parseCsvLine(trimmedLine)
-                when (currentSection) {
-                    "substances" -> if (parseSubstance(columns) != null) substanceCount++
-                    "entries" -> if (parseEntry(columns) != null) entryCount++
+                    currentSection == "substances" && trimmedLine.isNotEmpty() -> substanceCount++
+                    currentSection == "entries"    && trimmedLine.isNotEmpty() -> entryCount++
                 }
             }
 
             if (substanceCount == 0 && entryCount == 0) {
-                Toast.makeText(context, "❌ No se encontraron datos válidos en el archivo", Toast.LENGTH_LONG).show()
+                Toast.makeText(context, context.getString(R.string.no_valid_data_in_file_toast), Toast.LENGTH_LONG).show()
                 return
             }
 
             showImportDialog(content, substanceCount, entryCount)
 
         } catch (e: Exception) {
-            Toast.makeText(context, "❌ Error al procesar archivo: ${e.message}", Toast.LENGTH_LONG).show()
+            Toast.makeText(context, context.getString(R.string.file_processing_error_toast, e.message ?: ""), Toast.LENGTH_LONG).show()
             e.printStackTrace()
         }
     }
@@ -1120,26 +581,24 @@ class WebAppInterface(private val context: Context, private val activity: MainAc
     private fun showImportDialog(csvContent: String, substancesCount: Int, entriesCount: Int) {
         activity.runOnUiThread {
             val builder = android.app.AlertDialog.Builder(context)
-                .setTitle("📂 Importar Datos CSV")
+                .setTitle(context.getString(R.string.import_data_dialog_title))
                 .setMessage(
-                    """
-                    📊 Datos encontrados en el archivo:
-                    • $substancesCount sustancias
-                    • $entriesCount registros
-                    
-                    ⚠️ ¿Qué deseas hacer?
-                    """.trimIndent()
+                    context.getString(
+                        R.string.import_summary_dialog_message,
+                        substancesCount,
+                        entriesCount
+                    )
                 )
-                .setPositiveButton("➕ AÑADIR") { _, _ -> importCSVData(csvContent, false) }
-                .setNegativeButton("🔄 REEMPLAZAR") { _, _ ->
+                .setPositiveButton(context.getString(R.string.import_dialog_add_button)) { _, _ -> importCSVData(csvContent, false) }
+                .setNegativeButton(context.getString(R.string.import_dialog_replace_button)) { _, _ ->
                     val confirmBuilder = android.app.AlertDialog.Builder(context)
-                        .setTitle("⚠️ Confirmar Reemplazo")
-                        .setMessage("¿Estás seguro de que quieres BORRAR todos los datos actuales?")
-                        .setPositiveButton("SÍ, REEMPLAZAR") { _, _ -> importCSVData(csvContent, true) }
-                        .setNegativeButton("CANCELAR") { dialog, _ -> dialog.dismiss() }
+                        .setTitle(context.getString(R.string.import_replace_confirm_title))
+                        .setMessage(context.getString(R.string.import_replace_confirm_message))
+                        .setPositiveButton(context.getString(R.string.import_replace_confirm_button)) { _, _ -> importCSVData(csvContent, true) }
+                        .setNegativeButton(context.getString(R.string.cancel_action)) { dialog, _ -> dialog.dismiss() }
                     confirmBuilder.show()
                 }
-                .setNeutralButton("CANCELAR") { dialog, _ -> dialog.dismiss() }
+                .setNeutralButton(context.getString(R.string.cancel_action)) { dialog, _ -> dialog.dismiss() }
 
             builder.show()
         }
@@ -1148,39 +607,55 @@ class WebAppInterface(private val context: Context, private val activity: MainAc
     private fun importCSVData(csvContent: String, replaceAll: Boolean) {
         try {
             activity.runOnUiThread {
-                Toast.makeText(context, "🔄 Procesando importación...", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, context.getString(R.string.import_processing_toast), Toast.LENGTH_SHORT).show()
 
                 val webView = activity.webView ?: run {
-                    Toast.makeText(context, "❌ Error: WebView no disponible", Toast.LENGTH_LONG).show()
+                    Toast.makeText(context, context.getString(R.string.webview_unavailable_error_toast), Toast.LENGTH_LONG).show()
                     return@runOnUiThread
                 }
 
-                val lines = csvContent
-                    .replace("\r\n", "\n")
-                    .replace("\r", "\n")
-                    .split("\n")
+                val lines = csvContent.split("\n")
                 var currentSection = ""
-                val substancesToImport = mutableListOf<SubstanceCsv>()
-                val entriesToImport    = mutableListOf<EntryCsv>()
+                val substancesToImport = mutableListOf<Map<String, String>>()
+                val entriesToImport    = mutableListOf<Map<String, String>>()
 
                 for (line in lines) {
-                    val trimmedLine = normaliseLine(line)
-                    if (trimmedLine.isEmpty()) continue
-
-                    val upper = trimmedLine.uppercase(Locale.getDefault())
+                    val trimmedLine = line.trim()
                     when {
-                        upper == "SUSTANCIAS" -> { currentSection = "substances"; continue }
-                        upper == "REGISTROS"  -> { currentSection = "entries"; continue }
-                        upper == "PERFIL"     -> { currentSection = "profile"; continue }
-                    }
+                        trimmedLine == "SUSTANCIAS" -> { currentSection = "substances"; continue }
+                        trimmedLine == "REGISTROS"  -> { currentSection = "entries"; continue }
+                        trimmedLine.isEmpty() || trimmedLine.startsWith("ID,") -> continue
 
-                    if (isHeaderLine(trimmedLine)) continue
+                        currentSection == "substances" -> {
+                            val parts = trimmedLine.split(",")
+                            if (parts.size >= 4) {
+                                substancesToImport += mapOf(
+                                    "id"        to (parts[0].toIntOrNull()?.toString()
+                                        ?: "${System.currentTimeMillis()}-${kotlin.random.Random.nextInt(1000, 9999)}"),
+                                    "name"      to parts[1].replace("\"", ""),
+                                    "color"     to parts[2].replace("\"", ""),
+                                    "createdAt" to parts[3].replace("\"", "")
+                                )
+                            }
+                        }
 
-                    val columns = parseCsvLine(trimmedLine)
-
-                    when (currentSection) {
-                        "substances" -> parseSubstance(columns)?.let { substancesToImport += it }
-                        "entries" -> parseEntry(columns)?.let { entriesToImport += it }
+                        currentSection == "entries" -> {
+                            val parts = trimmedLine.split(",")
+                            if (parts.size >= 7) {
+                                entriesToImport += mapOf(
+                                    "id"        to (parts[0].toIntOrNull()?.toString()
+                                        ?: System.currentTimeMillis().toString()),
+                                    "substance" to parts[1].replace("\"", ""),
+                                    "dose"      to parts[2],
+                                    "unit"      to parts[3].replace("\"", ""),
+                                    "date"      to parts[4].replace("\"", ""),
+                                    "set"       to (if (parts.size > 5) parts[5].replace("\"", "") else ""),
+                                    "setting"   to (if (parts.size > 6) parts[6].replace("\"", "") else ""),
+                                    "notes"     to (if (parts.size > 7) parts[7].replace("\"", "") else ""),
+                                    "createdAt" to (if (parts.size > 8) parts[8].replace("\"", "") else "")
+                                )
+                            }
+                        }
                     }
                 }
 
@@ -1188,53 +663,36 @@ class WebAppInterface(private val context: Context, private val activity: MainAc
                     appendLine("try {")
                     appendLine("  console.log('Iniciando importación...');")
                     if (replaceAll) {
-                        appendLine("  substances = [];")
+                        appendLine("  substances = getDefaultSubstances();")
                         appendLine("  entries = [];")
-                        appendLine("  userProfile = userProfile || {};")
+                        appendLine("  userProfile = {};")
                     }
                     appendLine("  var importedSub = 0; var importedEnt = 0;")
 
                     substancesToImport.forEach { s ->
-                        val subJson = JSONObject().apply {
-                            put("id", s.id)
-                            put("name", s.name)
-                            put("color", s.color)
-                            s.emoji?.let { put("emoji", it) }
-                            put("createdAt", s.createdAt)
-                            s.updatedAt?.let { put("updatedAt", it) }
-                        }
-                        val subJsonString = subJson.toString()
-                        val lowerName = s.name.lowercase(Locale.getDefault())
-                        val lowerNameLiteral = JSONObject.quote(lowerName)
                         appendLine("""
                             (function(){
-                              var newSub = ${subJsonString};
-                              var shouldInsert = true;
-                              if (!${replaceAll}) {
-                                shouldInsert = !(substances || []).some(function(ex){ return ((ex.name || '')).toLowerCase() === ${lowerNameLiteral}; });
-                              }
-                              if (shouldInsert) { substances.push(newSub); importedSub++; }
+                              var newSub = { id: "${s["id"]}", name: "${s["name"]}", color: "${s["color"]}", createdAt: "${s["createdAt"]}" };
+                              var exists = (substances || []).some(function(ex){ return ex.name.toLowerCase() === newSub.name.toLowerCase(); });
+                              if (!exists) { substances.push(newSub); importedSub++; }
                             })();
                         """.trimIndent())
                     }
 
                     entriesToImport.forEach { e ->
-                        val entryJson = JSONObject().apply {
-                            put("id", e.id)
-                            put("substance", e.substance)
-                            put("dose", e.dose)
-                            put("unit", e.unit)
-                            put("date", e.date)
-                            put("set", e.set ?: "")
-                            put("setting", e.setting ?: "")
-                            put("notes", e.notes ?: "")
-                            put("createdAt", e.createdAt ?: "")
-                            put("updatedAt", e.updatedAt ?: "")
-                        }
-                        val entryJsonString = entryJson.toString()
                         appendLine("""
                             (function(){
-                              entries.push(${entryJsonString});
+                              entries.push({
+                                id: "${e["id"]}",
+                                substance: "${e["substance"]}",
+                                dose: ${e["dose"]},
+                                unit: "${e["unit"]}",
+                                date: "${e["date"]}",
+                                set: "${e["set"] ?: ""}",
+                                setting: "${e["setting"] ?: ""}",
+                                notes: "${e["notes"] ?: ""}",
+                                createdAt: "${e["createdAt"] ?: ""}"
+                              });
                               importedEnt++;
                             })();
                         """.trimIndent())
@@ -1243,15 +701,11 @@ class WebAppInterface(private val context: Context, private val activity: MainAc
                     appendLine("""
                         localStorage.setItem('substances', JSON.stringify(substances));
                         localStorage.setItem('entries', JSON.stringify(entries));
-                        localStorage.setItem('userProfile', JSON.stringify(userProfile || {}));
 
                         if (typeof refreshAfterImport === 'function') {
                             refreshAfterImport();
                         } else if (typeof syncDataFromStorage === 'function') {
                             syncDataFromStorage();
-                            if (typeof rebuildSuggestionsFromEntries === 'function') {
-                                rebuildSuggestionsFromEntries();
-                            }
                             renderSubstanceList(); generateCalendar(); renderStats();
                         } else {
                             window.substances = substances;
@@ -1267,7 +721,7 @@ class WebAppInterface(private val context: Context, private val activity: MainAc
                 webView.evaluateJavascript(jsScript, null)
             }
         } catch (e: Exception) {
-            Toast.makeText(context, "❌ Error: ${e.message}", Toast.LENGTH_LONG).show()
+            Toast.makeText(context, context.getString(R.string.generic_error_toast, e.message ?: ""), Toast.LENGTH_LONG).show()
             e.printStackTrace()
         }
     }
@@ -1294,14 +748,8 @@ class WebAppInterface(private val context: Context, private val activity: MainAc
         return try {
             // Verificar permiso de audio
             if (!hasRecordAudioPermission()) {
-                // Pedir permiso EN CONTEXTO (el usuario entiende para qué es)
-                activity.runOnUiThread {
-                    activity.requestAudioPermission {
-                        // Cuando el usuario conceda el permiso, notificar a JavaScript
-                        activity.executeJavaScript("if (window.onAudioPermissionGranted) window.onAudioPermissionGranted();")
-                    }
-                }
-                return "REQUESTING_PERMISSION"
+                Toast.makeText(context, context.getString(R.string.microphone_permission_required_toast), Toast.LENGTH_LONG).show()
+                return "ERROR: Sin permiso de micrófono"
             }
 
             // Iniciar grabación
@@ -1310,7 +758,7 @@ class WebAppInterface(private val context: Context, private val activity: MainAc
             // Retornar el nombre del archivo (JavaScript lo guardará)
             file.name
         } catch (e: Exception) {
-            Toast.makeText(context, "❌ Error al grabar: ${e.message}", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, context.getString(R.string.recording_start_error_toast, e.message ?: ""), Toast.LENGTH_SHORT).show()
             "ERROR: ${e.message}"
         }
     }
@@ -1331,7 +779,7 @@ class WebAppInterface(private val context: Context, private val activity: MainAc
             // Construir JSON manualmente (simple y claro)
             """{"filename": "${result.file.name}", "duration": ${result.durationMillis}}"""
         } catch (e: Exception) {
-            Toast.makeText(context, "❌ Error al detener grabación: ${e.message}", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, context.getString(R.string.recording_stop_error_toast, e.message ?: ""), Toast.LENGTH_SHORT).show()
             """{"error": "${e.message}"}"""
         }
     }
@@ -1343,9 +791,9 @@ class WebAppInterface(private val context: Context, private val activity: MainAc
     fun cancelRecording() {
         try {
             audioRecorder.cancelRecording()
-            Toast.makeText(context, "🗑️ Grabación cancelada", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, context.getString(R.string.recording_cancelled_toast), Toast.LENGTH_SHORT).show()
         } catch (e: Exception) {
-            Toast.makeText(context, "❌ Error al cancelar: ${e.message}", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, context.getString(R.string.recording_cancel_error_toast, e.message ?: ""), Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -1394,7 +842,7 @@ class WebAppInterface(private val context: Context, private val activity: MainAc
             val audioFile = File(audioNotesDir, filename)
 
             if (!audioFile.exists()) {
-                Toast.makeText(context, "❌ Archivo de audio no encontrado", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, context.getString(R.string.audio_file_not_found_toast), Toast.LENGTH_SHORT).show()
                 return "ERROR: Archivo no existe"
             }
 
@@ -1402,7 +850,7 @@ class WebAppInterface(private val context: Context, private val activity: MainAc
             val success = audioPlayer.play(audioFile)
             if (success) "OK" else "ERROR: No se pudo reproducir"
         } catch (e: Exception) {
-            Toast.makeText(context, "❌ Error al reproducir: ${e.message}", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, context.getString(R.string.audio_playback_error_toast, e.message ?: ""), Toast.LENGTH_SHORT).show()
             "ERROR: ${e.message}"
         }
     }
@@ -1483,7 +931,7 @@ class WebAppInterface(private val context: Context, private val activity: MainAc
                 val audioFile = File(audioNotesDir, filename)
 
                 if (!audioFile.exists()) {
-                    Toast.makeText(context, "❌ Archivo no encontrado", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, context.getString(R.string.file_not_found_toast), Toast.LENGTH_SHORT).show()
                     return@runOnUiThread
                 }
 
@@ -1498,163 +946,17 @@ class WebAppInterface(private val context: Context, private val activity: MainAc
                 val shareIntent = Intent(Intent.ACTION_SEND).apply {
                     type = "audio/*"
                     putExtra(Intent.EXTRA_STREAM, uri)
-                    putExtra(Intent.EXTRA_SUBJECT, "Nota de voz - PsychoLogger")
+                    putExtra(Intent.EXTRA_SUBJECT, context.getString(R.string.audio_share_subject))
                     addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                 }
 
-                val chooser = Intent.createChooser(shareIntent, "🎤 Compartir nota de voz")
+                val chooser = Intent.createChooser(shareIntent, context.getString(R.string.audio_share_chooser_title))
                 chooser.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 activity.startActivity(chooser)
 
             } catch (e: Exception) {
-                Toast.makeText(context, "❌ Error al compartir: ${e.message}", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, context.getString(R.string.share_error_toast, e.message ?: ""), Toast.LENGTH_SHORT).show()
                 e.printStackTrace()
-            }
-        }
-    }
-
-    // ========================================
-    // === MÉTODOS DE FOTOS ===
-    // ========================================
-
-    @JavascriptInterface
-    fun capturePhoto() {
-        activity.runOnUiThread {
-            if (!hasCameraPermission()) {
-                // Pedir permiso EN CONTEXTO (el usuario entiende para qué es)
-                activity.requestCameraPermission {
-                    // Cuando el usuario conceda el permiso, notificar a JavaScript
-                    activity.executeJavaScript("if (window.onCameraPermissionGranted) window.onCameraPermissionGranted();")
-                }
-                return@runOnUiThread
-            }
-
-            activity.requestPhotoFromCamera { result ->
-                when {
-                    result.success && !result.filename.isNullOrBlank() -> {
-                        val quoted = JSONObject.quote(result.filename)
-                        activity.executeJavaScript(
-                            """
-                                if (window.onPhotoCaptured) {
-                                    window.onPhotoCaptured($quoted);
-                                }
-                            """.trimIndent()
-                        )
-                    }
-                    !result.error.isNullOrBlank() -> {
-                        val message = JSONObject.quote(result.error)
-                        activity.executeJavaScript(
-                            """
-                                if (window.onPhotoCaptureError) {
-                                    window.onPhotoCaptureError($message);
-                                }
-                            """.trimIndent()
-                        )
-                    }
-                }
-            }
-        }
-    }
-
-    @JavascriptInterface
-    fun pickPhotoFromGallery() {
-        activity.runOnUiThread {
-            activity.requestPhotoFromGallery { result ->
-                when {
-                    result.success && !result.filename.isNullOrBlank() -> {
-                        val quoted = JSONObject.quote(result.filename)
-                        activity.executeJavaScript(
-                            """
-                                if (window.onPhotoCaptured) {
-                                    window.onPhotoCaptured($quoted);
-                                }
-                            """.trimIndent()
-                        )
-                    }
-                    !result.error.isNullOrBlank() -> {
-                        val message = JSONObject.quote(result.error)
-                        activity.executeJavaScript(
-                            """
-                                if (window.onPhotoCaptureError) {
-                                    window.onPhotoCaptureError($message);
-                                }
-                            """.trimIndent()
-                        )
-                    }
-                }
-            }
-        }
-    }
-
-    @JavascriptInterface
-    fun deletePhoto(filename: String): String {
-        return try {
-            if (filename.isBlank()) {
-                "ERROR: Nombre de archivo inválido"
-            } else if (photoManager.deletePhoto(filename)) {
-                "OK"
-            } else {
-                "ERROR: Archivo no encontrado"
-            }
-        } catch (e: Exception) {
-            "ERROR: ${e.message}"
-        }
-    }
-
-    @JavascriptInterface
-    fun getPhotoPreview(filename: String): String {
-        return try {
-            photoManager.getPreviewDataUrl(filename) ?: ""
-        } catch (e: Exception) {
-            ""
-        }
-    }
-
-    @JavascriptInterface
-    fun viewPhoto(filename: String) {
-        activity.runOnUiThread {
-            try {
-                val uri = photoManager.getShareUri(filename)
-                if (uri == null) {
-                    Toast.makeText(context, "❌ Imagen no encontrada", Toast.LENGTH_SHORT).show()
-                    return@runOnUiThread
-                }
-
-                val intent = Intent(Intent.ACTION_VIEW).apply {
-                    setDataAndType(uri, "image/*")
-                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                }
-
-                activity.startActivity(intent)
-            } catch (e: ActivityNotFoundException) {
-                Toast.makeText(context, "❌ No se encontró app para abrir imágenes", Toast.LENGTH_SHORT).show()
-            } catch (e: Exception) {
-                Toast.makeText(context, "❌ Error al abrir imagen: ${e.message}", Toast.LENGTH_SHORT).show()
-            }
-        }
-    }
-
-    @JavascriptInterface
-    fun sharePhoto(filename: String) {
-        activity.runOnUiThread {
-            try {
-                val uri = photoManager.getShareUri(filename)
-                if (uri == null) {
-                    Toast.makeText(context, "❌ Imagen no encontrada", Toast.LENGTH_SHORT).show()
-                    return@runOnUiThread
-                }
-
-                val shareIntent = Intent(Intent.ACTION_SEND).apply {
-                    type = "image/*"
-                    putExtra(Intent.EXTRA_STREAM, uri)
-                    putExtra(Intent.EXTRA_SUBJECT, "Foto - PsychoLogger")
-                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                }
-
-                val chooser = Intent.createChooser(shareIntent, "📷 Compartir foto")
-                activity.startActivity(chooser)
-            } catch (e: Exception) {
-                Toast.makeText(context, "❌ Error al compartir foto: ${e.message}", Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -1670,139 +972,25 @@ class WebAppInterface(private val context: Context, private val activity: MainAc
      * @return "OK" si se creó correctamente, "ERROR: ..." si falló
      */
     @JavascriptInterface
-    fun cacheLocalStorageSnapshot(localStorageJson: String) {
-        try {
-            backupManager.saveLocalStorageSnapshot(localStorageJson)
-        } catch (e: Exception) {
-            android.util.Log.e("WebAppInterface", "Error al actualizar snapshot de backup", e)
-        }
-    }
-
-    /**
-     * Crear backup manual (botón en Ajustes)
-     *
-     * @param localStorageJson JSON string con todo el localStorage
-     * @return "OK" si se creó correctamente, "ERROR: ..." si falló
-     */
-    @JavascriptInterface
     fun createManualBackup(localStorageJson: String): String {
         return try {
-            val backupFile = backupManager.createBackupWithData(
-                localStorageData = localStorageJson,
-                password = null,
-                includeMedia = true
-            )
+            val backupFile = backupManager.createBackupWithData(localStorageJson)
 
             if (backupFile != null) {
-                val backupPath = backupFile.absolutePath
                 Toast.makeText(
                     context,
-                    "✅ Backup guardado en:\n$backupPath",
+                    context.getString(R.string.backup_created_toast, backupFile.name),
                     Toast.LENGTH_LONG
                 ).show()
                 "OK:${backupFile.name}"
             } else {
-                Toast.makeText(context, "❌ Error al crear backup", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, context.getString(R.string.backup_create_error_toast), Toast.LENGTH_SHORT).show()
                 "ERROR: No se pudo crear el backup"
             }
         } catch (e: Exception) {
-            Toast.makeText(context, "❌ Error: ${e.message}", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, context.getString(R.string.generic_error_toast, e.message ?: ""), Toast.LENGTH_SHORT).show()
             "ERROR: ${e.message}"
         }
-    }
-
-    @JavascriptInterface
-    fun importBackup() {
-        activity.runOnUiThread {
-            Toast.makeText(context, "📥 Selecciona un archivo ZIP de backup", Toast.LENGTH_SHORT).show()
-            activity.startBackupImportFlow()
-        }
-    }
-
-    @JavascriptInterface
-    fun getLastBackupInfo(): String {
-        return try {
-            val metadata = backupManager.getLastBackupMetadata() ?: return ""
-            JSONObject().apply {
-                put("type", metadata.type)
-                put("timestamp", metadata.timestamp)
-                put("filename", metadata.filename)
-                put("absolutePath", metadata.absolutePath)
-                put("formattedDate", metadata.formattedDate)
-            }.toString()
-        } catch (e: Exception) {
-            ""
-        }
-    }
-    @JavascriptInterface
-    fun createComprehensiveBackup(localStorageData: String, password: String?, includeMedia: Boolean) {
-        activity.lifecycleScope.launch {
-            val backupFile = withContext(Dispatchers.IO) {
-                backupManager.createBackupWithData(
-                    localStorageData = localStorageData,
-                    password = password?.takeIf { it.isNotBlank() },
-                    includeMedia = includeMedia
-                )
-            }
-
-            if (backupFile != null) {
-                activity.runOnUiThread {
-                    Toast.makeText(context, "✅ Backup creado exitosamente", Toast.LENGTH_SHORT).show()
-                }
-                // Notificar éxito a JS si es necesario
-                activity.executeJavaScript("if(window.onBackupCreated) { window.onBackupCreated('${backupFile.name}'); }")
-            } else {
-                activity.runOnUiThread {
-                    Toast.makeText(context, "❌ Error al crear backup", Toast.LENGTH_LONG).show()
-                }
-            }
-        }
-    }
-
-    @JavascriptInterface
-    fun showProfileSettings() {
-        activity.runOnUiThread {
-            onProfileRequest?.invoke()
-        }
-    }
-
-    fun shareBackup(filename: String) {
-        activity.runOnUiThread {
-            try {
-                val backupDir = backupManager.getBackupsDirectory()
-                val backupFile = File(backupDir, filename)
-
-                if (!backupFile.exists()) {
-                    Toast.makeText(context, "❌ El archivo de backup no existe", Toast.LENGTH_SHORT).show()
-                    return@runOnUiThread
-                }
-
-                val shareUri = FileProvider.getUriForFile(
-                    context,
-                    "${context.packageName}.fileprovider",
-                    backupFile
-                )
-
-                val shareIntent = Intent(Intent.ACTION_SEND).apply {
-                    type = "application/zip"
-                    putExtra(Intent.EXTRA_STREAM, shareUri)
-                    putExtra(Intent.EXTRA_SUBJECT, "Backup PsychoLogger: $filename")
-                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                }
-
-                val chooser = Intent.createChooser(shareIntent, "🚀 Compartir Backup")
-                activity.startActivity(chooser)
-
-            } catch (e: Exception) {
-                android.util.Log.e("WebAppInterface", "Error al compartir backup", e)
-                Toast.makeText(context, "❌ Error al compartir: ${e.message}", Toast.LENGTH_LONG).show()
-            }
-        }
-    }
-
-    @JavascriptInterface
-    fun getBackupsDirectory(): String {
-        return backupManager.getBackupsDirectory().absolutePath
     }
 
     /**
@@ -1827,11 +1015,11 @@ class WebAppInterface(private val context: Context, private val activity: MainAc
                     val shareIntent = Intent(Intent.ACTION_SEND).apply {
                         type = "application/zip"
                         putExtra(Intent.EXTRA_STREAM, uri)
-                        putExtra(Intent.EXTRA_SUBJECT, "Notas de voz - PsychoLogger")
+                        putExtra(Intent.EXTRA_SUBJECT, context.getString(R.string.audio_zip_share_subject))
                         addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                     }
 
-                    val chooser = Intent.createChooser(shareIntent, "📦 Exportar audios")
+                    val chooser = Intent.createChooser(shareIntent, context.getString(R.string.audio_zip_share_chooser_title))
                     chooser.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                     activity.startActivity(chooser)
                 }
@@ -1839,40 +1027,6 @@ class WebAppInterface(private val context: Context, private val activity: MainAc
                 "OK"
             } else {
                 "ERROR: No se pudo crear el ZIP"
-            }
-        } catch (e: Exception) {
-            "ERROR: ${e.message}"
-        }
-    }
-
-    @JavascriptInterface
-    fun exportPhotosZip(): String {
-        return try {
-            val zipFile = backupManager.exportPhotosZip()
-
-            if (zipFile != null) {
-                activity.runOnUiThread {
-                    val uri = FileProvider.getUriForFile(
-                        context,
-                        "${context.packageName}.fileprovider",
-                        zipFile
-                    )
-
-                    val shareIntent = Intent(Intent.ACTION_SEND).apply {
-                        type = "application/zip"
-                        putExtra(Intent.EXTRA_STREAM, uri)
-                        putExtra(Intent.EXTRA_SUBJECT, "Fotos - PsychoLogger")
-                        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                    }
-
-                    val chooser = Intent.createChooser(shareIntent, "📸 Exportar fotos")
-                    chooser.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                    activity.startActivity(chooser)
-                }
-
-                "OK"
-            } else {
-                "ERROR: No se pudo crear el ZIP de fotos"
             }
         } catch (e: Exception) {
             "ERROR: ${e.message}"
@@ -1891,7 +1045,7 @@ class WebAppInterface(private val context: Context, private val activity: MainAc
             if (password.length < 8) {
                 Toast.makeText(
                     context,
-                    "⚠️ La contraseña debe tener al menos 8 caracteres",
+                    context.getString(R.string.password_min_length_toast),
                     Toast.LENGTH_SHORT
                 ).show()
                 return "ERROR: Contraseña muy corta"
@@ -1911,19 +1065,19 @@ class WebAppInterface(private val context: Context, private val activity: MainAc
                     val shareIntent = Intent(Intent.ACTION_SEND).apply {
                         type = "application/zip"
                         putExtra(Intent.EXTRA_STREAM, uri)
-                        putExtra(Intent.EXTRA_SUBJECT, "Notas de voz cifradas - PsychoLogger")
-                        putExtra(Intent.EXTRA_TEXT, "⚠️ Este archivo está cifrado con AES-256.\nGuarda la contraseña en un lugar seguro.")
+                        putExtra(Intent.EXTRA_SUBJECT, context.getString(R.string.encrypted_audio_zip_share_subject))
+                        putExtra(Intent.EXTRA_TEXT, context.getString(R.string.encrypted_audio_zip_share_text))
                         addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                     }
 
-                    val chooser = Intent.createChooser(shareIntent, "🔒 Exportar audios cifrados")
+                    val chooser = Intent.createChooser(shareIntent, context.getString(R.string.encrypted_audio_zip_share_chooser_title))
                     chooser.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                     activity.startActivity(chooser)
                 }
 
                 Toast.makeText(
                     context,
-                    "✅ ZIP cifrado creado. Guarda la contraseña!",
+                    context.getString(R.string.encrypted_zip_created_toast),
                     Toast.LENGTH_LONG
                 ).show()
 
@@ -1978,11 +1132,6 @@ class WebAppInterface(private val context: Context, private val activity: MainAc
                 android.content.pm.PackageManager.PERMISSION_GRANTED
     }
 
-    private fun hasCameraPermission(): Boolean {
-        return context.checkSelfPermission(android.Manifest.permission.CAMERA) ==
-                android.content.pm.PackageManager.PERMISSION_GRANTED
-    }
-
     /**
      * Libera recursos al destruir la interfaz
      *
@@ -1998,7 +1147,6 @@ class WebAppInterface(private val context: Context, private val activity: MainAc
 @Composable
 fun WebViewScreen(
     context: Context,
-    isSoftTheme: Boolean,
     onFileChooser: (ValueCallback<Array<Uri>>) -> Unit,
     onWebViewReady: (WebView) -> Unit
 ) {
@@ -2028,7 +1176,7 @@ fun WebViewScreen(
                             } catch (e: Exception) {
                                 Toast.makeText(
                                     context,
-                                    "No se puede abrir: $url",
+                                    context.getString(R.string.cannot_open_url_toast, url),
                                     Toast.LENGTH_SHORT
                                 ).show()
                                 true
@@ -2039,16 +1187,15 @@ fun WebViewScreen(
 
                     override fun onPageFinished(view: WebView?, url: String?) {
                         super.onPageFinished(view, url)
-                        
-                        // Aplicar tema persistido
-                        val themeName = if (isSoftTheme) "soft" else "original"
-                        view?.evaluateJavascript("if (typeof setAppTheme === 'function') { setAppTheme('$themeName'); }", null)
-
                         view?.evaluateJavascript(
                             """
                             // Función de exportación
                             window.exportToCSV = function() {
                                 try {
+                                    if (typeof migrateOldEntries === 'function') {
+                                        migrateOldEntries();
+                                    }
+
                                     let csvContent = "";
                                     csvContent += "SUSTANCIAS\n";
                                     csvContent += "ID,Nombre,Color,Emoji,Fecha_Creacion,Fecha_Actualizacion\n";
@@ -2152,12 +1299,6 @@ fun WebViewScreen(
                 val activity = context as MainActivity
                 val interfaceInstance = WebAppInterface(context, activity)
                 activity.setWebAppInterface(interfaceInstance)
-                // Assign callback immediately after setting the interface
-                interfaceInstance.onProfileRequest = {
-                    activity.runOnUiThread {
-                        activity.showProfileSettingsFromBridge()
-                    }
-                }
                 addJavascriptInterface(interfaceInstance, "Android")
 
                 setDownloadListener { url, _, contentDisposition, mimetype, _ ->
@@ -2178,12 +1319,12 @@ fun WebViewScreen(
                         val downloadManager =
                             context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
                         downloadManager.enqueue(request)
-                        Toast.makeText(context, "Descargando $fileName...", Toast.LENGTH_LONG)
+                        Toast.makeText(context, context.getString(R.string.downloading_file_toast, fileName), Toast.LENGTH_LONG)
                             .show()
                     } catch (e: Exception) {
                         Toast.makeText(
                             context,
-                            "Error al descargar: ${e.message}",
+                            context.getString(R.string.download_error_toast, e.message ?: ""),
                             Toast.LENGTH_LONG
                         ).show()
                     }
@@ -2192,4 +1333,5 @@ fun WebViewScreen(
                 loadUrl("file:///android_asset/index.html")
             }
         }
-    )}
+    )
+}

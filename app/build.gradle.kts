@@ -1,27 +1,8 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.kotlin.compose)
     id("kotlin-kapt")
-}
-
-// Configuración opcional de firma. Cuando los valores no están presentes
-// Gradle cae automáticamente en el keystore debug para evitar errores.
-val releaseStoreFilePath = project.findProperty("RELEASE_STORE_FILE") as? String
-val releaseStorePassword = project.findProperty("RELEASE_STORE_PASSWORD") as? String
-val releaseKeyAlias = project.findProperty("RELEASE_KEY_ALIAS") as? String
-val releaseKeyPassword = project.findProperty("RELEASE_KEY_PASSWORD") as? String
-
-val releaseStoreFile = releaseStoreFilePath
-    ?.takeIf { it.isNotBlank() }
-    ?.let { file(it) }
-
-val hasReleaseSigningConfig = releaseStoreFile != null &&
-        !releaseStorePassword.isNullOrBlank() &&
-        !releaseKeyAlias.isNullOrBlank() &&
-        !releaseKeyPassword.isNullOrBlank()
-
-if (!hasReleaseSigningConfig) {
-    logger.lifecycle("[PsychoLogger] Credenciales de firma ausentes. Usando keystore debug por defecto.")
 }
 
 android {
@@ -32,83 +13,37 @@ android {
         applicationId = "com.d4vram.psychologger"
         minSdk = 26
         targetSdk = 36
-        versionCode = 6
-        versionName = "1.3"
+        versionCode = 7
+        versionName = "1.4"
+
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
-    dependenciesInfo {
-        // Disables dependency metadata when building APKs (for IzzyOnDroid/F-Droid)
-        includeInApk = false
-        // Disables dependency metadata when building Android App Bundles (for Google Play)
-        includeInBundle = false
-    }
-
-    // --- FIRMA ---
-    val releaseSigningConfig = if (hasReleaseSigningConfig) {
-        signingConfigs.create("release") {
-            storeFile = releaseStoreFile
-            storePassword = releaseStorePassword!!
-            keyAlias = releaseKeyAlias!!
-            keyPassword = releaseKeyPassword!!
-            // si tu AGP no soporta estos flags, elimínalos sin problema:
-            enableV1Signing = true
-            enableV2Signing = true
-            enableV3Signing = true
-            enableV4Signing = true
-        }
-    } else {
-        null
-    }
-
     buildTypes {
-        // Producción
-        getByName("release") {
-            isMinifyEnabled = true
-            isShrinkResources = true
+        release {
+            isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            signingConfig = releaseSigningConfig ?: signingConfigs.getByName("debug")
-        }
-
-        // Desarrollo firmado con la misma clave (para que no moleste Play Protect)
-        create("dev") {
-            initWith(getByName("release"))
-            isDebuggable = true
-            isMinifyEnabled = true
-            isShrinkResources = true
-            signingConfig = releaseSigningConfig ?: signingConfigs.getByName("debug")
-            // Si quieres que conviva con la release, descomenta:
-             applicationIdSuffix = ".dev"
-             versionNameSuffix = "-dev"
-        }
-
-        // Debug “clásico” (si lo usas)
-        getByName("debug") {
-            isDebuggable = true
-            // Si quieres que debug también vaya firmado estable, descomenta:
-            // signingConfig = releaseSigningConfig ?: signingConfigs.getByName("debug")
         }
     }
 
-    // Java/Kotlin: usa 17 con AGP moderno
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
-    }
-    kotlinOptions {
-        jvmTarget = "17"
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
     }
 
-    // Compose; si usas el plugin compose moderno, puedes mantener esto:
+    kotlinOptions {
+        jvmTarget = "11"
+    }
+
     buildFeatures {
         compose = true
     }
+
     composeOptions {
-        // Compose Compiler alineado con Kotlin 1.9.24 / Compose BOM 2024.09
-        kotlinCompilerExtensionVersion = "1.5.14"
+        kotlinCompilerExtensionVersion = "1.5.1"
     }
 
     packaging {
@@ -119,35 +54,31 @@ android {
 }
 
 dependencies {
-    // WebView
+    // WebView support - NUEVA DEPENDENCIA AGREGADA
     implementation("androidx.webkit:webkit:1.8.0")
 
-    // WorkManager
+    // WorkManager for periodic backups
     implementation("androidx.work:work-runtime-ktx:2.9.0")
 
-    // DocumentFile (SAF - Storage Access Framework)
-    implementation("androidx.documentfile:documentfile:1.0.1")
-
-    // Biometric & Security
+    // Biometric and Security
     implementation(libs.androidx.biometric)
     implementation(libs.androidx.security.crypto)
 
-    // Compose core (usando BOM para mantener versiones alineadas)
-    implementation(platform(libs.androidx.compose.bom))
-    androidTestImplementation(platform(libs.androidx.compose.bom))
+    // Compose core
+    implementation("androidx.compose.ui:ui:1.5.1")
+    implementation("androidx.compose.ui:ui-tooling-preview:1.5.1")
+    debugImplementation("androidx.compose.ui:ui-tooling:1.5.1")
+    debugImplementation("androidx.compose.ui:ui-test-manifest:1.5.1")
 
-    implementation(libs.androidx.ui)
-    implementation(libs.androidx.ui.tooling.preview)
-    debugImplementation(libs.androidx.ui.tooling)
-    debugImplementation(libs.androidx.ui.test.manifest)
-    androidTestImplementation(libs.androidx.ui.test.junit4)
+    // Compose Material (versión 1.x si vas a usar Material2 y Material3)
+    implementation("androidx.compose.material:material:1.5.1")
 
-    // Material (1.x) y Material3
-    implementation("androidx.compose.material:material")
-    implementation(libs.androidx.material3)
-    implementation("androidx.compose.material3:material3-window-size-class")
+    // Compose Material3
+    implementation("androidx.compose.material3:material3:1.1.0")
+    // Opcional: componentes de ventana para Material3
+    implementation("androidx.compose.material3:material3-window-size-class:1.1.0")
 
-    // Navigation
+    // Navigation Compose
     implementation("androidx.navigation:navigation-compose:2.7.6")
     implementation("androidx.navigation:navigation-fragment:2.7.6")
     implementation("androidx.navigation:navigation-ui-ktx:2.7.6")
@@ -165,14 +96,10 @@ dependencies {
     // Coroutines
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
 
-    // Icons
-    implementation("androidx.compose.material:material-icons-extended")
+    // Icons filled
+    implementation("androidx.compose.material:material-icons-extended:1.5.1")
 
-    // Annotations requeridas por bibliotecas de cifrado (Tink)
-    compileOnly("com.google.code.findbugs:jsr305:3.0.2")
-    compileOnly("javax.annotation:javax.annotation-api:1.3.2")
-
-    // JitPack libs
+    // JitPack repos
     implementation("com.github.prolificinteractive:material-calendarview:2.0.1") {
         exclude(group = "com.android.support", module = "support-compat")
     }
@@ -183,16 +110,16 @@ dependencies {
     // Lottie
     implementation("com.airbnb.android:lottie:6.2.0")
 
-    // Core AndroidX
+    // Core Android
     implementation("androidx.core:core-ktx:1.12.0")
     implementation("androidx.appcompat:appcompat:1.6.1")
     implementation("com.google.android.material:material:1.11.0")
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
 
-    // Activity Compose
+    // Optional extras
     implementation("androidx.activity:activity-compose:1.8.0")
 
-    // Tests
+    // Testing
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")

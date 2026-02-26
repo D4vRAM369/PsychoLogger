@@ -6,8 +6,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.viewinterop.AndroidView
 import com.d4vram.psychologger.ui.components.WebCard
+import com.d4vram.psychologger.R
 import com.github.mikephil.charting.charts.BarChart
 import com.github.mikephil.charting.data.*
 
@@ -20,8 +22,9 @@ fun StatsScreen() {
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         WebCard(Modifier.fillMaxWidth()) {
-            Text("Frecuencia de Uso", style = MaterialTheme.typography.titleLarge)
+            Text(stringResource(R.string.usage_frequency_title), style = MaterialTheme.typography.titleLarge)
             Spacer(Modifier.height(8.dp))
+            val datasetLabel = stringResource(R.string.consumption_dataset_label)
             AndroidView(factory = { ctx ->
                 BarChart(ctx).apply {
                     data = BarData(
@@ -30,7 +33,7 @@ fun StatsScreen() {
                                 BarEntry(1f, 3f),
                                 BarEntry(2f, 5f),
                                 BarEntry(3f, 2f)
-                            ), "Consumo"
+                            ), datasetLabel
                         )
                     )
                     description.isEnabled = false
@@ -44,4 +47,3 @@ fun StatsScreen() {
         // Añade más WebCards para patrones, tolerancia…
     }
 }
-

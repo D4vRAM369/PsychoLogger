@@ -7,11 +7,12 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.d4vram.psychologger.R
 
 @Composable
 fun LockScreen(
@@ -36,30 +37,30 @@ fun LockScreen(
                 text = "🔒",
                 fontSize = 80.sp
             )
-            
+
             Spacer(modifier = Modifier.height(24.dp))
-            
+
             // Título
             Text(
-                text = "Aplicación Bloqueada",
+                text = stringResource(R.string.app_locked_title),
                 fontSize = 28.sp,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onBackground,
                 textAlign = TextAlign.Center
             )
-            
+
             Spacer(modifier = Modifier.height(16.dp))
-            
+
             // Descripción
             Text(
-                text = "Para acceder a tu bitácora psiconáutica, debes autenticarte",
+                text = stringResource(R.string.lock_description),
                 fontSize = 16.sp,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center
             )
-            
+
             Spacer(modifier = Modifier.height(48.dp))
-            
+
             // Botón principal para desbloquear con huella
             Button(
                 onClick = onUnlockWithBiometric,
@@ -72,14 +73,14 @@ fun LockScreen(
                 )
             ) {
                 Text(
-                    text = "🔐 Desbloquear con Huella",
+                    text = stringResource(R.string.unlock_biometric_button),
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Medium
                 )
             }
-            
+
             Spacer(modifier = Modifier.height(16.dp))
-            
+
             // Botón alternativo para PIN
             OutlinedButton(
                 onClick = onUnlockWithPin,
@@ -92,14 +93,14 @@ fun LockScreen(
                 )
             ) {
                 Text(
-                    text = "🔢 Usar Código PIN",
+                    text = stringResource(R.string.use_pin_code_button),
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Medium
                 )
             }
-            
+
             Spacer(modifier = Modifier.height(32.dp))
-            
+
             // Información adicional
             Card(
                 modifier = Modifier.fillMaxWidth(),
@@ -113,14 +114,14 @@ fun LockScreen(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = "💡 Consejo de Seguridad",
+                        text = stringResource(R.string.security_tip_title),
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Medium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = "Tu información personal está protegida. Solo tú puedes acceder a tus registros.",
+                        text = stringResource(R.string.security_tip_message),
                         fontSize = 12.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         textAlign = TextAlign.Center

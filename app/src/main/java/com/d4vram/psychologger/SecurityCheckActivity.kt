@@ -10,6 +10,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -76,7 +77,7 @@ class SecurityCheckActivity : FragmentActivity() {
                         Spacer(Modifier.height(16.dp))
 
                         Text(
-                            text = "Verificación de seguridad",
+                            text = stringResource(R.string.security_check_title),
                             fontSize = 24.sp,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onBackground,
@@ -86,7 +87,7 @@ class SecurityCheckActivity : FragmentActivity() {
                         Spacer(Modifier.height(8.dp))
 
                         Text(
-                            text = "Autentícate para continuar.",
+                            text = stringResource(R.string.security_check_subtitle),
                             fontSize = 16.sp,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             textAlign = TextAlign.Center
@@ -119,7 +120,7 @@ class SecurityCheckActivity : FragmentActivity() {
                                 containerColor = MaterialTheme.colorScheme.primary
                             )
                         ) {
-                            Text("🔐 Desbloquear con biometría", fontSize = 16.sp, fontWeight = FontWeight.Medium)
+                            Text(stringResource(R.string.unlock_with_biometric_button), fontSize = 16.sp, fontWeight = FontWeight.Medium)
                         }
 
                         Spacer(Modifier.height(12.dp))
@@ -131,7 +132,7 @@ class SecurityCheckActivity : FragmentActivity() {
                                 .fillMaxWidth()
                                 .height(56.dp)
                         ) {
-                            Text("🔢 Usar PIN", fontSize = 16.sp, fontWeight = FontWeight.Medium)
+                            Text(stringResource(R.string.use_pin_button), fontSize = 16.sp, fontWeight = FontWeight.Medium)
                         }
                     }
 

@@ -22,4 +22,162 @@
         <item>Cookie</item>
         <item>Cookies</item>
     </string-array>
+
+    <!-- Security Check Activity -->
+    <string name="security_check_title">Verificación de seguridad</string>
+    <string name="security_check_subtitle">Autentícate para continuar.</string>
+    <string name="unlock_with_biometric_button">🔐 Desbloquear con biometría</string>
+    <string name="use_pin_button">🔢 Usar PIN</string>
+    <string name="biometric_prompt_title">🔒 Desbloquear aplicación</string>
+    <string name="biometric_prompt_subtitle">Usa biometría o tu bloqueo del sistema</string>
+
+    <!-- Lock Screen -->
+    <string name="app_locked_title">Aplicación Bloqueada</string>
+    <string name="lock_description">Para acceder a tu bitácora psiconáutica, debes autenticarte</string>
+    <string name="unlock_biometric_button">🔐 Desbloquear con Huella</string>
+    <string name="use_pin_code_button">🔢 Usar Código PIN</string>
+    <string name="security_tip_title">💡 Consejo de Seguridad</string>
+    <string name="security_tip_message">Tu información personal está protegida. Solo tú puedes acceder a tus registros.</string>
+
+    <!-- Settings Screen -->
+    <string name="security_settings_title">🔒 Configuración de Seguridad</string>
+    <string name="app_lock_title">Bloqueo de Aplicación</string>
+    <string name="app_lock_description">Requiere huella dactilar o PIN para acceder</string>
+    <string name="advanced_settings_button">⚙️ Configuraciones Avanzadas</string>
+    <string name="configure_pin_button">🔢 Configurar PIN</string>
+    <string name="close_button">Cerrar</string>
+
+    <!-- Advanced Settings -->
+    <string name="advanced_settings_title">⚙️ Configuraciones Avanzadas</string>
+    <string name="auto_lock_section">⏰ Bloqueo Automático</string>
+    <string name="auto_lock_description">Configura cuándo se bloqueará automáticamente la aplicación después de que pase a segundo plano</string>
+    <string name="auto_lock_immediate">Inmediato</string>
+    <string name="auto_lock_30_seconds">30 segundos</string>
+    <string name="auto_lock_1_minute">1 minuto</string>
+    <string name="auto_lock_5_minutes">5 minutos</string>
+    <string name="auto_lock_10_minutes">10 minutos</string>
+    <string name="auto_lock_30_minutes">30 minutos</string>
+    <string name="security_info_section">🔒 Información de Seguridad</string>
+    <string name="security_info_content">• Tiempo inmediato: La app se bloquea tan pronto como pase a segundo plano\n• Tiempo personalizado: La app se bloquea después del tiempo especificado\n• Recomendamos usar tiempos cortos para mayor seguridad</string>
+    <string name="back_to_settings_button">← Volver a Ajustes</string>
+
+    <!-- PIN Setup -->
+    <string name="pin_setup_title">Configurar PIN de Seguridad</string>
+    <string name="confirm_pin_title">Confirmar PIN</string>
+    <string name="pin_setup_description">Crea un PIN de 4-6 dígitos para acceder a la aplicación</string>
+    <string name="pin_confirm_description">Ingresa nuevamente el PIN para confirmar</string>
+    <string name="pin_input_label">PIN (4-6 dígitos)</string>
+    <string name="confirm_pin_label">Confirmar PIN</string>
+    <string name="pin_too_short_error">El PIN debe tener al menos 4 dígitos</string>
+    <string name="pins_not_matching_error">Los PINs no coinciden</string>
+    <string name="next_button">Siguiente</string>
+    <string name="confirm_button">Confirmar</string>
+    <string name="cancel_button">Cancelar</string>
+    <string name="pin_security_info_title">🔐 Información de Seguridad</string>
+    <string name="pin_security_message">Este PIN se almacenará de forma encriptada en tu dispositivo. Guárdalo en un lugar seguro.</string>
+
+    <!-- PIN Entry -->
+    <string name="pin_entry_title">Ingresa tu PIN</string>
+    <string name="pin_entry_description">Ingresa tu PIN de 4-6 dígitos para desbloquear la aplicación</string>
+    <string name="remaining_attempts_message">Intentos restantes: %d</string>
+    <string name="pin_label">PIN</string>
+    <string name="unlock_button">🔓 Desbloquear</string>
+    <string name="use_biometric_button">🔐 Usar Huella Dactilar</string>
+    <string name="important_notice_title">⚠️ Importante</string>
+    <string name="pin_forgotten_message">Si olvidas tu PIN, tendrás que reinstalar la aplicación. La huella dactilar es más segura y conveniente.</string>
+
+    <!-- Profile Settings -->
+    <string name="my_psychonaut_profile_title">Mi Perfil Psiconáutico</string>
+    <string name="profile_subtitle">Tu compañero de viaje para un consumo consciente y responsable</string>
+    <string name="personal_information_section">Información Personal</string>
+    <string name="nickname_label">Nickname</string>
+    <string name="nickname_placeholder">Tu nickname</string>
+    <string name="save_profile_button">Guardar Perfil</string>
+    <string name="app_settings_section">Configuración de la App</string>
+    <string name="dark_theme_label">Tema Oscuro</string>
+    <string name="dark_theme_description">Interfaz en modo oscuro</string>
+    <string name="notifications_label">Notificaciones</string>
+    <string name="notifications_description">Recordatorios y alertas</string>
+    <string name="biometric_label">Huella Digital</string>
+    <string name="biometric_description">Acceso con biometría</string>
+    <string name="data_management_section">Gestión de Datos</string>
+    <string name="exporting_status">Exportando…</string>
+    <string name="export_data_button">📤 Exportar Mis Datos (CSV)</string>
+    <string name="import_data_button">📁 Seleccionar CSV para Importar</string>
+    <string name="clear_data_button">🗑️ Limpiar Todos los Datos</string>
+    <string name="privacy_security_section">Privacidad y Seguridad</string>
+    <string name="privacy_settings_button">🔒 Configuración de Privacidad</string>
+    <string name="access_history_button">📊 Historial de Accesos</string>
+    <string name="back_button">Volver</string>
+    <string name="confirm_clear_title">⚠️ Confirmar Limpieza</string>
+    <string name="confirm_clear_message">¿Estás seguro de que quieres eliminar TODOS los datos almacenados? Esta acción no se puede deshacer.</string>
+    <string name="confirm_clear_button">SÍ, LIMPIAR TODO</string>
+    <string name="cancel_action">CANCELAR</string>
+    <string name="import_data_dialog_title">📂 Importar Datos CSV</string>
+    <string name="import_data_dialog_message">¿Qué deseas hacer con los datos actuales?\n\n• AÑADIR: Agregar datos nuevos\n• REEMPLAZAR: Borrar todo y usar datos del CSV</string>
+    <string name="add_option">AÑADIR</string>
+
+    <!-- Calendar / Stats -->
+    <string name="add_entry_label">Añadir entrada</string>
+    <string name="usage_frequency_title">Frecuencia de Uso</string>
+    <string name="consumption_dataset_label">Consumo</string>
+
+    <!-- MainActivity / WebAppInterface i18n -->
+    <string name="settings_fab_content_description">Configuración</string>
+    <string name="select_csv_file_chooser_title">Seleccionar archivo CSV</string>
+    <string name="file_chooser_open_error_toast">Error al abrir selector: %1$s</string>
+    <string name="app_unlocked_toast">✅ Aplicación desbloqueada</string>
+    <string name="biometric_not_available_toast">❌ Biometría no disponible</string>
+    <string name="configure_pin_first_toast">🔢 Primero debes configurar un PIN en Ajustes</string>
+    <string name="app_lock_enabled_toast">🔒 Bloqueo de aplicación activado</string>
+    <string name="app_lock_disabled_toast">🔓 Bloqueo de aplicación desactivado</string>
+    <string name="auto_lock_time_updated_toast">⏰ Tiempo de bloqueo actualizado</string>
+    <string name="pin_configured_success_toast">🔢 PIN configurado correctamente</string>
+    <string name="pin_correct_toast">✅ PIN correcto</string>
+    <string name="pin_incorrect_toast">❌ PIN incorrecto</string>
+    <string name="csv_export_success_toast">✅ CSV exportado: %1$s</string>
+    <string name="file_create_error_toast">❌ Error al crear archivo</string>
+    <string name="csv_share_subject">Bitácora Psiconáutica</string>
+    <string name="csv_share_chooser_title">🚀 Compartir CSV</string>
+    <string name="csv_export_error_toast">❌ Error al exportar CSV: %1$s</string>
+    <string name="csv_share_subject_with_timestamp">Bitácora Psiconáutica - %1$s</string>
+    <string name="csv_share_body_text">📊 Mis datos exportados de PsychoLogger 🧠✨\n\nArchivo: %1$s</string>
+    <string name="csv_share_full_chooser_title">🚀 Compartir mi bitácora psiconáutica</string>
+    <string name="sharesheet_opened_toast">✅ ShareSheet abierto</string>
+    <string name="share_error_toast">❌ Error al compartir: %1$s</string>
+    <string name="imported_file_empty_toast">❌ El archivo está vacío</string>
+    <string name="no_valid_data_in_file_toast">❌ No se encontraron datos válidos en el archivo</string>
+    <string name="file_processing_error_toast">❌ Error al procesar archivo: %1$s</string>
+    <string name="import_summary_dialog_message">📊 Datos encontrados en el archivo:\n• %1$d sustancias\n• %2$d registros\n\n⚠️ ¿Qué deseas hacer?</string>
+    <string name="import_dialog_add_button">➕ AÑADIR</string>
+    <string name="import_dialog_replace_button">🔄 REEMPLAZAR</string>
+    <string name="import_replace_confirm_title">⚠️ Confirmar Reemplazo</string>
+    <string name="import_replace_confirm_message">¿Estás seguro de que quieres BORRAR todos los datos actuales?</string>
+    <string name="import_replace_confirm_button">SÍ, REEMPLAZAR</string>
+    <string name="import_processing_toast">🔄 Procesando importación...</string>
+    <string name="webview_unavailable_error_toast">❌ Error: WebView no disponible</string>
+    <string name="generic_error_toast">❌ Error: %1$s</string>
+    <string name="microphone_permission_required_toast">⚠️ Se requiere permiso de micrófono. Ve a Ajustes → Permisos</string>
+    <string name="recording_start_error_toast">❌ Error al grabar: %1$s</string>
+    <string name="recording_stop_error_toast">❌ Error al detener grabación: %1$s</string>
+    <string name="recording_cancelled_toast">🗑️ Grabación cancelada</string>
+    <string name="recording_cancel_error_toast">❌ Error al cancelar: %1$s</string>
+    <string name="audio_file_not_found_toast">❌ Archivo de audio no encontrado</string>
+    <string name="audio_playback_error_toast">❌ Error al reproducir: %1$s</string>
+    <string name="file_not_found_toast">❌ Archivo no encontrado</string>
+    <string name="audio_share_subject">Nota de voz - PsychoLogger</string>
+    <string name="audio_share_chooser_title">🎤 Compartir nota de voz</string>
+    <string name="backup_created_toast">✅ Backup creado: %1$s</string>
+    <string name="backup_create_error_toast">❌ Error al crear backup</string>
+    <string name="password_min_length_toast">⚠️ La contraseña debe tener al menos 8 caracteres</string>
+    <string name="audio_zip_share_subject">Notas de voz - PsychoLogger</string>
+    <string name="audio_zip_share_chooser_title">📦 Exportar audios</string>
+    <string name="encrypted_audio_zip_share_subject">Notas de voz cifradas - PsychoLogger</string>
+    <string name="encrypted_audio_zip_share_text">⚠️ Este archivo está cifrado con AES-256.\nGuarda la contraseña en un lugar seguro.</string>
+    <string name="encrypted_audio_zip_share_chooser_title">🔒 Exportar audios cifrados</string>
+    <string name="encrypted_zip_created_toast">✅ ZIP cifrado creado. Guarda la contraseña!</string>
+    <string name="cannot_open_url_toast">No se puede abrir: %1$s</string>
+    <string name="downloading_file_toast">Descargando %1$s...</string>
+    <string name="download_error_toast">Error al descargar: %1$s</string>
+    <string name="profile_export_click_detected_toast">🔴 Click detectado!</string>
 </resources>

@@ -8,11 +8,13 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.d4vram.psychologger.R
 
 @Composable
 fun PinSetupScreen(
@@ -23,7 +25,10 @@ fun PinSetupScreen(
     var confirmPin by remember { mutableStateOf("") }
     var step by remember { mutableStateOf(1) } // 1: primer PIN, 2: confirmar PIN
     var errorMessage by remember { mutableStateOf("") }
-    
+
+    val pinTooShortError = stringResource(R.string.pin_too_short_error)
+    val pinsNotMatchingError = stringResource(R.string.pins_not_matching_error)
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -41,37 +46,37 @@ fun PinSetupScreen(
                 text = if (step == 1) "🔢" else "✅",
                 fontSize = 80.sp
             )
-            
+
             Spacer(modifier = Modifier.height(24.dp))
-            
+
             // Título
             Text(
-                text = if (step == 1) "Configurar PIN de Seguridad" else "Confirmar PIN",
+                text = if (step == 1) stringResource(R.string.pin_setup_title) else stringResource(R.string.confirm_pin_title),
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onBackground,
                 textAlign = TextAlign.Center
             )
-            
+
             Spacer(modifier = Modifier.height(16.dp))
-            
+
             // Descripción
             Text(
-                text = if (step == 1) 
-                    "Crea un PIN de 4-6 dígitos para acceder a la aplicación" 
-                else 
-                    "Ingresa nuevamente el PIN para confirmar",
+                text = if (step == 1)
+                    stringResource(R.string.pin_setup_description)
+                else
+                    stringResource(R.string.pin_confirm_description),
                 fontSize = 16.sp,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center
             )
-            
+
             Spacer(modifier = Modifier.height(32.dp))
-            
+
             // Campo de entrada PIN
             OutlinedTextField(
                 value = if (step == 1) pin else confirmPin,
-                onValueChange = { 
+                onValueChange = {
                     if (step == 1) {
                         if (it.length <= 6) pin = it
                     } else {
@@ -79,7 +84,7 @@ fun PinSetupScreen(
                     }
                     errorMessage = ""
                 },
-                label = { Text(if (step == 1) "PIN (4-6 dígitos)" else "Confirmar PIN") },
+                label = { Text(if (step == 1) stringResource(R.string.pin_input_label) else stringResource(R.string.confirm_pin_label)) },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
@@ -89,7 +94,7 @@ fun PinSetupScreen(
                     unfocusedBorderColor = MaterialTheme.colorScheme.outline
                 )
             )
-            
+
             // Mensaje de error
             if (errorMessage.isNotEmpty()) {
                 Spacer(modifier = Modifier.height(16.dp))
@@ -100,9 +105,9 @@ fun PinSetupScreen(
                     textAlign = TextAlign.Center
                 )
             }
-            
+
             Spacer(modifier = Modifier.height(32.dp))
-            
+
             // Botones
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -115,14 +120,14 @@ fun PinSetupScreen(
                         contentColor = MaterialTheme.colorScheme.onSurface
                     )
                 ) {
-                    Text("Cancelar")
+                    Text(stringResource(R.string.cancel_button))
                 }
-                
+
                 Button(
                     onClick = {
                         if (step == 1) {
                             if (pin.length < 4) {
-                                errorMessage = "El PIN debe tener al menos 4 dígitos"
+                                errorMessage = pinTooShortError
                             } else {
                                 step = 2
                                 errorMessage = ""
@@ -131,7 +136,7 @@ fun PinSetupScreen(
                             if (pin == confirmPin) {
                                 onPinSet(pin)
                             } else {
-                                errorMessage = "Los PINs no coinciden"
+                                errorMessage = pinsNotMatchingError
                                 confirmPin = ""
                             }
                         }
@@ -142,10 +147,10 @@ fun PinSetupScreen(
                         containerColor = MaterialTheme.colorScheme.primary
                     )
                 ) {
-                    Text(if (step == 1) "Siguiente" else "Confirmar")
+                    Text(if (step == 1) stringResource(R.string.next_button) else stringResource(R.string.confirm_button))
                 }
             }
-            
+
             // Información adicional
             Spacer(modifier = Modifier.height(32.dp))
             Card(
@@ -160,14 +165,14 @@ fun PinSetupScreen(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = "🔐 Información de Seguridad",
+                        text = stringResource(R.string.pin_security_info_title),
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Medium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = "Este PIN se almacenará de forma encriptada en tu dispositivo. Guárdalo en un lugar seguro.",
+                        text = stringResource(R.string.pin_security_message),
                         fontSize = 12.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         textAlign = TextAlign.Center

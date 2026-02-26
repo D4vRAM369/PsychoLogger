@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Psychonautic Log</string>
+    <string name="tab_calendar">Calendar</string>
+    <string name="tab_stats">Statistics</string>
+    <string name="tab_resources">Resources</string>
+    <string name="add_entry">Add</string>
+    <string name="add_substance">Add Substance</string>
+    <string name="dose_units">Dose Units</string>
+
+    <string-array name="dose_units_array">
+        <item>μg (micrograms)</item>
+        <item>mg (milligrams)</item>
+        <item>g (grams)</item>
+        <item>Pill</item>
+        <item>Trip</item>
+        <item>Half trip</item>
+        <item>Quarter trip</item>
+        <item>Line</item>
+        <item>Small line</item>
+        <item>Cold coffee</item>
+        <item>Cookie</item>
+        <item>Cookies</item>
+    </string-array>
+
+    <!-- Security Check Activity -->
+    <string name="security_check_title">Security verification</string>
+    <string name="security_check_subtitle">Authenticate to continue.</string>
+    <string name="unlock_with_biometric_button">🔐 Unlock with biometrics</string>
+    <string name="use_pin_button">🔢 Use PIN</string>
+    <string name="biometric_prompt_title">🔒 Unlock application</string>
+    <string name="biometric_prompt_subtitle">Use biometrics or your system lock</string>
+
+    <!-- Lock Screen -->
+    <string name="app_locked_title">Application Locked</string>
+    <string name="lock_description">To access your psychonautic log, you must authenticate</string>
+    <string name="unlock_biometric_button">🔐 Unlock with Fingerprint</string>
+    <string name="use_pin_code_button">🔢 Use PIN Code</string>
+    <string name="security_tip_title">💡 Security Tip</string>
+    <string name="security_tip_message">Your personal information is protected. Only you can access your records.</string>
+
+    <!-- Settings Screen -->
+    <string name="security_settings_title">🔒 Security Settings</string>
+    <string name="app_lock_title">App Lock</string>
+    <string name="app_lock_description">Requires fingerprint or PIN to access</string>
+    <string name="advanced_settings_button">⚙️ Advanced Settings</string>
+    <string name="configure_pin_button">🔢 Configure PIN</string>
+    <string name="close_button">Close</string>
+
+    <!-- Advanced Settings -->
+    <string name="advanced_settings_title">⚙️ Advanced Settings</string>
+    <string name="auto_lock_section">⏰ Auto Lock</string>
+    <string name="auto_lock_description">Configure when the app will automatically lock after going to the background</string>
+    <string name="auto_lock_immediate">Immediate</string>
+    <string name="auto_lock_30_seconds">30 seconds</string>
+    <string name="auto_lock_1_minute">1 minute</string>
+    <string name="auto_lock_5_minutes">5 minutes</string>
+    <string name="auto_lock_10_minutes">10 minutes</string>
+    <string name="auto_lock_30_minutes">30 minutes</string>
+    <string name="security_info_section">🔒 Security Information</string>
+    <string name="security_info_content">• Immediate: App locks as soon as it goes to the background\n• Custom time: App locks after the specified time\n• We recommend using short times for better security</string>
+    <string name="back_to_settings_button">← Back to Settings</string>
+
+    <!-- PIN Setup -->
+    <string name="pin_setup_title">Configure Security PIN</string>
+    <string name="confirm_pin_title">Confirm PIN</string>
+    <string name="pin_setup_description">Create a 4-6 digit PIN to access the application</string>
+    <string name="pin_confirm_description">Enter the PIN again to confirm</string>
+    <string name="pin_input_label">PIN (4-6 digits)</string>
+    <string name="confirm_pin_label">Confirm PIN</string>
+    <string name="pin_too_short_error">PIN must have at least 4 digits</string>
+    <string name="pins_not_matching_error">PINs do not match</string>
+    <string name="next_button">Next</string>
+    <string name="confirm_button">Confirm</string>
+    <string name="cancel_button">Cancel</string>
+    <string name="pin_security_info_title">🔐 Security Information</string>
+    <string name="pin_security_message">This PIN will be stored encrypted on your device. Keep it in a safe place.</string>
+
+    <!-- PIN Entry -->
+    <string name="pin_entry_title">Enter Your PIN</string>
+    <string name="pin_entry_description">Enter your 4-6 digit PIN to unlock the application</string>
+    <string name="remaining_attempts_message">Remaining attempts: %d</string>
+    <string name="pin_label">PIN</string>
+    <string name="unlock_button">🔓 Unlock</string>
+    <string name="use_biometric_button">🔐 Use Fingerprint</string>
+    <string name="important_notice_title">⚠️ Important</string>
+    <string name="pin_forgotten_message">If you forget your PIN, you will need to reinstall the application. Fingerprint is safer and more convenient.</string>
+
+    <!-- Profile Settings -->
+    <string name="my_psychonaut_profile_title">My Psychonaut Profile</string>
+    <string name="profile_subtitle">Your travel companion for conscious and responsible use</string>
+    <string name="personal_information_section">Personal Information</string>
+    <string name="nickname_label">Nickname</string>
+    <string name="nickname_placeholder">Your nickname</string>
+    <string name="save_profile_button">Save Profile</string>
+    <string name="app_settings_section">App Settings</string>
+    <string name="dark_theme_label">Dark Theme</string>
+    <string name="dark_theme_description">Dark mode interface</string>
+    <string name="notifications_label">Notifications</string>
+    <string name="notifications_description">Reminders and alerts</string>
+    <string name="biometric_label">Fingerprint</string>
+    <string name="biometric_description">Access with biometrics</string>
+    <string name="data_management_section">Data Management</string>
+    <string name="exporting_status">Exporting…</string>
+    <string name="export_data_button">📤 Export My Data (CSV)</string>
+    <string name="import_data_button">📁 Select CSV to Import</string>
+    <string name="clear_data_button">🗑️ Clear All Data</string>
+    <string name="privacy_security_section">Privacy and Security</string>
+    <string name="privacy_settings_button">🔒 Privacy Settings</string>
+    <string name="access_history_button">📊 Access History</string>
+    <string name="back_button">Back</string>
+    <string name="confirm_clear_title">⚠️ Confirm Cleanup</string>
+    <string name="confirm_clear_message">Are you sure you want to delete ALL stored data? This action cannot be undone.</string>
+    <string name="confirm_clear_button">YES, CLEAR ALL</string>
+    <string name="cancel_action">CANCEL</string>
+    <string name="import_data_dialog_title">📂 Import CSV Data</string>
+    <string name="import_data_dialog_message">What do you want to do with the current data?\n\n• ADD: Add new data\n• REPLACE: Delete everything and use CSV data</string>
+    <string name="add_option">ADD</string>
+
+    <!-- Calendar / Stats -->
+    <string name="add_entry_label">Add entry</string>
+    <string name="usage_frequency_title">Usage Frequency</string>
+    <string name="consumption_dataset_label">Consumption</string>
+
+    <!-- MainActivity / WebAppInterface i18n -->
+    <string name="settings_fab_content_description">Settings</string>
+    <string name="select_csv_file_chooser_title">Select CSV file</string>
+    <string name="file_chooser_open_error_toast">Error opening picker: %1$s</string>
+    <string name="app_unlocked_toast">✅ Application unlocked</string>
+    <string name="biometric_not_available_toast">❌ Biometrics not available</string>
+    <string name="configure_pin_first_toast">🔢 You must configure a PIN in Settings first</string>
+    <string name="app_lock_enabled_toast">🔒 App lock enabled</string>
+    <string name="app_lock_disabled_toast">🔓 App lock disabled</string>
+    <string name="auto_lock_time_updated_toast">⏰ Lock timeout updated</string>
+    <string name="pin_configured_success_toast">🔢 PIN configured successfully</string>
+    <string name="pin_correct_toast">✅ Correct PIN</string>
+    <string name="pin_incorrect_toast">❌ Incorrect PIN</string>
+    <string name="csv_export_success_toast">✅ CSV exported: %1$s</string>
+    <string name="file_create_error_toast">❌ Error creating file</string>
+    <string name="csv_share_subject">Psychonautic Log</string>
+    <string name="csv_share_chooser_title">🚀 Share CSV</string>
+    <string name="csv_export_error_toast">❌ Error exporting CSV: %1$s</string>
+    <string name="csv_share_subject_with_timestamp">Psychonautic Log - %1$s</string>
+    <string name="csv_share_body_text">📊 My exported PsychoLogger data 🧠✨\n\nFile: %1$s</string>
+    <string name="csv_share_full_chooser_title">🚀 Share my psychonautic log</string>
+    <string name="sharesheet_opened_toast">✅ ShareSheet opened</string>
+    <string name="share_error_toast">❌ Error sharing: %1$s</string>
+    <string name="imported_file_empty_toast">❌ The file is empty</string>
+    <string name="no_valid_data_in_file_toast">❌ No valid data found in the file</string>
+    <string name="file_processing_error_toast">❌ Error processing file: %1$s</string>
+    <string name="import_summary_dialog_message">📊 Data found in file:\n• %1$d substances\n• %2$d entries\n\n⚠️ What do you want to do?</string>
+    <string name="import_dialog_add_button">➕ ADD</string>
+    <string name="import_dialog_replace_button">🔄 REPLACE</string>
+    <string name="import_replace_confirm_title">⚠️ Confirm Replace</string>
+    <string name="import_replace_confirm_message">Are you sure you want to DELETE all current data?</string>
+    <string name="import_replace_confirm_button">YES, REPLACE</string>
+    <string name="import_processing_toast">🔄 Processing import...</string>
+    <string name="webview_unavailable_error_toast">❌ Error: WebView unavailable</string>
+    <string name="generic_error_toast">❌ Error: %1$s</string>
+    <string name="microphone_permission_required_toast">⚠️ Microphone permission is required. Go to Settings → Permissions</string>
+    <string name="recording_start_error_toast">❌ Error recording: %1$s</string>
+    <string name="recording_stop_error_toast">❌ Error stopping recording: %1$s</string>
+    <string name="recording_cancelled_toast">🗑️ Recording cancelled</string>
+    <string name="recording_cancel_error_toast">❌ Error cancelling: %1$s</string>
+    <string name="audio_file_not_found_toast">❌ Audio file not found</string>
+    <string name="audio_playback_error_toast">❌ Error playing audio: %1$s</string>
+    <string name="file_not_found_toast">❌ File not found</string>
+    <string name="audio_share_subject">Voice note - PsychoLogger</string>
+    <string name="audio_share_chooser_title">🎤 Share voice note</string>
+    <string name="backup_created_toast">✅ Backup created: %1$s</string>
+    <string name="backup_create_error_toast">❌ Error creating backup</string>
+    <string name="password_min_length_toast">⚠️ Password must be at least 8 characters</string>
+    <string name="audio_zip_share_subject">Voice notes - PsychoLogger</string>
+    <string name="audio_zip_share_chooser_title">📦 Export audio files</string>
+    <string name="encrypted_audio_zip_share_subject">Encrypted voice notes - PsychoLogger</string>
+    <string name="encrypted_audio_zip_share_text">⚠️ This file is encrypted with AES-256.\nStore the password in a safe place.</string>
+    <string name="encrypted_audio_zip_share_chooser_title">🔒 Export encrypted audio files</string>
+    <string name="encrypted_zip_created_toast">✅ Encrypted ZIP created. Save the password!</string>
+    <string name="cannot_open_url_toast">Cannot open: %1$s</string>
+    <string name="downloading_file_toast">Downloading %1$s...</string>
+    <string name="download_error_toast">Error downloading: %1$s</string>
+    <string name="profile_export_click_detected_toast">🔴 Click detected!</string>
+</resources>

@@ -9,10 +9,12 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.d4vram.psychologger.R
 
 @Composable
 fun AdvancedSettingsScreen(
@@ -21,14 +23,14 @@ fun AdvancedSettingsScreen(
     onBack: () -> Unit
 ) {
     val autoLockOptions = listOf(
-        0 to "Inmediato",
-        30 to "30 segundos",
-        60 to "1 minuto",
-        300 to "5 minutos",
-        600 to "10 minutos",
-        1800 to "30 minutos"
+        0 to stringResource(R.string.auto_lock_immediate),
+        30 to stringResource(R.string.auto_lock_30_seconds),
+        60 to stringResource(R.string.auto_lock_1_minute),
+        300 to stringResource(R.string.auto_lock_5_minutes),
+        600 to stringResource(R.string.auto_lock_10_minutes),
+        1800 to stringResource(R.string.auto_lock_30_minutes)
     )
-    
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -43,15 +45,15 @@ fun AdvancedSettingsScreen(
         ) {
             // Título
             Text(
-                text = "⚙️ Configuraciones Avanzadas",
+                text = stringResource(R.string.advanced_settings_title),
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onBackground,
                 textAlign = TextAlign.Center
             )
-            
+
             Spacer(modifier = Modifier.height(32.dp))
-            
+
             // Configuración de tiempo de bloqueo automático
             Card(
                 modifier = Modifier.fillMaxWidth(),
@@ -64,23 +66,23 @@ fun AdvancedSettingsScreen(
                     modifier = Modifier.padding(20.dp)
                 ) {
                     Text(
-                        text = "⏰ Bloqueo Automático",
+                        text = stringResource(R.string.auto_lock_section),
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Medium,
                         color = MaterialTheme.colorScheme.onSurface
                     )
-                    
+
                     Spacer(modifier = Modifier.height(12.dp))
-                    
+
                     Text(
-                        text = "Configura cuándo se bloqueará automáticamente la aplicación después de que pase a segundo plano",
+                        text = stringResource(R.string.auto_lock_description),
                         fontSize = 14.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         textAlign = TextAlign.Start
                     )
-                    
+
                     Spacer(modifier = Modifier.height(20.dp))
-                    
+
                     // Selector de tiempo
                     Column {
                         autoLockOptions.forEach { (seconds, label) ->
@@ -97,9 +99,9 @@ fun AdvancedSettingsScreen(
                                         selectedColor = MaterialTheme.colorScheme.primary
                                     )
                                 )
-                                
+
                                 Spacer(modifier = Modifier.width(12.dp))
-                                
+
                                 Text(
                                     text = label,
                                     fontSize = 16.sp,
@@ -110,9 +112,9 @@ fun AdvancedSettingsScreen(
                     }
                 }
             }
-            
+
             Spacer(modifier = Modifier.height(24.dp))
-            
+
             // Información adicional sobre seguridad
             Card(
                 modifier = Modifier.fillMaxWidth(),
@@ -125,27 +127,25 @@ fun AdvancedSettingsScreen(
                     modifier = Modifier.padding(20.dp)
                 ) {
                     Text(
-                        text = "🔒 Información de Seguridad",
+                        text = stringResource(R.string.security_info_section),
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Medium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-                    
+
                     Spacer(modifier = Modifier.height(12.dp))
-                    
+
                     Text(
-                        text = "• Tiempo inmediato: La app se bloquea tan pronto como pase a segundo plano\n" +
-                               "• Tiempo personalizado: La app se bloquea después del tiempo especificado\n" +
-                               "• Recomendamos usar tiempos cortos para mayor seguridad",
+                        text = stringResource(R.string.security_info_content),
                         fontSize = 14.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         textAlign = TextAlign.Start
                     )
                 }
             }
-            
+
             Spacer(modifier = Modifier.height(32.dp))
-            
+
             // Botón para volver
             OutlinedButton(
                 onClick = onBack,
@@ -158,12 +158,12 @@ fun AdvancedSettingsScreen(
                 )
             ) {
                 Text(
-                    text = "← Volver a Ajustes",
+                    text = stringResource(R.string.back_to_settings_button),
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Medium
                 )
             }
-            
+
             Spacer(modifier = Modifier.height(24.dp))
         }
     }

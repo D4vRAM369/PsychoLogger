@@ -5,11 +5,13 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.prolificinteractive.materialcalendarview.MaterialCalendarView
 import com.d4vram.psychologger.ui.components.WebCard
 import com.d4vram.psychologger.ui.components.WebButton
+import com.d4vram.psychologger.R
 
 @Composable
 fun CalendarScreen() {
@@ -43,7 +45,7 @@ fun CalendarScreen() {
         // Botón para agregar una nueva entrada
         WebButton(
             onClick = { /* Navegar a pantalla de añadir evento */ },
-            text = "Añadir entrada"
+            text = stringResource(R.string.add_entry_label)
         )
     }
 }
