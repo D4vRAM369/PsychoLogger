@@ -7,6 +7,7 @@
 [![Built with Claude Code](https://img.shields.io/badge/Built%20with-Claude%20Code-8A63D2?logo=anthropic&logoColor=white)](https://claude.ai/code)
 [![Assisted by ChatGPT](https://img.shields.io/badge/Assisted%20by-ChatGPT-74aa9c?logo=openai&logoColor=white)](https://chat.openai.com)
 [![PBL](https://img.shields.io/badge/Learning-Project%20Based-orange?logo=gradleplay&logoColor=white)](https://en.wikipedia.org/wiki/Project-based_learning)
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/D4vRAM369/PsychoLogger)
 
 [🇬🇧🇺🇸 Versión en inglés](README.md)
 
