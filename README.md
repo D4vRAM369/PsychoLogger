@@ -1,5 +1,19 @@
 # PsychoLogger 🧠📊
 
+<img width="400" height="400" alt="image" src="https://github.com/user-attachments/assets/fb9ed401-c5ee-4125-b7f9-b29aa07ac5c8" />
+
+
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+[![Android](https://img.shields.io/badge/Android-8.0%2B-3DDC84?logo=android&logoColor=white)](https://www.android.com)
+[![Kotlin](https://img.shields.io/badge/Kotlin-1.9.24-7F52FF?logo=kotlin&logoColor=white)](https://kotlinlang.org)
+[![Open Source](https://img.shields.io/badge/Open%20Source-%E2%9D%A4-red?logo=open-source-initiative&logoColor=white)](https://opensource.org)
+[![Built with Claude Code](https://img.shields.io/badge/Built%20with-Claude%20Code-8A63D2?logo=anthropic&logoColor=white)](https://claude.ai/code)
+[![Assisted by ChatGPT](https://img.shields.io/badge/Assisted%20by-ChatGPT-74aa9c?logo=openai&logoColor=white)](https://chat.openai.com)
+[![PBL](https://img.shields.io/badge/Learning-Project%20Based-orange?logo=gradleplay&logoColor=white)](https://en.wikipedia.org/wiki/Project-based_learning)
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/D4vRAM369/PsychoLogger)
+
+[🇬🇧🇺🇸 Versión en inglés](README.md)
+
 ## ¿Qué es PsychoLogger?
 
 PsychoLogger es tu bitácora personal para experiencias psiconáuticas. Una app Android diseñada para quienes buscan documentar y entender sus experiencias con sustancias psicoactivas de manera responsable y segura. 
