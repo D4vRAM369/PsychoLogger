@@ -13,6 +13,8 @@ import android.os.Environment
 import android.provider.MediaStore
 import android.webkit.ConsoleMessage
 import android.webkit.JavascriptInterface
+import android.webkit.JsPromptResult
+import android.webkit.JsResult
 import android.webkit.URLUtil
 import android.webkit.ValueCallback
 import android.webkit.WebChromeClient
@@ -2125,6 +2127,54 @@ fun WebViewScreen(
                         consoleMessage?.let {
                             println("WebView Console [${it.messageLevel()}]: ${it.message()}")
                         }
+                        return true
+                    }
+
+                    // Reemplaza diálogos JS nativos para ocultar el origen "localhost".
+                    // file:// se renderiza como "localhost dice..." en algunos
+                    // Android WebView. Aquí mostramos AlertDialog limpio sin origen.
+                    override fun onJsAlert(
+                        view: WebView?, url: String?, message: String?,
+                        result: JsResult?
+                    ): Boolean {
+                        val ctx = view?.context ?: return false
+                        AlertDialog.Builder(ctx)
+                            .setMessage(message ?: "")
+                            .setPositiveButton(android.R.string.ok) { _, _ -> result?.confirm() }
+                            .setOnCancelListener { result?.cancel() }
+                            .show()
+                        return true
+                    }
+
+                    override fun onJsConfirm(
+                        view: WebView?, url: String?, message: String?,
+                        result: JsResult?
+                    ): Boolean {
+                        val ctx = view?.context ?: return false
+                        AlertDialog.Builder(ctx)
+                            .setMessage(message ?: "")
+                            .setPositiveButton(android.R.string.ok) { _, _ -> result?.confirm() }
+                            .setNegativeButton(android.R.string.cancel) { _, _ -> result?.cancel() }
+                            .setOnCancelListener { result?.cancel() }
+                            .show()
+                        return true
+                    }
+
+                    override fun onJsPrompt(
+                        view: WebView?, url: String?, message: String?,
+                        defaultValue: String?, result: JsPromptResult?
+                    ): Boolean {
+                        val ctx = view?.context ?: return false
+                        val input = EditText(ctx).apply { setText(defaultValue ?: "") }
+                        AlertDialog.Builder(ctx)
+                            .setMessage(message ?: "")
+                            .setView(input)
+                            .setPositiveButton(android.R.string.ok) { _, _ ->
+                                result?.confirm(input.text.toString())
+                            }
+                            .setNegativeButton(android.R.string.cancel) { _, _ -> result?.cancel() }
+                            .setOnCancelListener { result?.cancel() }
+                            .show()
                         return true
                     }
                 }
