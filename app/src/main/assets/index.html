@@ -8233,6 +8233,16 @@
                         }));
                 }
 
+                function normalizeStatsMergeKey(value) {
+                    return (value || '')
+                        .toString()
+                        .normalize('NFD')
+                        .replace(/[\u0300-\u036f]/g, '')
+                        .replace(/\s+/g, ' ')
+                        .trim()
+                        .toLowerCase();
+                }
+
                 function toLegendItems(distribution) {
                     const total = distribution.reduce((sum, item) => sum + item.value, 0) || 1;
                     return distribution.map(item => ({
@@ -10275,6 +10285,7 @@
                         /\bcreo\s+que\b/i,      // "creo que"
                         /\bporque\s+\w+\b/i,    // "porque..."
                         /\bcuando\s+\w+\b/i,    // "cuando..."
+                        /\bno\s+(es|fue)\s+una\s+experiencia\b/i, // "no es/fue una experiencia..."
                     ];
 
                     for (const pattern of sentencePatterns) {
@@ -10286,7 +10297,9 @@
                         'sino debo ir',
                         'acabo de tene',
                         'pero que le jodan',
-                        'bastante me joden'
+                        'bastante me joden',
+                        'no es una experiencia',
+                        'no fue una experiencia'
                     ];
 
                     const lower = trimmed.toLowerCase();
@@ -10346,19 +10359,24 @@
                             }
                         });
 
+                        const mergePreview = previewSetSettingMerge();
+                        corrupted.mergePreview = mergePreview;
+
                         const totalCorrupted = corrupted.substances.length + corrupted.sets.length + corrupted.settings.length;
+                        const totalMergeGroups = mergePreview.setGroups + mergePreview.settingGroups;
+                        const totalIssues = totalCorrupted + totalMergeGroups;
 
                         // Toast de resultado
                         if (window.Android && Android.showToast) {
-                            if (totalCorrupted === 0) {
+                            if (totalIssues === 0) {
                                 Android.showToast('✅ Análisis completado: Sin problemas');
                             } else {
-                                Android.showToast(`⚠️ Encontrados ${totalCorrupted} datos sospechosos`);
+                                Android.showToast(`⚠️ Encontrados ${totalIssues} ajustes pendientes`);
                             }
                         }
 
-                        if (totalCorrupted === 0) {
-                            showAlert('✅ Todo limpio', 'No se encontraron datos corruptos en tus registros.');
+                        if (totalIssues === 0) {
+                            showAlert('✅ Todo limpio', 'No se encontraron datos corruptos ni Sets/Settings duplicados.');
                             return;
                         }
 
@@ -10387,10 +10405,12 @@
                         return;
                     }
 
+                    const mergePreview = corrupted.mergePreview || { setGroups: 0, settingGroups: 0 };
                     const totalCorrupted = corrupted.substances.length + corrupted.sets.length + corrupted.settings.length;
+                    const totalMergeGroups = mergePreview.setGroups + mergePreview.settingGroups;
 
                     // Actualizar resumen
-                    summaryEl.innerHTML = `Se encontraron <strong>${totalCorrupted}</strong> campos con datos que parecen ser fragmentos de notas:`;
+                    summaryEl.innerHTML = `Se encontraron <strong>${totalCorrupted}</strong> campos corruptos y <strong>${totalMergeGroups}</strong> grupos de Sets/Settings duplicados para fusionar:`;
 
                     // Construir lista de datos corruptos
                     let listHtml = '';
@@ -10417,6 +10437,11 @@
                             listHtml += `<li style="margin: 4px 0; font-size: 0.9rem;"><code style="background: rgba(20,184,166,0.2); padding: 2px 6px; border-radius: 4px;">${escapeHtml(item.value)}</code></li>`;
                         });
                         listHtml += '</ul>';
+                    }
+
+                    if (totalMergeGroups > 0) {
+                        listHtml += `<h5 style="margin-top: 12px; color: var(--accent-blue);">🔀 Sets/Settings duplicados (${totalMergeGroups})</h5>`;
+                        listHtml += `<p style="font-size: 0.9rem; color: var(--text-muted); margin: 6px 0 0;">Se fusionarán por nombre normalizado. Se conservará como nombre final la variante con más apariciones en estadísticas.</p>`;
                     }
 
                     listEl.innerHTML = listHtml;
@@ -10486,6 +10511,115 @@
                     }, 100);
                 }
 
+                function getCustomFieldStorageKey(fieldType) {
+                    return fieldType === 'set'
+                        ? 'psychologger_custom_sets'
+                        : 'psychologger_custom_settings';
+                }
+
+                function getCustomFieldItems(fieldType) {
+                    return safeParseJSON(localStorage.getItem(getCustomFieldStorageKey(fieldType)), []);
+                }
+
+                function buildCustomFieldCanonicalMap(fieldType) {
+                    const groups = new Map();
+
+                    entries.forEach(entry => {
+                        const name = entry && typeof entry[fieldType] === 'string' ? entry[fieldType].trim() : '';
+                        const key = normalizeStatsMergeKey(name);
+                        if (!key) return;
+
+                        if (!groups.has(key)) {
+                            groups.set(key, { counts: new Map(), firstLabel: name, customCount: 0 });
+                        }
+
+                        const group = groups.get(key);
+                        group.counts.set(name, (group.counts.get(name) || 0) + 1);
+                    });
+
+                    getCustomFieldItems(fieldType).forEach(item => {
+                        const name = typeof item === 'string' ? item.trim() : item && typeof item.name === 'string' ? item.name.trim() : '';
+                        const key = normalizeStatsMergeKey(name);
+                        if (!key) return;
+
+                        if (!groups.has(key)) {
+                            groups.set(key, { counts: new Map(), firstLabel: name, customCount: 0 });
+                        }
+
+                        const group = groups.get(key);
+                        group.customCount++;
+                        if (!group.counts.has(name)) {
+                            group.counts.set(name, 0);
+                        }
+                    });
+
+                    const canonical = new Map();
+                    let duplicateGroups = 0;
+
+                    groups.forEach((group, key) => {
+                        const labels = Array.from(group.counts.keys());
+                        if (labels.length > 1 || group.customCount > 1) {
+                            duplicateGroups++;
+                        }
+
+                        const winner = labels
+                            .sort((a, b) => {
+                                const countDelta = (group.counts.get(b) || 0) - (group.counts.get(a) || 0);
+                                if (countDelta !== 0) return countDelta;
+                                if (a === group.firstLabel) return -1;
+                                if (b === group.firstLabel) return 1;
+                                return a.localeCompare(b);
+                            })[0] || group.firstLabel;
+
+                        canonical.set(key, winner);
+                    });
+
+                    return { canonical, duplicateGroups };
+                }
+
+                function previewSetSettingMerge() {
+                    return {
+                        setGroups: buildCustomFieldCanonicalMap('set').duplicateGroups,
+                        settingGroups: buildCustomFieldCanonicalMap('setting').duplicateGroups
+                    };
+                }
+
+                function mergeCustomFieldByStatsPriority(fieldType) {
+                    const { canonical, duplicateGroups } = buildCustomFieldCanonicalMap(fieldType);
+                    let updatedEntries = 0;
+
+                    entries.forEach(entry => {
+                        if (!entry || typeof entry[fieldType] !== 'string') return;
+                        const current = entry[fieldType].trim();
+                        const key = normalizeStatsMergeKey(current);
+                        const winner = canonical.get(key);
+
+                        if (winner && current && current !== winner) {
+                            entry[fieldType] = winner;
+                            updatedEntries++;
+                        }
+                    });
+
+                    const names = Array.from(canonical.values())
+                        .filter(name => !isCorruptedFieldValue(name, fieldType))
+                        .sort((a, b) => a.localeCompare(b));
+
+                    localStorage.setItem(getCustomFieldStorageKey(fieldType), JSON.stringify(names));
+
+                    return { duplicateGroups, updatedEntries };
+                }
+
+                function mergeSetAndSettingDuplicates() {
+                    const setResult = mergeCustomFieldByStatsPriority('set');
+                    const settingResult = mergeCustomFieldByStatsPriority('setting');
+                    refreshCustomSetAndSettingOptions();
+
+                    return {
+                        groups: setResult.duplicateGroups + settingResult.duplicateGroups,
+                        entries: setResult.updatedEntries + settingResult.updatedEntries
+                    };
+                }
+
                 // Ejecutar limpieza de datos corruptos
                 function executeCleanCorruptedEntries() {
                     const corrupted = window._corruptedData;
@@ -10526,6 +10660,7 @@
 
                     // También limpiar las listas de sugerencias custom que tengan valores corruptos
                     cleanCorruptedSuggestions();
+                    const mergeResult = mergeSetAndSettingDuplicates();
 
                     closeCorruptedDataModal();
 
@@ -10533,7 +10668,10 @@
                     renderStats();
                     renderHistory();
 
-                    showAlert('✅ Limpieza completada', `Se limpiaron ${cleanedCount} campos corruptos. Las estadísticas ahora mostrarán datos correctos.`);
+                    showAlert(
+                        '✅ Limpieza completada',
+                        `Se limpiaron ${cleanedCount} campos corruptos y se fusionaron ${mergeResult.groups} grupos de Sets/Settings duplicados. Las estadísticas ahora mostrarán datos correctos.`
+                    );
                 }
 
                 // Limpiar también las listas de sugerencias personalizadas
