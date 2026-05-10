@@ -338,32 +338,34 @@ class BackupManager(private val context: Context) {
             val encryptedFile = File(context.cacheDir, "temp_data.enc")
             val decryptedZip = File(context.cacheDir, "temp_decrypted.zip")
 
-            // Extraer data.enc del ZIP original
-            context.contentResolver.openInputStream(uri)?.use { inputStream ->
-                ZipInputStream(BufferedInputStream(inputStream)).use { zipIn ->
-                    var entry = zipIn.nextEntry
-                    while (entry != null) {
-                        if (entry.name == "data.enc") {
-                            FileOutputStream(encryptedFile).use { it.write(zipIn.readBytes()) }
-                            break
+            try {
+                // Extraer data.enc del ZIP original
+                context.contentResolver.openInputStream(uri)?.use { inputStream ->
+                    ZipInputStream(BufferedInputStream(inputStream)).use { zipIn ->
+                        var entry = zipIn.nextEntry
+                        while (entry != null) {
+                            if (entry.name == "data.enc") {
+                                FileOutputStream(encryptedFile).use { it.write(zipIn.readBytes()) }
+                                break
+                            }
+                            entry = zipIn.nextEntry
                         }
-                        entry = zipIn.nextEntry
                     }
                 }
-            }
 
-            // Descifrar
-            CipherInputStream(FileInputStream(encryptedFile), cipher).use { cipherIn ->
-                FileOutputStream(decryptedZip).use { it.write(cipherIn.readBytes()) }
-            }
+                // Descifrar
+                CipherInputStream(FileInputStream(encryptedFile), cipher).use { cipherIn ->
+                    FileOutputStream(decryptedZip).use { it.write(cipherIn.readBytes()) }
+                }
 
-            // Procesar el ZIP descifrado
-            val result = processZipStream(ZipInputStream(BufferedInputStream(FileInputStream(decryptedZip))), tempRoot)
-            
-            encryptedFile.delete()
-            decryptedZip.delete()
-            
-            result
+                // Procesar el ZIP descifrado
+                processZipStream(ZipInputStream(BufferedInputStream(FileInputStream(decryptedZip))), tempRoot)
+            } finally {
+                // Limpia archivos temp aunque haya excepciones — datos descifrados
+                // no deben quedar en cacheDir si algo falla.
+                encryptedFile.delete()
+                decryptedZip.delete()
+            }
         } catch (e: Exception) {
             Log.e(TAG, "Error descifrando backup", e)
             RestoreResult(success = false, message = "Contraseña incorrecta o archivo corrupto")
@@ -411,8 +413,16 @@ class BackupManager(private val context: Context) {
         }
 
         // Aplicar cambios
-        replaceDirectoryContents(audioNotesDir, tempAudioDir)
-        replaceDirectoryContents(photoDir, tempPhotoDir)
+        val audioRestoreOk = replaceDirectoryContents(audioNotesDir, tempAudioDir)
+        val photoRestoreOk = replaceDirectoryContents(photoDir, tempPhotoDir)
+
+        if (!audioRestoreOk || !photoRestoreOk) {
+            return RestoreResult(
+                success = false,
+                message = "No se pudieron restaurar todos los archivos multimedia"
+            )
+        }
+
         saveLocalStorageSnapshot(dataJson!!)
 
         return RestoreResult(
@@ -451,13 +461,18 @@ class BackupManager(private val context: Context) {
             // Si hay contraseña, creamos primero un ZIP temporal y luego lo ciframos
             val fileToReturn = if (password != null) {
                 val tempZip = File(context.cacheDir, "temp_backup_$timestamp.zip")
-                createZip(tempZip, localStorageData, includeMedia)
-                
-                val encryptedFile = File(backupsDir, "$baseName.zip")
-                encryptFile(tempZip, encryptedFile, password)
-                
-                tempZip.delete()
-                encryptedFile
+                try {
+                    createZip(tempZip, localStorageData, includeMedia)
+
+                    val encryptedFile = File(backupsDir, "$baseName.zip")
+                    encryptFile(tempZip, encryptedFile, password)
+
+                    encryptedFile
+                } finally {
+                    if (!tempZip.delete() && tempZip.exists()) {
+                        Log.w(TAG, "No se pudo eliminar ZIP temporal ${tempZip.name}")
+                    }
+                }
             } else {
                 createZip(backupFile, localStorageData, includeMedia)
                 backupFile
@@ -513,34 +528,38 @@ class BackupManager(private val context: Context) {
         cipher.init(Cipher.ENCRYPT_MODE, key, GCMParameterSpec(GCM_TAG_LENGTH, iv))
 
         val encryptedData = File(context.cacheDir, "data.enc.tmp")
-        CipherOutputStream(FileOutputStream(encryptedData), cipher).use { cipherOut ->
-            FileInputStream(inputFile).use { it.copyTo(cipherOut) }
-        }
-
-        // 4. Crear ZIP final con metadata + datos cifrados
-        ZipOutputStream(FileOutputStream(outputFile)).use { zipOut ->
-            // Metadata
-            val metadata = JSONObject().apply {
-                put("algorithm", "AES-256-GCM")
-                put("salt", bytesToHex(salt))
-                put("iv", bytesToHex(iv))
-                put("iterations", PBKDF2_ITERATIONS)
-                put("timestamp", System.currentTimeMillis())
-                put("type", "comprehensive_backup")
+        try {
+            CipherOutputStream(FileOutputStream(encryptedData), cipher).use { cipherOut ->
+                FileInputStream(inputFile).use { it.copyTo(cipherOut) }
             }
 
-            zipOut.putNextEntry(ZipEntry("metadata.json"))
-            zipOut.write(metadata.toString(2).toByteArray())
-            zipOut.closeEntry()
+            // 4. Crear ZIP final con metadata + datos cifrados
+            ZipOutputStream(FileOutputStream(outputFile)).use { zipOut ->
+                // Metadata
+                val metadata = JSONObject().apply {
+                    put("algorithm", "AES-256-GCM")
+                    put("salt", bytesToHex(salt))
+                    put("iv", bytesToHex(iv))
+                    put("iterations", PBKDF2_ITERATIONS)
+                    put("timestamp", System.currentTimeMillis())
+                    put("type", "comprehensive_backup")
+                }
 
-            // Datos cifrados
-            zipOut.putNextEntry(ZipEntry("data.enc"))
-            FileInputStream(encryptedData).use { it.copyTo(zipOut) }
-            zipOut.closeEntry()
+                zipOut.putNextEntry(ZipEntry("metadata.json"))
+                zipOut.write(metadata.toString(2).toByteArray())
+                zipOut.closeEntry()
+
+                // Datos cifrados
+                zipOut.putNextEntry(ZipEntry("data.enc"))
+                FileInputStream(encryptedData).use { it.copyTo(zipOut) }
+                zipOut.closeEntry()
+            }
+        } finally {
+            // Limpiar archivo temporal cifrado incluso si el empaquetado falla.
+            if (!encryptedData.delete() && encryptedData.exists()) {
+                Log.w(TAG, "No se pudo eliminar temporal cifrado ${encryptedData.name}")
+            }
         }
-
-        // Limpiar archivo temporal cifrado
-        encryptedData.delete()
     }
 
     /**
@@ -648,34 +667,40 @@ class BackupManager(private val context: Context) {
         cipher.init(Cipher.ENCRYPT_MODE, key, GCMParameterSpec(GCM_TAG_LENGTH, iv))
 
         val encryptedData = File(context.cacheDir, "data.enc")
-        CipherOutputStream(FileOutputStream(encryptedData), cipher).use { cipherOut ->
-            FileInputStream(tempZip).use { it.copyTo(cipherOut) }
-        }
-
-        // 5. Crear ZIP final con metadata + datos cifrados
-        ZipOutputStream(FileOutputStream(outputFile)).use { zipOut ->
-            // Metadata
-            val metadata = JSONObject().apply {
-                put("algorithm", "AES-256-GCM")
-                put("salt", bytesToHex(salt))
-                put("iv", bytesToHex(iv))
-                put("iterations", PBKDF2_ITERATIONS)
-                put("timestamp", System.currentTimeMillis())
+        try {
+            CipherOutputStream(FileOutputStream(encryptedData), cipher).use { cipherOut ->
+                FileInputStream(tempZip).use { it.copyTo(cipherOut) }
             }
 
-            zipOut.putNextEntry(ZipEntry("metadata.json"))
-            zipOut.write(metadata.toString(2).toByteArray())
-            zipOut.closeEntry()
+            // 5. Crear ZIP final con metadata + datos cifrados
+            ZipOutputStream(FileOutputStream(outputFile)).use { zipOut ->
+                // Metadata
+                val metadata = JSONObject().apply {
+                    put("algorithm", "AES-256-GCM")
+                    put("salt", bytesToHex(salt))
+                    put("iv", bytesToHex(iv))
+                    put("iterations", PBKDF2_ITERATIONS)
+                    put("timestamp", System.currentTimeMillis())
+                }
 
-            // Datos cifrados
-            zipOut.putNextEntry(ZipEntry("data.enc"))
-            FileInputStream(encryptedData).use { it.copyTo(zipOut) }
-            zipOut.closeEntry()
+                zipOut.putNextEntry(ZipEntry("metadata.json"))
+                zipOut.write(metadata.toString(2).toByteArray())
+                zipOut.closeEntry()
+
+                // Datos cifrados
+                zipOut.putNextEntry(ZipEntry("data.enc"))
+                FileInputStream(encryptedData).use { it.copyTo(zipOut) }
+                zipOut.closeEntry()
+            }
+        } finally {
+            // Limpiar archivos temporales aunque falle el cifrado o el ZIP final.
+            if (!tempZip.delete() && tempZip.exists()) {
+                Log.w(TAG, "No se pudo eliminar ZIP temporal ${tempZip.name}")
+            }
+            if (!encryptedData.delete() && encryptedData.exists()) {
+                Log.w(TAG, "No se pudo eliminar temporal cifrado ${encryptedData.name}")
+            }
         }
-
-        // Limpiar archivos temporales
-        tempZip.delete()
-        encryptedData.delete()
     }
 
     /**
@@ -689,9 +714,16 @@ class BackupManager(private val context: Context) {
      */
     private fun deriveKey(password: String, salt: ByteArray): SecretKeySpec {
         val spec = PBEKeySpec(password.toCharArray(), salt, PBKDF2_ITERATIONS, KEY_LENGTH)
-        val factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256")
-        val secret = factory.generateSecret(spec)
-        return SecretKeySpec(secret.encoded, "AES")
+        return try {
+            val factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256")
+            val secret = factory.generateSecret(spec)
+            SecretKeySpec(secret.encoded, "AES")
+        } finally {
+            // Limpia el char[] interno con la password — evita que quede en heap
+            // hasta el GC. (El String 'password' en sí es inmutable, no podemos
+            // limpiarlo, pero al menos minimizamos la ventana de exposición.)
+            spec.clearPassword()
+        }
     }
 
     /**
@@ -800,25 +832,64 @@ class BackupManager(private val context: Context) {
         }
     }
 
-    private fun replaceDirectoryContents(targetDir: File, sourceDir: File) {
-        if (!targetDir.exists()) {
-            targetDir.mkdirs()
-        } else {
-            targetDir.listFiles()?.forEach { file ->
-                if (!file.deleteRecursively()) {
-                    Log.w(TAG, "No se pudo eliminar ${file.name} antes de restaurar backup")
-                }
+    // Reemplaza targetDir con sourceDir de forma SEMI-ATÓMICA:
+    // 1. mueve el directorio actual a .bak (rename = atómico en mismo filesystem)
+    // 2. copia sourceDir → targetDir
+    // 3. si algo falla, hace rollback del .bak; si todo OK, lo borra
+    //
+    // Por qué importa: el código anterior borraba todo y luego copiaba.
+    // Si la app crasheaba o el device se apagaba a mitad, el usuario perdía
+    // sus fotos/audios sin haber recibido los nuevos.
+    private fun replaceDirectoryContents(targetDir: File, sourceDir: File): Boolean {
+        val parent = targetDir.parentFile ?: run {
+            Log.e(TAG, "No se pudo determinar parent de ${targetDir.path}")
+            return false
+        }
+        val backup = File(parent, "${targetDir.name}.bak_${System.currentTimeMillis()}")
+
+        // Paso 1: mueve los datos actuales a .bak (no destructivo)
+        val movedToBackup = targetDir.exists() && targetDir.renameTo(backup)
+        if (!movedToBackup && targetDir.exists()) {
+            // Fallback: rename falló (cross-filesystem o permisos). Borra in-place.
+            Log.w(TAG, "renameTo falló, borrado en sitio (no rollback posible)")
+            targetDir.listFiles()?.forEach {
+                if (!it.deleteRecursively()) Log.w(TAG, "No se pudo eliminar ${it.name}")
             }
         }
+        if (!targetDir.exists() && !targetDir.mkdirs()) {
+            Log.e(TAG, "No se pudo crear ${targetDir.path}")
+            if (movedToBackup && !backup.renameTo(targetDir)) {
+                Log.e(TAG, "Rollback falló — datos quedan en ${backup.path}")
+            }
+            return false
+        }
 
+        // Paso 2: copia los nuevos archivos
+        var allOk = true
         sourceDir.listFiles()?.forEach { sourceFile ->
             val destination = File(targetDir, sourceFile.name)
             try {
                 sourceFile.copyTo(destination, overwrite = true)
             } catch (e: Exception) {
                 Log.e(TAG, "No se pudo copiar ${sourceFile.name} al directorio definitivo", e)
+                allOk = false
             }
         }
+
+        // Paso 3: commit (todo OK → borra backup) o rollback (algo falló → restaura backup)
+        if (movedToBackup) {
+            if (allOk) {
+                backup.deleteRecursively()
+            } else {
+                Log.w(TAG, "Copia incompleta — rollback desde ${backup.name}")
+                targetDir.deleteRecursively()
+                if (!backup.renameTo(targetDir)) {
+                    Log.e(TAG, "Rollback falló — datos quedan en ${backup.path}")
+                }
+            }
+        }
+
+        return allOk
     }
 
     private fun sanitizeEntryName(rawName: String): String? {

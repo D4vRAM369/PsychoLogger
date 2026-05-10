@@ -5637,6 +5637,59 @@
                     }
                 }
 
+                function normalizeCustomNameList(items) {
+                    if (!Array.isArray(items)) {
+                        return [];
+                    }
+
+                    const names = [];
+                    const seen = new Set();
+
+                    items.forEach(item => {
+                        const rawName = typeof item === 'string' ? item : item && item.name;
+                        const name = typeof rawName === 'string' ? rawName.trim() : '';
+                        const key = name.toLowerCase();
+
+                        if (name && !seen.has(key)) {
+                            seen.add(key);
+                            names.push(name);
+                        }
+                    });
+
+                    return names;
+                }
+
+                function collectEntryFieldNames(fieldName) {
+                    if (!Array.isArray(entries)) {
+                        return [];
+                    }
+
+                    const names = [];
+                    const seen = new Set();
+
+                    entries.forEach(entry => {
+                        const rawName = entry && entry[fieldName];
+                        const name = typeof rawName === 'string' ? rawName.trim() : '';
+                        const key = name.toLowerCase();
+
+                        if (name && !seen.has(key)) {
+                            seen.add(key);
+                            names.push(name);
+                        }
+                    });
+
+                    return names;
+                }
+
+                function refreshCustomSetAndSettingOptions() {
+                    document.querySelectorAll('#entrySetOptions .dropdown-option.custom-unit').forEach(option => option.remove());
+                    document.querySelectorAll('#entrySettingOptions .dropdown-option.custom-unit').forEach(option => option.remove());
+
+                    if (typeof loadCustomSetsAndSettings === 'function') {
+                        loadCustomSetsAndSettings();
+                    }
+                }
+
                 function collectBackupPayload() {
                     return {
                         substances: substances,
@@ -5644,10 +5697,10 @@
                         entries: entries,
                         userProfile: userProfile,
                         customUnits: safeParseJSON(localStorage.getItem('psychologger_custom_units'), {}),
-                        customSets: safeParseJSON(localStorage.getItem('psychologger_custom_sets'), []),
-                        customSettings: safeParseJSON(localStorage.getItem('psychologger_custom_settings'), []),
+                        customSets: normalizeCustomNameList(safeParseJSON(localStorage.getItem('psychologger_custom_sets'), [])),
+                        customSettings: normalizeCustomNameList(safeParseJSON(localStorage.getItem('psychologger_custom_settings'), [])),
                         timestamp: new Date().toISOString(),
-                        version: '1.1'  // Incrementado por soporte de archivedSubstances
+                        version: '1.2'  // Incluye Sets/Settings personalizados normalizados
                     };
                 }
 
@@ -9008,25 +9061,32 @@
                         const extraInfo = infoJson ? JSON.parse(infoJson) : {};
 
                         substances = Array.isArray(payload.substances) ? payload.substances : [];
+                        archivedSubstances = Array.isArray(payload.archivedSubstances) ? payload.archivedSubstances : [];
                         entries = Array.isArray(payload.entries) ? payload.entries : [];
                         userProfile = payload.userProfile || {};
 
                         localStorage.setItem('substances', JSON.stringify(substances));
+                        localStorage.setItem('archivedSubstances', JSON.stringify(archivedSubstances));
                         localStorage.setItem('entries', JSON.stringify(entries));
                         localStorage.setItem('userProfile', JSON.stringify(userProfile));
 
                         if (payload.customUnits) {
                             localStorage.setItem('psychologger_custom_units', JSON.stringify(payload.customUnits));
                         }
-                        if (payload.customSets) {
-                            localStorage.setItem('psychologger_custom_sets', JSON.stringify(payload.customSets));
-                        }
-                        if (payload.customSettings) {
-                            localStorage.setItem('psychologger_custom_settings', JSON.stringify(payload.customSettings));
-                        }
+
+                        const restoredSets = Array.isArray(payload.customSets)
+                            ? normalizeCustomNameList(payload.customSets)
+                            : collectEntryFieldNames('set');
+                        const restoredSettings = Array.isArray(payload.customSettings)
+                            ? normalizeCustomNameList(payload.customSettings)
+                            : collectEntryFieldNames('setting');
+
+                        localStorage.setItem('psychologger_custom_sets', JSON.stringify(restoredSets));
+                        localStorage.setItem('psychologger_custom_settings', JSON.stringify(restoredSettings));
 
                         saveDataToStorage();
 
+                        refreshCustomSetAndSettingOptions();
                         generateCalendar();
                         renderStats();
                         renderSubstanceList();

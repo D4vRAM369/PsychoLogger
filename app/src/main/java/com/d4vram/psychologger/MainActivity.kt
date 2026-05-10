@@ -639,13 +639,20 @@ class MainActivity : FragmentActivity() {
         kotlinx.coroutines.suspendCancellableCoroutine { continuation ->
             val script = """
                 (function() {
+                    if (typeof collectBackupPayload === 'function') {
+                        return JSON.stringify(collectBackupPayload());
+                    }
+
                     return JSON.stringify({
                         substances: JSON.parse(localStorage.getItem('substances') || '[]'),
+                        archivedSubstances: JSON.parse(localStorage.getItem('archivedSubstances') || '[]'),
                         entries: JSON.parse(localStorage.getItem('entries') || '[]'),
                         userProfile: JSON.parse(localStorage.getItem('userProfile') || '{}'),
                         customUnits: JSON.parse(localStorage.getItem('psychologger_custom_units') || '{}'),
                         customSets: JSON.parse(localStorage.getItem('psychologger_custom_sets') || '[]'),
-                        customSettings: JSON.parse(localStorage.getItem('psychologger_custom_settings') || '[]')
+                        customSettings: JSON.parse(localStorage.getItem('psychologger_custom_settings') || '[]'),
+                        timestamp: new Date().toISOString(),
+                        version: '1.2'
                     });
                 })()
             """.trimIndent()
