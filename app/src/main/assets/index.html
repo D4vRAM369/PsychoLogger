@@ -5681,6 +5681,50 @@
                     return names;
                 }
 
+                function normalizeSubstanceList(items) {
+                    return Array.isArray(items) ? items.filter(item => item && typeof item === 'object') : [];
+                }
+
+                function normalizeArchivedSubstancesForBackup(items) {
+                    return normalizeSubstanceList(items).map(substance => ({
+                        ...substance,
+                        isArchived: true,
+                        archivedAt: substance.archivedAt || new Date().toISOString()
+                    }));
+                }
+
+                function splitRestoredSubstances(payload) {
+                    const rawSubstances = normalizeSubstanceList(payload.substances);
+                    const rawArchived = normalizeSubstanceList(payload.archivedSubstances);
+
+                    if (rawArchived.length > 0) {
+                        return {
+                            active: rawSubstances.filter(substance => !substance.isArchived),
+                            archived: rawArchived.map(substance => ({
+                                ...substance,
+                                isArchived: true,
+                                archivedAt: substance.archivedAt || new Date().toISOString()
+                            }))
+                        };
+                    }
+
+                    const active = [];
+                    const archived = [];
+
+                    rawSubstances.forEach(substance => {
+                        if (substance.isArchived) {
+                            archived.push({
+                                ...substance,
+                                archivedAt: substance.archivedAt || new Date().toISOString()
+                            });
+                        } else {
+                            active.push(substance);
+                        }
+                    });
+
+                    return { active, archived };
+                }
+
                 function refreshCustomSetAndSettingOptions() {
                     document.querySelectorAll('#entrySetOptions .dropdown-option.custom-unit').forEach(option => option.remove());
                     document.querySelectorAll('#entrySettingOptions .dropdown-option.custom-unit').forEach(option => option.remove());
@@ -5693,7 +5737,7 @@
                 function collectBackupPayload() {
                     return {
                         substances: substances,
-                        archivedSubstances: archivedSubstances,
+                        archivedSubstances: normalizeArchivedSubstancesForBackup(archivedSubstances),
                         entries: entries,
                         userProfile: userProfile,
                         customUnits: safeParseJSON(localStorage.getItem('psychologger_custom_units'), {}),
@@ -9069,9 +9113,10 @@
                     try {
                         const payload = JSON.parse(payloadJson || '{}');
                         const extraInfo = infoJson ? JSON.parse(infoJson) : {};
+                        const restoredSubstances = splitRestoredSubstances(payload);
 
-                        substances = Array.isArray(payload.substances) ? payload.substances : [];
-                        archivedSubstances = Array.isArray(payload.archivedSubstances) ? payload.archivedSubstances : [];
+                        substances = restoredSubstances.active;
+                        archivedSubstances = restoredSubstances.archived;
                         entries = Array.isArray(payload.entries) ? payload.entries : [];
                         userProfile = payload.userProfile || {};
 

@@ -643,9 +643,17 @@ class MainActivity : FragmentActivity() {
                         return JSON.stringify(collectBackupPayload());
                     }
 
+                    const archivedSubstances = JSON.parse(localStorage.getItem('archivedSubstances') || '[]')
+                        .filter(item => item && typeof item === 'object')
+                        .map(item => ({
+                            ...item,
+                            isArchived: true,
+                            archivedAt: item.archivedAt || new Date().toISOString()
+                        }));
+
                     return JSON.stringify({
                         substances: JSON.parse(localStorage.getItem('substances') || '[]'),
-                        archivedSubstances: JSON.parse(localStorage.getItem('archivedSubstances') || '[]'),
+                        archivedSubstances: archivedSubstances,
                         entries: JSON.parse(localStorage.getItem('entries') || '[]'),
                         userProfile: JSON.parse(localStorage.getItem('userProfile') || '{}'),
                         customUnits: JSON.parse(localStorage.getItem('psychologger_custom_units') || '{}'),

@@ -971,6 +971,7 @@ class BackupManager(private val context: Context) {
     private fun createCsvFromSnapshot(snapshot: String): String {
         val root = JSONObject(snapshot)
         val substancesArray = root.optJSONArray("substances") ?: JSONArray()
+        val archivedSubstancesArray = root.optJSONArray("archivedSubstances") ?: JSONArray()
         val entriesArray = root.optJSONArray("entries") ?: JSONArray()
 
         val csvBuilder = StringBuilder()
@@ -978,28 +979,10 @@ class BackupManager(private val context: Context) {
 
         // Sección de sustancias
         csvBuilder.append("SUSTANCIAS\n")
-        csvBuilder.append("ID;Nombre;Color;Emoji;Fecha_Creacion;Fecha_Actualizacion\n")
+        csvBuilder.append("ID;Nombre;Color;Emoji;Archivada;Fecha_Archivado;Fecha_Creacion;Fecha_Actualizacion\n")
 
-        for (i in 0 until substancesArray.length()) {
-            val obj = substancesArray.optJSONObject(i) ?: continue
-            val id = obj.optString("id")
-            val name = obj.optString("name")
-            val color = obj.optString("color")
-            val emoji = obj.optString("emoji", suggestEmojiFallback(name))
-            val createdAt = obj.optString("createdAt")
-            val updatedAt = obj.optString("updatedAt")
-
-            val row = listOf(
-                id,
-                quoteForCsv(name),
-                quoteForCsv(color),
-                quoteForCsv(emoji),
-                quoteForCsv(createdAt),
-                quoteForCsv(updatedAt)
-            ).joinToString(";")
-
-            csvBuilder.append(row).append('\n')
-        }
+        appendSubstancesToCsv(csvBuilder, substancesArray, isArchivedFallback = false)
+        appendSubstancesToCsv(csvBuilder, archivedSubstancesArray, isArchivedFallback = true)
 
         csvBuilder.append('\n')
 
@@ -1026,6 +1009,33 @@ class BackupManager(private val context: Context) {
         }
 
         return csvBuilder.toString()
+    }
+
+    private fun appendSubstancesToCsv(csvBuilder: StringBuilder, substancesArray: JSONArray, isArchivedFallback: Boolean) {
+        for (i in 0 until substancesArray.length()) {
+            val obj = substancesArray.optJSONObject(i) ?: continue
+            val id = obj.optString("id")
+            val name = obj.optString("name")
+            val color = obj.optString("color")
+            val emoji = obj.optString("emoji", suggestEmojiFallback(name))
+            val isArchived = obj.optBoolean("isArchived", isArchivedFallback)
+            val archivedAt = obj.optString("archivedAt")
+            val createdAt = obj.optString("createdAt")
+            val updatedAt = obj.optString("updatedAt")
+
+            val row = listOf(
+                id,
+                quoteForCsv(name),
+                quoteForCsv(color),
+                quoteForCsv(emoji),
+                isArchived.toString(),
+                quoteForCsv(archivedAt),
+                quoteForCsv(createdAt),
+                quoteForCsv(updatedAt)
+            ).joinToString(";")
+
+            csvBuilder.append(row).append('\n')
+        }
     }
 
     private fun quoteForCsv(value: String?): String {
