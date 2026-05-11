@@ -11,6 +11,8 @@
         // Configuración para que se comporte más como Telegram
         // Usaremos un "pre-procesador" simple para mapear *text* a **text** 
         // y que Marked lo entienda como negrita estándar sin romper su lógica.
+        marked.setOptions({ breaks: true });
+
         function parseTelegramMarkdown(text) {
             if (!text) return "";
             // Telegram Style: *negrita*, _cursiva_
@@ -2728,6 +2730,7 @@
         /* Estilos básicos para Markdown dentro de las notas */
         .entry-notes p {
             margin: 0 0 0.4rem 0;
+            white-space: pre-line;
         }
 
         .entry-notes p:first-of-type {
