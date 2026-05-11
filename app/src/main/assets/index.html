@@ -2788,6 +2788,20 @@
             margin-bottom: 0;
         }
 
+        .entry-notes__title {
+            margin-bottom: 4px;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            font-weight: 700;
+        }
+
+        .entry-attachments {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.35rem 0.65rem;
+            align-items: center;
+        }
+
         /* Barra de formato estilo Telegram */
         .format-toolbar {
             display: flex;
@@ -3008,6 +3022,16 @@
             font-weight: 500;
         }
 
+        .entry-action-shell {
+            margin-top: 0.5rem;
+        }
+
+        .entry-action-shell .btn-edit,
+        .entry-action-shell .btn-delete {
+            min-width: 7.5rem;
+            margin-right: 0;
+        }
+
         .btn-delete {
             background: var(--secondary-pink);
         }
@@ -3047,10 +3071,22 @@
 
         .entry-actions {
             display: flex;
+            flex-wrap: wrap;
             gap: 0.5rem;
             margin-top: 0.5rem;
             padding-top: 0.5rem;
             border-top: 1px solid var(--border-color);
+        }
+
+        .day-entry-add {
+            margin-top: 1rem;
+            text-align: center;
+        }
+
+        .day-entry-add .btn-primary {
+            padding: 0.75rem 1rem;
+            font-size: 1rem;
+            max-width: 100%;
         }
 
         .quote-item {
@@ -7092,18 +7128,18 @@
                             ${entry.setting ? `<div class="entry-meta">🏞️ Setting: ${entry.setting}</div>` : ''}
                             ${entry.notes ? `
                                 <div class="entry-notes">
-                                    <div style="font-weight: bold; margin-bottom: 4px; color: var(--text-muted); font-size: 0.8rem;">📝 NOTAS:</div>
+                                    <div class="entry-notes__title">📝 NOTAS:</div>
                                     ${parseTelegramMarkdown(entry.notes)}
                                 </div>` : ''}
 
                             ${(entry.audioPath || entry.photoPath) ? `
-                                <div class="entry-meta">
+                                <div class="entry-meta entry-attachments">
                                     📎 Adjuntos:
-                                    ${entry.audioPath ? '<span style="margin-left:4px;">🎤 Nota de voz</span>' : ''}
-                                    ${entry.photoPath ? '<span style="margin-left:8px;">📷 Foto</span>' : ''}
+                                    ${entry.audioPath ? '<span>🎤 Nota de voz</span>' : ''}
+                                    ${entry.photoPath ? '<span>📷 Foto</span>' : ''}
                                 </div>
                             ` : ''}
-                            <div class="entry-actions" style="margin-top: 0.5rem;">
+                            <div class="entry-actions entry-action-shell">
                                 <button class="btn-edit" data-entry-id="${entry.id}">✏️ Editar</button>
                                 <button class="btn-delete" data-entry-id="${entry.id}">🗑️ Eliminar</button>
                             </div>
@@ -7112,8 +7148,8 @@
                     });
 
                     content += `
-                <div style="margin-top: 1rem; text-align: center;">
-                    <button id="add-entry-for-date-btn" class="btn-primary" data-date="${date.getTime()}" style="padding: 0.5rem 1rem; font-size: 1rem;">
+                <div class="day-entry-add">
+                    <button id="add-entry-for-date-btn" class="btn-primary" data-date="${date.getTime()}">
                         ➕ Añadir Registro para este Día
                     </button>
                 </div>
