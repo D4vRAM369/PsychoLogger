@@ -8330,10 +8330,10 @@
                         { label: 'Días activos', value: uniqueDays.length, caption: 'con registros', icon: '📅' }
                     ];
 
-                    const substanceFrequency = buildFrequencyData(sorted);
+                    const substanceFrequency = compactStatsDataset(buildFrequencyData(sorted), 12);
                     const timeline = buildTimelineData(sorted);
-                    const setDistribution = buildDistributionData(sorted, 'set', 'Sin set');
-                    const settingDistribution = buildDistributionData(sorted, 'setting', 'Sin setting');
+                    const setDistribution = compactStatsDataset(buildDistributionData(sorted, 'set', 'Sin set'), 10);
+                    const settingDistribution = compactStatsDataset(buildDistributionData(sorted, 'setting', 'Sin setting'), 10);
 
                     return {
                         summary,
@@ -8473,12 +8473,31 @@
                         .toLowerCase();
                 }
 
+                function compactStatsDataset(dataset, visibleLimit) {
+                    if (!Array.isArray(dataset) || dataset.length <= visibleLimit) return dataset;
+
+                    const visible = dataset.slice(0, visibleLimit - 1);
+                    const hidden = dataset.slice(visibleLimit - 1);
+                    const otherValue = hidden.reduce((sum, item) => sum + item.value, 0);
+
+                    if (otherValue <= 0) return visible;
+
+                    return [
+                        ...visible,
+                        {
+                            label: `Otros (${hidden.length})`,
+                            value: otherValue,
+                            color: '#64748B'
+                        }
+                    ];
+                }
+
                 function toLegendItems(distribution) {
                     const total = distribution.reduce((sum, item) => sum + item.value, 0) || 1;
                     return distribution.map(item => ({
                         label: item.label,
                         color: item.color,
-                        percent: Math.round((item.value / total) * 100)
+                        percent: (item.value / total) * 100
                     }));
                 }
 
@@ -8490,12 +8509,13 @@
                         // Truncamos la etiqueta para que no rompa la UI
                         const labelText = item.label || 'N/A';
                         const displayLabel = labelText.length > 25 ? labelText.substring(0, 22) + '...' : labelText;
+                        const percentLabel = item.percent > 0 && item.percent < 1 ? '<1' : Math.round(item.percent).toString();
 
                         return `
                         <div class="chart-legend-item" title="${labelText}">
                             <span class="chart-legend-color" style="background: ${item.color};"></span>
                             <span class="chart-legend-text">${displayLabel}</span>
-                            <span class="chart-legend-percent">(${item.percent}%)</span>
+                            <span class="chart-legend-percent">(${percentLabel}%)</span>
                         </div>
                         `;
                     }).join('');
