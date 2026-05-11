@@ -8692,15 +8692,20 @@
 
                     // Sección de SUSTANCIAS
                     csvLines.push('SUSTANCIAS');
-                    csvLines.push('ID;Nombre;Color;Emoji;Fecha_Creacion;Fecha_Actualizacion');
+                    csvLines.push('ID;Nombre;Color;Emoji;Archivada;Fecha_Archivado;Fecha_Creacion;Fecha_Actualizacion');
 
-                    substances.forEach(s => {
+                    const substancesForCsv = [
+                        ...substances.map(s => ({ ...s, isArchived: false, archivedAt: '' })),
+                        ...normalizeArchivedSubstancesForBackup(archivedSubstances)
+                    ];
+
+                    substancesForCsv.forEach(s => {
                         const emoji = s.emoji || getSubstanceEmoji(s.name);
                         const updatedAt = s.updatedAt || '';
 
                         csvLines.push(
                             `${s.id};"${s.name.replace(/"/g, '""')}";"${s.color}";"${emoji}";` +
-                            `"${s.createdAt}";"${updatedAt}"`
+                            `${s.isArchived ? 'true' : 'false'};"${s.archivedAt || ''}";"${s.createdAt || ''}";"${updatedAt}"`
                         );
                     });
 
@@ -8801,6 +8806,7 @@
 
                             if (replaceData) {
                                 substances = [];
+                                archivedSubstances = [];
                                 entries = [];
                             }
 
@@ -8833,16 +8839,27 @@
                                 }
 
                                 if (currentSection === 'substances' && columns.length >= 4) {
+                                    const hasArchiveColumns = columns.length >= 8 &&
+                                        ['true', 'false'].includes((columns[4] || '').replace(/"/g, '').toLowerCase());
+                                    const isArchived = hasArchiveColumns &&
+                                        (columns[4] || '').replace(/"/g, '').toLowerCase() === 'true';
+
                                     const substance = {
                                         id: columns[0].replace(/"/g, '') || generateUniqueId(),
                                         name: columns[1].replace(/"/g, ''),
                                         color: columns[2].replace(/"/g, ''),
                                         emoji: columns[3] ? columns[3].replace(/"/g, '') : getSubstanceEmoji(columns[1]),
-                                        createdAt: columns[4] ? columns[4].replace(/"/g, '') : new Date().toISOString()
+                                        isArchived: isArchived,
+                                        archivedAt: isArchived ? ((columns[5] || '').replace(/"/g, '') || new Date().toISOString()) : '',
+                                        createdAt: columns[hasArchiveColumns ? 6 : 4] ? columns[hasArchiveColumns ? 6 : 4].replace(/"/g, '') : new Date().toISOString(),
+                                        updatedAt: columns[hasArchiveColumns ? 7 : 5] ? columns[hasArchiveColumns ? 7 : 5].replace(/"/g, '') : ''
                                     };
 
-                                    if (replaceData || !substances.find(s => s.name.toLowerCase() === substance.name.toLowerCase())) {
-                                        substances.push(substance);
+                                    const targetList = isArchived ? archivedSubstances : substances;
+                                    const existsInTarget = targetList.find(s => s.name.toLowerCase() === substance.name.toLowerCase());
+
+                                    if (replaceData || !existsInTarget) {
+                                        targetList.push(substance);
                                         substancesImported++;
                                     }
                                 } else if (currentSection === 'entries' && columns.length >= 5) {

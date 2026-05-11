@@ -792,6 +792,8 @@ class WebAppInterface(private val context: Context, private val activity: MainAc
         val name: String,
         val color: String,
         val emoji: String?,
+        val isArchived: Boolean,
+        val archivedAt: String?,
         val createdAt: String,
         val updatedAt: String?
     )
@@ -893,14 +895,20 @@ class WebAppInterface(private val context: Context, private val activity: MainAc
             (thirdColumn?.ifBlank { null }) to 4
         }
 
-        val createdAtRaw = columns.getOrNull(createdAtIndex)?.trim('"', '\'')
-        val updatedAtRaw = columns.getOrNull(createdAtIndex + 1)?.trim('"', '\'')
+        val archivedFlagRaw = columns.getOrNull(createdAtIndex)?.trim('"', '\'')?.lowercase(Locale.getDefault())
+        val hasArchiveColumns = archivedFlagRaw == "true" || archivedFlagRaw == "false"
+        val isArchived = archivedFlagRaw == "true"
+        val archivedAtRaw = if (hasArchiveColumns) columns.getOrNull(createdAtIndex + 1)?.trim('"', '\'') else null
+        val createdAtRaw = columns.getOrNull(if (hasArchiveColumns) createdAtIndex + 2 else createdAtIndex)?.trim('"', '\'')
+        val updatedAtRaw = columns.getOrNull(if (hasArchiveColumns) createdAtIndex + 3 else createdAtIndex + 1)?.trim('"', '\'')
 
         return SubstanceCsv(
             id = id,
             name = name,
             color = color,
             emoji = emoji,
+            isArchived = isArchived,
+            archivedAt = archivedAtRaw?.takeUnless { it.isBlank() },
             createdAt = createdAtRaw?.takeUnless { it.isBlank() } ?: Date().toInstantString(),
             updatedAt = updatedAtRaw?.takeUnless { it.isBlank() }
         )
@@ -1206,9 +1214,11 @@ class WebAppInterface(private val context: Context, private val activity: MainAc
                     appendLine("  console.log('Iniciando importación...');")
                     if (replaceAll) {
                         appendLine("  substances = [];")
+                        appendLine("  archivedSubstances = [];")
                         appendLine("  entries = [];")
                         appendLine("  userProfile = userProfile || {};")
                     }
+                    appendLine("  archivedSubstances = Array.isArray(archivedSubstances) ? archivedSubstances : [];")
                     appendLine("  var importedSub = 0; var importedEnt = 0;")
 
                     substancesToImport.forEach { s ->
@@ -1217,20 +1227,23 @@ class WebAppInterface(private val context: Context, private val activity: MainAc
                             put("name", s.name)
                             put("color", s.color)
                             s.emoji?.let { put("emoji", it) }
+                            put("isArchived", s.isArchived)
+                            s.archivedAt?.let { put("archivedAt", it) }
                             put("createdAt", s.createdAt)
                             s.updatedAt?.let { put("updatedAt", it) }
                         }
                         val subJsonString = subJson.toString()
                         val lowerName = s.name.lowercase(Locale.getDefault())
                         val lowerNameLiteral = JSONObject.quote(lowerName)
+                        val targetList = if (s.isArchived) "archivedSubstances" else "substances"
                         appendLine("""
                             (function(){
                               var newSub = ${subJsonString};
                               var shouldInsert = true;
                               if (!${replaceAll}) {
-                                shouldInsert = !(substances || []).some(function(ex){ return ((ex.name || '')).toLowerCase() === ${lowerNameLiteral}; });
+                                shouldInsert = !(${targetList} || []).some(function(ex){ return ((ex.name || '')).toLowerCase() === ${lowerNameLiteral}; });
                               }
-                              if (shouldInsert) { substances.push(newSub); importedSub++; }
+                              if (shouldInsert) { ${targetList}.push(newSub); importedSub++; }
                             })();
                         """.trimIndent())
                     }
@@ -1259,6 +1272,7 @@ class WebAppInterface(private val context: Context, private val activity: MainAc
 
                     appendLine("""
                         localStorage.setItem('substances', JSON.stringify(substances));
+                        localStorage.setItem('archivedSubstances', JSON.stringify(archivedSubstances));
                         localStorage.setItem('entries', JSON.stringify(entries));
                         localStorage.setItem('userProfile', JSON.stringify(userProfile || {}));
 
@@ -2068,11 +2082,17 @@ fun WebViewScreen(
                                 try {
                                     let csvContent = "";
                                     csvContent += "SUSTANCIAS\n";
-                                    csvContent += "ID,Nombre,Color,Emoji,Fecha_Creacion,Fecha_Actualizacion\n";
+                                    csvContent += "ID,Nombre,Color,Emoji,Archivada,Fecha_Archivado,Fecha_Creacion,Fecha_Actualizacion\n";
                                     if (typeof substances !== 'undefined') {
                                         substances.forEach(substance => {
                                             var emoji = substance.emoji || (typeof getSubstanceEmoji === 'function' ? getSubstanceEmoji(substance.name) : '💊');
-                                            csvContent += substance.id + ',"' + substance.name + '","' + substance.color + '","' + emoji + '","' + substance.createdAt + '","' + (substance.updatedAt || '') + '"\n';
+                                            csvContent += substance.id + ',"' + substance.name + '","' + substance.color + '","' + emoji + '",false,"","' + substance.createdAt + '","' + (substance.updatedAt || '') + '"\n';
+                                        });
+                                    }
+                                    if (typeof archivedSubstances !== 'undefined') {
+                                        archivedSubstances.forEach(substance => {
+                                            var emoji = substance.emoji || (typeof getSubstanceEmoji === 'function' ? getSubstanceEmoji(substance.name) : '💊');
+                                            csvContent += substance.id + ',"' + substance.name + '","' + substance.color + '","' + emoji + '",true,"' + (substance.archivedAt || '') + '","' + (substance.createdAt || '') + '","' + (substance.updatedAt || '') + '"\n';
                                         });
                                     }
                                     csvContent += "\nREGISTROS\n";
