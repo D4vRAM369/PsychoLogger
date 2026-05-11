@@ -2398,6 +2398,27 @@
             margin-bottom: 0.5rem;
         }
 
+        .resource-card__meta {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            margin-bottom: 0.75rem;
+            padding: 0.25rem 0.6rem;
+            border-radius: 999px;
+            background: rgba(6, 182, 212, 0.1);
+            border: 1px solid rgba(6, 182, 212, 0.22);
+            color: var(--accent-cyan);
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .section-note {
+            color: var(--text-muted);
+            line-height: 1.5;
+            margin-top: 0.4rem;
+            max-width: 48rem;
+        }
+
         .data-card--maintenance h4 {
             color: var(--accent-orange);
         }
@@ -3873,33 +3894,40 @@
             <div id="resources-view" class="view" style="display: none;">
                 <div class="calendar-container">
                     <h2>Recursos y Harm Reduction</h2>
+                    <p class="section-note">Fuentes externas para contrastar información, revisar riesgos y ampliar contexto antes de tomar decisiones.</p>
                     <div class="resources-grid">
                         <div class="resource-card" onclick="openExternalURL('https://erowid.org')">
+                            <span class="resource-card__meta">Base de datos</span>
                             <h4>Erowid</h4>
                             <p>Base de datos completa sobre sustancias psicoactivas, experiencias y
                                 efectos</p>
                         </div>
                         <div class="resource-card" onclick="openExternalURL('https://tripsit.me')">
+                            <span class="resource-card__meta">Interacciones</span>
                             <h4>TripSit</h4>
                             <p>Información sobre interacciones, dosificación y asistencia en tiempo
                                 real</p>
                         </div>
                         <div class="resource-card" onclick="openExternalURL('https://maps.org')">
+                            <span class="resource-card__meta">Investigación</span>
                             <h4>MAPS</h4>
                             <p>Organización sin ánimo de lucro que investiga los potenciales usos
                                 médicos, legales y culturales de los psicodélicos</p>
                         </div>
                         <div class="resource-card" onclick="openExternalURL('https://psychonautwiki.org')">
+                            <span class="resource-card__meta">Enciclopedia</span>
                             <h4>PsychonautWiki</h4>
                             <p>Enciclopedia científica de sustancias psicoactivas y sus efectos</p>
                         </div>
                         <div class="resource-card" onclick="openExternalURL('https://www.drugscience.org.uk/')">
+                            <span class="resource-card__meta">Evidencia</span>
                             <h4>DrugsScience</h4>
                             <p>Organización independiente líder en información y educación científica sobre drogas, que
                                 ofrece recursos y datos basados en evidencia para promover decisiones informadas y
                                 políticas sensatas</p>
                         </div>
                         <div class="resource-card" onclick="openBooksModal()">
+                            <span class="resource-card__meta">Biblioteca</span>
                             <h4>📚 Libros Recomendados</h4>
                             <p>Bibliografía esencial sobre psiconáuticos, neurociencia y reducción de riesgos</p>
                         </div>
