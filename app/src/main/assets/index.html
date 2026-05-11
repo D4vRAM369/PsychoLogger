@@ -2805,13 +2805,18 @@
         /* Barra de formato estilo Telegram */
         .format-toolbar {
             display: flex;
+            flex-wrap: wrap;
             gap: 4px;
             background: rgba(255, 255, 255, 0.08);
             padding: 6px;
             border-radius: 12px 12px 0 0;
             border: 1px solid var(--border-color);
             border-bottom: none;
-            margin-bottom: 0px;
+            margin-bottom: 0;
+            position: sticky;
+            top: 0;
+            z-index: 2;
+            backdrop-filter: blur(10px);
         }
 
         .format-btn {
@@ -2842,6 +2847,30 @@
             border-top-left-radius: 0;
             border-top-right-radius: 0;
             border-top: 1px solid var(--border-color);
+            min-height: 170px;
+        }
+
+        .entry-notes-tip {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            line-height: 1.4;
+            margin-top: 0.5rem;
+            display: block;
+        }
+
+        @media (max-width: 480px) {
+            .format-toolbar {
+                gap: 3px;
+            }
+
+            .format-btn {
+                min-width: 36px;
+                padding: 4px 10px;
+            }
+
+            #entryNotes {
+                min-height: 190px;
+            }
         }
 
         .color-picker-container {
@@ -4650,7 +4679,7 @@
                             <textarea id="entryNotes"
                                 placeholder="ROA (vía de administración), efectos esperados, compañía, música, etc..."
                                 rows="6"></textarea>
-                            <small style="color: var(--text-muted); font-size: 0.8rem;">
+                            <small class="entry-notes-tip">
                                 💡 Tip: Incluye ROA (oral, sublingual, nasal, etc.), testing, pureza
                                 estimada, etc.
                             </small>
@@ -10965,10 +10994,6 @@
                             cleanedCount++;
                         }
                     });
-
-                    // Guardar cambios
-                    localStorage.setItem('entries', JSON.stringify(entries));
-                    notifyBackupDataChanged();
 
                     // También limpiar las listas de sugerencias custom que tengan valores corruptos
                     cleanCorruptedSuggestions();
