@@ -8435,9 +8435,18 @@
 
                 function buildDistributionData(entries, field, fallbackLabel) {
                     const counts = {};
+                    const canonicalMap = (field === 'set' || field === 'setting')
+                        ? buildCustomFieldCanonicalMap(field).canonical
+                        : null;
+
                     entries.forEach(entry => {
                         const raw = (entry[field] || '').trim();
-                        const label = raw.length ? raw : fallbackLabel;
+                        if (raw && isCorruptedFieldValue(raw, field)) return;
+
+                        const key = normalizeStatsMergeKey(raw);
+                        const label = raw.length
+                            ? (canonicalMap && canonicalMap.get(key)) || raw
+                            : fallbackLabel;
                         counts[label] = (counts[label] || 0) + 1;
                     });
 
@@ -8455,6 +8464,7 @@
                         .toString()
                         .normalize('NFD')
                         .replace(/[\u0300-\u036f]/g, '')
+                        .replace(/[^\p{L}\p{N}\s]/gu, ' ')
                         .replace(/\s+/g, ' ')
                         .trim()
                         .toLowerCase();
@@ -10392,17 +10402,17 @@
                     );
 
                     // Extraer nombres existentes para evitar duplicados
-                    const existingSetNames = new Set(customSets.map(s => s.name.toLowerCase().trim()));
-                    const existingSettingNames = new Set(customSettings.map(s => s.name.toLowerCase().trim()));
+                    const existingSetNames = new Set(customSets.map(s => normalizeStatsMergeKey(s.name)));
+                    const existingSettingNames = new Set(customSettings.map(s => normalizeStatsMergeKey(s.name)));
 
                     let addedSets = 0;
                     let addedSettings = 0;
 
                     entries.forEach(entry => {
                         // Validar SET: No vacío, no muy largo, no duplicado
-                        if (entry.set && entry.set.trim().length > 0 && entry.set.length <= 40) {
+                        if (entry.set && entry.set.trim().length > 0 && entry.set.length <= 40 && !isCorruptedFieldValue(entry.set, 'set')) {
                             const trimmedSet = entry.set.trim();
-                            const lowerSet = trimmedSet.toLowerCase();
+                            const lowerSet = normalizeStatsMergeKey(trimmedSet);
                             if (!existingSetNames.has(lowerSet)) {
                                 customSets.push({
                                     name: trimmedSet,
@@ -10414,9 +10424,9 @@
                         }
 
                         // Validar SETTING: No vacío, no muy largo, no duplicado
-                        if (entry.setting && entry.setting.trim().length > 0 && entry.setting.length <= 40) {
+                        if (entry.setting && entry.setting.trim().length > 0 && entry.setting.length <= 40 && !isCorruptedFieldValue(entry.setting, 'setting')) {
                             const trimmedSetting = entry.setting.trim();
-                            const lowerSetting = trimmedSetting.toLowerCase();
+                            const lowerSetting = normalizeStatsMergeKey(trimmedSetting);
                             if (!existingSettingNames.has(lowerSetting)) {
                                 customSettings.push({
                                     name: trimmedSetting,
@@ -10431,13 +10441,17 @@
                     localStorage.setItem('psychologger_custom_sets', JSON.stringify(customSets));
                     localStorage.setItem('psychologger_custom_settings', JSON.stringify(customSettings));
 
+                    const mergeResult = mergeSetAndSettingDuplicates();
+                    localStorage.setItem('entries', JSON.stringify(entries));
+                    notifyBackupDataChanged();
+
                     // REFRESCAR UI
                     if (typeof loadCustomSetsAndSettings === 'function') {
                         loadCustomSetsAndSettings();
                     }
 
                     renderStats();
-                    Android.showToast(`✅ Reconstruido: +${addedSets} sets, +${addedSettings} settings`);
+                    Android.showToast(`✅ Reconstruido: +${addedSets} sets, +${addedSettings} settings · fusionados ${mergeResult.groups} grupos`);
                 }
 
                 /**
@@ -10520,6 +10534,7 @@
                         /\bcreo\s+que\b/i,      // "creo que"
                         /\bporque\s+\w+\b/i,    // "porque..."
                         /\bcuando\s+\w+\b/i,    // "cuando..."
+                        /\bcomo\s+ligereza\b/i,  // "como ligereza"
                         /\bno\s+(es|fue)\s+una\s+experiencia\b/i, // "no es/fue una experiencia..."
                     ];
 
@@ -10534,7 +10549,8 @@
                         'pero que le jodan',
                         'bastante me joden',
                         'no es una experiencia',
-                        'no fue una experiencia'
+                        'no fue una experiencia',
+                        'como ligereza'
                     ];
 
                     const lower = trimmed.toLowerCase();
@@ -10761,6 +10777,7 @@
 
                     entries.forEach(entry => {
                         const name = entry && typeof entry[fieldType] === 'string' ? entry[fieldType].trim() : '';
+                        if (isCorruptedFieldValue(name, fieldType)) return;
                         const key = normalizeStatsMergeKey(name);
                         if (!key) return;
 
@@ -10774,6 +10791,7 @@
 
                     getCustomFieldItems(fieldType).forEach(item => {
                         const name = typeof item === 'string' ? item.trim() : item && typeof item.name === 'string' ? item.name.trim() : '';
+                        if (isCorruptedFieldValue(name, fieldType)) return;
                         const key = normalizeStatsMergeKey(name);
                         if (!key) return;
 
@@ -10896,6 +10914,8 @@
                     // También limpiar las listas de sugerencias custom que tengan valores corruptos
                     cleanCorruptedSuggestions();
                     const mergeResult = mergeSetAndSettingDuplicates();
+                    localStorage.setItem('entries', JSON.stringify(entries));
+                    notifyBackupDataChanged();
 
                     closeCorruptedDataModal();
 
