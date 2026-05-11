@@ -595,7 +595,7 @@
             right: 0;
             background: var(--card-bg);
             border-top: 1px solid var(--border-color);
-            padding: 1rem;
+            padding: 0.75rem 1rem calc(0.75rem + env(safe-area-inset-bottom));
             backdrop-filter: blur(20px);
             z-index: 1000;
         }
@@ -614,9 +614,10 @@
             align-items: center;
             cursor: pointer;
             transition: all 0.3s ease;
-            padding: 0.5rem;
+            padding: 0.55rem 0.5rem;
             border-radius: 12px;
             min-width: 70px;
+            min-height: 52px;
         }
 
         .nav-item:hover {
@@ -630,14 +631,17 @@
         }
 
         .nav-icon {
-            width: 24px;
-            height: 24px;
+            min-width: 24px;
+            min-height: 24px;
             margin-bottom: 0.25rem;
+            font-size: 1.35rem;
+            line-height: 1;
         }
 
         .nav-label {
             font-size: 0.7rem;
             font-weight: 500;
+            line-height: 1.15;
         }
 
         /* Modal fixes for Android WebView */
