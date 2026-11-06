@@ -4096,16 +4096,9 @@
                         </div>
                         <div class="resources-grid">
                             <div class="resource-card data-card--maintenance">
-                                <h4>🔧 Reparar Sugerencias</h4>
-                                <p>Reconstruye opciones de Set/Setting desde tu historial de registros.</p>
-                                <button class="btn-secondary" onclick="openRebuildConfirmModal()">🔄 Reconstruir
-                                    Opciones</button>
-                            </div>
-                            <div class="resource-card data-card--maintenance">
-                                <h4>🧹 Limpiar Datos Corruptos</h4>
-                                <p>Detecta fragmentos de notas en campos de sustancia, set o setting y prepara su limpieza.</p>
-                                <button class="btn-secondary" onclick="scanCorruptedEntries()">🔍 Escanear
-                                    Problemas</button>
+                                <h4>🔎 Revisar datos</h4>
+                                <p>Limpia texto mal guardado, fusiona Sets/Settings duplicados y recupera tus sugerencias desde el historial.</p>
+                                <button class="btn-secondary" onclick="scanCorruptedEntries()">🔍 Revisar</button>
                             </div>
                             <div class="resource-card">
                                 <h4>📦 Sustancias Archivadas</h4>
@@ -10705,7 +10698,8 @@
                         }
 
                         if (totalIssues === 0) {
-                            showAlert('✅ Todo limpio', 'No se encontraron datos corruptos ni Sets/Settings duplicados.');
+                            // Sin problemas que limpiar: solo recupera sugerencias (aditivo)
+                            rebuildSuggestionsFromEntries();
                             return;
                         }
 
@@ -10797,49 +10791,6 @@
 
                 // ========================================
                 // MODAL DE CONFIRMACIÓN: RECONSTRUIR OPCIONES
-                // ========================================
-                // CONCEPTO PBL: Modal de confirmación antes de ejecutar acciones
-                // que modifican datos del usuario
-
-                /**
-                 * Abre el modal de confirmación para Reconstruir Opciones
-                 */
-                function openRebuildConfirmModal() {
-                    const modal = document.getElementById('rebuildConfirmModal');
-                    if (modal) {
-                        modal.classList.add('active');
-                        document.body.style.overflow = 'hidden';
-                    }
-                }
-
-                /**
-                 * Cierra el modal de confirmación para Reconstruir Opciones
-                 */
-                function closeRebuildConfirmModal() {
-                    const modal = document.getElementById('rebuildConfirmModal');
-                    if (modal) {
-                        modal.classList.remove('active');
-                        document.body.style.overflow = '';
-                    }
-                }
-
-                /**
-                 * Confirma y ejecuta la reconstrucción de sugerencias
-                 */
-                function confirmRebuildSuggestions() {
-                    closeRebuildConfirmModal();
-
-                    // Toast de inicio
-                    if (window.Android && Android.showToast) {
-                        Android.showToast('🔄 Reconstruyendo sugerencias...');
-                    }
-
-                    // Pequeño delay para que el toast sea visible antes de procesar
-                    setTimeout(() => {
-                        rebuildSuggestionsFromEntries();
-                    }, 100);
-                }
-
                 function getCustomFieldStorageKey(fieldType) {
                     return fieldType === 'set'
                         ? 'psychologger_custom_sets'
@@ -10990,6 +10941,7 @@
                     const mergeResult = mergeSetAndSettingDuplicates();
                     localStorage.setItem('entries', JSON.stringify(entries));
                     notifyBackupDataChanged();
+                    rebuildSuggestionsFromEntries();
 
                     closeCorruptedDataModal();
 
@@ -11229,45 +11181,6 @@
                 <div
                     style="padding: 16px; border-top: 1px solid #2d2d44; flex-shrink: 0; display: flex; justify-content: flex-end; background: #1A1A2E;">
                     <button class="btn-secondary" onclick="closeArchivedSubstancesModal()">Cerrar</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Modal de Confirmación para Reconstruir Opciones -->
-        <div id="rebuildConfirmModal" class="modal">
-            <div class="modal-content" style="max-width: 450px;">
-                <div class="modal-header">
-                    <h3>🔧 Reconstruir Opciones</h3>
-                    <button class="close-btn" onclick="closeRebuildConfirmModal()">×</button>
-                </div>
-                <div class="modal-body">
-                    <p style="margin-bottom: 16px;">
-                        <strong>¿Qué hace esta función?</strong>
-                    </p>
-                    <p style="color: var(--text-secondary); font-size: 0.9em; margin-bottom: 12px;">
-                        Escanea todos tus registros históricos y extrae los valores de <strong>Set</strong> (estado
-                        mental)
-                        y <strong>Setting</strong> (entorno) que hayas usado, añadiéndolos a las listas de sugerencias.
-                    </p>
-                    <div
-                        style="background: rgba(139, 92, 246, 0.1); border-radius: 8px; padding: 12px; margin-bottom: 12px;">
-                        <p style="font-size: 0.85rem; margin: 0;">
-                            ✅ <strong>Útil para:</strong> Recuperar opciones que perdiste al reinstalar o limpiar datos.
-                        </p>
-                    </div>
-                    <div
-                        style="background: rgba(251, 191, 36, 0.1); border-radius: 8px; padding: 12px; border-left: 3px solid #fbbf24;">
-                        <p style="font-size: 0.85rem; margin: 0;">
-                            ⚠️ <strong>Nota:</strong> Si tus registros tienen datos corruptos (fragmentos de notas en
-                            campos incorrectos),
-                            estos también se añadirán. Usa primero "Limpiar Datos Corruptos" si es necesario.
-                        </p>
-                    </div>
-                </div>
-                <div class="modal-footer"
-                    style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border-color);">
-                    <button class="btn-secondary" onclick="closeRebuildConfirmModal()">Cancelar</button>
-                    <button class="btn-primary" onclick="confirmRebuildSuggestions()">🔄 Sí, Reconstruir</button>
                 </div>
             </div>
         </div>
