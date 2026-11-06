@@ -1843,6 +1843,18 @@ class WebAppInterface(private val context: Context, private val activity: MainAc
         }
     }
 
+    /** Idioma del dispositivo para i18n.js ("es", "en", ...). */
+    @JavascriptInterface
+    fun getLanguage(): String = java.util.Locale.getDefault().language
+
+    @JavascriptInterface
+    fun getLocaleTag(): String = java.util.Locale.getDefault().toLanguageTag()
+
+    /** Solo builds debuggable (dev): i18n.js registra textos sin traducir en logcat. */
+    @JavascriptInterface
+    fun isDebug(): Boolean =
+        (context.applicationInfo.flags and android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE) != 0
+
     @JavascriptInterface
     fun showProfileSettings() {
         activity.runOnUiThread {

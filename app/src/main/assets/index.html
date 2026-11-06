@@ -3,6 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
+    <script src="i18n.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PsychoLogger</title>
     <!-- Marked.js para soporte de Markdown (local, sin conexión externa) -->
@@ -6733,7 +6734,7 @@
                     const timeEl = document.getElementById('previewTime');
 
                     if (dateEl) {
-                        dateEl.textContent = currentSelectedDate.toLocaleDateString('es-ES', {
+                        dateEl.textContent = currentSelectedDate.toLocaleDateString((window.I18N_LOCALE || 'es-ES'), {
                             weekday: 'long',
                             day: 'numeric',
                             month: 'long',
@@ -6742,7 +6743,7 @@
                     }
 
                     if (timeEl) {
-                        timeEl.textContent = currentSelectedDate.toLocaleTimeString('es-ES', {
+                        timeEl.textContent = currentSelectedDate.toLocaleTimeString((window.I18N_LOCALE || 'es-ES'), {
                             hour: '2-digit',
                             minute: '2-digit'
                         });
@@ -7043,14 +7044,14 @@
                         hour: '2-digit',
                         minute: '2-digit'
                     };
-                    dateDisplay.textContent = currentSelectedDate.toLocaleDateString('es-ES', options);
+                    dateDisplay.textContent = currentSelectedDate.toLocaleDateString((window.I18N_LOCALE || 'es-ES'), options);
                 }
 
                 // Calendar functions
                 function generateCalendar() {
 
                     const grid = document.getElementById('calendar-grid');
-                    const monthName = currentDate.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' });
+                    const monthName = currentDate.toLocaleDateString((window.I18N_LOCALE || 'es-ES'), { month: 'long', year: 'numeric' });
                     document.getElementById('current-month').textContent = monthName.charAt(0).toUpperCase() + monthName.slice(1);
 
                     // Clear grid
@@ -7187,7 +7188,7 @@
                         return;
                     }
 
-                    let content = `<h3>📅 Registros del ${date.toLocaleDateString('es-ES', {
+                    let content = `<h3>📅 Registros del ${date.toLocaleDateString((window.I18N_LOCALE || 'es-ES'), {
                         weekday: 'long',
                         year: 'numeric',
                         month: 'long',
@@ -7199,7 +7200,7 @@
                     }
 
                     dayEntries.forEach((entry) => {
-                        const time = new Date(entry.date).toLocaleTimeString('es-ES', {
+                        const time = new Date(entry.date).toLocaleTimeString((window.I18N_LOCALE || 'es-ES'), {
                             hour: '2-digit',
                             minute: '2-digit'
                         });
@@ -7385,7 +7386,7 @@
                         return;
                     }
 
-                    const confirmMessage = `¿Estás seguro de que quieres eliminar este registro?\n\n${entry.substance} - ${entry.dose} ${entry.unit}\n${new Date(entry.date).toLocaleString('es-ES')}`;
+                    const confirmMessage = `¿Estás seguro de que quieres eliminar este registro?\n\n${entry.substance} - ${entry.dose} ${entry.unit}\n${new Date(entry.date).toLocaleString((window.I18N_LOCALE || 'es-ES'))}`;
 
                     showCustomConfirm(
                         confirmMessage,
