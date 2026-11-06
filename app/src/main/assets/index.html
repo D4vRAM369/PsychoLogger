@@ -8686,7 +8686,7 @@
                         const year = date.getFullYear();
                         const month = date.getMonth();
                         const key = `${year}-${String(month + 1).padStart(2, '0')}`;
-                        const label = `${monthNames[month]} ${year}`;
+                        const label = `${t(monthNames[month])} ${year}`;
                         const current = map.get(key) || { label, value: 0 };
                         current.value += 1;
                         map.set(key, current);
@@ -8848,11 +8848,11 @@
                         ctx.save();
                         ctx.translate(x + barWidth / 2, height - 15);
                         ctx.rotate(-Math.PI / 2);
-                        const truncatedLabel = truncateLabel(item.label, 14);
+                        const truncatedLabel = truncateLabel(t(item.label), 14);
                         ctx.fillText(truncatedLabel, 0, 0);
                         ctx.restore();
 
-                        shapes.push({ type: 'rect', label: item.label, value: item.value, x, y, width: barWidth, height: barHeight });
+                        shapes.push({ type: 'rect', label: t(item.label), value: item.value, x, y, width: barWidth, height: barHeight });
                     });
 
                     attachTooltip(canvas, tooltipEl, shapes, shape => `${shape.label}: ${shape.value}`);
@@ -8897,7 +8897,7 @@
                         } else {
                             ctx.lineTo(x, y);
                         }
-                        shapes.push({ type: 'point', label: item.label, value: item.value, x, y, radius: 8 });
+                        shapes.push({ type: 'point', label: t(item.label), value: item.value, x, y, radius: 8 });
                     });
                     ctx.stroke();
 
@@ -8920,7 +8920,7 @@
                         ctx.save();
                         ctx.translate(x, height - 10);
                         ctx.rotate(-Math.PI / 4);
-                        ctx.fillText(item.label, 0, 0);
+                        ctx.fillText(t(item.label), 0, 0);
                         ctx.restore();
                     });
 

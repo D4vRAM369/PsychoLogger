@@ -100,7 +100,7 @@
         ['No se pudo cargar la vista previa', 'Could not load the preview'], ['❌ Error al capturar foto', '❌ Error capturing photo'],
         ['Añade una foto para complementar este registro. Puedes tomarla ahora o elegirla desde tu galería.', 'Add a photo to complement this entry. You can take it now or choose it from your gallery.'],
         // ---- stats
-        ['Estadísticas y Análisis', 'Statistics and Analysis'], ['Registra una experiencia', 'Log an experience'], ['Racha actual', 'Current streak'], ['Mejor racha', 'Best streak'],
+        ['ene', 'Jan'], ['feb', 'Feb'], ['mar', 'Mar'], ['abr', 'Apr'], ['may', 'May'], ['jun', 'Jun'], ['jul', 'Jul'], ['ago', 'Aug'], ['sep', 'Sep'], ['oct', 'Oct'], ['nov', 'Nov'], ['dic', 'Dec'], ['Estadísticas y Análisis', 'Statistics and Analysis'], ['Registra una experiencia', 'Log an experience'], ['Racha actual', 'Current streak'], ['Mejor racha', 'Best streak'],
         ['Días activos', 'Active days'], ['Días sin consumo', 'Days without use'], ['días consecutivos', 'consecutive days'], ['récord histórico', 'all-time record'], ['desde último registro', 'since last entry'],
         ['Sin datos suficientes', 'Not enough data'], ['No hay registros para analizar.', 'There are no entries to analyze.'], ['❌ No hay registros para analizar', '❌ There are no entries to analyze'],
         ['📊 Frecuencia de consumo por sustancia', '📊 Use frequency by substance'], ['📈 Timeline mensual de registros', '📈 Monthly timeline of entries'],
@@ -128,7 +128,7 @@
         ['¿Estás seguro de que quieres eliminar todos los datos? Esta acción no se puede deshacer.', 'Are you sure you want to delete all data? This action cannot be undone.'],
         ['Todos los datos han sido eliminados', 'All data has been deleted'], ['Cuidado de tus datos', 'Taking care of your data'],
         ['Aún no se ha generado un backup.', 'No backup has been generated yet.'], ['Backup creado:', 'Backup created:'], ['Automático', 'Automatic'], ['Manual', 'Manual'],
-        ['No hay datos para exportar', 'There is no data to export'], ['✅ Exportación Completa', '✅ Export Complete'], ['📥 Importación completada', '📥 Import completed'],
+        ['No hay datos para exportar', 'There is no data to export'], ['✅ Exportación Completa', '✅ Export Complete'], ['❌ El archivo está vacío', '❌ The file is empty'], ['❌ Error al leer archivo', '❌ Error reading file'], ['📥 Importación completada', '📥 Import completed'],
         ['¿Quieres importar un archivo de backup ahora?', 'Do you want to import a backup file now?'], ['Importar backup solo está disponible en Android.', 'Importing a backup is only available on Android.'],
         ['La función de backup manual solo está disponible en Android.', 'Manual backup is only available on Android.'], ['Esta función solo está disponible en Android.', 'This feature is only available on Android.'],
         ['ℹ️ Información', 'ℹ️ Information'], ['❌ Error al importar', '❌ Import error'], ['❌ Error al importar backup', '❌ Error importing backup'], ['❌ Error al leer el archivo', '❌ Error reading the file'],
@@ -206,6 +206,10 @@
         [/^(\d+) registros?$/, function (m) { return m[1] + ' entr' + (m[1] === '1' ? 'y' : 'ies'); }],
         [/^(\d+) días?$/, function (m) { return m[1] + ' day' + (m[1] === '1' ? '' : 's'); }],
         [/^Hace (\d+) días?$/, function (m) { return m[1] + ' day' + (m[1] === '1' ? '' : 's') + ' ago'; }],
+        [/^✅ Importado: (\d+) sustancias?, (\d+) registros?$/, function (m) { return '✅ Imported: ' + m[1] + ' substance' + (m[1] === '1' ? '' : 's') + ', ' + m[2] + ' entr' + (m[2] === '1' ? 'y' : 'ies'); }],
+        [/^❌ Error: (.+)$/, function (m) { return '❌ Error: ' + tr(m[1]); }],
+        [/^❌ Error al (leer archivo|exportar): (.+)$/, function (m) { return '❌ Error ' + (m[1] === 'exportar' ? 'exporting' : 'reading file') + ': ' + tr(m[2]); }],
+        [/^📁 Leyendo archivo: (.+)$/, function (m) { return '📁 Reading file: ' + m[1]; }],
         [/^Error: (.+)$/, function (m) { return 'Error: ' + tr(m[1]); }],
         [/^ERROR: (.+)$/, function (m) { return 'ERROR: ' + tr(m[1]); }],
         [/^OK: (.+)$/, function (m) { return 'OK: ' + m[1]; }]
@@ -224,6 +228,11 @@
                 var r = RULES[i][0].exec(key);
                 if (r) { v = RULES[i][1](r); break; }
             }
+        }
+        if (v === undefined) {
+            // "🔥 Racha actual": prefijo de emoji/símbolos + texto traducible
+            var ep = /^([^\p{L}\p{N}]+?)\s+(\S[\s\S]*)$/u.exec(key);
+            if (ep) { var rest = tr(ep[2]); if (rest !== ep[2]) v = ep[1] + ' ' + rest; }
         }
         if (v === undefined) {
             if (debug && /[A-Za-zÁ-úñ]{3}/.test(key) && !OUT[key] && !missing[key]) {
@@ -280,4 +289,13 @@
         var orig = window[fn];
         window[fn] = function (msg, def) { return orig.call(window, tr(String(msg)), def); };
     });
+
+    // Toasts nativos enviados desde JS (Android.showToast): traducir antes de cruzar al puente
+    try {
+        var A = window.Android;
+        if (A && A.showToast) {
+            var origToast = A.showToast.bind(A);
+            A.showToast = function (msg) { return origToast(tr(String(msg))); };
+        }
+    } catch (e) { /* ponytail: si el puente es de solo lectura, el toast queda en español */ }
 })();
