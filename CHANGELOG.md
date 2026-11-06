@@ -7,6 +7,34 @@ y este proyecto adhiere a [Semantic Versioning](https://semver.org/lang/es/).
 
 ---
 
+## [1.4] - 2026-11-06
+
+### ✨ Añadido
+- **Archivadas como si no existieran**
+  - Una sustancia archivada desaparece del calendario, de las estadísticas, del contador de "Experiencias registradas" y del CSV exportado
+  - Sus registros se conservan y siguen en las copias de seguridad; al restaurarla vuelve todo a la normalidad
+
+### 🔄 Cambiado
+- El calendario empieza la semana en lunes
+- Acciones de la sección Datos ordenadas y descritas según su riesgo
+- Estado vacío explícito en Estadísticas cuando aún no hay datos
+- Navegación inferior más cómoda al tocar
+- Tarjetas de datos legibles en pantallas estrechas
+- Tarjetas de Recursos etiquetadas por su uso
+- Estadísticas más compactas cuando hay muchas categorías
+- Acciones de cada día más adaptables al tamaño de pantalla
+- Editor de notas más cómodo para entradas largas
+- Chip de la sustancia activa más legible (superficie tenue y contador en píldora)
+
+### 🐛 Corregido
+- Al renombrar una sustancia, sus registros conservaban el nombre anterior
+- Los diálogos ya no muestran "localhost dice…"
+- Las notas conservan los saltos de línea al mostrarse
+- Etiquetas de set y setting duplicadas o con ruido se unifican en la limpieza de datos
+- Copias de seguridad y CSV conservan las sustancias archivadas y el contexto del usuario al restaurar
+
+---
+
 ## [1.2] - 2026-01-17
 
 ### ✨ Añadido
