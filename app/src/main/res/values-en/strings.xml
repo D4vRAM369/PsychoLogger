@@ -219,4 +219,8 @@
 
     <!-- File Chooser -->
     <string name="chooser_select_csv">Select CSV file</string>
+    <string name="appearance_title">Appearance</string>
+    <string name="appearance_icons">Icon style</string>
+    <string name="appearance_icons_molecules">Molecules</string>
+    <string name="appearance_icons_emojis">Classic emojis</string>
 </resources>
