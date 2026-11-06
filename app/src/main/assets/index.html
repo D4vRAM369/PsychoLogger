@@ -9104,7 +9104,7 @@
 
                     // Sección de SUSTANCIAS
                     csvLines.push('SUSTANCIAS');
-                    csvLines.push('ID;Nombre;Color;Emoji;Archivada;Fecha_Archivado;Fecha_Creacion;Fecha_Actualizacion');
+                    csvLines.push('ID;Nombre;Color;Emoji;Archivada;Fecha_Archivado;Fecha_Creacion;Fecha_Actualizacion;SMILES');
 
                     // Las archivadas NO se exportan (ni ellas ni sus registros); el backup sí las conserva
                     const substancesForCsv = substances.map(s => ({ ...s, isArchived: false, archivedAt: '' }));
@@ -9115,7 +9115,8 @@
 
                         csvLines.push(
                             `${s.id};"${s.name.replace(/"/g, '""')}";"${s.color}";"${emoji}";` +
-                            `${s.isArchived ? 'true' : 'false'};"${s.archivedAt || ''}";"${s.createdAt || ''}";"${updatedAt}"`
+                            `${s.isArchived ? 'true' : 'false'};"${s.archivedAt || ''}";"${s.createdAt || ''}";"${updatedAt}";` +
+                            `"${(s.smiles || '').replace(/"/g, '""')}"`
                         );
                     });
 
@@ -9238,6 +9239,9 @@
 
                                 const columns = parseCSVLine(line);
 
+                                // Saltar la fila de cabecera (ID;Nombre;...), que no es un dato
+                                if ((columns[0] || '').replace(/"/g, '').trim().toUpperCase() === 'ID') continue;
+
                                 // Si no hay secciones definidas, asumir formato antiguo
                                 if (currentSection === '' && columns.length >= 4) {
                                     // Formato antiguo: intentar detectar automáticamente
@@ -9264,6 +9268,9 @@
                                         createdAt: columns[hasArchiveColumns ? 6 : 4] ? columns[hasArchiveColumns ? 6 : 4].replace(/"/g, '') : new Date().toISOString(),
                                         updatedAt: columns[hasArchiveColumns ? 7 : 5] ? columns[hasArchiveColumns ? 7 : 5].replace(/"/g, '') : ''
                                     };
+                                    // Novena columna opcional (SMILES): los CSV antiguos no la tienen
+                                    const importedSmiles = hasArchiveColumns && columns[8] ? columns[8].replace(/"/g, '').trim() : '';
+                                    if (importedSmiles) { substance.smiles = importedSmiles; }
 
                                     const targetList = isArchived ? archivedSubstances : substances;
                                     const existsInTarget = targetList.find(s => s.name.toLowerCase() === substance.name.toLowerCase());
