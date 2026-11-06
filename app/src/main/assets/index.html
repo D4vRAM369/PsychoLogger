@@ -240,10 +240,16 @@
         }
 
         .substance-item.active {
-            background: linear-gradient(135deg, var(--primary-purple), var(--secondary-pink));
-            border-color: var(--accent-cyan);
-            transform: scale(1.05);
-            box-shadow: 0 5px 15px rgba(139, 92, 246, 0.3);
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.24), rgba(6, 182, 212, 0.08));
+            border-color: rgba(139, 92, 246, 0.6);
+            box-shadow: 0 4px 14px rgba(139, 92, 246, 0.18);
+            font-weight: 600;
+        }
+
+        .substance-item.active .substance-count {
+            background: var(--primary-purple);
+            color: #fff;
+            border-color: transparent;
         }
 
         .substance-info {
