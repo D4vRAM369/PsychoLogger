@@ -116,80 +116,73 @@
         }
 
         .header {
+            position: relative;
             text-align: center;
-            margin-bottom: 2rem;
-            padding: 2rem 0;
+            margin-bottom: 1rem;
+            padding: 0.25rem 0 0.5rem;
         }
 
-        .header-content {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 2rem;
-            flex-wrap: wrap;
+        .header-emblem {
+            position: relative;
+            width: 116px;
+            height: 74px;
+            margin: 0 auto 0.35rem;
         }
 
-        .mystical-symbol {
-            font-size: 3rem;
-            opacity: 0.8;
-            animation: symbolGlow 4s ease-in-out infinite alternate;
+        .emblem-mol {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            opacity: 0;
+            transform: scale(0.94);
+            transition: opacity 1.1s ease, transform 1.1s ease;
+            filter: drop-shadow(0 0 7px rgba(245, 196, 81, 0.55));
+        }
+
+        .emblem-mol.is-on {
+            opacity: 1;
+            transform: scale(1);
+            animation: emblemBreath 3.2s ease-in-out infinite alternate;
+        }
+
+        @keyframes emblemBreath {
+            from { filter: drop-shadow(0 0 4px rgba(245, 196, 81, 0.35)); }
+            to { filter: drop-shadow(0 0 11px rgba(245, 196, 81, 0.75)); }
+        }
+
+        .header-watermark {
+            position: absolute;
+            left: 50%;
+            top: 66%;
+            width: 320px;
+            transform: translate(-50%, -50%);
+            opacity: 0.03;
+            pointer-events: none;
             user-select: none;
         }
 
-        .mystical-symbol.left {
-            color: var(--accent-cyan);
-        }
-
-        .mystical-symbol.right {
-            color: var(--secondary-pink);
-        }
-
-        @keyframes symbolGlow {
-            0% {
-                opacity: 0.8;
-                transform: scale(1);
-                filter: drop-shadow(0 0 10px currentColor);
-            }
-
-            100% {
-                opacity: 1;
-                transform: scale(1.1);
-                filter: drop-shadow(0 0 20px currentColor);
-            }
-        }
-
-        .header-title {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
         .header h1 {
-            font-size: 2.5rem;
+            position: relative;
+            font-size: clamp(1.3rem, 6.2vw, 2rem);
             font-weight: 800;
-            background: linear-gradient(135deg, var(--primary-purple), var(--secondary-pink), var(--accent-cyan));
+            white-space: nowrap;
+            background: linear-gradient(90deg, #e8742c, #c98a2a 45%, #c06bb8);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-            margin-bottom: 0.5rem;
-            animation: colorShift 3s ease-in-out infinite;
-        }
-
-        @keyframes colorShift {
-
-            0%,
-            100% {
-                filter: hue-rotate(0deg);
-            }
-
-            50% {
-                filter: hue-rotate(90deg);
-            }
+            margin-bottom: 0.2rem;
         }
 
         .header p {
+            position: relative;
             color: var(--text-muted);
-            font-size: 1.1rem;
+            font-size: 0.85rem;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .emblem-mol, .emblem-mol.is-on { transition: none; animation: none; }
         }
 
         .main-content {
@@ -3150,18 +3143,6 @@
                 gap: 1rem;
             }
 
-            .header h1 {
-                font-size: 2rem;
-            }
-
-            .header-content {
-                gap: 1rem;
-            }
-
-            .mystical-symbol {
-                font-size: 2rem;
-            }
-
             .calendar-container {
                 padding: 1rem;
             }
@@ -3947,14 +3928,15 @@
 
     <div class="container">
         <header class="header">
-            <div class="header-content">
-                <div class="mystical-symbol left">👁️</div>
-                <div class="header-title">
-                    <h1>Bitácora Psiconáutica</h1>
-                    <p>Tu compañera vital para un consumo consciente y responsable de sustancias psicoactivas</p>
-                </div>
-                <div class="mystical-symbol right">🗝️</div>
+            <img class="header-watermark" src="mol/lsd.svg" alt="" aria-hidden="true">
+            <div class="header-emblem" id="headerEmblem" aria-hidden="true">
+                <img class="emblem-mol is-on" src="mol/lsd.svg" alt="">
+                <img class="emblem-mol" src="mol/psilocibina.svg" alt="">
+                <img class="emblem-mol" src="mol/ketamina.svg" alt="">
+                <img class="emblem-mol" src="mol/morfina.svg" alt="">
             </div>
+            <h1>Bitácora Psiconáutica</h1>
+            <p>Tu compañera para un consumo consciente</p>
         </header>
 
         <main id="main-content" class="main-content">
@@ -11214,6 +11196,25 @@
         }
         el.addEventListener('click', hide);
         setTimeout(hide, 1600);
+    })();
+</script>
+<script>
+    (function () {
+        var box = document.getElementById('headerEmblem');
+        if (!box) return;
+        var mols = box.querySelectorAll('.emblem-mol');
+        var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if (reduce || mols.length < 2) return;
+        var i = 0, timer = null;
+        function next() {
+            mols[i].classList.remove('is-on');
+            i = (i + 1) % mols.length;
+            mols[i].classList.add('is-on');
+        }
+        function start() { if (!timer) timer = setInterval(next, 3200); }
+        function stop() { clearInterval(timer); timer = null; }
+        document.addEventListener('visibilitychange', function () { document.hidden ? stop() : start(); });
+        start();
     })();
 </script>
 </body>
