@@ -3940,11 +3940,59 @@
             animation: splashIn .9s ease-out .1s forwards; }
         @keyframes splashIn { to { opacity: 1; transform: scale(1); } }
         @media (prefers-reduced-motion: reduce) { #appSplash img { animation: none; opacity: 1; transform: none; } }
+
+        /* Onboarding */
+        #onboarding { position: fixed; inset: 0; z-index: 99990; display: none; flex-direction: column; color: #EDE9FE;
+            background: radial-gradient(circle at 50% 30%, #3e1e8c 0%, #1a0f46 45%, #08051e 85%); opacity: 0; transition: opacity .4s ease; }
+        #onboarding.is-open { display: flex; }
+        #onboarding.is-visible { opacity: 1; }
+        .ob-track { flex: 1; display: flex; width: 100%; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory; scrollbar-width: none; }
+        .ob-track::-webkit-scrollbar { display: none; }
+        .ob-slide { flex: 0 0 100%; width: 100%; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: center;
+            padding: calc(env(safe-area-inset-top, 0px) + 24px) 28px 8px; text-align: center; overflow-y: auto; scroll-snap-align: start; scroll-snap-stop: always; }
+        .ob-mol { flex: none; height: 240px; width: auto; max-width: 70%; margin-bottom: 22px; animation: obFloat 5s ease-in-out infinite, obGlow 3s ease-in-out infinite;
+            filter: drop-shadow(0 0 1px #F4C451) drop-shadow(0 0 8px rgba(245,196,81,.55)) drop-shadow(0 0 26px rgba(245,196,81,.3)); }
+        .ob-slide h2 { margin: 0 0 12px; font-size: 1.55rem; line-height: 1.2; font-weight: 800;
+            background: linear-gradient(90deg, #F4C451, #F97316, #EC4899); -webkit-background-clip: text; background-clip: text; color: transparent; }
+        .ob-slide p { margin: 0 0 10px; max-width: 34ch; font-size: 1rem; line-height: 1.5; color: #D6CFF5; }
+        .ob-slide b { color: #F4C451; font-weight: 700; }
+        .ob-slide > * { opacity: 0; transform: translateY(14px); }
+        .ob-slide.is-active > * { animation: obIn .6s ease-out forwards; }
+        .ob-slide.is-active > :nth-child(2) { animation-delay: .1s; } .ob-slide.is-active > :nth-child(3) { animation-delay: .2s; } .ob-slide.is-active > :nth-child(4) { animation-delay: .3s; }
+        .ob-gesture { display: inline-flex; align-items: center; justify-content: center; position: relative; min-width: 64px; height: 44px; padding: 0 16px; margin: 4px 0 14px;
+            border: 1px solid rgba(245,196,81,.5); border-radius: 22px; background: rgba(245,196,81,.08); color: #F4C451; font-size: 1.1rem; }
+        .ob-gesture::after { content: ''; position: absolute; inset: -2px; border-radius: inherit; border: 2px solid #F4C451; animation: obTap 1.6s ease-out infinite; }
+        .ob-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 20px calc(env(safe-area-inset-bottom, 0px) + 20px); }
+        .ob-foot button { min-width: 92px; padding: 11px 16px; border-radius: 22px; font: inherit; font-weight: 700; cursor: pointer; }
+        #obSkip { background: transparent; border: 0; color: #A79BD8; }
+        #obNext { background: linear-gradient(90deg, #F97316, #EC4899); border: 0; color: #fff; box-shadow: 0 0 16px rgba(236,72,153,.4); }
+        .ob-dots { display: flex; gap: 8px; }
+        .ob-dots i { width: 8px; height: 8px; border-radius: 50%; background: rgba(167,155,216,.35); transition: all .3s ease; }
+        .ob-dots i.is-on { width: 22px; border-radius: 4px; background: #F4C451; box-shadow: 0 0 8px rgba(244,196,81,.7); }
+        @keyframes obIn { to { opacity: 1; transform: none; } }
+        @keyframes obFloat { 0%,100% { transform: translateY(0) rotate(-1.5deg); } 50% { transform: translateY(-10px) rotate(1.5deg); } }
+        @keyframes obGlow { 0%,100% { opacity: .85; } 50% { opacity: 1; } }
+        @keyframes obTap { 0% { transform: scale(1); opacity: .9; } 100% { transform: scale(1.5, 1.9); opacity: 0; } }
+        @media (prefers-reduced-motion: reduce) {
+            .ob-mol, .ob-gesture::after { animation: none; } #onboarding { transition: none; } .ob-track { scroll-behavior: auto; }
+            .ob-slide > *, .ob-slide.is-active > * { opacity: 1; transform: none; animation: none; }
+        }
     </style>
 </head>
 
 <body>
     <div id="appSplash" aria-hidden="true"><img src="splash_logo.webp" alt=""></div>
+        <div id="onboarding" role="dialog" aria-label="Introducción">
+      <div class="ob-track" id="obTrack">
+        <section class="ob-slide"><img class="ob-mol" src="mol/lsd.svg" alt=""><h2>PsychoLogger</h2><p>Tu bitácora personal de experiencias con sustancias. <b>Privada y sin conexión</b>: todo se guarda cifrado en tu móvil y nada sale de él.</p></section>
+        <section class="ob-slide"><img class="ob-mol" src="mol/psilocibina.svg" alt=""><h2>Registra una experiencia</h2><p>Elige la sustancia, la dosis, el <b>set</b> y el <b>setting</b>, y añade tus notas. Después la verás en el calendario y en las estadísticas.</p></section>
+        <section class="ob-slide"><img class="ob-mol" src="mol/ketamina.svg" alt=""><h2>Archivar una sustancia</h2><div class="ob-gesture">⋮⋮</div><p>Toca <b>tres veces seguidas</b> el icono ⋮⋮ de una sustancia. Desaparece del calendario, las estadísticas, el contador y el CSV. Tus registros <b>se conservan</b> en las copias de seguridad.</p></section>
+        <section class="ob-slide"><img class="ob-mol" src="mol/morfina.svg" alt=""><h2>Ver y restaurar archivadas</h2><div class="ob-gesture">Acerca del proyecto</div><p>Toca <b>5 veces seguidas</b> el chip «Acerca del proyecto». Se abre la lista de archivadas; al restaurar una vuelve a funcionar como cualquier otra.</p></section>
+        <section class="ob-slide"><img class="ob-mol" src="mol/dmt.svg" alt=""><h2>Moléculas y SMILES</h2><p>Cada sustancia muestra su molécula. Si la tuya no sale, busca su <b>SMILES</b> (el texto que describe la molécula) en PubChem desde el navegador, cópialo y pégalo al editar la sustancia. En Ajustes puedes volver a los emojis con <b>Estilo de iconos</b>.</p></section>
+        <section class="ob-slide"><img class="ob-mol" src="mol/cafeina.svg" alt=""><h2>Cuando quieras repasarlo</h2><p>Abre el <b>engranaje</b> de Ajustes y pulsa <b>Ver introducción</b>.</p></section>
+      </div>
+      <div class="ob-foot"><button id="obSkip" type="button">Saltar</button><div class="ob-dots" id="obDots"></div><button id="obNext" type="button">Siguiente</button></div>
+    </div>
     <div class="animated-bg"></div>
 
     <div class="container">
@@ -11332,6 +11380,42 @@
         }
         el.addEventListener('click', hide);
         setTimeout(hide, 1600);
+    })();
+</script>
+<script>
+    // Onboarding: una sola vez (psychologger_onboarding_seen), reabrible con openOnboarding()
+    (function () {
+        var KEY = 'psychologger_onboarding_seen';
+        var root = document.getElementById('onboarding'), track = document.getElementById('obTrack');
+        if (!root || !track) return;
+        var slides = track.children, dots = document.getElementById('obDots'), nextBtn = document.getElementById('obNext');
+        var n = slides.length, idx = 0;
+        for (var k = 0; k < n; k++) dots.appendChild(document.createElement('i'));
+        function mark(i) {
+            idx = Math.max(0, Math.min(n - 1, i));
+            for (var k = 0; k < n; k++) {
+                slides[k].classList.toggle('is-active', k === idx);
+                dots.children[k].classList.toggle('is-on', k === idx);
+            }
+            nextBtn.textContent = idx === n - 1 ? 'Empezar' : 'Siguiente';
+        }
+        function go(i) { track.scrollTo({ left: Math.max(0, Math.min(n - 1, i)) * track.clientWidth, behavior: 'smooth' }); }
+        track.addEventListener('scroll', function () { var i = Math.round(track.scrollLeft / track.clientWidth); if (i !== idx) mark(i); });
+        function close() {
+            try { localStorage.setItem(KEY, '1'); } catch (e) { }
+            root.classList.remove('is-visible');
+            setTimeout(function () { root.classList.remove('is-open'); }, 400);
+        }
+        window.openOnboarding = function () {
+            root.classList.add('is-open'); track.scrollLeft = 0; mark(0);
+            requestAnimationFrame(function () { requestAnimationFrame(function () { root.classList.add('is-visible'); }); });
+        };
+        document.getElementById('obSkip').addEventListener('click', close);
+        nextBtn.addEventListener('click', function () { if (idx === n - 1) close(); else go(idx + 1); });
+        var seen = false;
+        try { seen = localStorage.getItem(KEY) === '1'; } catch (e) { }
+        // Tras el splash propio (1,6 s + fundido)
+        if (!seen) setTimeout(window.openOnboarding, 1700);
     })();
 </script>
 <script>
