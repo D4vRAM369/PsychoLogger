@@ -279,10 +279,8 @@ class AppLockManager(private val context: Context) {
 
     fun isBiometricAvailable(): Boolean {
         val bm = BiometricManager.from(context)
-        val authenticators =
-            BiometricManager.Authenticators.BIOMETRIC_WEAK or
-                    BiometricManager.Authenticators.DEVICE_CREDENTIAL
-        return when (bm.canAuthenticate(authenticators)) {
+        // Solo huella/biometría: el PIN del sistema ya no se ofrece (evita confundirlo con el PIN de la app)
+        return when (bm.canAuthenticate(BiometricManager.Authenticators.BIOMETRIC_WEAK)) {
             BiometricManager.BIOMETRIC_SUCCESS -> true
             else -> false
         }
@@ -296,7 +294,8 @@ class AppLockManager(private val context: Context) {
     fun showBiometricPrompt(
         activity: FragmentActivity,
         onSuccess: () -> Unit,
-        onError: (String) -> Unit
+        onError: (String) -> Unit,
+        onUsePin: () -> Unit = {}
     ) {
         if (!canShowPromptNow()) return
         markPromptShown()
@@ -323,21 +322,23 @@ class AppLockManager(private val context: Context) {
                 override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
                     super.onAuthenticationError(errorCode, errString)
                     isPromptShowing = false
+                    // Botón "Usar PIN de la app": abre la entrada de PIN propia
+                    if (errorCode == BiometricPrompt.ERROR_NEGATIVE_BUTTON) {
+                        onUsePin()
+                        return
+                    }
                     // No desbloquea, propaga el error
                     onError(errString.toString())
                 }
             }
         )
 
-        // Biometría + credencial del dispositivo (PIN/patrón del sistema) como fallback
-        val authenticators =
-            BiometricManager.Authenticators.BIOMETRIC_WEAK or
-                    BiometricManager.Authenticators.DEVICE_CREDENTIAL
-
+        // Solo biometría; el fallback es el PIN propio de la app (botón negativo)
         val promptInfo = BiometricPrompt.PromptInfo.Builder()
             .setTitle("🔒 Desbloquear aplicación")
-            .setSubtitle("Usa biometría o tu bloqueo del sistema")
-            .setAllowedAuthenticators(authenticators)
+            .setSubtitle("Usa tu huella")
+            .setAllowedAuthenticators(BiometricManager.Authenticators.BIOMETRIC_WEAK)
+            .setNegativeButtonText("Usar PIN de la app")
             .build()
 
         prompt.authenticate(promptInfo)

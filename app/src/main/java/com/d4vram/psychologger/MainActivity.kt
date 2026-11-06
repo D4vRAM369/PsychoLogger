@@ -324,6 +324,10 @@ class MainActivity : FragmentActivity() {
                                     },
                                     onError = {
                                         // No reintentamos automáticamente
+                                    },
+                                    onUsePin = {
+                                        if (appLockManager.hasPinSet()) showPinEntry = true
+                                        else Toast.makeText(context, "🔢 Primero debes configurar un PIN en Ajustes", Toast.LENGTH_LONG).show()
                                     }
                                 )
                             }
@@ -341,6 +345,10 @@ class MainActivity : FragmentActivity() {
                                         },
                                         onError = { error ->
                                             Toast.makeText(context, error, Toast.LENGTH_LONG).show()
+                                        },
+                                        onUsePin = {
+                                            if (appLockManager.hasPinSet()) showPinEntry = true
+                                            else Toast.makeText(context, "🔢 Primero debes configurar un PIN en Ajustes", Toast.LENGTH_LONG).show()
                                         }
                                     )
                                 } else if (!appLockManager.isBiometricAvailable()) {

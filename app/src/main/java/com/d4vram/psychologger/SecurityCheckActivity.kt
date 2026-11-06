@@ -45,7 +45,8 @@ class SecurityCheckActivity : FragmentActivity() {
                                 finish()
                             },
                             onError = {
-                            }
+                            },
+                            onUsePin = { if (appLockManager.hasPinSet()) showPin = true }
                         )
                     }
                 }
@@ -93,7 +94,8 @@ class SecurityCheckActivity : FragmentActivity() {
                                             startActivity(Intent(this@SecurityCheckActivity, MainActivity::class.java))
                                             finish()
                                         },
-                                        onError = { }
+                                        onError = { },
+                                        onUsePin = { if (appLockManager.hasPinSet()) showPin = true }
                                     )
                                 } else {
                                     if (appLockManager.hasPinSet()) showPin = true
