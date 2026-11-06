@@ -4100,12 +4100,6 @@
                                 <p>Limpia texto mal guardado, fusiona Sets/Settings duplicados y recupera tus sugerencias desde el historial.</p>
                                 <button class="btn-secondary" onclick="scanCorruptedEntries()">🔍 Revisar</button>
                             </div>
-                            <div class="resource-card">
-                                <h4>📦 Sustancias Archivadas</h4>
-                                <p>Recupera sustancias que hayas ocultado con triple-tap.</p>
-                                <button class="btn-secondary" onclick="openArchivedSubstancesModal()">👁️ Ver
-                                    Archivadas</button>
-                            </div>
                             <div class="resource-card data-card--danger">
                                 <h4>🗑️ Borrado completo</h4>
                                 <p>Elimina todos los datos almacenados. Haz un backup antes de usarlo.</p>
@@ -4115,7 +4109,7 @@
                     </section>
 
                     <section class="dev-panel">
-                        <span class="dev-panel__badge">Acerca del proyecto</span>
+                        <span class="dev-panel__badge" style="user-select: none; -webkit-user-select: none;" onclick="handleAboutChipTap()">Acerca del proyecto</span>
                         <h3 class="dev-panel__title">Hecho con amor por D4vRAM</h3>
                         <p class="dev-panel__subtitle">Aprendizaje Basado en Proyectos · Comunidad open source · IA como
                             profesora y copiloto</p>
@@ -7736,6 +7730,19 @@
                  * porque la clase .modal.active tiene estilos de centrado (align-items, justify-content)
                  * que no se aplicarían si solo cambiamos display.
                  */
+                // Acceso oculto: 5 toques seguidos (cada uno en menos de 1,5 s) en el chip "Acerca del proyecto"
+                let aboutChipTaps = 0;
+                let aboutChipLastTap = 0;
+                function handleAboutChipTap() {
+                    const now = Date.now();
+                    aboutChipTaps = (now - aboutChipLastTap < 1500) ? aboutChipTaps + 1 : 1;
+                    aboutChipLastTap = now;
+                    if (aboutChipTaps >= 5) {
+                        aboutChipTaps = 0;
+                        openArchivedSubstancesModal();
+                    }
+                }
+
                 function openArchivedSubstancesModal() {
                     const modal = document.getElementById('archivedSubstancesModal');
                     if (modal) {
@@ -11170,7 +11177,7 @@
                 <div style="background-color: #1A1A2E; flex: 1; overflow-y: auto; padding: 16px; position: relative;">
                     <p
                         style="margin-top: 0; margin-bottom: 16px; color: #b0b0c0; font-size: 0.95rem; line-height: 1.5;">
-                        Aquí están las sustancias ocultas con triple-tap.
+                        Aquí están las sustancias archivadas con triple-tap en ⋮⋮.
                         No se han borrado, solo están archivadas.
                     </p>
                     <div id="archived-substances-list">
