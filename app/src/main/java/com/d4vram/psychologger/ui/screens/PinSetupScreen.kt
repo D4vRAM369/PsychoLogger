@@ -75,9 +75,9 @@ fun PinSetupScreen(
                 value = if (step == 1) pin else confirmPin,
                 onValueChange = {
                     if (step == 1) {
-                        if (it.length <= 6) pin = it
+                        if (it.length <= 6) pin = it.filter { c -> c.isDigit() }
                     } else {
-                        if (it.length <= 6) confirmPin = it
+                        if (it.length <= 6) confirmPin = it.filter { c -> c.isDigit() }
                     }
                     errorMessage = ""
                 },

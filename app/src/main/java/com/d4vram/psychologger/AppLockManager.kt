@@ -253,13 +253,15 @@ class AppLockManager(private val context: Context) {
     // -------------------------------
 
     fun setPin(pin: String) {
-        val hashedPin = hashPin(pin)
+        val hashedPin = hashPin(pin.filter { it.isDigit() })
         encryptedPrefs.edit().putString(KEY_PIN_HASH, hashedPin).apply()
     }
 
     fun verifyPin(pin: String): Boolean {
         val storedHash = encryptedPrefs.getString(KEY_PIN_HASH, null)
-        return storedHash != null && storedHash == hashPin(pin)
+        if (storedHash == null) return false
+        // Tolera un símbolo colado desde el teclado: se prueba tal cual y solo con dígitos
+        return storedHash == hashPin(pin) || storedHash == hashPin(pin.filter { it.isDigit() })
     }
 
     fun hasPinSet(): Boolean {
