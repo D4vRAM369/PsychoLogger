@@ -170,11 +170,20 @@
             font-size: clamp(1.7rem, 9vw, 2.6rem);
             font-weight: 800;
             white-space: nowrap;
-            background: linear-gradient(90deg, #e8742c, #c98a2a 45%, #c06bb8);
+            /* Degradado en movimiento: dorado → naranja → rosa → violeta → cian → dorado (bucle sin saltos) */
+            background: linear-gradient(90deg, #f5c451, #e8742c, #ec4899, #a855f7, #22d3ee, #f5c451);
+            background-size: 300% 100%;
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
             margin-bottom: 0.2rem;
+            animation: titleFlow 9s linear infinite;
+            filter: drop-shadow(0 0 10px rgba(236, 120, 200, 0.28));
+        }
+
+        @keyframes titleFlow {
+            from { background-position: 0% 50%; }
+            to { background-position: 300% 50%; }
         }
 
         .header p {
@@ -185,6 +194,7 @@
 
         @media (prefers-reduced-motion: reduce) {
             .emblem-mol, .emblem-mol.is-on { transition: none; animation: none; }
+            .header h1 { animation: none; }
         }
 
         .main-content {
