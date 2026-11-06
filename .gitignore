@@ -66,3 +66,10 @@ docs/
 # Carpeta con sesiones exportadas de proceso PBL para tomar notas
 **/Notas PBL/
 **/implementation_plan.md
+
+# Guía privada verificación App ID Google Play
+PASOS_FINALES_VERIFICAR_APPID_GOOGLEPLAY.md
+
+# Docs personales (política: nunca versionar)
+ROADMAP.md
+CLAUDE.md
