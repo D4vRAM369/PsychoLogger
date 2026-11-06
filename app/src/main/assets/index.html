@@ -3988,6 +3988,7 @@
 
 <body>
     <div id="appSplash" aria-hidden="true"><img src="splash_logo.webp" alt=""></div>
+    <script>try { if (window.Android && Android.isSplashEnabled && !Android.isSplashEnabled()) { var s = document.getElementById('appSplash'); if (s) s.remove(); } } catch (e) {}</script>
         <div id="onboarding" role="dialog" aria-label="Introducción">
       <div class="ob-track" id="obTrack">
         <section class="ob-slide"><img class="ob-mol" src="mol/lsd.svg" alt=""><h2>PsychoLogger</h2><p>Tu bitácora personal de experiencias con sustancias. <b>Privada y sin conexión</b>: todo se guarda cifrado en tu móvil y nada sale de él.</p></section>

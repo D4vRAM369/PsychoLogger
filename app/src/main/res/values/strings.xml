@@ -228,6 +228,9 @@
     <string name="appearance_icons_molecules">Molecules</string>
     <string name="appearance_show_intro">Show introduction</string>
     <string name="appearance_icons_emojis">Classic emojis</string>
+    <string name="appearance_splash">Startup animation</string>
+    <string name="appearance_splash_on">Shown at startup</string>
+    <string name="appearance_splash_off">Off, opens directly</string>
     <string name="restore_title">🔒 Encrypted Backup</string>
     <string name="restore_message">Enter the password to restore this backup:</string>
     <string name="restore_password_hint">Backup password</string>

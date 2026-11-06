@@ -228,6 +228,9 @@
     <string name="appearance_icons_molecules">Moléculas</string>
     <string name="appearance_show_intro">Ver introducción</string>
     <string name="appearance_icons_emojis">Emojis clásicos</string>
+    <string name="appearance_splash">Animación de inicio</string>
+    <string name="appearance_splash_on">Se muestra al iniciar</string>
+    <string name="appearance_splash_off">Desactivada</string>
     <string name="restore_title">🔒 Backup Cifrado</string>
     <string name="restore_message">Introduce la contraseña para restaurar este backup:</string>
     <string name="restore_password_hint">Contraseña del Backup</string>

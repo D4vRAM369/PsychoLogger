@@ -24,6 +24,8 @@ fun SettingsScreen(
     onThemeToggle: (Boolean) -> Unit,
     useMoleculeIcons: Boolean,
     onIconStyleToggle: (Boolean) -> Unit,
+    showSplash: Boolean,
+    onSplashToggle: (Boolean) -> Unit,
     onShowIntro: () -> Unit,
     onAdvancedSettings: () -> Unit,
     onPinSetup: () -> Unit,
@@ -158,6 +160,36 @@ fun SettingsScreen(
                     Switch(
                         checked = useMoleculeIcons,
                         onCheckedChange = onIconStyleToggle,
+                        colors = SwitchDefaults.colors(
+                            checkedThumbColor = Color(0xFFF5C451),
+                            checkedTrackColor = Color(0xFFF5C451).copy(alpha = 0.3f)
+                        )
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(modifier = Modifier.weight(1f).padding(end = 12.dp)) {
+                        Text(
+                            text = stringResource(R.string.appearance_splash),
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Text(
+                            text = if (showSplash) stringResource(R.string.appearance_splash_on) else stringResource(R.string.appearance_splash_off),
+                            fontSize = 14.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    Switch(
+                        checked = showSplash,
+                        onCheckedChange = onSplashToggle,
                         colors = SwitchDefaults.colors(
                             checkedThumbColor = Color(0xFFF5C451),
                             checkedTrackColor = Color(0xFFF5C451).copy(alpha = 0.3f)

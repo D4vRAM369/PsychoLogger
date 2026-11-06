@@ -107,6 +107,8 @@ class MainActivity : FragmentActivity() {
     val isSoftTheme: State<Boolean> get() = _isSoftTheme
     private var _useMoleculeIcons = mutableStateOf(true)
     val useMoleculeIcons: State<Boolean> get() = _useMoleculeIcons
+    private var _showSplash = mutableStateOf(true)
+    val showSplash: State<Boolean> get() = _showSplash
 
     var webView: WebView? = null
         private set
@@ -139,6 +141,12 @@ class MainActivity : FragmentActivity() {
         // Inicializar tema
         _isSoftTheme.value = uiPrefs.getBoolean("is_soft_theme", false)
         _useMoleculeIcons.value = uiPrefs.getBoolean("molecule_icons", true)
+        // Splash: visible en las 4 primeras aperturas (instalación + 3); en la 5.ª pasa a desactivado.
+        // Un cambio manual del interruptor (toggleSplash) marca splash_auto_done y cancela este automatismo.
+        val sp = SplashPolicy.onLaunch(uiPrefs.getInt("splash_launches", 0), uiPrefs.getBoolean("splash_auto_done", false))
+        uiPrefs.edit().putInt("splash_launches", sp.launches).putBoolean("splash_auto_done", sp.autoDone).apply()
+        if (sp.disableNow) uiPrefs.edit().putBoolean("show_splash", false).apply()
+        _showSplash.value = uiPrefs.getBoolean("show_splash", true)
 
         // Programar backups automáticos cada 12 horas
         schedulePeriodicBackups()
@@ -420,6 +428,8 @@ class MainActivity : FragmentActivity() {
                             isSoftTheme = isSoftTheme.value,
                             useMoleculeIcons = useMoleculeIcons.value,
                             onIconStyleToggle = { molecules -> toggleIconStyle(molecules) },
+                            showSplash = showSplash.value,
+                            onSplashToggle = { enabled -> toggleSplash(enabled) },
                             onShowIntro = {
                                 showSettings = false
                                 executeJavaScript("if (typeof openOnboarding === 'function') { openOnboarding(); }")
@@ -513,6 +523,12 @@ class MainActivity : FragmentActivity() {
         uiPrefs.edit().putBoolean("molecule_icons", molecules).apply()
         val style = if (molecules) "molecule" else "emoji"
         executeJavaScript("if (typeof setIconStyle === 'function') { setIconStyle('$style'); }")
+    }
+
+    /** Se aplica en el próximo arranque: index.html consulta Android.isSplashEnabled() al cargar. */
+    private fun toggleSplash(enabled: Boolean) {
+        _showSplash.value = enabled
+        uiPrefs.edit().putBoolean("show_splash", enabled).putBoolean("splash_auto_done", true).apply()
     }
 
     private fun toggleTheme(soft: Boolean) {
@@ -1844,6 +1860,11 @@ class WebAppInterface(private val context: Context, private val activity: MainAc
     }
 
     /** Idioma del dispositivo para i18n.js ("es", "en", ...). */
+    /** Preferencia "Animación de inicio" (Ajustes). Por defecto activada. */
+    @JavascriptInterface
+    fun isSplashEnabled(): Boolean =
+        context.getSharedPreferences("ui_settings", Context.MODE_PRIVATE).getBoolean("show_splash", true)
+
     @JavascriptInterface
     fun getLanguage(): String = java.util.Locale.getDefault().language
 
