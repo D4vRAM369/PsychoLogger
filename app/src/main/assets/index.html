@@ -3929,10 +3929,20 @@
             padding: 16px;
             margin-top: 8px;
         }
+        /* Splash de arranque */
+        #appSplash { position: fixed; inset: 0; z-index: 99999; display: flex; align-items: center; justify-content: center;
+            background: radial-gradient(circle at 50% 48%, #3e1e8c 0%, #1a0f46 38%, #08051e 78%);
+            transition: opacity .5s ease; }
+        #appSplash.is-hiding { opacity: 0; pointer-events: none; }
+        #appSplash img { width: min(78vw, 420px); height: auto; opacity: 0; transform: scale(.94);
+            animation: splashIn .9s ease-out .1s forwards; }
+        @keyframes splashIn { to { opacity: 1; transform: scale(1); } }
+        @media (prefers-reduced-motion: reduce) { #appSplash img { animation: none; opacity: 1; transform: none; } }
     </style>
 </head>
 
 <body>
+    <div id="appSplash" aria-hidden="true"><img src="splash_logo.webp" alt=""></div>
     <div class="animated-bg"></div>
 
     <div class="container">
@@ -11192,6 +11202,20 @@
             </div>
         </div>
 
+<script>
+    (function () {
+        var el = document.getElementById('appSplash');
+        if (!el) return;
+        var done = false;
+        function hide() {
+            if (done) return; done = true;
+            el.classList.add('is-hiding');
+            setTimeout(function () { if (el.parentNode) el.parentNode.removeChild(el); }, 600);
+        }
+        el.addEventListener('click', hide);
+        setTimeout(hide, 1600);
+    })();
+</script>
 </body>
 
 </html>
