@@ -222,5 +222,6 @@
     <string name="appearance_title">Apariencia</string>
     <string name="appearance_icons">Estilo de iconos</string>
     <string name="appearance_icons_molecules">Moléculas</string>
+    <string name="appearance_show_intro">Ver introducción</string>
     <string name="appearance_icons_emojis">Emojis clásicos</string>
 </resources>

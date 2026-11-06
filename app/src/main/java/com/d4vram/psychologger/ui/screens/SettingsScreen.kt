@@ -22,6 +22,7 @@ fun SettingsScreen(
     onThemeToggle: (Boolean) -> Unit,
     useMoleculeIcons: Boolean,
     onIconStyleToggle: (Boolean) -> Unit,
+    onShowIntro: () -> Unit,
     onAdvancedSettings: () -> Unit,
     onPinSetup: () -> Unit,
     onClose: () -> Unit
@@ -152,6 +153,15 @@ fun SettingsScreen(
                             checkedTrackColor = Color(0xFFF5C451).copy(alpha = 0.3f)
                         )
                     )
+                }
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                OutlinedButton(
+                    onClick = onShowIntro,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(stringResource(R.string.appearance_show_intro))
                 }
 
                 Spacer(modifier = Modifier.height(24.dp))

@@ -412,6 +412,10 @@ class MainActivity : FragmentActivity() {
                             isSoftTheme = isSoftTheme.value,
                             useMoleculeIcons = useMoleculeIcons.value,
                             onIconStyleToggle = { molecules -> toggleIconStyle(molecules) },
+                            onShowIntro = {
+                                showSettings = false
+                                executeJavaScript("if (typeof openOnboarding === 'function') { openOnboarding(); }")
+                            },
                             onThemeToggle = { soft ->
                                 toggleTheme(soft)
                             },
