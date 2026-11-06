@@ -979,7 +979,7 @@ class BackupManager(private val context: Context) {
 
         // Sección de sustancias
         csvBuilder.append("SUSTANCIAS\n")
-        csvBuilder.append("ID;Nombre;Color;Emoji;Archivada;Fecha_Archivado;Fecha_Creacion;Fecha_Actualizacion\n")
+        csvBuilder.append("ID;Nombre;Color;Emoji;Archivada;Fecha_Archivado;Fecha_Creacion;Fecha_Actualizacion;SMILES\n")
 
         appendSubstancesToCsv(csvBuilder, substancesArray, isArchivedFallback = false)
         appendSubstancesToCsv(csvBuilder, archivedSubstancesArray, isArchivedFallback = true)
@@ -1031,7 +1031,8 @@ class BackupManager(private val context: Context) {
                 isArchived.toString(),
                 quoteForCsv(archivedAt),
                 quoteForCsv(createdAt),
-                quoteForCsv(updatedAt)
+                quoteForCsv(updatedAt),
+                quoteForCsv(obj.optString("smiles"))
             ).joinToString(";")
 
             csvBuilder.append(row).append('\n')

@@ -820,7 +820,8 @@ class WebAppInterface(private val context: Context, private val activity: MainAc
         val isArchived: Boolean,
         val archivedAt: String?,
         val createdAt: String,
-        val updatedAt: String?
+        val updatedAt: String?,
+        val smiles: String? = null
     )
 
     private data class EntryCsv(
@@ -926,6 +927,8 @@ class WebAppInterface(private val context: Context, private val activity: MainAc
         val archivedAtRaw = if (hasArchiveColumns) columns.getOrNull(createdAtIndex + 1)?.trim('"', '\'') else null
         val createdAtRaw = columns.getOrNull(if (hasArchiveColumns) createdAtIndex + 2 else createdAtIndex)?.trim('"', '\'')
         val updatedAtRaw = columns.getOrNull(if (hasArchiveColumns) createdAtIndex + 3 else createdAtIndex + 1)?.trim('"', '\'')
+        // Novena columna opcional (SMILES): los CSV antiguos no la tienen
+        val smilesRaw = if (hasArchiveColumns) columns.getOrNull(createdAtIndex + 4)?.trim('"', '\'')?.trim() else null
 
         return SubstanceCsv(
             id = id,
@@ -935,7 +938,8 @@ class WebAppInterface(private val context: Context, private val activity: MainAc
             isArchived = isArchived,
             archivedAt = archivedAtRaw?.takeUnless { it.isBlank() },
             createdAt = createdAtRaw?.takeUnless { it.isBlank() } ?: Date().toInstantString(),
-            updatedAt = updatedAtRaw?.takeUnless { it.isBlank() }
+            updatedAt = updatedAtRaw?.takeUnless { it.isBlank() },
+            smiles = smilesRaw?.takeUnless { it.isBlank() }
         )
     }
 
@@ -1256,6 +1260,7 @@ class WebAppInterface(private val context: Context, private val activity: MainAc
                             s.archivedAt?.let { put("archivedAt", it) }
                             put("createdAt", s.createdAt)
                             s.updatedAt?.let { put("updatedAt", it) }
+                            s.smiles?.let { put("smiles", it) }
                         }
                         val subJsonString = subJson.toString()
                         val lowerName = s.name.lowercase(Locale.getDefault())
@@ -2112,17 +2117,17 @@ fun WebViewScreen(
                                 try {
                                     let csvContent = "";
                                     csvContent += "SUSTANCIAS\n";
-                                    csvContent += "ID,Nombre,Color,Emoji,Archivada,Fecha_Archivado,Fecha_Creacion,Fecha_Actualizacion\n";
+                                    csvContent += "ID,Nombre,Color,Emoji,Archivada,Fecha_Archivado,Fecha_Creacion,Fecha_Actualizacion,SMILES\n";
                                     if (typeof substances !== 'undefined') {
                                         substances.forEach(substance => {
                                             var emoji = substance.emoji || (typeof getSubstanceEmoji === 'function' ? getSubstanceEmoji(substance.name) : '💊');
-                                            csvContent += substance.id + ',"' + substance.name + '","' + substance.color + '","' + emoji + '",false,"","' + substance.createdAt + '","' + (substance.updatedAt || '') + '"\n';
+                                            csvContent += substance.id + ',"' + substance.name + '","' + substance.color + '","' + emoji + '",false,"","' + substance.createdAt + '","' + (substance.updatedAt || '') + '","' + (substance.smiles || '').replace(/"/g, '""') + '"\n';
                                         });
                                     }
                                     if (typeof archivedSubstances !== 'undefined') {
                                         archivedSubstances.forEach(substance => {
                                             var emoji = substance.emoji || (typeof getSubstanceEmoji === 'function' ? getSubstanceEmoji(substance.name) : '💊');
-                                            csvContent += substance.id + ',"' + substance.name + '","' + substance.color + '","' + emoji + '",true,"' + (substance.archivedAt || '') + '","' + (substance.createdAt || '') + '","' + (substance.updatedAt || '') + '"\n';
+                                            csvContent += substance.id + ',"' + substance.name + '","' + substance.color + '","' + emoji + '",true,"' + (substance.archivedAt || '') + '","' + (substance.createdAt || '') + '","' + (substance.updatedAt || '') + '","' + (substance.smiles || '').replace(/"/g, '""') + '"\n';
                                         });
                                     }
                                     csvContent += "\nREGISTROS\n";
