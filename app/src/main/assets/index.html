@@ -7,6 +7,8 @@
     <title>Bitácora Psiconáutica</title>
     <!-- Marked.js para soporte de Markdown (local, sin conexión externa) -->
     <script src="marked.min.js"></script>
+    <script src="smiles-drawer.min.js"></script>
+    <script src="mol/mol-index.js"></script>
     <script>
         // Configuración para que se comporte más como Telegram
         // Usaremos un "pre-procesador" simple para mapear *text* a **text** 
@@ -3910,6 +3912,14 @@
             padding: 16px;
             margin-top: 8px;
         }
+        /* Iconos de sustancia (moléculas) */
+        .sub-ico { display: inline-flex; align-items: center; justify-content: center; width: 50px; height: 38px; flex: none; margin-right: 4px; }
+        .sub-ico img, .sub-ico svg { max-width: 100%; max-height: 100%; width: auto; height: 100%; filter: drop-shadow(0 0 0.7px #F4C451) drop-shadow(0 0 0.7px #F4C451) drop-shadow(0 0 4px rgba(245, 196, 81, 0.4)); }
+        .sub-ico--emoji { font-size: 1.3rem; }
+        .smiles-preview { min-height: 70px; margin-top: 8px; display: flex; align-items: center; justify-content: center; border: 1px dashed var(--border-color); border-radius: 10px; font-size: 0.8rem; color: var(--text-muted); }
+        .smiles-preview svg { max-height: 90px; }
+        .smiles-hint { display: block; margin-top: 6px; font-size: 0.75rem; color: var(--text-muted); }
+
         /* Splash de arranque */
         #appSplash { position: fixed; inset: 0; z-index: 99999; display: flex; align-items: center; justify-content: center;
             background: radial-gradient(circle at 50% 48%, #3e1e8c 0%, #1a0f46 38%, #08051e 78%);
@@ -4853,6 +4863,13 @@
                                 </button>
                                 <span class="emoji-suggestion">💡 Deja vacío para auto-detectar</span>
                             </div>
+                        </div>
+                        <div class="form-group">
+                            <label>SMILES de la molécula (opcional)</label>
+                            <input type="text" id="substanceSmiles" placeholder="CCO" autocomplete="off" autocapitalize="off"
+                                spellcheck="false" oninput="updateSmilesPreview()">
+                            <div class="smiles-preview" id="smilesPreview">Si lo dejas vacío se usa la lista incluida o el emoji</div>
+                            <span class="smiles-hint">Cópialo de PubChem u otra fuente (búscalo fuera de la app).</span>
                         </div>
                         <div class="color-picker-container">
                             <label>Color Identificativo</label>
@@ -7371,12 +7388,16 @@
                             // Guardar el nombre anterior ANTES de sobrescribir (si no, nunca se detecta el cambio)
                             const previousName = substances[substanceIndex].name;
 
-                            substances[substanceIndex] = {
+                            const smilesInputEdit = document.getElementById('substanceSmiles');
+                            const smilesEdit = smilesInputEdit ? smilesInputEdit.value.trim() : '';
+                            const updatedSubstance = {
                                 ...substances[substanceIndex],
                                 name: name,
                                 color: selectedSubstanceColor,
                                 updatedAt: new Date().toISOString()
                             };
+                            if (smilesEdit) { updatedSubstance.smiles = smilesEdit; } else { delete updatedSubstance.smiles; }
+                            substances[substanceIndex] = updatedSubstance;
 
                             // Actualizar registros existentes si cambió el nombre
                             if (previousName !== name) {
@@ -7402,6 +7423,9 @@
                             emoji: customEmoji || getSubstanceEmoji(name), // Usar emoji personalizado o auto-detectar
                             createdAt: new Date().toISOString()
                         };
+                        const smilesInputNew = document.getElementById('substanceSmiles');
+                        const smilesNew = smilesInputNew ? smilesInputNew.value.trim() : '';
+                        if (smilesNew) { substance.smiles = smilesNew; }
 
                         substances.push(substance);
                         saveDataToStorage();
@@ -7429,6 +7453,7 @@
                     if (emojiInput) {
                         emojiInput.value = ''; // Limpiar emoji personalizado
                     }
+                    updateSmilesPreview();
 
                     // Reset color selection
                     document.querySelectorAll('.color-option').forEach(opt => opt.classList.remove('selected'));
@@ -7449,6 +7474,91 @@
                     if (modalTitle) {
                         modalTitle.innerHTML = '➕ Añadir Nueva Sustancia';
                     }
+                }
+
+                // ========================================
+                // ICONOS DE SUSTANCIA: molécula (lista incluida o SMILES propio) o emoji
+                // ========================================
+                const ICON_STYLE_KEY = 'psychologger_icon_style';
+                let iconStyle = (function () {
+                    try { return localStorage.getItem(ICON_STYLE_KEY) === 'emoji' ? 'emoji' : 'molecule'; } catch (e) { return 'molecule'; }
+                })();
+                const smilesSvgCache = new Map();
+                const SMILES_COLOR = '#F4C451';
+                const SMILES_THEME = { dark: { C: SMILES_COLOR, O: SMILES_COLOR, N: SMILES_COLOR, F: SMILES_COLOR, CL: SMILES_COLOR, BR: SMILES_COLOR, I: SMILES_COLOR, P: SMILES_COLOR, S: SMILES_COLOR, B: SMILES_COLOR, SI: SMILES_COLOR, H: SMILES_COLOR, BACKGROUND: 'transparent' } };
+
+                function setIconStyle(style) {
+                    iconStyle = style === 'emoji' ? 'emoji' : 'molecule';
+                    try { localStorage.setItem(ICON_STYLE_KEY, iconStyle); } catch (e) { }
+                    renderSubstanceList();
+                }
+
+                function normalizeMolKey(name) {
+                    return String(name || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().split(/\s+/).join(' ').trim();
+                }
+
+                function getMoleculeId(name) {
+                    return (window.MOL_INDEX || {})[normalizeMolKey(name)] || null;
+                }
+
+                // Dibuja un SMILES; devuelve el SVG como texto vía callback, o null si es inválido (nunca lanza)
+                function drawSmiles(smiles, w, h, done) {
+                    const key = w + 'x' + h + ':' + smiles;
+                    if (smilesSvgCache.has(key)) { done(smilesSvgCache.get(key)); return; }
+                    try {
+                        if (typeof SmilesDrawer === 'undefined') { done(null); return; }
+                        const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+                        svg.setAttribute('width', w); svg.setAttribute('height', h);
+                        const drawer = new SmilesDrawer.SvgDrawer({ width: w, height: h, padding: 6, bondThickness: 1.6, themes: SMILES_THEME });
+                        SmilesDrawer.parse(smiles, function (tree) {
+                            try {
+                                drawer.draw(tree, svg, 'dark');
+                                const out = svg.outerHTML;
+                                smilesSvgCache.set(key, out);
+                                done(out);
+                            } catch (e) { done(null); }
+                        }, function () { done(null); });
+                    } catch (e) { done(null); }
+                }
+
+                function escapeAttr(v) {
+                    return String(v).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+                }
+
+                // HTML del icono de una sustancia en la lista. En modo "emoji" no se muestra nada (aspecto clásico).
+                function substanceIconHTML(substance) {
+                    if (iconStyle === 'emoji') return '';
+                    const emoji = substance.emoji || getSubstanceEmoji(substance.name);
+                    const smiles = (substance.smiles || '').trim();
+                    if (smiles) {
+                        return `<span class="sub-ico" data-smiles="${escapeAttr(smiles)}" data-emoji="${escapeAttr(emoji)}"></span>`;
+                    }
+                    const molId = getMoleculeId(substance.name);
+                    if (molId) {
+                        return `<span class="sub-ico"><img src="mol/${molId}.svg" alt=""></span>`;
+                    }
+                    return `<span class="sub-ico sub-ico--emoji">${emoji}</span>`;
+                }
+
+                function hydrateSmilesIcons(root) {
+                    root.querySelectorAll('.sub-ico[data-smiles]').forEach(el => {
+                        drawSmiles(el.dataset.smiles, 88, 64, function (svgText) {
+                            if (svgText) { el.innerHTML = svgText; }
+                            else { el.classList.add('sub-ico--emoji'); el.textContent = el.dataset.emoji || '💊'; }
+                        });
+                    });
+                }
+
+                function updateSmilesPreview() {
+                    const input = document.getElementById('substanceSmiles');
+                    const box = document.getElementById('smilesPreview');
+                    if (!input || !box) return;
+                    const value = input.value.trim();
+                    if (!value) { box.textContent = 'Si lo dejas vacío se usa la lista incluida o el emoji'; return; }
+                    drawSmiles(value, 220, 90, function (svgText) {
+                        if (svgText) { box.innerHTML = svgText; }
+                        else { box.textContent = 'No se pudo dibujar ese SMILES (se usará el emoji)'; }
+                    });
                 }
 
                 function renderSubstanceList() {
@@ -7492,6 +7602,7 @@
                         item.innerHTML = `
                     <div class="substance-info">
                         <span class="drag-handle" title="Triple tap para archivar">⋮⋮</span>
+                        ${substanceIconHTML(substance)}
                         <span>${substance.name}</span>
                     </div>
                     <div class="substance-actions">
@@ -7547,6 +7658,7 @@
 
                         list.appendChild(item);
                     });
+                    hydrateSmilesIcons(list);
                 }
 
                 // ========================================
@@ -8106,6 +8218,11 @@
                     const nameInput = document.getElementById('substanceName');
                     if (nameInput) {
                         nameInput.value = substance.name;
+                    }
+                    const smilesField = document.getElementById('substanceSmiles');
+                    if (smilesField) {
+                        smilesField.value = substance.smiles || '';
+                        updateSmilesPreview();
                     }
                     selectedSubstanceColor = substance.color;
 
