@@ -105,6 +105,8 @@ class MainActivity : FragmentActivity() {
     private val uiPrefs by lazy { getSharedPreferences("ui_settings", MODE_PRIVATE) }
     private var _isSoftTheme = mutableStateOf(false)
     val isSoftTheme: State<Boolean> get() = _isSoftTheme
+    private var _useMoleculeIcons = mutableStateOf(true)
+    val useMoleculeIcons: State<Boolean> get() = _useMoleculeIcons
 
     var webView: WebView? = null
         private set
@@ -136,6 +138,7 @@ class MainActivity : FragmentActivity() {
         
         // Inicializar tema
         _isSoftTheme.value = uiPrefs.getBoolean("is_soft_theme", false)
+        _useMoleculeIcons.value = uiPrefs.getBoolean("molecule_icons", true)
 
         // Programar backups automáticos cada 12 horas
         schedulePeriodicBackups()
@@ -359,6 +362,7 @@ class MainActivity : FragmentActivity() {
                             WebViewScreen(
                                 context = context,
                                 isSoftTheme = isSoftTheme.value,
+                                useMoleculeIcons = useMoleculeIcons.value,
                                 onFileChooser = { callback ->
                                     filePathCallback = callback
                                     this@MainActivity.openFileChooser()
@@ -406,6 +410,8 @@ class MainActivity : FragmentActivity() {
                                 }
                             },
                             isSoftTheme = isSoftTheme.value,
+                            useMoleculeIcons = useMoleculeIcons.value,
+                            onIconStyleToggle = { molecules -> toggleIconStyle(molecules) },
                             onThemeToggle = { soft ->
                                 toggleTheme(soft)
                             },
@@ -488,6 +494,13 @@ class MainActivity : FragmentActivity() {
                 }
             }
         }
+    }
+
+    private fun toggleIconStyle(molecules: Boolean) {
+        _useMoleculeIcons.value = molecules
+        uiPrefs.edit().putBoolean("molecule_icons", molecules).apply()
+        val style = if (molecules) "molecule" else "emoji"
+        executeJavaScript("if (typeof setIconStyle === 'function') { setIconStyle('$style'); }")
     }
 
     private fun toggleTheme(soft: Boolean) {
@@ -2042,6 +2055,7 @@ class WebAppInterface(private val context: Context, private val activity: MainAc
 fun WebViewScreen(
     context: Context,
     isSoftTheme: Boolean,
+    useMoleculeIcons: Boolean,
     onFileChooser: (ValueCallback<Array<Uri>>) -> Unit,
     onWebViewReady: (WebView) -> Unit
 ) {
@@ -2086,6 +2100,10 @@ fun WebViewScreen(
                         // Aplicar tema persistido
                         val themeName = if (isSoftTheme) "soft" else "original"
                         view?.evaluateJavascript("if (typeof setAppTheme === 'function') { setAppTheme('$themeName'); }", null)
+
+                        // Aplicar estilo de iconos persistido (moléculas / emojis clásicos)
+                        val iconStyle = if (useMoleculeIcons) "molecule" else "emoji"
+                        view?.evaluateJavascript("if (typeof setIconStyle === 'function') { setIconStyle('$iconStyle'); }", null)
 
                         view?.evaluateJavascript(
                             """

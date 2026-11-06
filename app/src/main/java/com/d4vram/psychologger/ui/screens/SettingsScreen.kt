@@ -20,6 +20,8 @@ fun SettingsScreen(
     onAppLockToggle: (Boolean) -> Unit,
     isSoftTheme: Boolean,
     onThemeToggle: (Boolean) -> Unit,
+    useMoleculeIcons: Boolean,
+    onIconStyleToggle: (Boolean) -> Unit,
     onAdvancedSettings: () -> Unit,
     onPinSetup: () -> Unit,
     onClose: () -> Unit
@@ -108,6 +110,46 @@ fun SettingsScreen(
                         colors = SwitchDefaults.colors(
                             checkedThumbColor = Color(0xFF8B5CF6),
                             checkedTrackColor = Color(0xFF8B5CF6).copy(alpha = 0.3f)
+                        )
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                Text(
+                    text = stringResource(R.string.appearance_title),
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = stringResource(R.string.appearance_icons),
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Text(
+                            text = if (useMoleculeIcons) stringResource(R.string.appearance_icons_molecules) else stringResource(R.string.appearance_icons_emojis),
+                            fontSize = 14.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    Switch(
+                        checked = useMoleculeIcons,
+                        onCheckedChange = onIconStyleToggle,
+                        colors = SwitchDefaults.colors(
+                            checkedThumbColor = Color(0xFFF5C451),
+                            checkedTrackColor = Color(0xFFF5C451).copy(alpha = 0.3f)
                         )
                     )
                 }
