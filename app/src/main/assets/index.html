@@ -7390,6 +7390,9 @@
                         // MODO EDICIÓN
                         const substanceIndex = substances.findIndex(s => s.id === window.editingSubstanceId);
                         if (substanceIndex !== -1) {
+                            // Guardar el nombre anterior ANTES de sobrescribir (si no, nunca se detecta el cambio)
+                            const previousName = substances[substanceIndex].name;
+
                             substances[substanceIndex] = {
                                 ...substances[substanceIndex],
                                 name: name,
@@ -7398,9 +7401,9 @@
                             };
 
                             // Actualizar registros existentes si cambió el nombre
-                            if (substances[substanceIndex].name !== name) {
+                            if (previousName !== name) {
                                 entries.forEach(entry => {
-                                    if (entry.substance === substances[substanceIndex].name) {
+                                    if (entry.substance === previousName) {
                                         entry.substance = name;
                                     }
                                 });
