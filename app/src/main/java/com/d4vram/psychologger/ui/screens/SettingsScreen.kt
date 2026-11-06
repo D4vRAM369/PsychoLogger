@@ -2,6 +2,8 @@ package com.d4vram.psychologger.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -35,6 +37,7 @@ fun SettingsScreen(
         Card(
             modifier = Modifier
                 .align(Alignment.Center)
+                .systemBarsPadding()
                 .padding(16.dp)
                 .fillMaxWidth(0.9f),
             shape = RoundedCornerShape(16.dp),
@@ -48,6 +51,13 @@ fun SettingsScreen(
                     .fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+              // Contenido con scroll; el botón Cerrar queda fijo abajo
+              Column(
+                modifier = Modifier
+                    .weight(1f, fill = false)
+                    .verticalScroll(rememberScrollState()),
+                horizontalAlignment = Alignment.CenterHorizontally
+              ) {
                 Text(
                     text = stringResource(R.string.security_title),
                     fontSize = 20.sp,
@@ -189,6 +199,7 @@ fun SettingsScreen(
                 ) {
                     Text(stringResource(R.string.security_setup_pin))
                 }
+              }
 
                 Spacer(modifier = Modifier.height(16.dp))
 
