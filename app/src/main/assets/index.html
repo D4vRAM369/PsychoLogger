@@ -6590,7 +6590,7 @@
                  */
                 function getDaysWithEntriesInMonth(year, month) {
                     const days = [];
-                    entries.forEach(entry => {
+                    activeEntries().forEach(entry => {
                         const entryDate = new Date(entry.date);
                         if (entryDate.getFullYear() === year && entryDate.getMonth() === month) {
                             const day = entryDate.getDate();
@@ -7026,7 +7026,7 @@
                         dayElement.textContent = day.getDate();
 
                         // Check if day has entries
-                        let dayEntries = entries.filter(entry => {
+                        let dayEntries = activeEntries().filter(entry => {
                             const entryDate = new Date(entry.date);
                             return entryDate.toDateString() === day.toDateString();
                         });
@@ -7113,7 +7113,7 @@
 
                 // Function to show entries for a specific day
                 function showDayEntries(date) {
-                    let dayEntries = entries.filter(entry => {
+                    let dayEntries = activeEntries().filter(entry => {
                         const entryDate = new Date(entry.date);
                         return entryDate.toDateString() === date.toDateString();
                     });
@@ -7578,9 +7578,20 @@
                 // para archivar sustancias sin eliminarlas permanentemente
 
                 // Registros visibles: excluye los de sustancias archivadas (el calendario conserva el historial completo)
+                function normalizeSubstanceKey(name) {
+                    return String(name || '').trim().toLowerCase();
+                }
+
+                // Los registros de una sustancia archivada se tratan como si no existieran
+                // (calendario, stats, export CSV) hasta que se restaure. Siguen en localStorage/backup.
                 function activeEntries() {
-                    const archivedNames = new Set(archivedSubstances.map(s => s.name));
-                    return entries.filter(entry => !archivedNames.has(entry.substance));
+                    const activeNames = new Set(substances.map(s => normalizeSubstanceKey(s.name)));
+                    const archivedNames = new Set(
+                        archivedSubstances
+                            .map(s => normalizeSubstanceKey(s.name))
+                            .filter(name => !activeNames.has(name))
+                    );
+                    return entries.filter(entry => !archivedNames.has(normalizeSubstanceKey(entry.substance)));
                 }
 
                 /**
@@ -7605,6 +7616,7 @@
                     saveDataToStorage();
                     renderSubstanceList();
                     renderStats();
+                    generateCalendar();
 
                     if (typeof Android !== 'undefined' && Android.showToast) {
                         Android.showToast(`📦 ${substance.name} archivada`);
@@ -7636,6 +7648,7 @@
                     renderSubstanceList();
                     renderArchivedSubstances();
                     renderStats();
+                    generateCalendar();
 
                     if (typeof Android !== 'undefined' && Android.showToast) {
                         Android.showToast(`✨ ${substance.name} restaurada`);
@@ -8968,7 +8981,8 @@
 
                 // FUNCIÓN DE EXPORTACIÓN ACTUALIZADA - Reemplaza la existente
                 function exportToCSV() {
-                    if (substances.length === 0 && entries.length === 0) {
+                    const entriesToExport = activeEntries();
+                    if (substances.length === 0 && entriesToExport.length === 0) {
                         alert('No hay datos para exportar');
                         return;
                     }
@@ -8983,10 +8997,8 @@
                     csvLines.push('SUSTANCIAS');
                     csvLines.push('ID;Nombre;Color;Emoji;Archivada;Fecha_Archivado;Fecha_Creacion;Fecha_Actualizacion');
 
-                    const substancesForCsv = [
-                        ...substances.map(s => ({ ...s, isArchived: false, archivedAt: '' })),
-                        ...normalizeArchivedSubstancesForBackup(archivedSubstances)
-                    ];
+                    // Las archivadas NO se exportan (ni ellas ni sus registros); el backup sí las conserva
+                    const substancesForCsv = substances.map(s => ({ ...s, isArchived: false, archivedAt: '' }));
 
                     substancesForCsv.forEach(s => {
                         const emoji = s.emoji || getSubstanceEmoji(s.name);
@@ -9004,7 +9016,7 @@
                     csvLines.push('ID;Sustancia;Dosis;Unidad;Fecha_Hora;Set;Setting;Notas;Fecha_Creacion;Fecha_Actualizacion');
 
                     // Exportar registros - CON MANEJO MEJORADO DE CAMPOS
-                    entries.forEach(e => {
+                    entriesToExport.forEach(e => {
                         const row = [
                             e.id,
                             `"${e.substance.replace(/"/g, '""')}"`,
