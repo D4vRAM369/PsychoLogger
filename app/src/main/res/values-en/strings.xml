@@ -153,6 +153,10 @@
     <string name="dialog_backup_password_placeholder">Encryption password</string>
     <string name="dialog_backup_password_warning">⚠️ If you forget this key, you won\'t be able to restore the backup.</string>
     <string name="dialog_backup_create">CREATE BACKUP</string>
+    <string name="password_min_hint">Minimum 8 characters</string>
+    <string name="password_too_short">Password must be at least 8 characters</string>
+    <string name="password_show">Show password</string>
+    <string name="password_hide">Hide password</string>
     <string name="dialog_backup_password_required">Enter a password</string>
 
     <string name="dialog_access_history_title">📊 Access History</string>
@@ -224,4 +228,11 @@
     <string name="appearance_icons_molecules">Molecules</string>
     <string name="appearance_show_intro">Show introduction</string>
     <string name="appearance_icons_emojis">Classic emojis</string>
+    <string name="restore_title">🔒 Encrypted Backup</string>
+    <string name="restore_message">Enter the password to restore this backup:</string>
+    <string name="restore_password_hint">Backup password</string>
+    <string name="restore_show_password">👁 Show password</string>
+    <string name="restore_progress">🔐 Decrypting and restoring backup, please wait...</string>
+    <string name="restore_confirm">RESTORE</string>
+    <string name="restore_cancel">CANCEL</string>
 </resources>

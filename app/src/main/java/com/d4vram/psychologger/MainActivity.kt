@@ -757,16 +757,33 @@ class MainActivity : FragmentActivity() {
         runOnUiThread {
             val input = EditText(this).apply {
                 inputType = android.text.InputType.TYPE_CLASS_TEXT or android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD
-                hint = "Contraseña del Backup"
+                hint = getString(R.string.restore_password_hint)
             }
             
+            // Mostrar/ocultar contraseña (ojo). Sin mínimo de longitud aquí: backups
+            // antiguos pudieron cifrarse con claves cortas y deben seguir restaurando.
+            val show = android.widget.CheckBox(this).apply { text = getString(R.string.restore_show_password) }
+            show.setOnCheckedChangeListener { _, checked ->
+                val sel = input.selectionEnd
+                input.inputType = android.text.InputType.TYPE_CLASS_TEXT or
+                    if (checked) android.text.InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
+                    else android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD
+                input.setSelection(sel.coerceAtLeast(0))
+            }
+            val box = android.widget.LinearLayout(this).apply {
+                orientation = android.widget.LinearLayout.VERTICAL
+                val pad = (20 * resources.displayMetrics.density).toInt()
+                setPadding(pad, 0, pad, 0)
+                addView(input); addView(show)
+            }
+
             AlertDialog.Builder(this, android.R.style.Theme_DeviceDefault_Dialog_Alert)
-                .setTitle("🔒 Backup Cifrado")
-                .setMessage("Introduce la contraseña para restaurar este backup:")
-                .setView(input)
-                .setPositiveButton("RESTAURAR") { _, _ ->
+                .setTitle(getString(R.string.restore_title))
+                .setMessage(getString(R.string.restore_message))
+                .setView(box)
+                .setPositiveButton(getString(R.string.restore_confirm)) { _, _ ->
                     val password = input.text.toString()
-                    Toast.makeText(this, "🔐 Descifrando y restaurando backup, espera unos segundos...", Toast.LENGTH_LONG).show()
+                    Toast.makeText(this, getString(R.string.restore_progress), Toast.LENGTH_LONG).show()
                     lifecycleScope.launch {
                         val result = withContext(Dispatchers.IO) {
                             backupManager.restoreBackup(uri, password)
@@ -774,7 +791,7 @@ class MainActivity : FragmentActivity() {
                         handleRestoreResult(result)
                     }
                 }
-                .setNegativeButton("CANCELAR", null)
+                .setNegativeButton(getString(R.string.restore_cancel), null)
                 .show()
         }
     }

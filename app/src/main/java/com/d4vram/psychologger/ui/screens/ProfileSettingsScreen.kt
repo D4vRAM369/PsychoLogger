@@ -8,6 +8,8 @@ import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.documentfile.provider.DocumentFile
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -65,6 +67,7 @@ fun ProfileSettingsScreen(
 
     var showBackupDialog by remember { mutableStateOf(false) }
     var backupPassword by remember { mutableStateOf("") }
+    var showBackupPassword by remember { mutableStateOf(false) }
     var includeMediaInBackup by remember { mutableStateOf(true) }
     var encryptBackup by remember { mutableStateOf(false) }
     var showAccessHistoryDialog by remember { mutableStateOf(false) }
@@ -727,6 +730,8 @@ fun ProfileSettingsScreen(
 
     // Diálogo de Exportación Avanzada (Backup)
     if (showBackupDialog) {
+        val showDesc = stringResource(R.string.password_show)
+        val hideDesc = stringResource(R.string.password_hide)
         AlertDialog(
             onDismissRequest = { showBackupDialog = false },
             title = {
@@ -738,7 +743,8 @@ fun ProfileSettingsScreen(
                 )
             },
             text = {
-                Column(modifier = Modifier.fillMaxWidth()) {
+                // verticalScroll: con el teclado abierto el campo y el botón siguen alcanzables
+                Column(modifier = Modifier.fillMaxWidth().verticalScroll(rememberScrollState())) {
                     Text(
                         stringResource(R.string.dialog_backup_description),
                         fontSize = 14.sp,
@@ -787,7 +793,22 @@ fun ProfileSettingsScreen(
                             onValueChange = { backupPassword = it },
                             modifier = Modifier.fillMaxWidth(),
                             placeholder = { Text(stringResource(R.string.dialog_backup_password_placeholder)) },
-                            visualTransformation = androidx.compose.ui.text.input.PasswordVisualTransformation(),
+                            singleLine = true,
+                            supportingText = { Text(stringResource(R.string.password_min_hint)) },
+                            isError = backupPassword.isNotEmpty() && backupPassword.length < 8,
+                            visualTransformation = if (showBackupPassword)
+                                androidx.compose.ui.text.input.VisualTransformation.None
+                            else androidx.compose.ui.text.input.PasswordVisualTransformation(),
+                            trailingIcon = {
+                                TextButton(onClick = { showBackupPassword = !showBackupPassword }) {
+                                    Text(
+                                        if (showBackupPassword) "🙈" else "👁",
+                                        modifier = Modifier.semantics {
+                                            contentDescription = if (showBackupPassword) hideDesc else showDesc
+                                        }
+                                    )
+                                }
+                            },
                             colors = OutlinedTextFieldDefaults.colors(
                                 focusedTextColor = Color.White,
                                 unfocusedTextColor = Color.White
@@ -807,6 +828,10 @@ fun ProfileSettingsScreen(
                     onClick = {
                         if (encryptBackup && backupPassword.isBlank()) {
                             Toast.makeText(context, context.getString(R.string.dialog_backup_password_required), Toast.LENGTH_SHORT).show()
+                            return@Button
+                        }
+                        if (encryptBackup && backupPassword.length < 8) {
+                            Toast.makeText(context, context.getString(R.string.password_too_short), Toast.LENGTH_SHORT).show()
                             return@Button
                         }
 

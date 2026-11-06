@@ -153,6 +153,10 @@
     <string name="dialog_backup_password_placeholder">Contraseña de cifrado</string>
     <string name="dialog_backup_password_warning">⚠️ Si olvidas esta clave, no podrás restaurar el backup.</string>
     <string name="dialog_backup_create">CREAR BACKUP</string>
+    <string name="password_min_hint">Mínimo 8 caracteres</string>
+    <string name="password_too_short">La contraseña debe tener al menos 8 caracteres</string>
+    <string name="password_show">Mostrar contraseña</string>
+    <string name="password_hide">Ocultar contraseña</string>
     <string name="dialog_backup_password_required">Introduce una contraseña</string>
 
     <string name="dialog_access_history_title">📊 Historial de Accesos</string>
@@ -224,4 +228,11 @@
     <string name="appearance_icons_molecules">Moléculas</string>
     <string name="appearance_show_intro">Ver introducción</string>
     <string name="appearance_icons_emojis">Emojis clásicos</string>
+    <string name="restore_title">🔒 Backup Cifrado</string>
+    <string name="restore_message">Introduce la contraseña para restaurar este backup:</string>
+    <string name="restore_password_hint">Contraseña del Backup</string>
+    <string name="restore_show_password">👁 Mostrar contraseña</string>
+    <string name="restore_progress">🔐 Descifrando y restaurando backup, espera unos segundos...</string>
+    <string name="restore_confirm">RESTAURAR</string>
+    <string name="restore_cancel">CANCELAR</string>
 </resources>
