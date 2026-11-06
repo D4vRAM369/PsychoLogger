@@ -1,0 +1,326 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- App General -->
+    <string name="app_name">PsychoLogger</string>
+
+    <!-- Navigation Tabs -->
+    <string name="tab_calendar">Calendario</string>
+    <string name="tab_stats">Estadísticas</string>
+    <string name="tab_resources">Recursos</string>
+
+    <!-- Common Actions -->
+    <string name="add_entry">Añadir</string>
+    <string name="add_substance">Añadir Sustancia</string>
+    <string name="save">Guardar</string>
+    <string name="cancel">Cancelar</string>
+    <string name="close">Cerrar</string>
+    <string name="back">Volver</string>
+    <string name="next">Siguiente</string>
+    <string name="confirm">Confirmar</string>
+    <string name="clear">Limpiar</string>
+    <string name="delete">Eliminar</string>
+    <string name="settings">Configuración</string>
+
+    <!-- Dose Units -->
+    <string name="dose_units">Unidades de Dosis</string>
+    <string-array name="dose_units_array">
+        <item>μg (microgramos)</item>
+        <item>mg (miligramos)</item>
+        <item>g (gramos)</item>
+        <item>Pastilla</item>
+        <item>Tripi</item>
+        <item>Medio tripi</item>
+        <item>Cuarto de tripi</item>
+        <item>Raya</item>
+        <item>Tirito</item>
+        <item>Café frío</item>
+        <item>Cookie</item>
+        <item>Cookies</item>
+    </string-array>
+
+    <!-- Profile Settings Screen -->
+    <string name="profile_title">Mi Perfil Psiconáutico</string>
+    <string name="profile_subtitle">Tu compañera vital para un consumo consciente y responsable de sustancias psiconáuticas</string>
+    <string name="profile_personal_info">Información Personal</string>
+    <string name="profile_nickname">Nickname</string>
+    <string name="profile_nickname_placeholder">Tu nickname</string>
+    <string name="profile_save">Guardar Perfil</string>
+    <string name="profile_default_nickname">Psiconauta</string>
+
+    <!-- App Configuration -->
+    <string name="config_title">Configuración de la App</string>
+    <string name="config_dark_theme">Tema Oscuro</string>
+    <string name="config_dark_theme_desc">Interfaz en modo oscuro</string>
+    <string name="config_notifications">Notificaciones</string>
+    <string name="config_notifications_desc">Recordatorios y alertas</string>
+    <string name="config_fingerprint">Huella Digital</string>
+    <string name="config_fingerprint_desc">Acceso con biometría</string>
+
+    <!-- Data Management -->
+    <string name="data_title">Gestión de Datos</string>
+    <string name="data_export_csv">📊 Exportar Historial (CSV)</string>
+    <string name="data_backup_full">📦 Backup Total (Media + Cifrado)</string>
+    <string name="data_autobackup">Backup Automático</string>
+    <string name="data_autobackup_folder">📁 Carpeta de Autobackup</string>
+    <string name="data_autobackup_not_configured">❌ No configurada</string>
+    <string name="data_autobackup_12h">Autobackup cada 12h</string>
+    <string name="data_autobackup_active">Activo</string>
+    <string name="data_autobackup_inactive">Desactivado</string>
+    <string name="data_import_csv">📁 Seleccionar CSV para Importar</string>
+    <string name="data_clear_all">🗑️ Limpiar Todos los Datos</string>
+
+    <!-- Privacy & Security -->
+    <string name="privacy_title">Privacidad y Seguridad</string>
+    <string name="privacy_settings">🔒 Configuración de Privacidad</string>
+    <string name="privacy_access_history">📊 Historial de Accesos</string>
+
+    <!-- Security Settings Screen -->
+    <string name="security_title">🔒 Configuración de Seguridad</string>
+    <string name="security_app_lock">Bloqueo de Aplicación</string>
+    <string name="security_app_lock_desc">Requiere huella dactilar o PIN para acceder</string>
+    <string name="security_theme">Tema Visual</string>
+    <string name="security_theme_soft">Modo Suave (Menos oscuro)</string>
+    <string name="security_theme_original">Modo Original (Místico)</string>
+    <string name="security_advanced">⚙️ Configuraciones Avanzadas</string>
+    <string name="security_setup_pin">🔢 Configurar PIN</string>
+
+    <!-- Advanced Settings Screen -->
+    <string name="advanced_title">⚙️ Configuraciones Avanzadas</string>
+    <string name="advanced_autolock">⏰ Bloqueo Automático</string>
+    <string name="advanced_autolock_desc">Configura cuándo se bloqueará automáticamente la aplicación después de que pase a segundo plano</string>
+    <string name="advanced_autolock_immediate">Inmediato</string>
+    <string name="advanced_autolock_30s">30 segundos</string>
+    <string name="advanced_autolock_1m">1 minuto</string>
+    <string name="advanced_autolock_5m">5 minutos</string>
+    <string name="advanced_autolock_10m">10 minutos</string>
+    <string name="advanced_autolock_30m">30 minutos</string>
+    <string name="advanced_security_info">🔒 Información de Seguridad</string>
+    <string name="advanced_security_info_text">• Tiempo inmediato: La app se bloquea tan pronto como pase a segundo plano\n• Tiempo personalizado: La app se bloquea después del tiempo especificado\n• Recomendamos usar tiempos cortos para mayor seguridad</string>
+    <string name="advanced_back">← Volver a Ajustes</string>
+
+    <!-- Lock Screen -->
+    <string name="lock_title">Aplicación Bloqueada</string>
+    <string name="lock_description">Para acceder a tu bitácora psiconáutica, debes autenticarte</string>
+    <string name="lock_unlock_fingerprint">🔐 Desbloquear con Huella</string>
+    <string name="lock_unlock_pin">🔢 Usar Código PIN</string>
+    <string name="lock_security_tip">💡 Consejo de Seguridad</string>
+    <string name="lock_security_tip_text">Tu información personal está protegida. Solo tú puedes acceder a tus registros.</string>
+
+    <!-- PIN Entry Screen -->
+    <string name="pin_entry_title">Ingresa tu PIN</string>
+    <string name="pin_entry_description">Ingresa tu PIN de 4-6 dígitos para desbloquear la aplicación</string>
+    <string name="pin_entry_attempts_remaining">Intentos restantes: %d</string>
+    <string name="pin_entry_label">PIN</string>
+    <string name="pin_entry_unlock">🔓 Desbloquear</string>
+    <string name="pin_entry_use_fingerprint">🔐 Usar Huella Dactilar</string>
+    <string name="pin_entry_important">⚠️ Importante</string>
+    <string name="pin_entry_important_text">Si olvidas tu PIN, tendrás que reinstalar la aplicación. La huella dactilar es más segura y conveniente.</string>
+    <string name="pin_entry_min_digits">El PIN debe tener al menos 4 dígitos</string>
+
+    <!-- PIN Setup Screen -->
+    <string name="pin_setup_title">Configurar PIN de Seguridad</string>
+    <string name="pin_setup_confirm_title">Confirmar PIN</string>
+    <string name="pin_setup_description">Crea un PIN de 4-6 dígitos para acceder a la aplicación</string>
+    <string name="pin_setup_confirm_description">Ingresa nuevamente el PIN para confirmar</string>
+    <string name="pin_setup_label">PIN (4-6 dígitos)</string>
+    <string name="pin_setup_confirm_label">Confirmar PIN</string>
+    <string name="pin_setup_mismatch">Los PINs no coinciden</string>
+    <string name="pin_setup_security_info">🔐 Información de Seguridad</string>
+    <string name="pin_setup_security_info_text">Este PIN se almacenará de forma encriptada en tu dispositivo. Guárdalo en un lugar seguro.</string>
+
+    <!-- Security Check Activity -->
+    <string name="security_check_title">Verificación de seguridad</string>
+    <string name="security_check_description">Autentícate para continuar.</string>
+    <string name="security_check_biometric">🔐 Desbloquear con biometría</string>
+    <string name="security_check_pin">🔢 Usar PIN</string>
+
+    <!-- Dialogs -->
+    <string name="dialog_clear_title">⚠️ Confirmar Limpieza</string>
+    <string name="dialog_clear_message">¿Estás seguro de que quieres eliminar TODOS los datos almacenados? Esta acción no se puede deshacer.</string>
+    <string name="dialog_clear_confirm">SÍ, LIMPIAR TODO</string>
+
+    <string name="dialog_import_title">📂 Importar Datos CSV</string>
+    <string name="dialog_import_message">¿Qué deseas hacer con los datos actuales?\n\n• AÑADIR: Agregar datos nuevos\n• REEMPLAZAR: Borrar todo y usar datos del CSV</string>
+    <string name="dialog_import_add">AÑADIR</string>
+    <string name="dialog_import_replace">REEMPLAZAR</string>
+
+    <string name="dialog_backup_title">📦 Exportación Avanzada</string>
+    <string name="dialog_backup_description">Se exportará una base de datos completa con tus notas en formato Markdown, experiencias, fotos, audios, y configuraciones personalizadas (Sets, Settings, etc.). Esto garantiza que si desinstalas la app, recuperarás todo al importar este backup.</string>
+    <string name="dialog_backup_include_media">Incluir Archivos Multimedia</string>
+    <string name="dialog_backup_include_media_desc">Fotos y Notas de Voz</string>
+    <string name="dialog_backup_encrypt">Cifrar Backup (AES-256)</string>
+    <string name="dialog_backup_encrypt_desc">Recomendado para máxima privacidad</string>
+    <string name="dialog_backup_password_placeholder">Contraseña de cifrado</string>
+    <string name="dialog_backup_password_warning">⚠️ Si olvidas esta clave, no podrás restaurar el backup.</string>
+    <string name="dialog_backup_create">CREAR BACKUP</string>
+    <string name="password_min_hint">Mínimo 8 caracteres</string>
+    <string name="password_too_short">La contraseña debe tener al menos 8 caracteres</string>
+    <string name="password_show">Mostrar contraseña</string>
+    <string name="password_hide">Ocultar contraseña</string>
+    <string name="dialog_backup_password_required">Introduce una contraseña</string>
+
+    <string name="dialog_access_history_title">📊 Historial de Accesos</string>
+    <string name="dialog_access_history_empty">No hay accesos registrados aún.</string>
+    <string name="dialog_access_history_count">Últimos %d accesos:</string>
+
+    <string name="dialog_password_title">Contraseña del Backup</string>
+    <string name="dialog_password_message">Introduce la contraseña para restaurar este backup:</string>
+    <string name="dialog_password_restore">RESTAURAR</string>
+
+    <string name="dialog_replace_title">¿Estás seguro de que quieres BORRAR todos los datos actuales?</string>
+    <string name="dialog_replace_confirm">SÍ, REEMPLAZAR</string>
+
+    <!-- Stats Screen -->
+    <string name="stats_usage_frequency">Frecuencia de Uso</string>
+    <string name="stats_consumption">Consumo</string>
+
+    <!-- Toast Messages -->
+    <string name="toast_saving_backup">💾 Guardando backup…</string>
+    <string name="toast_backup_saved">✅ Backup guardado correctamente</string>
+    <string name="toast_backup_error">❌ Error al guardar backup</string>
+    <string name="toast_backup_cancelled">❌ Backup cancelado</string>
+    <string name="toast_autobackup_configured">✅ Carpeta de autobackup configurada: %s</string>
+    <string name="toast_permissions_error">❌ No se pudieron obtener permisos</string>
+    <string name="toast_no_folder_selected">❌ No se seleccionó carpeta</string>
+    <string name="toast_csv_only">❌ Solo se permiten archivos .csv</string>
+    <string name="toast_processing_csv">🔄 Procesando CSV…</string>
+    <string name="toast_file_empty">❌ El archivo está vacío</string>
+    <string name="toast_file_read_error">❌ Error al leer archivo: %s</string>
+    <string name="toast_configure_folder_first">⚠️ Primero configura una carpeta</string>
+    <string name="toast_autobackup_enabled">✅ Autobackup activado</string>
+    <string name="toast_autobackup_disabled">❌ Autobackup desactivado</string>
+    <string name="toast_under_construction">🚧 En construcción… 🏗️</string>
+    <string name="toast_preparing_backup">🔄 Preparando backup…</string>
+    <string name="toast_backup_created">✅ Backup creado. Selecciona dónde guardarlo…</string>
+    <string name="toast_backup_create_error">❌ Error al crear backup</string>
+    <string name="toast_photo_save_error">No se pudo guardar la foto</string>
+    <string name="toast_image_import_error">Error al importar imagen</string>
+    <string name="toast_import_cancelled">Importación cancelada</string>
+    <string name="toast_csv_selector_error">Error al abrir selector: %s</string>
+    <string name="toast_image_operation_busy">Ya hay una operación de imagen en curso</string>
+    <string name="toast_camera_error">No se pudo iniciar la cámara</string>
+    <string name="toast_gallery_error">No se pudo abrir la galería</string>
+
+    <!-- Share/Export Subjects -->
+    <string name="share_subject_app">PsychoLogger</string>
+    <string name="share_subject_backup">Backup PsychoLogger: %s</string>
+    <string name="share_subject_voice_note">Nota de voz - PsychoLogger</string>
+    <string name="share_subject_photo">Foto - PsychoLogger</string>
+    <string name="share_subject_voice_notes">Notas de voz - PsychoLogger</string>
+    <string name="share_subject_photos">Fotos - PsychoLogger</string>
+    <string name="share_subject_voice_notes_encrypted">Notas de voz cifradas - PsychoLogger</string>
+
+    <!-- Error Messages -->
+    <string name="error_file_not_found">Archivo no encontrado</string>
+    <string name="error_invalid_filename">Nombre de archivo inválido</string>
+    <string name="error_password_too_short">Contraseña muy corta</string>
+    <string name="error_zip_create">No se pudo crear el ZIP</string>
+    <string name="error_zip_photos">No se pudo crear el ZIP de fotos</string>
+    <string name="error_zip_encrypted">No se pudo crear el ZIP cifrado</string>
+    <string name="error_backup_create">No se pudo crear el backup</string>
+    <string name="error_backup_import">No se pudo importar el backup</string>
+    <string name="error_playback">No se pudo reproducir</string>
+
+    <!-- File Chooser -->
+    <string name="chooser_select_csv">Seleccionar archivo CSV</string>
+    <string name="appearance_title">Apariencia</string>
+    <string name="appearance_icons">Estilo de iconos</string>
+    <string name="appearance_icons_molecules">Moléculas</string>
+    <string name="appearance_show_intro">Ver introducción</string>
+    <string name="appearance_icons_emojis">Emojis clásicos</string>
+    <string name="restore_title">🔒 Backup Cifrado</string>
+    <string name="restore_message">Introduce la contraseña para restaurar este backup:</string>
+    <string name="restore_password_hint">Contraseña del Backup</string>
+    <string name="restore_show_password">👁 Mostrar contraseña</string>
+    <string name="restore_progress">🔐 Descifrando y restaurando backup, espera unos segundos...</string>
+    <string name="restore_confirm">RESTAURAR</string>
+    <string name="restore_cancel">CANCELAR</string>
+    <string name="n_importando_backup_espera_unos_segundos">📥 Importando backup, espera unos segundos...</string>
+    <string name="n_sin_permiso_de_microfono_no_puedes_graba">⚠️ Sin permiso de micrófono no puedes grabar notas de voz</string>
+    <string name="n_sin_permiso_de_camara_no_puedes_adjuntar">⚠️ Sin permiso de cámara no puedes adjuntar fotos</string>
+    <string name="n_aplicacion_desbloqueada">✅ Aplicación desbloqueada</string>
+    <string name="n_biometria_no_disponible">❌ Biometría no disponible</string>
+    <string name="n_bloqueo_de_aplicacion_activado">🔒 Bloqueo de aplicación activado</string>
+    <string name="n_bloqueo_de_aplicacion_desactivado">🔓 Bloqueo de aplicación desactivado</string>
+    <string name="n_pin_correcto">✅ PIN correcto</string>
+    <string name="n_pin_incorrecto">❌ PIN incorrecto</string>
+    <string name="n_csv_exportado_x">✅ CSV exportado: %1$s</string>
+    <string name="n_error_al_crear_archivo">❌ Error al crear archivo</string>
+    <string name="n_error_al_exportar_csv_x">❌ Error al exportar CSV: %1$s</string>
+    <string name="n_sharesheet_abierto">✅ ShareSheet abierto</string>
+    <string name="n_error_al_compartir_x">❌ Error al compartir: %1$s</string>
+    <string name="n_el_archivo_esta_vacio">❌ El archivo está vacío</string>
+    <string name="n_no_se_encontraron_datos_validos_en_el_ar">❌ No se encontraron datos válidos en el archivo</string>
+    <string name="n_error_al_procesar_archivo_x">❌ Error al procesar archivo: %1$s</string>
+    <string name="n_procesando_importacion">🔄 Procesando importación...</string>
+    <string name="n_error_webview_no_disponible">❌ Error: WebView no disponible</string>
+    <string name="n_error_x">❌ Error: %1$s</string>
+    <string name="n_error_al_grabar_x">❌ Error al grabar: %1$s</string>
+    <string name="n_error_al_detener_grabacion_x">❌ Error al detener grabación: %1$s</string>
+    <string name="n_grabacion_cancelada">🗑️ Grabación cancelada</string>
+    <string name="n_error_al_cancelar_x">❌ Error al cancelar: %1$s</string>
+    <string name="n_archivo_de_audio_no_encontrado">❌ Archivo de audio no encontrado</string>
+    <string name="n_error_al_reproducir_x">❌ Error al reproducir: %1$s</string>
+    <string name="n_archivo_no_encontrado">❌ Archivo no encontrado</string>
+    <string name="n_imagen_no_encontrada">❌ Imagen no encontrada</string>
+    <string name="n_no_se_encontro_app_para_abrir_imagenes">❌ No se encontró app para abrir imágenes</string>
+    <string name="n_error_al_abrir_imagen_x">❌ Error al abrir imagen: %1$s</string>
+    <string name="n_error_al_compartir_foto_x">❌ Error al compartir foto: %1$s</string>
+    <string name="n_error_al_crear_backup">❌ Error al crear backup</string>
+    <string name="n_selecciona_un_archivo_zip_de_backup">📥 Selecciona un archivo ZIP de backup</string>
+    <string name="n_backup_creado_exitosamente">✅ Backup creado exitosamente</string>
+    <string name="n_el_archivo_de_backup_no_existe">❌ El archivo de backup no existe</string>
+    <string name="n_primero_debes_configurar_un_pin_en_ajust">🔢 Primero debes configurar un PIN en Ajustes</string>
+    <string name="n_tiempo_de_bloqueo_actualizado">⏰ Tiempo de bloqueo actualizado</string>
+    <string name="n_pin_configurado_correctamente">🔢 PIN configurado correctamente</string>
+    <string name="n_error_al_abrir_selector_x">Error al abrir selector: %1$s</string>
+    <string name="n_descargando_x">Descargando %1$s...</string>
+    <string name="n_import_cancelled">Importación cancelada</string>
+    <string name="n_backup_imported">✅ Backup importado correctamente</string>
+    <string name="n_error_generic">❌ %1$s</string>
+    <string name="n_backup_saved_at">✅ Backup guardado en:\n%1$s</string>
+    <string name="n_pwd_min8">⚠️ La contraseña debe tener al menos 8 caracteres</string>
+    <string name="n_zip_encrypted_ok">✅ ZIP cifrado creado. ¡Guarda la contraseña!</string>
+    <string name="n_cannot_open_url">No se puede abrir: %1$s</string>
+    <string name="n_download_error">Error al descargar: %1$s</string>
+    <string name="n_choose_csv">Seleccionar archivo CSV</string>
+    <string name="n_share_csv">🚀 Compartir CSV</string>
+    <string name="n_share_log">🚀 Compartir mi bitácora psiconáutica</string>
+    <string name="n_share_voice">🎤 Compartir nota de voz</string>
+    <string name="n_share_photo">📷 Compartir foto</string>
+    <string name="n_share_backup">🚀 Compartir Backup</string>
+    <string name="n_export_audios">📦 Exportar audios</string>
+    <string name="n_export_photos">📸 Exportar fotos</string>
+    <string name="n_export_audios_enc">🔒 Exportar audios cifrados</string>
+    <string name="n_img_busy">Ya hay una operación de imagen en curso</string>
+    <string name="n_cam_fail">No se pudo iniciar la cámara</string>
+    <string name="n_gallery_fail">No se pudo abrir la galería</string>
+    <string name="n_photo_save_fail">No se pudo guardar la foto</string>
+    <string name="n_img_import_fail">Error al importar imagen</string>
+    <string name="n_backup_import_fail">No se pudo importar el backup</string>
+    <string name="n_confirm_replace">⚠️ Confirmar Reemplazo</string>
+    <string name="n_confirm_replace_msg">¿Estás seguro de que quieres BORRAR todos los datos actuales?</string>
+    <string name="n_bk_encrypted">Este backup está cifrado</string>
+    <string name="n_bk_open_fail">No se pudo abrir el archivo</string>
+    <string name="n_bk_restore_err">Error al restaurar backup</string>
+    <string name="n_bk_too_big">Backup cifrado (formato antiguo) demasiado grande para este dispositivo</string>
+    <string name="n_bk_bad_pwd">Contraseña incorrecta o archivo corrupto</string>
+    <string name="n_bk_no_data">El backup no contiene data.json</string>
+    <string name="n_bk_media_fail">No se pudieron restaurar todos los archivos multimedia</string>
+    <string name="n_bk_restored">Backup restaurado correctamente</string>
+    <string name="n_ab_perm">❌ Autobackup: Permisos revocados. Reconfigura la carpeta.</string>
+    <string name="n_ab_start">🔄 Iniciando backup automático...</string>
+    <string name="n_ab_saving">💾 Guardando backup automático...</string>
+    <string name="n_ab_done">✅ Backup automático completado</string>
+    <string name="n_ab_fail">❌ Autobackup falló: %1$s</string>
+    <string name="n_unlock_title">🔒 Desbloquear aplicación</string>
+    <string name="n_unlock_sub">Usa tu huella</string>
+    <string name="n_unlock_pin">Usar PIN de la app</string>
+    <string name="n_csv_title">📂 Importar Datos CSV</string>
+    <string name="n_csv_msg">📊 Datos encontrados en el archivo:\n• %1$d sustancias\n• %2$d registros\n\n⚠️ ¿Qué deseas hacer?</string>
+    <string name="n_csv_add">➕ AÑADIR</string>
+    <string name="n_csv_replace">🔄 REEMPLAZAR</string>
+    <string name="n_csv_yes">SÍ, REEMPLAZAR</string>
+    <string name="n_cancel_up">CANCELAR</string>
+    <string name="n_settings">Configuración</string>
+</resources>

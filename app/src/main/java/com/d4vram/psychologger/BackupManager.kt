@@ -303,7 +303,7 @@ class BackupManager(private val context: Context) {
 
             if (isEncrypted) {
                 if (password == null) {
-                    return RestoreResult(success = false, needsPassword = true, message = "Este backup está cifrado")
+                    return RestoreResult(success = false, needsPassword = true, message = context.getString(R.string.n_bk_encrypted))
                 }
                 
                 // Proceder con la des-cifración
@@ -315,11 +315,11 @@ class BackupManager(private val context: Context) {
             // 2. Backup normal (legacy o directo)
             resolver.openInputStream(uri)?.use { inputStream ->
                 processZipStream(ZipInputStream(BufferedInputStream(inputStream)), tempRoot)
-            } ?: RestoreResult(success = false, message = "No se pudo abrir el archivo")
+            } ?: RestoreResult(success = false, message = context.getString(R.string.n_bk_open_fail))
 
         } catch (e: Exception) {
             Log.e(TAG, "Error al restaurar backup", e)
-            RestoreResult(success = false, message = e.message ?: "Error al restaurar backup")
+            RestoreResult(success = false, message = e.message ?: context.getString(R.string.n_bk_restore_err))
         } finally {
             tempRoot.deleteRecursively()
         }
@@ -378,10 +378,10 @@ class BackupManager(private val context: Context) {
             }
         } catch (e: OutOfMemoryError) {
             Log.e(TAG, "Backup antiguo demasiado grande para descifrar en memoria", e)
-            RestoreResult(success = false, message = "Backup cifrado (formato antiguo) demasiado grande para este dispositivo")
+            RestoreResult(success = false, message = context.getString(R.string.n_bk_too_big))
         } catch (e: Exception) {
             Log.e(TAG, "Error descifrando backup", e)
-            RestoreResult(success = false, message = "Contraseña incorrecta o archivo corrupto")
+            RestoreResult(success = false, message = context.getString(R.string.n_bk_bad_pwd))
         }
     }
 
@@ -422,7 +422,7 @@ class BackupManager(private val context: Context) {
         }
 
         if (dataJson.isNullOrBlank()) {
-            return RestoreResult(success = false, message = "El backup no contiene data.json")
+            return RestoreResult(success = false, message = context.getString(R.string.n_bk_no_data))
         }
 
         // Aplicar cambios
@@ -432,7 +432,7 @@ class BackupManager(private val context: Context) {
         if (!audioRestoreOk || !photoRestoreOk) {
             return RestoreResult(
                 success = false,
-                message = "No se pudieron restaurar todos los archivos multimedia"
+                message = context.getString(R.string.n_bk_media_fail)
             )
         }
 
@@ -443,7 +443,7 @@ class BackupManager(private val context: Context) {
             dataJson = dataJson,
             restoredAudios = restoredAudios,
             restoredPhotos = restoredPhotos,
-            message = "Backup restaurado correctamente"
+            message = context.getString(R.string.n_bk_restored)
         )
     }
 

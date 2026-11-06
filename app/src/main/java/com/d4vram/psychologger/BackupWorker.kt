@@ -67,14 +67,14 @@ class BackupWorker(
         // 3. Verificar que aún tenemos permisos SAF
         if (!backupPrefs.hasValidPermissions()) {
             Log.e(TAG, "Permisos SAF revocados o inválidos")
-            showToastOnMainThread("❌ Autobackup: Permisos revocados. Reconfigura la carpeta.")
+            showToastOnMainThread(applicationContext.getString(R.string.n_ab_perm))
             // Desactivar autobackup para evitar fallos repetidos
             backupPrefs.setAutobackupEnabled(false)
             return@withContext Result.failure()
         }
 
         return@withContext try {
-            showToastOnMainThread("🔄 Iniciando backup automático...")
+            showToastOnMainThread(applicationContext.getString(R.string.n_ab_start))
 
             // 4. Leer snapshot de localStorage (guardado por la app)
             val localStorageData = readLocalStorageSnapshot()
@@ -97,7 +97,7 @@ class BackupWorker(
                 return@withContext Result.retry()
             }
 
-            showToastOnMainThread("💾 Guardando backup automático...")
+            showToastOnMainThread(applicationContext.getString(R.string.n_ab_saving))
 
             // 6. Crear archivo en carpeta SAF
             val fileName = backupManager.generateAutobackupFileName()
@@ -119,13 +119,13 @@ class BackupWorker(
             backupPrefs.updateLastAutobackupTime()
 
             Log.d(TAG, "Autobackup completado exitosamente: $fileName")
-            showToastOnMainThread("✅ Backup automático completado")
+            showToastOnMainThread(applicationContext.getString(R.string.n_ab_done))
 
             Result.success()
 
         } catch (e: Exception) {
             Log.e(TAG, "Error en autobackup", e)
-            showToastOnMainThread("❌ Autobackup falló: ${e.message}")
+            showToastOnMainThread(applicationContext.getString(R.string.n_ab_fail, e.message))
             Result.retry()
         }
     }
