@@ -940,10 +940,13 @@
         .modal__panel {
             position: relative;
             z-index: 100000;
-            margin: 0.2vh auto 0.2vh;
+            /* margen inferior fijo para la barra de gestos. OJO: en este WebView 100vh = 0px y
+               env(safe-area-inset-*) = 0, así que se usa % del contenedor fixed (altura definida) */
+            /* margen superior 66px: el engranaje de Ajustes (nativo) flota arriba a la derecha y tapaba la ✕ */
+            margin: 66px auto 0;
             width: min(100vw, 800px);
-            min-height: 800px;
-            max-height: 100vh;
+            min-height: 0;
+            max-height: calc(100% - 110px);
             background: #111327;
             color: #fff;
             border-radius: 20px;
@@ -1002,6 +1005,8 @@
         /* grid scrollable */
         .books-grid {
             padding: 8px 18px 16px 18px;
+            flex: 1 1 auto;
+            min-height: 0;
             overflow: auto;
             -webkit-overflow-scrolling: touch;
             display: grid;
