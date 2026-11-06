@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- App General -->
-    <string name="app_name">Psychonaut Logbook</string>
+    <string name="app_name">PsychoLogger</string>
 
     <!-- Navigation Tabs -->
     <string name="tab_calendar">Calendar</string>
@@ -198,7 +198,7 @@
     <string name="toast_gallery_error">Could not open gallery</string>
 
     <!-- Share/Export Subjects -->
-    <string name="share_subject_app">Psychonaut Logbook</string>
+    <string name="share_subject_app">PsychoLogger</string>
     <string name="share_subject_backup">PsychoLogger Backup: %s</string>
     <string name="share_subject_voice_note">Voice note - PsychoLogger</string>
     <string name="share_subject_photo">Photo - PsychoLogger</string>

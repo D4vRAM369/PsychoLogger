@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bitácora Psiconáutica</title>
+    <title>PsychoLogger</title>
     <!-- Marked.js para soporte de Markdown (local, sin conexión externa) -->
     <script src="marked.min.js"></script>
     <script src="smiles-drawer.min.js"></script>
@@ -167,7 +167,7 @@
 
         .header h1 {
             position: relative;
-            font-size: clamp(1.3rem, 6.2vw, 2rem);
+            font-size: clamp(1.7rem, 9vw, 2.6rem);
             font-weight: 800;
             white-space: nowrap;
             background: linear-gradient(90deg, #e8742c, #c98a2a 45%, #c06bb8);
@@ -3947,7 +3947,7 @@
                 <img class="emblem-mol" src="mol/ketamina.svg" alt="">
                 <img class="emblem-mol" src="mol/morfina.svg" alt="">
             </div>
-            <h1>Bitácora Psiconáutica</h1>
+            <h1>PsychoLogger</h1>
             <p>Tu compañera para un consumo consciente</p>
         </header>
 
@@ -9145,7 +9145,7 @@
                     });
 
                     csvContent += csvLines.join('\n');
-                    const fileName = `bitacora_psiconautica_${new Date().toISOString().split('T')[0]}.csv`;
+                    const fileName = `psychologger_${new Date().toISOString().split('T')[0]}.csv`;
 
                     // Crear blob con tipo específico para CSV
                     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });

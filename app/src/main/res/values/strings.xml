@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- App General -->
-    <string name="app_name">Bitácora Psiconáutica</string>
+    <string name="app_name">PsychoLogger</string>
 
     <!-- Navigation Tabs -->
     <string name="tab_calendar">Calendario</string>
@@ -198,7 +198,7 @@
     <string name="toast_gallery_error">No se pudo abrir la galería</string>
 
     <!-- Share/Export Subjects -->
-    <string name="share_subject_app">Bitácora Psiconáutica</string>
+    <string name="share_subject_app">PsychoLogger</string>
     <string name="share_subject_backup">Backup PsychoLogger: %s</string>
     <string name="share_subject_voice_note">Nota de voz - PsychoLogger</string>
     <string name="share_subject_photo">Foto - PsychoLogger</string>

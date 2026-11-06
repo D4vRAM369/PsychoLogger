@@ -993,7 +993,7 @@ class WebAppInterface(private val context: Context, private val activity: MainAc
     fun downloadCSV(csvContent: String, filename: String) {
         try {
             val timestamp = SimpleDateFormat("yyyy-MM-dd_HH-mm-ss", Locale.getDefault()).format(Date())
-            val finalFilename = if (filename.isBlank()) "bitacora_psiconáutica_$timestamp.csv" else filename
+            val finalFilename = if (filename.isBlank()) "psychologger_$timestamp.csv" else filename
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 // Android 10+ - usar MediaStore
@@ -1021,7 +1021,7 @@ class WebAppInterface(private val context: Context, private val activity: MainAc
                             val shareIntent = Intent(Intent.ACTION_SEND).apply {
                                 type = "text/csv"
                                 putExtra(Intent.EXTRA_STREAM, shareUri)
-                                putExtra(Intent.EXTRA_SUBJECT, "Bitácora Psiconáutica")
+                                putExtra(Intent.EXTRA_SUBJECT, "PsychoLogger")
                                 addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                             }
                             val chooser = Intent.createChooser(shareIntent, "🚀 Compartir CSV")
@@ -1059,7 +1059,7 @@ class WebAppInterface(private val context: Context, private val activity: MainAc
                         val shareIntent = Intent(Intent.ACTION_SEND).apply {
                             type = "text/csv"
                             putExtra(Intent.EXTRA_STREAM, shareUri)
-                            putExtra(Intent.EXTRA_SUBJECT, "Bitácora Psiconáutica")
+                            putExtra(Intent.EXTRA_SUBJECT, "PsychoLogger")
                             addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                         }
                         val chooser = Intent.createChooser(shareIntent, "🚀 Compartir CSV")
@@ -1081,7 +1081,7 @@ class WebAppInterface(private val context: Context, private val activity: MainAc
         activity.runOnUiThread {
             try {
                 val timestamp = SimpleDateFormat("yyyy-MM-dd_HH-mm-ss", Locale.getDefault()).format(Date())
-                val finalFilename = if (filename.isBlank()) "bitacora_psiconáutica_$timestamp.csv" else filename
+                val finalFilename = if (filename.isBlank()) "psychologger_$timestamp.csv" else filename
 
                 // Crear archivo temporal en cache
                 val file = File(context.cacheDir, finalFilename)
@@ -1098,7 +1098,7 @@ class WebAppInterface(private val context: Context, private val activity: MainAc
                 val shareIntent = Intent(Intent.ACTION_SEND).apply {
                     type = "text/csv"
                     putExtra(Intent.EXTRA_STREAM, uri)
-                    putExtra(Intent.EXTRA_SUBJECT, "Bitácora Psiconáutica - $timestamp")
+                    putExtra(Intent.EXTRA_SUBJECT, "PsychoLogger - $timestamp")
                     putExtra(Intent.EXTRA_TEXT, "📊 Mis datos exportados de PsychoLogger 🧠✨\n\nArchivo: $finalFilename")
                     addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                 }
@@ -2138,7 +2138,7 @@ fun WebViewScreen(
                                         });
                                     }
                                     const today = new Date().toISOString().split('T')[0];
-                                    const filename = 'bitacora_psiconáutica_' + today + '.csv';
+                                    const filename = 'psychologger_' + today + '.csv';
                                     Android.downloadCSV(csvContent, filename);
                                 } catch (error) {
                                     console.error('Error en exportToCSV:', error);
