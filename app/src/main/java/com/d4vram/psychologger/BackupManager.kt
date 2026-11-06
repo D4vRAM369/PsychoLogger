@@ -332,8 +332,7 @@ class BackupManager(private val context: Context) {
             val iv = hexToBytes(metadata.getString("iv"))
             
             val key = deriveKey(password, salt)
-            val cipher = Cipher.getInstance(AES_MODE)
-            cipher.init(Cipher.DECRYPT_MODE, key, GCMParameterSpec(GCM_TAG_LENGTH, iv))
+            val chunked = metadata.optString("format") == ChunkedCrypto.FORMAT
 
             val encryptedFile = File(context.cacheDir, "temp_data.enc")
             val decryptedZip = File(context.cacheDir, "temp_decrypted.zip")
@@ -345,7 +344,7 @@ class BackupManager(private val context: Context) {
                         var entry = zipIn.nextEntry
                         while (entry != null) {
                             if (entry.name == "data.enc") {
-                                FileOutputStream(encryptedFile).use { it.write(zipIn.readBytes()) }
+                                FileOutputStream(encryptedFile).use { zipIn.copyTo(it) }
                                 break
                             }
                             entry = zipIn.nextEntry
@@ -354,8 +353,19 @@ class BackupManager(private val context: Context) {
                 }
 
                 // Descifrar
-                CipherInputStream(FileInputStream(encryptedFile), cipher).use { cipherIn ->
-                    FileOutputStream(decryptedZip).use { it.write(cipherIn.readBytes()) }
+                if (chunked) {
+                    BufferedInputStream(FileInputStream(encryptedFile)).use { inp ->
+                        BufferedOutputStream(FileOutputStream(decryptedZip)).use { out ->
+                            ChunkedCrypto.decrypt(inp, out, key, iv)
+                        }
+                    }
+                } else {
+                    // Formato antiguo (1.x): un único GCM. Compatibilidad con backups previos.
+                    val cipher = Cipher.getInstance(AES_MODE)
+                    cipher.init(Cipher.DECRYPT_MODE, key, GCMParameterSpec(GCM_TAG_LENGTH, iv))
+                    CipherInputStream(FileInputStream(encryptedFile), cipher).use { cipherIn ->
+                        FileOutputStream(decryptedZip).use { cipherIn.copyTo(it) }
+                    }
                 }
 
                 // Procesar el ZIP descifrado
@@ -366,6 +376,9 @@ class BackupManager(private val context: Context) {
                 encryptedFile.delete()
                 decryptedZip.delete()
             }
+        } catch (e: OutOfMemoryError) {
+            Log.e(TAG, "Backup antiguo demasiado grande para descifrar en memoria", e)
+            RestoreResult(success = false, message = "Backup cifrado (formato antiguo) demasiado grande para este dispositivo")
         } catch (e: Exception) {
             Log.e(TAG, "Error descifrando backup", e)
             RestoreResult(success = false, message = "Contraseña incorrecta o archivo corrupto")
@@ -524,13 +537,11 @@ class BackupManager(private val context: Context) {
         val key = deriveKey(password, salt)
 
         // 3. Cifrar el archivo de entrada
-        val cipher = Cipher.getInstance(AES_MODE)
-        cipher.init(Cipher.ENCRYPT_MODE, key, GCMParameterSpec(GCM_TAG_LENGTH, iv))
-
         val encryptedData = File(context.cacheDir, "data.enc.tmp")
         try {
-            CipherOutputStream(FileOutputStream(encryptedData), cipher).use { cipherOut ->
-                FileInputStream(inputFile).use { it.copyTo(cipherOut) }
+            // Streaming por bloques: un GCM único acumula todo en heap (OOM con backups grandes)
+            BufferedOutputStream(FileOutputStream(encryptedData)).use { out ->
+                FileInputStream(inputFile).use { ChunkedCrypto.encrypt(it, out, key, iv) }
             }
 
             // 4. Crear ZIP final con metadata + datos cifrados
@@ -543,6 +554,8 @@ class BackupManager(private val context: Context) {
                     put("iterations", PBKDF2_ITERATIONS)
                     put("timestamp", System.currentTimeMillis())
                     put("type", "comprehensive_backup")
+                    put("format", ChunkedCrypto.FORMAT)
+                    put("chunkSize", ChunkedCrypto.DEFAULT_CHUNK)
                 }
 
                 zipOut.putNextEntry(ZipEntry("metadata.json"))
@@ -663,13 +676,10 @@ class BackupManager(private val context: Context) {
         createPlainAudioZip(tempZip)
 
         // 4. Cifrar el ZIP temporal
-        val cipher = Cipher.getInstance(AES_MODE)
-        cipher.init(Cipher.ENCRYPT_MODE, key, GCMParameterSpec(GCM_TAG_LENGTH, iv))
-
         val encryptedData = File(context.cacheDir, "data.enc")
         try {
-            CipherOutputStream(FileOutputStream(encryptedData), cipher).use { cipherOut ->
-                FileInputStream(tempZip).use { it.copyTo(cipherOut) }
+            BufferedOutputStream(FileOutputStream(encryptedData)).use { out ->
+                FileInputStream(tempZip).use { ChunkedCrypto.encrypt(it, out, key, iv) }
             }
 
             // 5. Crear ZIP final con metadata + datos cifrados
@@ -681,6 +691,8 @@ class BackupManager(private val context: Context) {
                     put("iv", bytesToHex(iv))
                     put("iterations", PBKDF2_ITERATIONS)
                     put("timestamp", System.currentTimeMillis())
+                    put("format", ChunkedCrypto.FORMAT)
+                    put("chunkSize", ChunkedCrypto.DEFAULT_CHUNK)
                 }
 
                 zipOut.putNextEntry(ZipEntry("metadata.json"))
@@ -1097,11 +1109,13 @@ class BackupManager(private val context: Context) {
             if (password != null) {
                 // Crear ZIP temporal sin cifrar
                 val tempZip = File(context.cacheDir, "temp_backup_$timestamp.zip")
-                createZip(tempZip, localStorageData, includeMedia)
-
-                // Cifrar y guardar
-                encryptFile(tempZip, backupFile, password)
-                tempZip.delete()
+                try {
+                    createZip(tempZip, localStorageData, includeMedia)
+                    // Cifrar y guardar
+                    encryptFile(tempZip, backupFile, password)
+                } finally {
+                    tempZip.delete() // no dejar 100+ MB sin cifrar en caché si falla
+                }
             } else {
                 createZip(backupFile, localStorageData, includeMedia)
             }

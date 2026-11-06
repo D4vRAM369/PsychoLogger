@@ -35,6 +35,25 @@ def derive_key(password, salt, iterations=120000, key_length=32):
     )
     return kdf.derive(password.encode('utf-8'))
 
+def decrypt_chunked(aesgcm, iv, data):
+    """
+    Formato "chunked-v2" (backups/audios/fotos desde 1.4):
+    data.enc = registros [len:4 bytes BE][ciphertext+tag(16)]
+    - nonce_i = iv con sus últimos 4 bytes XOR contador i (BE)
+    - AAD = b"\x01" si es el último bloque, b"\x00" si no (detecta truncado)
+    """
+    out, pos, i = [], 0, 0
+    while pos < len(data):
+        n = int.from_bytes(data[pos:pos + 4], 'big')
+        pos += 4
+        ct = data[pos:pos + n]
+        pos += n
+        last = pos >= len(data)
+        nonce = iv[:-4] + (int.from_bytes(iv[-4:], 'big') ^ i).to_bytes(4, 'big')
+        out.append(aesgcm.decrypt(nonce, ct, b"\x01" if last else b"\x00"))
+        i += 1
+    return b"".join(out)
+
 def decrypt_zip(encrypted_zip_path, password, output_dir="decrypted_audios"):
     """
     Desencripta un ZIP de audios cifrado
@@ -82,7 +101,10 @@ def decrypt_zip(encrypted_zip_path, password, output_dir="decrypted_audios"):
     print(f"🔐 Desencriptando con AES-256-GCM...")
     try:
         aesgcm = AESGCM(key)
-        decrypted_zip_bytes = aesgcm.decrypt(iv, encrypted_data, None)
+        if metadata.get('format') == 'chunked-v2':
+            decrypted_zip_bytes = decrypt_chunked(aesgcm, iv, encrypted_data)
+        else:  # formato antiguo: un único bloque GCM
+            decrypted_zip_bytes = aesgcm.decrypt(iv, encrypted_data, None)
     except Exception as e:
         print(f"❌ ERROR: Contraseña incorrecta o datos corruptos")
         print(f"   Detalle: {e}")
