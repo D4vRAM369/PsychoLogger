@@ -10636,45 +10636,6 @@
                     // Criterio 2: Contiene "..." indicando texto truncado
                     if (trimmed.includes('...')) return true;
 
-                    // Criterio 3: Patrones de oraciones/notas en español
-                    const sentencePatterns = [
-                        /\bque\s+le\b/i,        // "que le jodan"
-                        /\bme\s+joden\b/i,      // "me joden"
-                        /\bdebo\s+ir\b/i,       // "debo ir"
-                        /\bacabo\s+de\b/i,      // "acabo de"
-                        /\bsi\s+no\b/i,         // "si no"
-                        /\bsino\s+\w+\b/i,      // "sino debo"
-                        /\bpero\s+\w+\b/i,      // "pero que"
-                        /\bbastante\s+\w+\b/i,  // "bastante me"
-                        /\btengo\s+que\b/i,     // "tengo que"
-                        /\bhay\s+que\b/i,       // "hay que"
-                        /\bcreo\s+que\b/i,      // "creo que"
-                        /\bporque\s+\w+\b/i,    // "porque..."
-                        /\bcuando\s+\w+\b/i,    // "cuando..."
-                        /\bcomo\s+ligereza\b/i,  // "como ligereza"
-                        /\bno\s+(es|fue)\s+una\s+experiencia\b/i, // "no es/fue una experiencia..."
-                    ];
-
-                    for (const pattern of sentencePatterns) {
-                        if (pattern.test(trimmed)) return true;
-                    }
-
-                    // Criterio 4: Valores específicos conocidos como corruptos
-                    const knownCorrupted = [
-                        'sino debo ir',
-                        'acabo de tene',
-                        'pero que le jodan',
-                        'bastante me joden',
-                        'no es una experiencia',
-                        'no fue una experiencia',
-                        'como ligereza'
-                    ];
-
-                    const lower = trimmed.toLowerCase();
-                    for (const known of knownCorrupted) {
-                        if (lower.includes(known)) return true;
-                    }
-
                     return false;
                 }
 
