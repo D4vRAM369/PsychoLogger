@@ -577,12 +577,13 @@ fun ProfileSettingsScreen(
                         fontWeight = FontWeight.Medium,
                         color = Color.White
                     )
+                    Spacer(modifier = Modifier.height(3.dp))
                     Text(
                         text = stringResource(R.string.data_autobackup_frequency_desc),
                         fontSize = 12.sp,
                         color = Color.White.copy(alpha = 0.6f)
                     )
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(12.dp))
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(6.dp)
@@ -622,7 +623,7 @@ fun ProfileSettingsScreen(
                         }
                     }
 
-                    Spacer(modifier = Modifier.height(14.dp))
+                    Spacer(modifier = Modifier.height(16.dp))
 
                     // Selector de cantidad de copias recientes a conservar (3, 5, 7, 10, 15)
                     Text(
@@ -631,12 +632,13 @@ fun ProfileSettingsScreen(
                         fontWeight = FontWeight.Medium,
                         color = Color.White
                     )
+                    Spacer(modifier = Modifier.height(3.dp))
                     Text(
                         text = stringResource(R.string.data_autobackup_keep_count_desc, autobackupKeepCount),
                         fontSize = 12.sp,
                         color = Color.White.copy(alpha = 0.6f)
                     )
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(12.dp))
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(6.dp)
