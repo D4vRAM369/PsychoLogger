@@ -70,38 +70,38 @@
 
 ### 🏠 Pantalla Principal, Calendario y Ajustes de Apariencia
 <p align="center">
-  <img src="screenshots/v1.4/en/main-page.png" width="260" alt="Pantalla Principal con Iconos Moleculares" />
-  <img src="screenshots/v1.4/en/calendar.png" width="260" alt="Calendario Interactivo" />
-  <img src="screenshots/v1.4/en/settings.png" width="260" alt="Ajustes de Seguridad y Apariencia" />
+  <img src="screenshots/v1.4/es/main-page.png" width="260" alt="Pantalla Principal con Iconos Moleculares" />
+  <img src="screenshots/v1.4/es/calendar.png" width="260" alt="Calendario Interactivo" />
+  <img src="screenshots/v1.4/es/settings.png" width="260" alt="Ajustes de Seguridad y Apariencia" />
 </p>
 
 ### 📊 Estadísticas y Análisis de Contexto
 <p align="center">
-  <img src="screenshots/v1.4/en/stats.png" width="200" alt="Resumen de Estadísticas" />
-  <img src="screenshots/v1.4/en/stats-frequency.png" width="200" alt="Frecuencia de Uso" />
-  <img src="screenshots/v1.4/en/stats-set.png" width="200" alt="Estadísticas de Set" />
-  <img src="screenshots/v1.4/en/stats-setting.png" width="200" alt="Estadísticas de Setting" />
+  <img src="screenshots/v1.4/es/stats.png" width="200" alt="Resumen de Estadísticas" />
+  <img src="screenshots/v1.4/es/stats-frequency.png" width="200" alt="Frecuencia de Uso" />
+  <img src="screenshots/v1.4/es/stats-set.png" width="200" alt="Estadísticas de Set" />
+  <img src="screenshots/v1.4/es/stats-setting.png" width="200" alt="Estadísticas de Setting" />
 </p>
 
 ### 🔗 Recursos de Reducción de Daños, Libros y Sustancias Archivadas
 <p align="center">
-  <img src="screenshots/v1.4/en/resources.png" width="260" alt="Recursos de Reducción de Daños" />
-  <img src="screenshots/v1.4/en/books.png" width="260" alt="Libros Recomendados" />
-  <img src="screenshots/v1.4/en/archived-substances.png" width="260" alt="Modal de Sustancias Archivadas" />
+  <img src="screenshots/v1.4/es/resources.png" width="260" alt="Recursos de Reducción de Daños" />
+  <img src="screenshots/v1.4/es/books.png" width="260" alt="Libros Recomendados" />
+  <img src="screenshots/v1.4/es/archived-substances.png" width="260" alt="Modal de Sustancias Archivadas" />
 </p>
 
 ### 💾 Gestión de Datos, Backups Cifrados y Auto-Backup Configurable
 <p align="center">
-  <img src="screenshots/v1.4/en/data-management.png" width="260" alt="Gestión de Datos" />
-  <img src="screenshots/v1.4/en/advanced-export-password.png" width="260" alt="Contraseña de Backup Cifrado" />
-  <img src="screenshots/v1.4/en/autobackup.png" width="260" alt="Auto-Backup Configurable" />
+  <img src="screenshots/v1.4/es/data-management.png" width="260" alt="Gestión de Datos" />
+  <img src="screenshots/v1.4/es/advanced-export-password.png" width="260" alt="Contraseña de Backup Cifrado" />
+  <img src="screenshots/v1.4/es/autobackup.png" width="260" alt="Auto-Backup Configurable" />
 </p>
 
 ### 📦 Exportación Manual CSV / Multimedia y Acerca del Proyecto
 <p align="center">
-  <img src="screenshots/v1.4/en/data-export-import.png" width="260" alt="Exportación e Importación CSV" />
-  <img src="screenshots/v1.4/en/media-export.png" width="260" alt="Exportación Multimedia Asíncrona" />
-  <img src="screenshots/v1.4/en/about.png" width="260" alt="Acerca del Proyecto" />
+  <img src="screenshots/v1.4/es/data-export-import.png" width="260" alt="Exportación e Importación CSV" />
+  <img src="screenshots/v1.4/es/media-export.png" width="260" alt="Exportación Multimedia Asíncrona" />
+  <img src="screenshots/v1.4/es/about.png" width="260" alt="Acerca del Proyecto" />
 </p>
 
 ---
