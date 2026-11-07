@@ -1,324 +1,172 @@
 # PsychoLogger 🧠📊
 
-<img width="512" height="512" alt="psychologger_icon" src="https://github.com/user-attachments/assets/252d71b1-bee1-444d-a859-2c2fabe2cdd8" />
+<p align="center">
+  <img width="240" height="240" alt="PsychoLogger Icon" src="app/src/main/ic_launcher-playstore.png" />
+</p>
 
-[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
-[![Android](https://img.shields.io/badge/Android-8.0%2B-3DDC84?logo=android&logoColor=white)](https://www.android.com)
-[![Kotlin](https://img.shields.io/badge/Kotlin-1.9.24-7F52FF?logo=kotlin&logoColor=white)](https://kotlinlang.org)
-[![Open Source](https://img.shields.io/badge/Open%20Source-%E2%9D%A4-red?logo=open-source-initiative&logoColor=white)](https://opensource.org)
-[![Built with Claude Code](https://img.shields.io/badge/Built%20with-Claude%20Code-8A63D2?logo=anthropic&logoColor=white)](https://claude.ai/code)
-[![ChatGPT](https://img.shields.io/badge/Assisted%20by-ChatGPT-74aa9c?logo=openai&logoColor=white)](https://chat.openai.com)
-[![PBL](https://img.shields.io/badge/Learning-Project%20Based-orange?logo=gradleplay&logoColor=white)](https://en.wikipedia.org/wiki/Project-based_learning)
-<img src="https://img.shields.io/badge/Made_with-Love_&_Coffee-ff69b4"/>
+<p align="center">
+  <a href="https://www.gnu.org/licenses/gpl-3.0"><img src="https://img.shields.io/badge/License-GPLv3-blue.svg" alt="License: GPL v3" /></a>
+  <a href="https://www.android.com"><img src="https://img.shields.io/badge/Android-8.0%2B-3DDC84?logo=android&logoColor=white" alt="Android 8.0+" /></a>
+  <a href="https://kotlinlang.org"><img src="https://img.shields.io/badge/Kotlin-2.0.21-7F52FF?logo=kotlin&logoColor=white" alt="Kotlin 2.0.21" /></a>
+  <a href="https://github.com/D4vRAM369/PsychoLogger/releases/latest"><img src="https://img.shields.io/badge/Release-v1.4-EC4899" alt="Release v1.4" /></a>
+  <a href="https://opensource.org"><img src="https://img.shields.io/badge/Open%20Source-%E2%9D%A4-red?logo=open-source-initiative&logoColor=white" alt="Open Source" /></a>
+  <a href="https://en.wikipedia.org/wiki/Project-based_learning"><img src="https://img.shields.io/badge/Learning-Project%20Based-orange?logo=gradleplay&logoColor=white" alt="Project-Based Learning" /></a>
+  <img src="https://img.shields.io/badge/100%25_Offline-No_Internet_Permission-10B981" alt="100% Offline" />
+  <img src="https://img.shields.io/badge/Made_with-Love_%26_Coffee-ff69b4" alt="Made with Love & Coffee" />
+</p>
 
-[🇮🇨🇪🇸 Spanish version](README_Spanish.md)
+<p align="center">
+  <a href="README_Spanish.md">🇮🇨🇪🇸 Versión en Español</a> ·
+  <a href="CHANGELOG.md">📋 Full Changelog</a> ·
+  <a href="https://github.com/D4vRAM369/PsychoLogger/releases/latest">📥 Download Latest APK</a>
+</p>
 
 ---
 
-## 🆕 What's New in v1.2
+## 🆕 What's New in v1.4
 
 | Feature | Description |
 |---------|-------------|
-| ⏰ **Time Travel Picker** | Log forgotten experiences with visual calendar and quick date buttons (Yesterday, 2 days ago, etc.) |
-| 🔀 **Drag & Drop** | Reorder your substance list by dragging |
-| 📦 **Archive Substances** | Triple-tap on ⋮⋮ to hide substances without losing records |
-| 🧹 **Data Cleanup Tool** | Scan and fix corrupted entries in Settings > Data |
-| ⏱️ **Precise Time Input** | 1-minute increments + direct keyboard entry |
-| 📂 **Improved CSV Import** | Now works with all file managers |
-| 🔗 **GitHub Button** | Quick access to repository from About section |
-
-> 📋 [Full changelog](CHANGELOG.md) · 📥 [Download latest release](https://github.com/D4vRAM369/PsychoLogger/releases/latest)
+| 🌐 **Full Bilingual UI (EN / ES)** | Complete English and Spanish localization across both native screens and the interactive interface, following your device language |
+| 🧪 **2D Molecule Icons & SMILES** | 86 book-oriented skeletal structures from PubChem (`assets/mol/`) + custom `SMILES` rendering (`smiles-drawer` + CSV column), or switch back to classic emojis in *Settings → Appearance* |
+| 🔐 **Chunked AES-256-GCM Backups (`chunked-v2`)** | Stream-encrypts and decrypts huge photo/audio libraries in 1 MiB authenticated blocks without `OutOfMemoryError`, with show/hide password eye icon and 8-character minimum |
+| 📦 **Async Audio & Photo ZIP Export** | Background compression with a live progress bar (`0/N` files) and optional `AES-256-GCM` password encryption, without freezing the UI |
+| ⏱️ **Configurable Auto-Backup & Rotation** | Choose how often Auto-Backup runs (`6h`, `12h`, `24h`, `48h`, `7d`) and how many recent backups to keep (`3`, `5`, `7`, `10`, `15`) |
+| ✨ **Interactive Onboarding & Smart Splash** | 6-slide swipeable intro guide and a neon startup animation that runs for the first 4 launches and turns itself off automatically (re-enable anytime in Settings) |
+| 🗃️ **True Substance Archiving** | Triple-tap `⋮⋮` to archive: archived substances disappear from the calendar, stats, counters, and CSV export while staying safe in backups; tap *"About the project"* 5 times to view/restore them |
+| 🛡️ **Zero Internet Permission** | Release builds strip `android.permission.INTERNET` completely — 100% offline, with external harm-reduction links opened via Android's system browser (`ACTION_VIEW`) |
 
 ---
 
 ## What is PsychoLogger?
 
-PsychoLogger is your personal logbook for psychonaut experiences. An Android app designed for those who want to document and understand their experiences with psychoactive substances in a responsible and safe way.
+**PsychoLogger** is a private, 100% offline personal logbook for psychonaut experiences and mindful substance tracking on Android. It is designed for harm reduction, self-knowledge, and responsible documentation—keeping all of your entries, voice notes, and photos strictly on your device.
 
 ---
 
-## Why use PsychoLogger?
+## Why Use PsychoLogger?
 
-### 🔒 Total Privacy
-- All your data stays **on your device** — nothing is uploaded to the internet  
-- Protected with fingerprint or PIN  
-- Military-grade encryption for your most sensitive entries  
+### 🔒 Total Privacy (Zero Internet Permission)
+- **No `INTERNET` permission in release builds** — it is physically impossible for the app to send data anywhere
+- **Zero telemetry, zero analytics, zero ads**
+- **Biometric & App PIN lock** — fingerprint unlock with dedicated masked App PIN fallback
+- **Authenticated encryption (`AES-256-GCM` + `PBKDF2-HMAC-SHA256`, 120,000 iterations)** for full backups, voice notes, and photo exports
 
-### 📝 Complete Logging
-- Record substance, dose, date, and time  
-- Document your **set** (mindset) and **setting** (environment). Add custom sets and settings to your apk.
-- Add personal daily notes with each entry, and/or use it as a complementary “psychonaut diary”. Markdown buttons and format are implemented on them.
-- Audio record and pictures uploads/camera are available to save and able to use in personal notes.
-- Categorize your substances with colors and emojis  
+### 📝 Rich Experience Logging
+- Record **substance, dose, custom unit, date, and exact time** (including the *Time Travel Picker* for past entries)
+- Document your **Set** (mindset) and **Setting** (environment), and create custom tags
+- Write detailed **Markdown notes** (`*bold*`, `_italic_`, lists, headers)
+- Attach **voice notes** (built-in audio recorder/player) and **photos** (camera or gallery) to any entry
+- Identify substances with **2D skeletal molecules** (86 built-in structures + custom `SMILES` support) or custom colors and emojis
 
-### 📈 Visualize Your Patterns
-- Explore your history through an interactive calendar  
-- Statistics to better understand your habits  
-
-### 🔗 Attached Harm Reduction Resources  
-Links to well-known harm-reduction and information websites:
-
-- **Erowid** – Extensive database on psychoactive substances  
-- **TripSit** – Interaction info, dosage guidelines, and real-time assistance  
-- **MAPS** – Research on medical, legal, and cultural uses of psychedelics  
-- **PsychonautWiki** – Scientific encyclopedia of psychoactive substances
-
-  > - ⚠️ This is the only reason why the apk requests Internet permissions. You can recompile it on your own (always following the license guidelines) and remove the redirection to the websites that I considered appropriate, thus dispensing with the Internet permission.
-  > - 🤔 I kindly encourage skeptics to search the source code or send it to any AI, and they will find that what I say is true.
-  > - 🗣 I understand that Internet permissions in this application may raise some eyebrows, given the necessary and intrinsic privacy that a personal registration app of any kind requires.
-  > - 🔎 In addition to encouraging you to look at the code and/or send it to any AI to review the entire source code, I also encourage you, if you still have any reservations, to choose one of these two options: block the app's Internet permissions if your mobile operating system allows it.
-  > - If not, I recommend Netguard: open source, reliable, space-efficient, and effective.
-  > - ‼️ Ultimately, if there are users who want to use the app and would use it if it weren't for this, please open an issue and let me know that despite everything I've said, you still consider it a problem for your privacy. At the moment, the only Internet permission required by the application is link redirection, although I have future plans to be able to link data to the cloud perhaps later on. For now, I wanted to make this clear ✍️📌
----
-
-
-## Main Features
-
-### 🏠 Main Screen  
-The app blends native Android elements with a smooth web-based interface. Your security is guaranteed from the moment you open the app.
-
-### 💊 Substance Management  
-Includes predefined substances (LSD, Ketamine, Opium), and you can add your own:
-- Psychedelics 🍄  
-- Stimulants/MDMA ⚡  
-- Dissociatives 🌀  
-- Depressants 😴  
-
-### 📊 Your Data, Your Control  
-- **Export** everything to CSV anytime  
-- **Import** data from other formats  
-- **Migrate** easily between devices  
-- **Backup** your information locally and securely  
-
-### 🛡️ Meaningful Security  
-- **Biometric unlock:** fingerprint, face, etc.  
-- **Backup PIN**  
-- **Auto-lock:** closes itself after inactivity  
-- **Secure entry point:** verification required every time  
+### 📈 Pattern Visualization & Harm Reduction
+- **Interactive Monday-first Calendar** with multi-substance color gradients and per-substance filtering
+- **Statistics Dashboard** (streaks, frequency, Set/Setting distribution, active days)
+- **Direct Harm Reduction Resources** — quick access to **Erowid**, **TripSit**, **MAPS**, **PsychonautWiki**, **DrugScience**, and a curated **Recommended Books** library
 
 ---
 
-## 📸 Screenshots
+## 📸 Screenshots (v1.4)
 
+### 🏠 Main Screen, Calendar & Appearance Settings
 <p align="center">
-  <img src="screenshots/MainPage.jpg" height="380"/>
-  <img src="screenshots/Calendar.jpg" height="380"/>
-  <img src="screenshots/Stats.jpg" height="380"/>
+  <img src="screenshots/v1.4/en/main-page.png" width="260" alt="Main Screen with Molecule Icons" />
+  <img src="screenshots/v1.4/en/calendar.png" width="260" alt="Interactive Calendar" />
+  <img src="screenshots/v1.4/en/settings.png" width="260" alt="Security & Appearance Settings" />
 </p>
 
+### 📊 Statistics & Context Analysis
 <p align="center">
-  <img src="screenshots/Set stats.jpg" height="380"/>
-  <img src="screenshots/Settings stats.jpg" height="380"/>
-  <img src="screenshots/Resources.jpg" height="380"/>
+  <img src="screenshots/v1.4/en/stats.png" width="200" alt="Stats Overview" />
+  <img src="screenshots/v1.4/en/stats-frequency.png" width="200" alt="Usage Frequency" />
+  <img src="screenshots/v1.4/en/stats-set.png" width="200" alt="Set Statistics" />
+  <img src="screenshots/v1.4/en/stats-setting.png" width="200" alt="Setting Statistics" />
 </p>
 
+### 🔗 Harm Reduction Resources, Books & Archived Substances
 <p align="center">
-  <img src="screenshots/Data management.jpg" height="380"/>
-  <img src="screenshots/Data management2.jpg" height="380"/>
-  <img src="screenshots/Data Management3.jpg" height="380"/>
+  <img src="screenshots/v1.4/en/resources.png" width="260" alt="Harm Reduction Resources" />
+  <img src="screenshots/v1.4/en/books.png" width="260" alt="Recommended Books" />
+  <img src="screenshots/v1.4/en/archived-substances.png" width="260" alt="Archived Substances Modal" />
 </p>
 
+### 💾 Data Management, Encrypted Backups & Configurable Auto-Backup
 <p align="center">
-  <img src="screenshots/Data Management4.jpg" height="380"/>
-  <img src="screenshots/Books.jpg" height="380"/>
-  <img src="screenshots/About the Dev - D4vRAM.jpg" height="380"/>
+  <img src="screenshots/v1.4/en/data-management.png" width="260" alt="Data Management" />
+  <img src="screenshots/v1.4/en/advanced-export-password.png" width="260" alt="Encrypted Backup Password" />
+  <img src="screenshots/v1.4/en/autobackup.png" width="260" alt="Configurable Auto-Backup" />
 </p>
 
+### 📦 Manual CSV / Media Export & About the Project
 <p align="center">
-  <img src="screenshots/PIN&Biometric_settings.jpg" height="380"/>
-  <img src="screenshots/LockScreen.jpg" height="380"/>
-  <img src="screenshots/LockScreen2.jpg" height="380"/>
+  <img src="screenshots/v1.4/en/data-export-import.png" width="260" alt="CSV Export and Import" />
+  <img src="screenshots/v1.4/en/media-export.png" width="260" alt="Async Media Export with Progress" />
+  <img src="screenshots/v1.4/en/about.png" width="260" alt="About the Project" />
 </p>
 
+---
 
-## Installation
+## 🛠️ Installation & Usage
 
 ### Requirements
-- Android 8.0 or higher
-- About 20MB of storage
-- Biometric sensor (recommended but not required)  
+- **Android 8.0 (API 26)** or higher (targets **Android 15 / API 36**)
+- ~15 MB of free storage
+- Biometric sensor optional (fingerprint + App PIN supported)
 
 ### How to Install
-1. Download the APK or clone this repo  
-2. If building from source: Android Studio + Gradle  
-3. Install on your device  
-4. Set your PIN and biometrics on first launch  
+1. Download the latest signed APK from [Releases](https://github.com/D4vRAM369/PsychoLogger/releases/latest) or build from source with `./gradlew assembleRelease`
+2. Open the app and follow the 6-slide onboarding introduction
+3. Optional: tap the top-right ⚙️ gear icon to enable **App Lock** (Fingerprint / PIN), toggle **Molecules vs. Emojis**, or configure **Startup Animation**
 
-## How to Use PsychoLogger
-
-### First Time
-1. **Set up your security** – Choose a PIN and enable biometrics  
-2. **Add your substances** – Customize them with colors and emojis  
-3. **Adjust preferences** – Auto-lock time, etc.
-
-### Daily Use
-1. **Open the app** – Authenticate with fingerprint or PIN  
-2. **Log your experience** – Substance, dose, context, notes  
-3. **Review your data** – Calendar, graphs, statistics  
-4. **Export** when you need a backup
-
-## Technology
-
-Built using modern Android technologies:
-- **Kotlin** as the main language  
-- **Jetpack Compose** for smooth native UI  
-- **Material 3** for a clean and familiar design  
-- **AndroidX Encryption** for maximum security  
-- **Hybrid WebView** for the main interface  
-
-## Important: Harm Reduction
-
-PsychoLogger is designed for:
-- ✅ **Education** about psychoactive substances  
-- ✅ **Harm reduction** through documentation  
-- ✅ **Self-knowledge** and understanding patterns  
-- ✅ **Responsible research**  
-
-It is NOT:
-- ❌ A promotion of recreational use  
-- ❌ A replacement for professional medical advice  
-- ❌ Intended for minors  
-
-## Technical Details
-
-### Current Version: 1.2
-- **Package:** com.d4vram.psychologger
-- **Target:** Android 15 (API 36)
-- **Minimum:** Android 8.0 (API 26)
-- **Size:** ~3MB installed
-
-
-### Data Structure
-Your entries are stored in a structured way:
-
-```
-📁 Substances (name, color, emoji, date)
-📁 Entries (substance, dose, date, set, setting, notes)
-📁 Preferences (user configuration)
-```
-
-
-## Privacy & Security
-
-### Your Privacy Is Sacred
-- **Zero telemetry** – No data is sent to any server  
-- **Local only** – Everything stays on your device  
-- **No external connections** – The app works fully offline  
-- **Robust encryption** – AES-256 for sensitive data  
-
-### Security Controls
-- **Multi-layer authentication** (biometric + PIN)  
-- **Secure PIN hashing** (SHA-256)  
-- **Smart auto-lock** configurable  
-- **Integrity verification** on each startup  
-
-## Contribute
-
-Want to improve PsychoLogger? Contributions are welcome:
-1. Fork the repository  
-2. Create a branch for your feature  
-3. Follow Kotlin/Android conventions  
-4. Submit your PR with a detailed description  
-
-## Support
-
-Issues? Suggestions? Bugs?
-- Open an issue on GitHub  
-- Contact the developer  
-- Check the technical documentation  
-
-## 🔓 Decrypting Encrypted Audio Backups
-
-When you export audio from PsychoLogger, it is encrypted using **AES-256-GCM** to protect your privacy.  
-Here is how to decrypt it:
-
-### Requirements
-
-```bash
-# Install Python 3 if you don't have it
-sudo apt install python3 python3-pip  # Linux/Ubuntu
-# brew install python3                # macOS
-
-# Install cryptography library
-pip3 install cryptography
-
-### Decryption Commands
-
-```bash
-# Option 1: With password in the command (less secure)
-python3 decrypt_psychologger.py audios_encrypted_2025-01-15.zip myPassword123
-
-# Option 2: Without password (it will ask you for it in a hidden way - RECOMMENDED)
-python3 decrypt_psychologger.py audios_encrypted_2025-01-15.zip
-🔒 Password: ****
-```
-
-### What does the script do?
-
-1. **Reads the encrypted ZIP** with your exported audios
-2. **Extracts the metadata** (salt, IV, PBKDF2 iterations)
-3. **Derives the AES-256 key** from your password using PBKDF2 with 120,000 iterations
-4. **Decrypts** the data with AES-256-GCM
-5. **Extracts the audios** to the `decrypted_audios/` folder
-
-### Complete example
-
-```bash
-# 1. Download the encrypted ZIP from your phone
-adb pull /sdcard/Download/encrypted_audios_2025-01-15.zip .
-
-# 2. Decrypt
-python3 decrypt_psychologger.py encrypted_audios_2025-01-15.zip
-🔒 Password: ****
-
-# Output:
-🔓 Decrypting: audios_encrypted_2025-01-15.zip
-📄 Metadata:
-   - Algorithm: AES-256-GCM
-   - Iterations: 120000
-   - Salt: 16 bytes
-   - IV: 12 bytes
-📦 Encrypted data: 2458930 bytes
-🔑 Deriving AES-256 key with PBKDF2 (120000 iterations)...
-🔐 Decrypting with AES-256-GCM...
-✅ Decryption successful: 2458802 bytes
-📂 Extracting audios to: decrypted_audios/
-🎵 Audios found: 12
-   ✓ audio_2025-01-10_143522.m4a
-   ✓ audio_2025-01-11_092311.m4a
-   ...
-✅ Decryption complete!
-
-# 3. Your audio files are in: decrypted_audios/
-ls decrypted_audios/
-```
-
-### Encryption Security
-
-- **Algorithm:** AES-256-GCM (military standard)
-- **Key derivation:** PBKDF2-HMAC-SHA256 with 120,000 iterations
-- **Unique salt:** Randomly generated by backup
-- **Unique IV:** Randomly generated (96 bits)
-- **Authentication:** GCM includes integrity verification
-
-### Common Errors
-
-**❌ Incorrect password:**
-```
-❌ ERROR: Incorrect password or corrupted data
-```
-→ Verify that the password is exactly the one you used when exporting.
-
-**❌ Library not installed:**
-```
-ModuleNotFoundError: No module named ‘cryptography’
-```
-→ Run: `pip3 install cryptography`
+### Useful Gestures & Shortcuts
+- **Reorder substances:** drag and drop using the `⋮⋮` handle on the left of each substance
+- **Archive a substance:** triple-tap on the `⋮⋮` handle
+- **View / Restore archived substances:** go to the **Data** tab and tap the **"About the project"** badge **5 times**
 
 ---
 
-**Remember:** This tool is designed to promote responsible use and harm reduction. Always inform yourself properly and consider the risks before experimenting with any psychoactive substance.
+## 🔓 Decrypting Encrypted Backups, Audio & Photos (`decrypt_psychologger.py`)
 
-*Developed with ❤️ for the responsible psychonaut community.*
+When you export an encrypted full backup, audio ZIP, or photo ZIP from PsychoLogger, it uses **`AES-256-GCM`** (`chunked-v2` streaming encryption with `PBKDF2-HMAC-SHA256`, 120,000 iterations). You can restore it directly inside the app or decrypt it on your computer using [`decrypt_psychologger.py`](decrypt_psychologger.py).
 
+### 1. Install Requirements
+```bash
+sudo apt install python3 python3-pip   # Linux / Debian / Ubuntu
+# brew install python3                 # macOS
+pip3 install cryptography
+```
 
+### 2. Decrypt an Exported ZIP
+```bash
+# Recommended: omit the password on the command line so it prompts securely
+python3 decrypt_psychologger.py photos_encrypted_2026-11-07_02-10-00.zip
+🔒 Contraseña: ****
+```
+
+The script automatically detects whether the archive uses `chunked-v2` or the legacy single-block format, verifies GCM authentication tags for every 1 MiB block, and extracts your `audios/` and/or `photos/` into `decrypted_audios/`.
+
+---
+
+## 🧱 Tech Stack
+
+- **Kotlin 2.0.21 & Jetpack Compose (Material 3)** — Native security gate, biometric/PIN lock, settings overlay, SAF file management, and `WorkManager` periodic auto-backups
+- **Hybrid WebView (`assets/index.html` + `assets/i18n.js`)** — Fast offline UI with local `Chart.js`, `marked.min.js`, `smiles-drawer.min.js`, and 86 PubChem 2D molecular SVGs (`assets/mol/`)
+- **Streaming Cryptography (`ChunkedCrypto.kt`)** — `AES-256-GCM` chunked AEAD with per-chunk IV derivation and AAD framing
+
+---
+
+## ⚖️ Harm Reduction Disclaimer
+
+PsychoLogger is built strictly for:
+- ✅ **Education** and objective self-documentation
+- ✅ **Harm reduction** and pattern awareness
+- ✅ **Privacy-preserving personal journaling**
+
+It is **NOT**:
+- ❌ An encouragement or promotion of substance use
+- ❌ A substitute for professional medical or psychological advice
+- ❌ Intended for minors
+
+---
+
+*Developed with ❤️ by **D4vRAM** using a Project-Based Learning (PBL) approach for the responsible psychonaut community.*
