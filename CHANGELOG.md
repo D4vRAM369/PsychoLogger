@@ -7,31 +7,52 @@ y este proyecto adhiere a [Semantic Versioning](https://semver.org/lang/es/).
 
 ---
 
-## [1.4] - 2026-11-06
+## [1.4] - 2026-11-07
 
 ### ✨ Añadido
-- **Archivadas como si no existieran**
-  - Una sustancia archivada desaparece del calendario, de las estadísticas, del contador de "Experiencias registradas" y del CSV exportado
-  - Sus registros se conservan y siguen en las copias de seguridad; al restaurarla vuelve todo a la normalidad
+- **Interfaz Bilingüe Completa (Español e Inglés)**
+  - Localización completa tanto en pantallas nativas Compose (`values/` y `values-es/`) como en la interfaz WebView (`i18n.js` reactivo para vistas, modales, gráficos, meses y notificaciones)
+- **Iconos Moleculares 2D y Soporte SMILES**
+  - Biblioteca integrada con 86 estructuras esqueléticas 2D oficiales de PubChem (`assets/mol/*.svg`) con orientación de libro
+  - Campo opcional `SMILES` al crear o editar cualquier sustancia para dibujar su estructura en tiempo real con `smiles-drawer` (incluido como 9.ª columna opcional en exportación/importación CSV)
+  - Selector en *Ajustes → Apariencia* para alternar entre **Moléculas** y **Emojis clásicos**
+- **Nuevo Icono Neón, Cabecera Animada, Splash Inteligente y Onboarding**
+  - Nuevo icono adaptativo neón y cabecera compacta con moléculas doradas alternas y título con degradado fluido
+  - Pantalla de inicio (*splash*) neón que se muestra durante las primeras 4 aperturas y se desactiva sola a partir de la 5.ª (reactivable en cualquier momento desde *Ajustes → Apariencia*)
+  - Onboarding interactivo deslizable de 6 pantallas en el primer arranque y botón *"Ver introducción"* en Ajustes
+- **Cifrado por Bloques `AES-256-GCM` (`chunked-v2`) sin Límite de Memoria**
+  - Cifrado y descifrado en streaming por bloques de 1 MiB con IV determinista por bloque y metadatos autenticados (AAD), eliminando los cierres por falta de memoria (`OutOfMemoryError`) en bibliotecas grandes de fotos y audios
+  - Retrocompatibilidad total para restaurar backups cifrados con versiones anteriores
+  - Icono de ojo (mostrar/ocultar contraseña) y validación de mínimo 8 caracteres en los diálogos de cifrado y restauración
+- **Exportación Asíncrona Unificada de Audios y Fotos con Cifrado Opcional**
+  - Nuevo flujo en segundo plano (`Dispatchers.IO`) con barra de progreso en vivo que evita congelar la interfaz al comprimir cientos de megabytes de imágenes o notas de voz
+  - Opción de cifrar con contraseña (`AES-256-GCM`) tanto el ZIP de audios como el de fotos
+  - Limpieza automática de archivos ZIP temporales previos en `cacheDir`
+  - Script `decrypt_psychologger.py` actualizado para desencriptar y extraer tanto `audios/` como `photos/` (formato `chunked-v2` y legacy)
+- **Autobackup Configurable (Frecuencia y Copias Recientes)**
+  - Selector de frecuencia en *Backup Automático* para elegir cada cuánto se ejecuta (`6h`, `12h`, `24h`, `48h` o `7d`) con reprogramación inmediata en `WorkManager`
+  - Selector para decidir cuántos autobackups recientes conservar (`3`, `5`, `7`, `10` o `15`), rotando y eliminando automáticamente los más antiguos en almacenamiento interno y carpeta SAF
+- **Sustancias Archivadas Rediseñadas y Comportamiento Transparente**
+  - Acceso rápido con 5 toques sobre el chip *"Acerca del proyecto"* en la pestaña Datos
+  - Nuevo modal de Sustancias Archivadas con estética neón, icono molecular/emoji, barra de color de la sustancia, fecha de archivado y botón de restauración
+  - Una sustancia archivada desaparece del calendario, de las estadísticas, del contador de *"Experiencias registradas"* y del CSV exportado, conservando sus registros intactos en las copias de seguridad
 
 ### 🔄 Cambiado
+- **Desbloqueo Biométrico + PIN de la App**: el prompt biométrico solicita exclusivamente huella dactilar (`BIOMETRIC_WEAK`) con botón directo *"Usar PIN de la app"*, y las pantallas de PIN ocultan los dígitos con asteriscos y permiten scroll con el teclado abierto
 - El calendario empieza la semana en lunes
-- Acciones de la sección Datos ordenadas y descritas según su riesgo
-- Estado vacío explícito en Estadísticas cuando aún no hay datos
-- Navegación inferior más cómoda al tocar
-- Tarjetas de datos legibles en pantallas estrechas
-- Tarjetas de Recursos etiquetadas por su uso
-- Estadísticas más compactas cuando hay muchas categorías
-- Acciones de cada día más adaptables al tamaño de pantalla
-- Editor de notas más cómodo para entradas largas
-- Chip de la sustancia activa más legible (superficie tenue y contador en píldora)
+- Acciones de la sección **Gestión de Datos** ordenadas según su propósito/riesgo, con mayor separación visual entre los textos descriptivos y los botones de acción
+- Estado vacío explícito en Estadísticas cuando aún no hay datos y gráficos más compactos cuando hay muchas categorías
+- Navegación inferior más cómoda al tocar, tarjetas de Recursos etiquetadas por categoría y editor de notas mejorado para entradas largas
+- Chip de la sustancia activa más legible con superficie tenue y contador en píldora
 
 ### 🐛 Corregido
-- Al renombrar una sustancia, sus registros conservaban el nombre anterior
-- Los diálogos ya no muestran "localhost dice…"
-- Las notas conservan los saltos de línea al mostrarse
-- Etiquetas de set y setting duplicadas o con ruido se unifican en la limpieza de datos
-- Copias de seguridad y CSV conservan las sustancias archivadas y el contexto del usuario al restaurar
+- Corregido el bloqueo (~10 s) del WebView al exportar galerías grandes de fotos en ZIP
+- Corregido el colapso del modal de Libros Recomendados por el uso de `100vh` y respetada la barra de gestos inferior
+- Al renombrar una sustancia, todos sus registros actualizan ahora su nombre automáticamente
+- Los diálogos del WebView ya no muestran el encabezado *"localhost dice…"*
+- Las notas conservan los saltos de línea al renderizarse
+- Etiquetas de *set* y *setting* duplicadas o con ruido se unifican en la herramienta de revisión de datos sin marcar frases normales como corruptas
+- Las copias de seguridad y CSV conservan las sustancias archivadas, el campo SMILES y el contexto del usuario al restaurar
 
 ---
 
