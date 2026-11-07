@@ -629,23 +629,7 @@ class MainActivity : FragmentActivity() {
      * - Constraints garantiza que solo ejecute en condiciones óptimas
      */
     private fun schedulePeriodicBackups() {
-        val constraints = androidx.work.Constraints.Builder()
-            .setRequiresBatteryNotLow(true)  // Solo si batería > 15%
-            .build()
-
-        val backupWork = androidx.work.PeriodicWorkRequestBuilder<BackupWorker>(
-            12, java.util.concurrent.TimeUnit.HOURS  // Cada 12 horas
-        )
-            .setConstraints(constraints)
-            .build()
-
-        androidx.work.WorkManager.getInstance(this).enqueueUniquePeriodicWork(
-            BackupWorker.WORK_NAME,
-            androidx.work.ExistingPeriodicWorkPolicy.KEEP,  // No reemplazar si ya existe
-            backupWork
-        )
-
-        android.util.Log.d("MainActivity", "Backups automáticos programados cada 12 horas")
+        BackupWorker.schedule(this, replace = false)
     }
 
     fun setWebAppInterface(instance: WebAppInterface) {

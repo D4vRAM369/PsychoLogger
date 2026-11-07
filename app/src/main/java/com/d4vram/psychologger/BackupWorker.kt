@@ -36,6 +36,32 @@ class BackupWorker(
     companion object {
         private const val TAG = "BackupWorker"
         const val WORK_NAME = "periodic_backup"
+
+        fun schedule(context: Context, intervalHours: Int = BackupPreferences(context).getAutobackupIntervalHours(), replace: Boolean = false) {
+            val validHours = BackupPreferences.normalizeIntervalHours(intervalHours).toLong()
+            val constraints = androidx.work.Constraints.Builder()
+                .setRequiresBatteryNotLow(true)
+                .build()
+
+            val backupWork = androidx.work.PeriodicWorkRequestBuilder<BackupWorker>(
+                validHours, java.util.concurrent.TimeUnit.HOURS
+            )
+                .setConstraints(constraints)
+                .build()
+
+            val policy = if (replace) {
+                androidx.work.ExistingPeriodicWorkPolicy.UPDATE
+            } else {
+                androidx.work.ExistingPeriodicWorkPolicy.KEEP
+            }
+
+            androidx.work.WorkManager.getInstance(context).enqueueUniquePeriodicWork(
+                WORK_NAME,
+                policy,
+                backupWork
+            )
+            Log.d(TAG, "Autobackup programado cada ${validHours}h (replace=$replace)")
+        }
     }
 
     private val backupPrefs by lazy { BackupPreferences(applicationContext) }
@@ -112,8 +138,9 @@ class BackupWorker(
                 return@withContext Result.retry()
             }
 
-            // 8. Rotación: mantener últimos 7 backups
-            backupManager.cleanOldBackupsInSaf(folderUri, keepCount = 7)
+            // 8. Rotación: mantener los X backups más recientes configurados por el usuario
+            val keepCount = backupPrefs.getAutobackupKeepCount()
+            backupManager.cleanOldBackupsInSaf(folderUri, keepCount = keepCount)
 
             // 9. Actualizar timestamp
             backupPrefs.updateLastAutobackupTime()

@@ -681,13 +681,13 @@ class BackupManager(private val context: Context) {
      * - Ordenar por fecha (más antiguo primero)
      * - Eliminar excedentes
      */
-    private fun cleanOldBackups() {
+    private fun cleanOldBackups(keepCount: Int = BackupPreferences(context).getAutobackupKeepCount()) {
         val backups = backupsDir.listFiles()
             ?.filter { it.name.startsWith("backup_") && it.extension == "zip" }
             ?.sortedBy { it.lastModified() }  // Más antiguo primero
             ?: return
 
-        val toDelete = backups.take((backups.size - MAX_BACKUPS).coerceAtLeast(0))
+        val toDelete = backups.take((backups.size - keepCount).coerceAtLeast(0))
         toDelete.forEach { file ->
             Log.d(TAG, "Eliminando backup antiguo: ${file.name}")
             file.delete()
@@ -1158,7 +1158,7 @@ class BackupManager(private val context: Context) {
      * @param folderUri URI de la carpeta
      * @param keepCount Cantidad de backups a mantener (default 7)
      */
-    fun cleanOldBackupsInSaf(folderUri: Uri, keepCount: Int = MAX_BACKUPS) {
+    fun cleanOldBackupsInSaf(folderUri: Uri, keepCount: Int = BackupPreferences(context).getAutobackupKeepCount()) {
         try {
             val backups = listBackupsInSafFolder(folderUri)
             val toDelete = backups.dropLast(keepCount)  // Mantener los últimos keepCount

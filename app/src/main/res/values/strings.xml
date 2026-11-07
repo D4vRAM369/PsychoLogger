@@ -64,6 +64,14 @@
     <string name="data_autobackup_folder">📁 Autobackup Folder</string>
     <string name="data_autobackup_not_configured">❌ Not configured</string>
     <string name="data_autobackup_12h">Autobackup every 12h</string>
+    <string name="data_autobackup_every_hours">Autobackup every %1$dh</string>
+    <string name="data_autobackup_every_days">Autobackup every %1$dd</string>
+    <string name="data_autobackup_frequency">Frequency</string>
+    <string name="data_autobackup_frequency_desc">How often automatic backups run</string>
+    <string name="data_autobackup_keep_count">Recent backups to keep</string>
+    <string name="data_autobackup_keep_count_desc">Keep the %1$d most recent, delete older ones</string>
+    <string name="data_autobackup_opt_hours">%1$dh</string>
+    <string name="data_autobackup_opt_days">%1$dd</string>
     <string name="data_autobackup_active">Active</string>
     <string name="data_autobackup_inactive">Disabled</string>
     <string name="data_import_csv">📁 Select CSV to Import</string>

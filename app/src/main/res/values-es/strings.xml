@@ -64,6 +64,14 @@
     <string name="data_autobackup_folder">📁 Carpeta de Autobackup</string>
     <string name="data_autobackup_not_configured">❌ No configurada</string>
     <string name="data_autobackup_12h">Autobackup cada 12h</string>
+    <string name="data_autobackup_every_hours">Autobackup cada %1$dh</string>
+    <string name="data_autobackup_every_days">Autobackup cada %1$dd</string>
+    <string name="data_autobackup_frequency">Frecuencia</string>
+    <string name="data_autobackup_frequency_desc">Cada cuánto tiempo se crea el autobackup</string>
+    <string name="data_autobackup_keep_count">Autobackups a conservar</string>
+    <string name="data_autobackup_keep_count_desc">Conservar los %1$d más recientes y borrar anteriores</string>
+    <string name="data_autobackup_opt_hours">%1$dh</string>
+    <string name="data_autobackup_opt_days">%1$dd</string>
     <string name="data_autobackup_active">Activo</string>
     <string name="data_autobackup_inactive">Desactivado</string>
     <string name="data_import_csv">📁 Seleccionar CSV para Importar</string>

@@ -29,6 +29,20 @@ class BackupPreferences(private val context: Context) {
         private const val KEY_AUTOBACKUP_ENABLED = "autobackup_enabled"
         private const val KEY_LAST_AUTOBACKUP = "last_autobackup_timestamp"
         private const val KEY_AUTOBACKUP_FOLDER_NAME = "autobackup_folder_name"
+        private const val KEY_AUTOBACKUP_INTERVAL_HOURS = "autobackup_interval_hours"
+        private const val KEY_AUTOBACKUP_KEEP_COUNT = "autobackup_keep_count"
+
+        const val DEFAULT_INTERVAL_HOURS = 12
+        const val DEFAULT_KEEP_COUNT = 7
+
+        val INTERVAL_OPTIONS_HOURS = listOf(6, 12, 24, 48, 168)
+        val KEEP_COUNT_OPTIONS = listOf(3, 5, 7, 10, 15)
+
+        fun normalizeIntervalHours(hours: Int): Int =
+            if (hours in INTERVAL_OPTIONS_HOURS) hours else DEFAULT_INTERVAL_HOURS
+
+        fun normalizeKeepCount(count: Int): Int =
+            if (count in KEEP_COUNT_OPTIONS) count else DEFAULT_KEEP_COUNT
     }
 
     private val prefs by lazy {
@@ -96,6 +110,40 @@ class BackupPreferences(private val context: Context) {
      */
     fun isAutobackupEnabled(): Boolean {
         return prefs.getBoolean(KEY_AUTOBACKUP_ENABLED, false)
+    }
+
+    /**
+     * Obtener intervalo de autobackup en horas (6, 12, 24, 48, 168)
+     */
+    fun getAutobackupIntervalHours(): Int {
+        val raw = prefs.getInt(KEY_AUTOBACKUP_INTERVAL_HOURS, DEFAULT_INTERVAL_HOURS)
+        return normalizeIntervalHours(raw)
+    }
+
+    /**
+     * Guardar intervalo de autobackup en horas
+     */
+    fun setAutobackupIntervalHours(hours: Int) {
+        val valid = normalizeIntervalHours(hours)
+        prefs.edit().putInt(KEY_AUTOBACKUP_INTERVAL_HOURS, valid).apply()
+        Log.d(TAG, "Intervalo de autobackup actualizado: ${valid}h")
+    }
+
+    /**
+     * Obtener cantidad de autobackups recientes a conservar (3, 5, 7, 10, 15)
+     */
+    fun getAutobackupKeepCount(): Int {
+        val raw = prefs.getInt(KEY_AUTOBACKUP_KEEP_COUNT, DEFAULT_KEEP_COUNT)
+        return normalizeKeepCount(raw)
+    }
+
+    /**
+     * Guardar cantidad de autobackups recientes a conservar
+     */
+    fun setAutobackupKeepCount(count: Int) {
+        val valid = normalizeKeepCount(count)
+        prefs.edit().putInt(KEY_AUTOBACKUP_KEEP_COUNT, valid).apply()
+        Log.d(TAG, "Cantidad de autobackups a conservar actualizada: $valid")
     }
 
     /**

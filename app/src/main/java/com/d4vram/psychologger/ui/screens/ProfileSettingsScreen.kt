@@ -34,6 +34,7 @@ import org.json.JSONObject
 import com.d4vram.psychologger.MainActivity
 import com.d4vram.psychologger.BackupManager
 import com.d4vram.psychologger.BackupPreferences
+import com.d4vram.psychologger.BackupWorker
 import com.d4vram.psychologger.R
 import androidx.core.content.FileProvider
 import java.io.File
@@ -75,6 +76,8 @@ fun ProfileSettingsScreen(
     val backupPreferences = remember { BackupPreferences(context) }
     var autobackupEnabled by remember { mutableStateOf(backupPreferences.isAutobackupEnabled()) }
     var autobackupFolderName by remember { mutableStateOf(backupPreferences.getAutobackupFolderName()) }
+    var autobackupIntervalHours by remember { mutableIntStateOf(backupPreferences.getAutobackupIntervalHours()) }
+    var autobackupKeepCount by remember { mutableIntStateOf(backupPreferences.getAutobackupKeepCount()) }
     var pendingBackupFile by remember { mutableStateOf<File?>(null) }
 
     val coroutineScope = rememberCoroutineScope()
@@ -524,7 +527,11 @@ fun ProfileSettingsScreen(
                     ) {
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
-                                text = stringResource(R.string.data_autobackup_12h),
+                                text = if (autobackupIntervalHours >= 168) {
+                                    stringResource(R.string.data_autobackup_every_days, autobackupIntervalHours / 24)
+                                } else {
+                                    stringResource(R.string.data_autobackup_every_hours, autobackupIntervalHours)
+                                },
                                 fontSize = 14.sp,
                                 fontWeight = FontWeight.Medium,
                                 color = Color.White
@@ -544,6 +551,9 @@ fun ProfileSettingsScreen(
                                 } else {
                                     backupPreferences.setAutobackupEnabled(enabled)
                                     autobackupEnabled = enabled
+                                    if (enabled) {
+                                        BackupWorker.schedule(context, autobackupIntervalHours, replace = true)
+                                    }
                                     Toast.makeText(
                                         context,
                                         if (enabled) context.getString(R.string.toast_autobackup_enabled) else context.getString(R.string.toast_autobackup_disabled),
@@ -556,6 +566,114 @@ fun ProfileSettingsScreen(
                                 checkedTrackColor = Color(0xFF10B981).copy(alpha = 0.3f)
                             )
                         )
+                    }
+
+                    Spacer(modifier = Modifier.height(14.dp))
+
+                    // Selector de frecuencia de Autobackup (6h, 12h, 24h, 48h, 7d)
+                    Text(
+                        text = stringResource(R.string.data_autobackup_frequency),
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = Color.White
+                    )
+                    Text(
+                        text = stringResource(R.string.data_autobackup_frequency_desc),
+                        fontSize = 12.sp,
+                        color = Color.White.copy(alpha = 0.6f)
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        BackupPreferences.INTERVAL_OPTIONS_HOURS.forEach { hours ->
+                            val selected = autobackupIntervalHours == hours
+                            val label = if (hours >= 168) {
+                                stringResource(R.string.data_autobackup_opt_days, hours / 24)
+                            } else {
+                                stringResource(R.string.data_autobackup_opt_hours, hours)
+                            }
+                            OutlinedButton(
+                                onClick = {
+                                    autobackupIntervalHours = hours
+                                    backupPreferences.setAutobackupIntervalHours(hours)
+                                    BackupWorker.schedule(context, hours, replace = true)
+                                },
+                                modifier = Modifier.weight(1f),
+                                contentPadding = PaddingValues(horizontal = 4.dp, vertical = 6.dp),
+                                shape = RoundedCornerShape(10.dp),
+                                border = androidx.compose.foundation.BorderStroke(
+                                    1.dp,
+                                    if (selected) Color(0xFF8B5CF6) else Color.White.copy(alpha = 0.2f)
+                                ),
+                                colors = ButtonDefaults.outlinedButtonColors(
+                                    containerColor = if (selected) Color(0xFF8B5CF6).copy(alpha = 0.25f) else Color.Transparent,
+                                    contentColor = if (selected) Color.White else Color.White.copy(alpha = 0.7f)
+                                )
+                            ) {
+                                Text(
+                                    text = label,
+                                    fontSize = 12.sp,
+                                    fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
+                                    maxLines = 1
+                                )
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(14.dp))
+
+                    // Selector de cantidad de copias recientes a conservar (3, 5, 7, 10, 15)
+                    Text(
+                        text = stringResource(R.string.data_autobackup_keep_count),
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = Color.White
+                    )
+                    Text(
+                        text = stringResource(R.string.data_autobackup_keep_count_desc, autobackupKeepCount),
+                        fontSize = 12.sp,
+                        color = Color.White.copy(alpha = 0.6f)
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        BackupPreferences.KEEP_COUNT_OPTIONS.forEach { count ->
+                            val selected = autobackupKeepCount == count
+                            OutlinedButton(
+                                onClick = {
+                                    autobackupKeepCount = count
+                                    backupPreferences.setAutobackupKeepCount(count)
+                                    val folderUri = backupPreferences.getAutobackupFolderUri()
+                                    if (folderUri != null && backupPreferences.hasValidPermissions()) {
+                                        coroutineScope.launch(Dispatchers.IO) {
+                                            BackupManager(context).cleanOldBackupsInSaf(folderUri, keepCount = count)
+                                        }
+                                    }
+                                },
+                                modifier = Modifier.weight(1f),
+                                contentPadding = PaddingValues(horizontal = 4.dp, vertical = 6.dp),
+                                shape = RoundedCornerShape(10.dp),
+                                border = androidx.compose.foundation.BorderStroke(
+                                    1.dp,
+                                    if (selected) Color(0xFF06B6D4) else Color.White.copy(alpha = 0.2f)
+                                ),
+                                colors = ButtonDefaults.outlinedButtonColors(
+                                    containerColor = if (selected) Color(0xFF06B6D4).copy(alpha = 0.25f) else Color.Transparent,
+                                    contentColor = if (selected) Color.White else Color.White.copy(alpha = 0.7f)
+                                )
+                            ) {
+                                Text(
+                                    text = count.toString(),
+                                    fontSize = 12.sp,
+                                    fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
+                                    maxLines = 1
+                                )
+                            }
+                        }
                     }
 
                     Spacer(modifier = Modifier.height(16.dp))
