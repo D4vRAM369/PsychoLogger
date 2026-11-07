@@ -7868,42 +7868,85 @@
                         }
 
                         if (subsArray.length === 0) {
-                            container.innerHTML = '<p style="text-align: center; color: #9CA3AF; padding: 20px;">No hay sustancias archivadas</p>';
+                            container.innerHTML = `
+                                <div style="text-align: center; padding: 28px 16px; background: rgba(255, 255, 255, 0.03); border: 1px dashed rgba(139, 92, 246, 0.35); border-radius: 14px;">
+                                    <div style="font-size: 2rem; margin-bottom: 8px; opacity: 0.85;">📦</div>
+                                    <div style="color: #E5E7EB; font-weight: 600; font-size: 0.98rem; margin-bottom: 6px;">No hay sustancias archivadas</div>
+                                    <div style="color: #9CA3AF; font-size: 0.84rem; line-height: 1.45;">Triple-tap en ⋮⋮ sobre una sustancia para ocultarla sin borrar sus registros.</div>
+                                </div>
+                            `;
                             return;
                         }
 
                         container.innerHTML = subsArray.map(substance => {
-                            const count = safeEntries.filter(e => e.substance === substance.name).length;
+                            const normName = normalizeSubstanceKey(substance.name);
+                            const count = safeEntries.filter(e => normalizeSubstanceKey(e.substance) === normName).length;
+                            const color = substance.color || '#8B5CF6';
+                            const iconHtml = substanceIconHTML(substance) || `<span class="sub-ico sub-ico--emoji">${substance.emoji || getSubstanceEmoji(substance.name)}</span>`;
+                            let archivedDateHtml = '';
+                            if (substance.archivedAt) {
+                                const d = new Date(substance.archivedAt);
+                                if (!isNaN(d.getTime())) {
+                                    const fmt = d.toLocaleDateString(window.I18N_LOCALE || 'es-ES', { day: '2-digit', month: 'short', year: 'numeric' });
+                                    archivedDateHtml = `<div style="color: #9CA3AF; font-size: 0.76rem; margin-top: 3px;">Archivada: ${fmt}</div>`;
+                                }
+                            }
                             return `
                                 <div style="
                                     display: flex;
                                     justify-content: space-between;
                                     align-items: center;
-                                    padding: 12px;
-                                    background: #2D2D44;
-                                    border-radius: 8px;
-                                    margin-bottom: 8px;
-                                    border-left: 4px solid ${substance.color || '#8B5CF6'};
-                                    border: 1px solid #444;
+                                    gap: 12px;
+                                    padding: 12px 14px;
+                                    background: rgba(32, 29, 58, 0.88);
+                                    border: 1px solid rgba(139, 92, 246, 0.28);
+                                    border-left: 4px solid ${color};
+                                    border-radius: 12px;
+                                    margin-bottom: 10px;
+                                    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.28);
                                 ">
-                                    <div>
-                                        <strong style="color: #FFFFFF;">${substance.name || 'Sin nombre'}</strong>
-                                        <span style="color: #9CA3AF; font-size: 0.85em; margin-left: 8px;">
-                                            ${count} registro${count !== 1 ? 's' : ''}
-                                        </span>
+                                    <div style="display: flex; align-items: center; gap: 10px; min-width: 0; flex: 1;">
+                                        ${iconHtml}
+                                        <div style="min-width: 0; flex: 1;">
+                                            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                                                <strong style="color: #FFFFFF; font-size: 1rem; overflow: hidden; text-overflow: ellipsis;">${substance.name || 'Sin nombre'}</strong>
+                                                <span style="
+                                                    display: inline-block;
+                                                    padding: 2px 8px;
+                                                    border-radius: 999px;
+                                                    background: rgba(139, 92, 246, 0.22);
+                                                    border: 1px solid rgba(139, 92, 246, 0.45);
+                                                    color: #DDD6FE;
+                                                    font-size: 0.75rem;
+                                                    font-weight: 600;
+                                                    white-space: nowrap;
+                                                ">${count} registro${count !== 1 ? 's' : ''}</span>
+                                            </div>
+                                            ${archivedDateHtml}
+                                        </div>
                                     </div>
                                     <button onclick="restoreSubstance('${substance.id}')" class="btn-primary" style="
-                                        padding: 6px 12px;
-                                        font-size: 0.9em;
+                                        display: inline-flex;
+                                        align-items: center;
+                                        justify-content: center;
+                                        gap: 6px;
+                                        padding: 8px 14px;
+                                        font-size: 0.86rem;
+                                        font-weight: 600;
+                                        white-space: nowrap;
+                                        flex-shrink: 0;
+                                        width: auto;
                                         background: linear-gradient(135deg, #8B5CF6, #EC4899);
-                                        color: white;
+                                        color: #FFFFFF;
                                         border: none;
-                                        border-radius: 6px;
+                                        border-radius: 10px;
+                                        box-shadow: 0 0 12px rgba(236, 72, 153, 0.35);
                                         cursor: pointer;
                                     ">✨ Restaurar</button>
                                 </div>
                             `;
                         }).join('');
+                        hydrateSmilesIcons(container);
                     } catch (e) {
                         console.error('Error rendering archived substances:', e);
                         container.innerHTML = `<p style="color: #FF5555; padding: 10px;">Error al cargar lista</p>`;
@@ -11368,18 +11411,18 @@
 
         <div id="archivedSubstancesModal" class="modal">
             <div class="modal-content"
-                style="max-width: 500px; height: 400px; display: flex; flex-direction: column; background-color: #1A1A2E; border: 1px solid #2d2d44; padding: 0 !important;">
+                style="max-width: 480px; width: 100%; max-height: 520px; display: flex; flex-direction: column; background: linear-gradient(180deg, #1b1734 0%, #131126 100%); border: 1px solid rgba(139, 92, 246, 0.38); border-radius: 18px; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7), 0 0 24px rgba(139, 92, 246, 0.18); padding: 0 !important; overflow: hidden;">
 
                 <div
-                    style="padding: 16px; border-bottom: 1px solid #2d2d44; flex-shrink: 0; display: flex; justify-content: space-between; align-items: center; background: #1A1A2E;">
-                    <h3 style="color: #ffffff; margin: 0; font-size: 1.25rem;">📦 Sustancias Archivadas</h3>
-                    <button onclick="closeArchivedSubstancesModal()"
-                        style="color: #ffffff; background: none; border: none; font-size: 28px; cursor: pointer; padding: 0 8px;">×</button>
+                    style="padding: 16px 18px; border-bottom: 1px solid rgba(139, 92, 246, 0.22); flex-shrink: 0; display: flex; justify-content: space-between; align-items: center; background: rgba(26, 22, 48, 0.9);">
+                    <h3 style="color: #ffffff; margin: 0; font-size: 1.2rem; font-weight: 700;">📦 Sustancias Archivadas</h3>
+                    <button onclick="closeArchivedSubstancesModal()" aria-label="Cerrar"
+                        style="color: #cbd5e1; background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 8px; width: 34px; height: 34px; font-size: 22px; line-height: 1; cursor: pointer; display: inline-flex; align-items: center; justify-content: center;">×</button>
                 </div>
 
-                <div style="background-color: #1A1A2E; flex: 1; overflow-y: auto; padding: 16px; position: relative;">
+                <div style="flex: 1; min-height: 0; overflow-y: auto; padding: 16px 18px; position: relative;">
                     <p
-                        style="margin-top: 0; margin-bottom: 16px; color: #b0b0c0; font-size: 0.95rem; line-height: 1.5;">
+                        style="margin-top: 0; margin-bottom: 14px; color: #b6b4d0; font-size: 0.9rem; line-height: 1.45;">
                         Aquí están las sustancias archivadas con triple-tap en ⋮⋮.
                         No se han borrado, solo están archivadas.
                     </p>
@@ -11389,8 +11432,8 @@
                 </div>
 
                 <div
-                    style="padding: 16px; border-top: 1px solid #2d2d44; flex-shrink: 0; display: flex; justify-content: flex-end; background: #1A1A2E;">
-                    <button class="btn-secondary" onclick="closeArchivedSubstancesModal()">Cerrar</button>
+                    style="padding: 12px 18px; border-top: 1px solid rgba(139, 92, 246, 0.22); flex-shrink: 0; display: flex; justify-content: flex-end; background: rgba(26, 22, 48, 0.9);">
+                    <button class="btn-secondary" style="width: auto; min-width: 110px; padding: 8px 18px;" onclick="closeArchivedSubstancesModal()">Cerrar</button>
                 </div>
             </div>
         </div>
