@@ -4148,12 +4148,12 @@
                             <div class="resource-card">
                                 <h4>🎤 Exportar Audios</h4>
                                 <p>Exporta todas las notas de voz en ZIP.</p>
-                                <button class="btn-primary" onclick="openAudioExportModal()">📦 Exportar ZIP</button>
+                                <button class="btn-primary" onclick="openMediaExportModal('audio')">📦 Exportar ZIP</button>
                             </div>
                             <div class="resource-card">
                                 <h4>📸 Exportar Fotos</h4>
                                 <p>Descarga todas las imágenes adjuntas en un ZIP.</p>
-                                <button class="btn-primary" onclick="exportPhotosZip()">🗂️ Exportar Fotos</button>
+                                <button class="btn-primary" onclick="openMediaExportModal('photo')">🗂️ Exportar Fotos</button>
                             </div>
                         </div>
                     </section>
@@ -4869,43 +4869,59 @@
                 </div>
             </div>
 
-            <!-- Audio Export Modal -->
-            <div id="audioExportModal" class="modal">
+            <!-- Media Export Modal (audios + fotos) -->
+            <div id="mediaExportModal" class="modal">
                 <div class="modal-content" style="max-width: 450px;">
-                    <button class="close-btn" onclick="closeModal('audioExportModal')">×</button>
-                    <h3>📦 Exportar Notas de Voz</h3>
+                    <button class="close-btn" id="mediaExportClose" onclick="closeMediaExportModal()">×</button>
+                    <h3 id="mediaExportTitle">📦 Exportar Notas de Voz</h3>
 
-                    <div style="margin: 20px 0;">
-                        <p style="color: var(--text-muted); font-size: 0.9rem;">
-                            Exporta todas tus notas de voz en un archivo ZIP. Opcionalmente puedes cifrarlo con
-                            contraseña (AES-256).
-                        </p>
+                    <div id="mediaExportForm">
+                        <p id="mediaExportDesc" style="color: var(--text-muted); font-size: 0.9rem; margin: 16px 0;"></p>
+
+                        <div class="form-group">
+                            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                <input type="checkbox" id="mediaExportEncrypt" style="width: auto;"
+                                    onchange="document.getElementById('mediaExportPwdGroup').style.display = this.checked ? 'block' : 'none'">
+                                <span>🔒 Cifrar con contraseña (AES-256)</span>
+                            </label>
+                        </div>
+
+                        <div id="mediaExportPwdGroup" class="form-group" style="display: none;">
+                            <label>Contraseña (mínimo 8 caracteres)</label>
+                            <div style="position: relative;">
+                                <input type="password" id="mediaExportPwd" autocomplete="off"
+                                    placeholder="Introduce una contraseña fuerte" style="padding-right: 48px; width: 100%; box-sizing: border-box;">
+                                <button type="button" id="mediaExportEye" aria-label="Mostrar contraseña"
+                                    onclick="toggleMediaExportPwd()"
+                                    style="position: absolute; right: 4px; top: 50%; transform: translateY(-50%); background: none; border: none; font-size: 1.2rem; padding: 8px; cursor: pointer;">👁️</button>
+                            </div>
+                            <small id="mediaExportPwdErr" style="color: #ff6b6b; font-size: 0.8rem; display: none;">
+                                La contraseña debe tener al menos 8 caracteres
+                            </small>
+                            <small style="color: var(--text-muted); font-size: 0.8rem; display: block;">
+                                ⚠️ Guarda esta contraseña en un lugar seguro. Sin ella no podrás desencriptar el archivo.
+                            </small>
+                        </div>
+
+                        <div style="display: flex; gap: 12px; margin-top: 24px;">
+                            <button type="button" class="btn-secondary" onclick="closeMediaExportModal()" style="flex: 1;">
+                                Cancelar
+                            </button>
+                            <button type="button" class="btn-primary" onclick="startMediaExport()" style="flex: 1;">
+                                📤 Exportar
+                            </button>
+                        </div>
                     </div>
 
-                    <div class="form-group">
-                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                            <input type="checkbox" id="encryptAudioZip" style="width: auto;">
-                            <span>🔒 Cifrar con contraseña (AES-256)</span>
-                        </label>
-                    </div>
-
-                    <div id="passwordGroup" class="form-group" style="display: none;">
-                        <label>Contraseña (mínimo 8 caracteres)</label>
-                        <input type="password" id="audioZipPassword" placeholder="Introduce una contraseña fuerte"
-                            minlength="8">
-                        <small style="color: var(--text-muted); font-size: 0.8rem;">
-                            ⚠️ Guarda esta contraseña en un lugar seguro. Sin ella no podrás desencriptar el archivo.
-                        </small>
-                    </div>
-
-                    <div style="display: flex; gap: 12px; margin-top: 24px;">
-                        <button type="button" class="btn-secondary" onclick="closeModal('audioExportModal')"
-                            style="flex: 1;">
-                            Cancelar
-                        </button>
-                        <button type="button" class="btn-primary" onclick="exportAudiosZip()" style="flex: 1;">
-                            📤 Exportar
-                        </button>
+                    <div id="mediaExportStatus" style="display: none; text-align: center; margin: 24px 0 8px;">
+                        <div id="mediaExportIcon" style="font-size: 2.2rem;">⏳</div>
+                        <p id="mediaExportMsg" style="margin: 12px 0;"></p>
+                        <div id="mediaExportBarWrap" style="height: 10px; border-radius: 6px; background: rgba(255,255,255,0.12); overflow: hidden;">
+                            <div id="mediaExportBar" style="height: 100%; width: 0%; background: var(--accent, #7ee787); transition: width 0.2s;"></div>
+                        </div>
+                        <div id="mediaExportPct" style="font-size: 0.85rem; color: var(--text-muted); margin-top: 6px;">0%</div>
+                        <button type="button" id="mediaExportDone" class="btn-primary" onclick="closeMediaExportModal()"
+                            style="display: none; margin-top: 20px; width: 100%;">Cerrar</button>
                     </div>
                 </div>
             </div>
@@ -9504,86 +9520,90 @@
                 }
 
                 /**
-                 * Abrir modal de exportación de audios
+                 * Exportación unificada de audios y fotos (opcionalmente cifrada), en segundo plano
                  */
-                function openAudioExportModal() {
-                    openModal('audioExportModal');
+                let mediaExportType = 'audio';
+                let mediaExportBusy = false;
 
-                    // Setup del checkbox
-                    const checkbox = document.getElementById('encryptAudioZip');
-                    const passwordGroup = document.getElementById('passwordGroup');
-
-                    checkbox.addEventListener('change', function () {
-                        passwordGroup.style.display = this.checked ? 'block' : 'none';
-                    });
-                }
-
-                /**
-                 * Exportar audios en ZIP (con o sin cifrado)
-                 */
-                function exportAudiosZip() {
-                    try {
-                        const encryptCheckbox = document.getElementById('encryptAudioZip');
-                        const passwordInput = document.getElementById('audioZipPassword');
-
-                        if (encryptCheckbox.checked) {
-                            // Exportar con cifrado
-                            const password = passwordInput.value.trim();
-
-                            if (!password || password.length < 8) {
-                                Android.showToast('⚠️ La contraseña debe tener al menos 8 caracteres');
-                                return;
-                            }
-
-                            const result = Android.exportAudiosZipEncrypted(password);
-
-                            if (result === 'OK') {
-                                closeModal('audioExportModal');
-                                // Reset form
-                                encryptCheckbox.checked = false;
-                                passwordInput.value = '';
-                                document.getElementById('passwordGroup').style.display = 'none';
-                            } else {
-                                console.error('Error:', result);
-                            }
-
-                        } else {
-                            // Exportar sin cifrar
-                            const result = Android.exportAudiosZip();
-
-                            if (result === 'OK') {
-                                closeModal('audioExportModal');
-                                Android.showToast('✅ Audios exportados correctamente');
-                            } else {
-                                console.error('Error:', result);
-                            }
-                        }
-
-                    } catch (error) {
-                        console.error('Error al exportar audios:', error);
-                        Android.showToast('❌ Error: ' + error.message);
-                    }
-                }
-
-                /**
-                 * Exportar todas las fotos en un ZIP
-                 */
-                function exportPhotosZip() {
-                    if (!window.Android || typeof Android.exportPhotosZip !== 'function') {
+                function openMediaExportModal(type) {
+                    if (!window.Android || typeof Android.exportMedia !== 'function') {
                         showCustomAlert('Esta función solo está disponible en Android.', 'ℹ️ Información');
                         return;
                     }
+                    mediaExportType = type;
+                    const isPhoto = type === 'photo';
+                    document.getElementById('mediaExportTitle').textContent = isPhoto ? '🗂️ Exportar Fotos' : '📦 Exportar Notas de Voz';
+                    document.getElementById('mediaExportDesc').textContent = isPhoto
+                        ? 'Exporta todas tus fotos en un archivo ZIP. Opcionalmente puedes cifrarlo con contraseña (AES-256).'
+                        : 'Exporta todas tus notas de voz en un archivo ZIP. Opcionalmente puedes cifrarlo con contraseña (AES-256).';
+                    document.getElementById('mediaExportEncrypt').checked = false;
+                    const pwd = document.getElementById('mediaExportPwd');
+                    pwd.value = ''; pwd.type = 'password';
+                    document.getElementById('mediaExportPwdGroup').style.display = 'none';
+                    document.getElementById('mediaExportPwdErr').style.display = 'none';
+                    document.getElementById('mediaExportForm').style.display = 'block';
+                    document.getElementById('mediaExportStatus').style.display = 'none';
+                    openModal('mediaExportModal');
+                }
 
-                    try {
-                        const result = Android.exportPhotosZip();
-                        if (result !== 'OK') {
-                            console.error('Error exportando fotos:', result);
-                        }
-                    } catch (error) {
-                        console.error('Error exportando fotos:', error);
-                        Android.showToast('❌ Error exportando fotos');
+                function closeMediaExportModal() {
+                    if (mediaExportBusy) return; // no cerrar mientras exporta
+                    closeModal('mediaExportModal');
+                }
+
+                function toggleMediaExportPwd() {
+                    const pwd = document.getElementById('mediaExportPwd');
+                    const show = pwd.type === 'password';
+                    pwd.type = show ? 'text' : 'password';
+                    document.getElementById('mediaExportEye').textContent = show ? '🙈' : '👁️';
+                }
+
+                function setMediaExportStatus(icon, msg, pct, done) {
+                    document.getElementById('mediaExportIcon').textContent = icon;
+                    document.getElementById('mediaExportMsg').textContent = msg;
+                    document.getElementById('mediaExportBar').style.width = pct + '%';
+                    document.getElementById('mediaExportPct').textContent = pct + '%';
+                    document.getElementById('mediaExportBarWrap').style.display = done ? 'none' : 'block';
+                    document.getElementById('mediaExportPct').style.display = done ? 'none' : 'block';
+                    document.getElementById('mediaExportDone').style.display = done ? 'block' : 'none';
+                }
+
+                function startMediaExport() {
+                    const encrypt = document.getElementById('mediaExportEncrypt').checked;
+                    const password = encrypt ? document.getElementById('mediaExportPwd').value : '';
+                    if (encrypt && password.length < 8) {
+                        document.getElementById('mediaExportPwdErr').style.display = 'block';
+                        return;
+                    }
+                    document.getElementById('mediaExportForm').style.display = 'none';
+                    document.getElementById('mediaExportStatus').style.display = 'block';
+                    setMediaExportStatus('⏳', encrypt ? 'Preparando y cifrando archivos…' : 'Preparando archivos…', 0, false);
+                    mediaExportBusy = true;
+                    const r = Android.exportMedia(mediaExportType, password);
+                    if (r !== 'STARTED') {
+                        mediaExportBusy = false;
+                        setMediaExportStatus('⚠️', 'Ya hay una exportación en curso', 0, true);
                     }
                 }
+
+                window.onMediaExportProgress = function (p) {
+                    setMediaExportStatus('⏳', document.getElementById('mediaExportMsg').textContent, p, false);
+                };
+
+                window.onMediaExportDone = function (ok, code) {
+                    mediaExportBusy = false;
+                    document.getElementById('mediaExportPwd').value = '';
+                    if (ok) {
+                        setMediaExportStatus('✅', 'Exportación lista. Elige dónde guardarla o compartirla.', 100, true);
+                        return;
+                    }
+                    const msgs = {
+                        EMPTY: 'No hay archivos para exportar.',
+                        SHORT: 'La contraseña debe tener al menos 8 caracteres',
+                        OOM: 'Sin memoria suficiente para exportar. Cierra otras apps e inténtalo de nuevo.'
+                    };
+                    setMediaExportStatus('❌', msgs[code] || 'No se pudo completar la exportación.', 0, true);
+                };
 
                 /**
                  * Mostrar confirmación e iniciar importación de un backup ZIP

@@ -575,143 +575,79 @@ class BackupManager(private val context: Context) {
         }
     }
 
-    /**
-     * Exportar solo los audios en un ZIP (con cifrado opcional)
-     *
-     * @param password Contraseña para cifrar (null = sin cifrar)
-     * @return File del ZIP creado
-     *
-     * CONCEPTO: Cifrado de archivos ZIP
-     * - Sin cifrado: ZIP normal
-     * - Con cifrado: AES-256-GCM con PBKDF2
-     */
-    fun exportAudioZip(password: String? = null): File? {
-        return try {
-            val timestamp = SimpleDateFormat("yyyy-MM-dd_HH-mm-ss", Locale.getDefault()).format(Date())
-            val zipName = if (password != null) {
-                "audios_encrypted_$timestamp.zip"
-            } else {
-                "audios_$timestamp.zip"
-            }
-
-            val exportFile = File(context.cacheDir, zipName)
-
-            if (password != null) {
-                // ZIP con cifrado AES-256
-                createEncryptedAudioZip(exportFile, password)
-            } else {
-                // ZIP normal sin cifrar
-                createPlainAudioZip(exportFile)
-            }
-
-            exportFile
-
-        } catch (e: Exception) {
-            Log.e(TAG, "Error al exportar audios", e)
-            null
-        }
+    /** Tipo de multimedia exportable. */
+    enum class MediaType(val prefix: String, val zipPrefix: String) {
+        AUDIO("audios", "audios"),
+        PHOTO("photos", "photos")
     }
 
     /**
-     * Exportar todas las fotos en un ZIP
+     * Exporta audios o fotos en un ZIP, con cifrado AES-256-GCM opcional (mismo formato
+     * chunked-v2 + metadata.json que los backups). Pensado para correr en un hilo de fondo.
+     *
+     * @param onProgress 0..100 (zip = 0..50 y cifrado = 50..100 si hay contraseña)
+     * @throws IllegalStateException con mensaje "EMPTY" si no hay archivos
      */
-    fun exportPhotosZip(): File? {
-        return try {
-            val timestamp = SimpleDateFormat("yyyy-MM-dd_HH-mm-ss", Locale.getDefault()).format(Date())
-            val zipFile = File(context.cacheDir, "photos_$timestamp.zip")
+    fun exportMediaZip(type: MediaType, password: String?, onProgress: (Int) -> Unit): File {
+        val files = when (type) {
+            MediaType.AUDIO -> audioNotesDir.listFiles()?.filter { it.isFile && it.extension == "m4a" }
+            MediaType.PHOTO -> photoDir.listFiles()?.filter { it.isFile }
+        }?.sortedBy { it.name } ?: emptyList()
+        if (files.isEmpty()) throw IllegalStateException("EMPTY")
 
-            ZipOutputStream(FileOutputStream(zipFile)).use { zipOut ->
-                val photoFiles = photoDir.listFiles()?.filter { it.isFile } ?: emptyList()
-                photoFiles.forEach { photo ->
-                    try {
-                        val entry = ZipEntry("photos/${photo.name}")
-                        zipOut.putNextEntry(entry)
-                        FileInputStream(photo).use { input -> input.copyTo(zipOut) }
-                        zipOut.closeEntry()
-                    } catch (e: Exception) {
-                        Log.e(TAG, "Error al añadir foto ${photo.name} al ZIP", e)
-                    }
-                }
+        // Limpiar ZIPs de exportación anteriores de este tipo en cacheDir
+        context.cacheDir.listFiles()?.forEach { f ->
+            if (f.isFile && f.name.startsWith("${type.prefix}_") && f.name.endsWith(".zip")) {
+                f.delete()
             }
-
-            zipFile
-        } catch (e: Exception) {
-            Log.e(TAG, "Error al exportar fotos", e)
-            null
         }
-    }
 
-    /**
-     * Crear ZIP de audios SIN cifrar
-     */
-    private fun createPlainAudioZip(outputFile: File) {
-        ZipOutputStream(FileOutputStream(outputFile)).use { zipOut ->
-            addAudioFilesToZip(zipOut)
-        }
-    }
-
-    /**
-     * Crear ZIP de audios CON cifrado AES-256
-     *
-     * ESTRUCTURA:
-     * audios_encrypted.zip
-     *   ├── metadata.json (salt, iv, algoritmo)
-     *   └── data.enc (audios cifrados en ZIP interno)
-     *
-     * CONCEPTO: Nested ZIP
-     * 1. Crear ZIP interno con los audios
-     * 2. Cifrar ese ZIP completo
-     * 3. Meter el cifrado en un ZIP externo con metadata
-     */
-    private fun createEncryptedAudioZip(outputFile: File, password: String) {
-        // 1. Generar salt e IV
-        val salt = generateRandomBytes(SALT_LENGTH)
-        val iv = generateRandomBytes(IV_LENGTH)
-
-        // 2. Derivar clave de la contraseña
-        val key = deriveKey(password, salt)
-
-        // 3. Crear ZIP temporal con los audios
-        val tempZip = File(context.cacheDir, "temp_audios.zip")
-        createPlainAudioZip(tempZip)
-
-        // 4. Cifrar el ZIP temporal
-        val encryptedData = File(context.cacheDir, "data.enc")
+        val timestamp = SimpleDateFormat("yyyy-MM-dd_HH-mm-ss", Locale.getDefault()).format(Date())
+        val name = type.prefix + (if (password != null) "_encrypted_" else "_") + timestamp + ".zip"
+        val exportFile = File(context.cacheDir, name)
+        val tempZip = File(context.cacheDir, "temp_${type.prefix}.zip")
+        val encryptedData = File(context.cacheDir, "data_${type.prefix}.enc")
         try {
-            BufferedOutputStream(FileOutputStream(encryptedData)).use { out ->
-                FileInputStream(tempZip).use { ChunkedCrypto.encrypt(it, out, key, iv) }
-            }
-
-            // 5. Crear ZIP final con metadata + datos cifrados
-            ZipOutputStream(FileOutputStream(outputFile)).use { zipOut ->
-                // Metadata
-                val metadata = JSONObject().apply {
-                    put("algorithm", "AES-256-GCM")
-                    put("salt", bytesToHex(salt))
-                    put("iv", bytesToHex(iv))
-                    put("iterations", PBKDF2_ITERATIONS)
-                    put("timestamp", System.currentTimeMillis())
-                    put("format", ChunkedCrypto.FORMAT)
-                    put("chunkSize", ChunkedCrypto.DEFAULT_CHUNK)
+            if (password == null) {
+                BufferedOutputStream(FileOutputStream(exportFile)).use { MediaZip.write(files, type.zipPrefix, it, onProgress) }
+            } else {
+                BufferedOutputStream(FileOutputStream(tempZip)).use {
+                    MediaZip.write(files, type.zipPrefix, it) { p -> onProgress(p / 2) }
                 }
-
-                zipOut.putNextEntry(ZipEntry("metadata.json"))
-                zipOut.write(metadata.toString(2).toByteArray())
-                zipOut.closeEntry()
-
-                // Datos cifrados
-                zipOut.putNextEntry(ZipEntry("data.enc"))
-                FileInputStream(encryptedData).use { it.copyTo(zipOut) }
-                zipOut.closeEntry()
+                val salt = generateRandomBytes(SALT_LENGTH)
+                val iv = generateRandomBytes(IV_LENGTH)
+                val key = deriveKey(password, salt)
+                BufferedOutputStream(FileOutputStream(encryptedData)).use { out ->
+                    MediaZip.CountingInput(FileInputStream(tempZip), tempZip.length()) { p -> onProgress(50 + p / 2) }
+                        .use { ChunkedCrypto.encrypt(it, out, key, iv) }
+                }
+                ZipOutputStream(FileOutputStream(exportFile)).use { zipOut ->
+                    val metadata = JSONObject().apply {
+                        put("algorithm", "AES-256-GCM")
+                        put("salt", bytesToHex(salt))
+                        put("iv", bytesToHex(iv))
+                        put("iterations", PBKDF2_ITERATIONS)
+                        put("timestamp", System.currentTimeMillis())
+                        put("format", ChunkedCrypto.FORMAT)
+                        put("chunkSize", ChunkedCrypto.DEFAULT_CHUNK)
+                        put("type", type.prefix)
+                    }
+                    zipOut.putNextEntry(ZipEntry("metadata.json"))
+                    zipOut.write(metadata.toString(2).toByteArray())
+                    zipOut.closeEntry()
+                    zipOut.putNextEntry(ZipEntry("data.enc"))
+                    FileInputStream(encryptedData).use { it.copyTo(zipOut) }
+                    zipOut.closeEntry()
+                }
             }
+            onProgress(100)
+            return exportFile
+        } catch (e: Throwable) {
+            exportFile.delete()
+            throw e
         } finally {
-            // Limpiar archivos temporales aunque falle el cifrado o el ZIP final.
-            if (!tempZip.delete() && tempZip.exists()) {
-                Log.w(TAG, "No se pudo eliminar ZIP temporal ${tempZip.name}")
-            }
-            if (!encryptedData.delete() && encryptedData.exists()) {
-                Log.w(TAG, "No se pudo eliminar temporal cifrado ${encryptedData.name}")
-            }
+            tempZip.delete()
+            encryptedData.delete()
         }
     }
 

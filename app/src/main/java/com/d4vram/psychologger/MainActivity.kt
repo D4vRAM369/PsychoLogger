@@ -1922,135 +1922,55 @@ class WebAppInterface(private val context: Context, private val activity: MainAc
         return backupManager.getBackupsDirectory().absolutePath
     }
 
-    /**
-     * Exportar todos los audios en un ZIP (sin cifrar)
-     *
-     * @return "OK" si se exportó, "ERROR: ..." si falló
-     */
-    @JavascriptInterface
-    fun exportAudiosZip(): String {
-        return try {
-            val zipFile = backupManager.exportAudioZip(password = null)
-
-            if (zipFile != null) {
-                // Compartir vía ShareSheet
-                activity.runOnUiThread {
-                    val uri = FileProvider.getUriForFile(
-                        context,
-                        "${context.packageName}.fileprovider",
-                        zipFile
-                    )
-
-                    val shareIntent = Intent(Intent.ACTION_SEND).apply {
-                        type = "application/zip"
-                        putExtra(Intent.EXTRA_STREAM, uri)
-                        putExtra(Intent.EXTRA_SUBJECT, "Notas de voz - PsychoLogger")
-                        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                    }
-
-                    val chooser = Intent.createChooser(shareIntent, context.getString(R.string.n_export_audios))
-                    chooser.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                    activity.startActivity(chooser)
-                }
-
-                "OK"
-            } else {
-                "ERROR: No se pudo crear el ZIP"
-            }
-        } catch (e: Exception) {
-            "ERROR: ${e.message}"
-        }
-    }
-
-    @JavascriptInterface
-    fun exportPhotosZip(): String {
-        return try {
-            val zipFile = backupManager.exportPhotosZip()
-
-            if (zipFile != null) {
-                activity.runOnUiThread {
-                    val uri = FileProvider.getUriForFile(
-                        context,
-                        "${context.packageName}.fileprovider",
-                        zipFile
-                    )
-
-                    val shareIntent = Intent(Intent.ACTION_SEND).apply {
-                        type = "application/zip"
-                        putExtra(Intent.EXTRA_STREAM, uri)
-                        putExtra(Intent.EXTRA_SUBJECT, "Fotos - PsychoLogger")
-                        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                    }
-
-                    val chooser = Intent.createChooser(shareIntent, context.getString(R.string.n_export_photos))
-                    chooser.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                    activity.startActivity(chooser)
-                }
-
-                "OK"
-            } else {
-                "ERROR: No se pudo crear el ZIP de fotos"
-            }
-        } catch (e: Exception) {
-            "ERROR: ${e.message}"
-        }
-    }
+    private val mediaExportRunning = java.util.concurrent.atomic.AtomicBoolean(false)
 
     /**
-     * Exportar audios en ZIP cifrado con contraseña
+     * Exporta audios ("audio") o fotos ("photo") en un ZIP, en segundo plano.
+     * password vacío = sin cifrar. Progreso y resultado vuelven al JS vía
+     * window.onMediaExportProgress(p) / window.onMediaExportDone(ok, code).
      *
-     * @param password Contraseña para cifrar (AES-256)
-     * @return "OK" si se exportó, "ERROR: ..." si falló
+     * @return "STARTED" o "BUSY"
      */
     @JavascriptInterface
-    fun exportAudiosZipEncrypted(password: String): String {
-        return try {
-            if (password.length < 8) {
-                Toast.makeText(
-                    context,
-                    context.getString(R.string.n_pwd_min8),
-                    Toast.LENGTH_SHORT
-                ).show()
-                return "ERROR: Contraseña muy corta"
-            }
-
-            val zipFile = backupManager.exportAudioZip(password = password)
-
-            if (zipFile != null) {
-                // Compartir vía ShareSheet
+    fun exportMedia(type: String, password: String): String {
+        if (!mediaExportRunning.compareAndSet(false, true)) return "BUSY"
+        val mediaType = if (type == "photo") BackupManager.MediaType.PHOTO else BackupManager.MediaType.AUDIO
+        val pwd = password.ifEmpty { null }
+        Thread {
+            try {
+                if (pwd != null && pwd.length < 8) throw IllegalArgumentException("SHORT")
+                var last = -1
+                val zipFile = backupManager.exportMediaZip(mediaType, pwd) { p ->
+                    if (p != last) {
+                        last = p
+                        activity.executeJavaScript("window.onMediaExportProgress && onMediaExportProgress($p)")
+                    }
+                }
                 activity.runOnUiThread {
-                    val uri = FileProvider.getUriForFile(
-                        context,
-                        "${context.packageName}.fileprovider",
-                        zipFile
-                    )
-
+                    val uri = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", zipFile)
                     val shareIntent = Intent(Intent.ACTION_SEND).apply {
-                        type = "application/zip"
+                        setType("application/zip")
                         putExtra(Intent.EXTRA_STREAM, uri)
-                        putExtra(Intent.EXTRA_SUBJECT, "Notas de voz cifradas - PsychoLogger")
-                        putExtra(Intent.EXTRA_TEXT, "⚠️ Este archivo está cifrado con AES-256.\nGuarda la contraseña en un lugar seguro.")
+                        putExtra(Intent.EXTRA_SUBJECT, "PsychoLogger")
                         addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                     }
-
-                    val chooser = Intent.createChooser(shareIntent, context.getString(R.string.n_export_audios_enc))
-                    chooser.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                    activity.startActivity(chooser)
+                    val title = context.getString(if (mediaType == BackupManager.MediaType.PHOTO) R.string.n_export_photos else R.string.n_export_audios)
+                    activity.startActivity(Intent.createChooser(shareIntent, title).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
                 }
-
-                Toast.makeText(
-                    context,
-                    context.getString(R.string.n_zip_encrypted_ok),
-                    Toast.LENGTH_LONG
-                ).show()
-
-                "OK"
-            } else {
-                "ERROR: No se pudo crear el ZIP cifrado"
+                activity.executeJavaScript("window.onMediaExportDone && onMediaExportDone(true, 'OK')")
+            } catch (e: Throwable) {
+                android.util.Log.e("WebAppInterface", "Error exportando multimedia", e)
+                val code = when {
+                    e is OutOfMemoryError -> "OOM"
+                    e.message == "EMPTY" || e.message == "SHORT" -> e.message
+                    else -> "ERROR"
+                }
+                activity.executeJavaScript("window.onMediaExportDone && onMediaExportDone(false, '$code')")
+            } finally {
+                mediaExportRunning.set(false)
             }
-        } catch (e: Exception) {
-            "ERROR: ${e.message}"
-        }
+        }.start()
+        return "STARTED"
     }
 
     /**

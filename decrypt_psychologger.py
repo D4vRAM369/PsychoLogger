@@ -112,20 +112,21 @@ def decrypt_zip(encrypted_zip_path, password, output_dir="decrypted_audios"):
 
     print(f"✅ Desencriptado exitoso: {len(decrypted_zip_bytes)} bytes")
 
-    # 6. Extraer ZIP interno con los audios
-    print(f"📂 Extrayendo audios a: {output_dir}/")
+    # 6. Extraer ZIP interno (audios/ y/o photos/)
+    print(f"📂 Extrayendo archivos a: {output_dir}/")
     import os
     os.makedirs(output_dir, exist_ok=True)
 
     with zipfile.ZipFile(BytesIO(decrypted_zip_bytes)) as inner_zip:
-        audio_files = [f for f in inner_zip.namelist() if f.startswith('audios/')]
-        print(f"🎵 Audios encontrados: {len(audio_files)}")
+        media_files = [f for f in inner_zip.namelist()
+                       if f.startswith(('audios/', 'photos/')) and not f.endswith('/')]
+        print(f"🎵📷 Archivos encontrados: {len(media_files)}")
 
-        for audio_file in audio_files:
-            filename = os.path.basename(audio_file)
+        for media_file in media_files:
+            filename = os.path.basename(media_file)
             output_path = os.path.join(output_dir, filename)
 
-            with inner_zip.open(audio_file) as source:
+            with inner_zip.open(media_file) as source:
                 with open(output_path, 'wb') as target:
                     target.write(source.read())
 
